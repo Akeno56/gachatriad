@@ -1,0 +1,203 @@
+'use client';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { io, type Socket } from 'socket.io-client';
+import type { ProfileView } from '@gacha-triad/shared/platform';
+import { api, session, resetSession } from '../lib/platform';
+import { serverConfigured, socketURL, sessionToken, profileKey } from '../lib/connection';
+const Context = createContext<{
+  profile: ProfileView | null;
+  error: string;
+  revision: number;
+  refresh: () => Promise<void>;
+  accountOpen: boolean;
+  openAccount: () => void;
+  closeAccount: () => void;
+}>({
+  profile: null,
+  error: '',
+  revision: 0,
+  refresh: async () => {},
+  accountOpen: false,
+  openAccount: () => {},
+  closeAccount: () => {},
+});
+export const useSession = () => useContext(Context);
+export function SessionProvider({ children }: { children: React.ReactNode }) {
+  const [profile, setProfile] = useState<ProfileView | null>(null),
+    [error, setError] = useState(''),
+    [revision, setRevision] = useState(0);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const openAccount = useCallback(() => setAccountOpen(true), []),
+    closeAccount = useCallback(() => setAccountOpen(false), []);
+  const pending = useRef<Promise<void> | null>(null);
+  const refresh = useCallback(async () => {
+    if (!serverConfigured()) return;
+    if (pending.current) return pending.current;
+    pending.current = (async () => {
+      try {
+        await session();
+        let next: ProfileView;
+        try {
+          next = await api<ProfileView>('/profile');
+        } catch (e) {
+          if (localStorage.getItem(profileKey())) {
+            localStorage.removeItem(profileKey());
+            next = await api<ProfileView>('/profile');
+          } else throw e;
+        }
+        setProfile(next);
+        setError('');
+        setRevision((v) => v + 1);
+      } catch (e) {
+        setError((e as Error).message);
+      } finally {
+        pending.current = null;
+      }
+    })();
+    return pending.current;
+  }, []);
+  useEffect(() => {
+    void refresh();
+    const timer = setInterval(() => void refresh(), 5000);
+    return () => clearInterval(timer);
+  }, [refresh]);
+  useEffect(() => {
+    if (!profile) return;
+    const socket: Socket = io(socketURL(), {
+      withCredentials: true,
+      auth: (callback) => callback({ profileId: profile.id, token: sessionToken() }),
+    });
+    socket.on('platform:changed', () => void refresh());
+    socket.on('connect', () => void refresh());
+    return () => {
+      socket.disconnect();
+    };
+  }, [profile?.id, refresh]);
+  return (
+    <Context.Provider
+      value={{ profile, error, revision, refresh, accountOpen, openAccount, closeAccount }}
+    >
+      {children}
+    </Context.Provider>
+  );
+}
+export function AccountMenu() {
+  const { profile, error, refresh, accountOpen: open, openAccount, closeAccount } = useSession();
+  const setOpen = (value: boolean) => (value ? openAccount() : closeAccount());
+  const [register, setRegister] = useState(true),
+    [message, setMessage] = useState(''),
+    [pending, setPending] = useState(false);
+  const ref = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (open) ref.current?.showModal();
+    else ref.current?.close();
+  }, [open]);
+  async function submit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPending(true);
+    setMessage('');
+    const fields: Record<string, string> = {};
+    new FormData(e.currentTarget).forEach((value, key) => {
+      fields[key] = String(value);
+    });
+    try {
+      await api(register ? '/auth/sign-up/email' : '/auth/sign-in/email', { ...fields });
+      resetSession();
+      await refresh();
+      setOpen(false);
+    } catch (e) {
+      setMessage((e as Error).message);
+    } finally {
+      setPending(false);
+    }
+  }
+  return (
+    <>
+      <button className="account-control" onClick={() => setOpen(true)}>
+        {profile ? profile.name : 'Connecting…'}
+        {profile && !profile.registered ? ' · Guest' : ''}
+      </button>
+      <dialog ref={ref} className="game-dialog account-dialog" onCancel={() => setOpen(false)}>
+        <button className="dialog-close" onClick={() => setOpen(false)} aria-label="Close account">
+          ×
+        </button>
+        <h2>
+          {profile?.registered ? 'Your account' : register ? 'Keep your progress' : 'Welcome back'}
+        </h2>
+        {profile?.registered ? (
+          <>
+            <p>
+              {profile.name} · Rating {profile.rating} · Draft {profile.draftRating}
+            </p>
+            {profile.profiles.length > 1 && (
+              <label>
+                Active profile
+                <select
+                  value={profile.id}
+                  onChange={async (e) => {
+                    localStorage.setItem(profileKey(), e.target.value);
+                    await refresh();
+                  }}
+                >
+                  {profile.profiles.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <button
+              className="outline-button"
+              onClick={async () => {
+                await api('/auth/sign-out', {});
+                localStorage.removeItem(profileKey());
+                resetSession();
+                await refresh();
+                setOpen(false);
+              }}
+            >
+              Sign out
+            </button>
+          </>
+        ) : (
+          <>
+            <p>
+              Your guest collection is kept when you register. An account is required for ranked,
+              rated Draft and Trade One.
+            </p>
+            <form onSubmit={submit}>
+              {register && (
+                <label>
+                  Player name
+                  <input required name="name" maxLength={32} autoComplete="nickname" />
+                </label>
+              )}
+              <label>
+                Email
+                <input required name="email" type="email" autoComplete="email" />
+              </label>
+              <label>
+                Password
+                <input
+                  required
+                  name="password"
+                  type="password"
+                  minLength={10}
+                  autoComplete={register ? 'new-password' : 'current-password'}
+                />
+              </label>
+              <button className="primary-button" disabled={pending}>
+                {pending ? 'Connecting…' : register ? 'Create account' : 'Sign in'}
+              </button>
+            </form>
+            <button className="text-button" onClick={() => setRegister(!register)}>
+              {register ? 'Already registered? Sign in' : 'Create a new account'}
+            </button>
+          </>
+        )}
+        <p role="alert">{message || error}</p>
+      </dialog>
+    </>
+  );
+}

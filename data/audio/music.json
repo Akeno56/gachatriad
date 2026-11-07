@@ -1,0 +1,12 @@
+{
+  "title": "Final Fantasy VIII Queen of Cards OC ReMix",
+  "artist": "GlacialSpoon",
+  "composer": "Nobuo Uematsu",
+  "year": 2023,
+  "source": "https://ocremix.org/remix/OCR04441",
+  "localPath": "/audio/queen-of-cards.mp3",
+  "durationSeconds": 274.076735,
+  "playback": "equal-power crossfade",
+  "crossfadeSeconds": 6,
+  "note": "Original supplied MP3 preserved. Crossfade smooths the restart; this is not a sample-accurate musical loop."
+}

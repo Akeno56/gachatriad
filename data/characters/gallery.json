@@ -1,0 +1,6534 @@
+[
+  {
+    "id": "endfield:akekuri",
+    "name": "Akekuri",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/akekuri",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/akekuri/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/akekuri/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:alesh",
+    "name": "Alesh",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/alesh",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/alesh/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/alesh/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:antal",
+    "name": "Antal",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/antal",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/antal/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/antal/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:arcane",
+    "name": "Arcane",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/arcane",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/arcane/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/arcane/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:arclight",
+    "name": "Arclight",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/arclight",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/arclight/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/arclight/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:ardelia",
+    "name": "Ardelia",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/ardelia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/ardelia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/ardelia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:argent-flow",
+    "name": "Argent Flow",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/argent-flow",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/argent-flow/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/argent-flow/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:avywenna",
+    "name": "Avywenna",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/avywenna",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/avywenna/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/avywenna/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:camille",
+    "name": "Camille",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/camille",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/camille/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/camille/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:catcher",
+    "name": "Catcher",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/catcher",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/catcher/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/catcher/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:chen-qianyu",
+    "name": "Chen Qianyu",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/chen-qianyu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/chen-qianyu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/chen-qianyu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:da-pan",
+    "name": "Da Pan",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/da-pan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/da-pan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/da-pan/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:ember",
+    "name": "Ember",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/ember",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/ember/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/ember/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:endministrator",
+    "name": "Endministrator",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/endministrator",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/endministrator/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/endministrator/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:estella",
+    "name": "Estella",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/estella",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/estella/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/estella/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:fluorite",
+    "name": "Fluorite",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/fluorite",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/fluorite/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/fluorite/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:gilberta",
+    "name": "Gilberta",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/gilberta",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/gilberta/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/gilberta/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:laevatain",
+    "name": "Laevatain",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/laevatain",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/laevatain/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/laevatain/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:last-rite",
+    "name": "Last Rite",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/last-rite",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/last-rite/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/last-rite/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:lifeng",
+    "name": "Lifeng",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/lifeng",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/lifeng/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/lifeng/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:liino",
+    "name": "Liino",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/liino",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/liino/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/liino/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:mi-fu",
+    "name": "Mi Fu",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/mi-fu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/mi-fu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/mi-fu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:perlica",
+    "name": "Perlica",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/perlica",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/perlica/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/perlica/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:pogranichnik",
+    "name": "Pogranichnik",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/pogranichnik",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/pogranichnik/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/pogranichnik/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:purrchena",
+    "name": "Purrchena",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/purrchena",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/purrchena/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/purrchena/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:rossi",
+    "name": "Rossi",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/rossi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/rossi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/rossi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:si",
+    "name": "Si",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/si",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/si/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/si/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:snowshine",
+    "name": "Snowshine",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/snowshine",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/snowshine/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/snowshine/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:tangtang",
+    "name": "Tangtang",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/tangtang",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/tangtang/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/tangtang/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:typhoeus",
+    "name": "Typhoeus",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/typhoeus",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/typhoeus/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/typhoeus/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:wulfgard",
+    "name": "Wulfgard",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/wulfgard",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/wulfgard/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/wulfgard/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:xaihi",
+    "name": "Xaihi",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/xaihi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/xaihi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/xaihi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:yvonne",
+    "name": "Yvonne",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/yvonne",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/yvonne/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/yvonne/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "endfield:zhuang-fangyi",
+    "name": "Zhuang Fangyi",
+    "universeId": "endfield",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/zhuang-fangyi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/endfield/zhuang-fangyi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/endfield/zhuang-fangyi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:aino",
+    "name": "Aino",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/aino",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/aino/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/aino/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:albedo",
+    "name": "Albedo",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/albedo",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/albedo/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/albedo/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:alhaitham",
+    "name": "Alhaitham",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/alhaitham",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/alhaitham/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/alhaitham/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:aloy",
+    "name": "Aloy",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/aloy",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/aloy/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/aloy/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:alyosha",
+    "name": "Alyosha",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/alyosha",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/alyosha/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/alyosha/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:amber",
+    "name": "Amber",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/amber",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/amber/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/amber/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:arataki-itto",
+    "name": "Arataki Itto",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/arataki-itto",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/arataki-itto/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/arataki-itto/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:arlecchino",
+    "name": "Arlecchino",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/arlecchino",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/arlecchino/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/arlecchino/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:baizhu",
+    "name": "Baizhu",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/baizhu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/baizhu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/baizhu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:barbara",
+    "name": "Barbara",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/barbara",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/barbara/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/barbara/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:beidou",
+    "name": "Beidou",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/beidou",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/beidou/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/beidou/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:bennett",
+    "name": "Bennett",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/bennett",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/bennett/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/bennett/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:candace",
+    "name": "Candace",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/candace",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/candace/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/candace/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:charlotte",
+    "name": "Charlotte",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/charlotte",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/charlotte/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/charlotte/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:chasca",
+    "name": "Chasca",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/chasca",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/chasca/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/chasca/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:chevreuse",
+    "name": "Chevreuse",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/chevreuse",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/chevreuse/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/chevreuse/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:chiori",
+    "name": "Chiori",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/chiori",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/chiori/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/chiori/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:chongyun",
+    "name": "Chongyun",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/chongyun",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/chongyun/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/chongyun/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:citlali",
+    "name": "Citlali",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/citlali",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/citlali/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/citlali/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:clorinde",
+    "name": "Clorinde",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/clorinde",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/clorinde/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/clorinde/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:collei",
+    "name": "Collei",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/collei",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/collei/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/collei/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:columbina",
+    "name": "Columbina",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/columbina",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/columbina/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/columbina/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:cyno",
+    "name": "Cyno",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/cyno",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/cyno/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/cyno/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:dahlia",
+    "name": "Dahlia",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/dahlia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/dahlia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/dahlia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:dehya",
+    "name": "Dehya",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/dehya",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/dehya/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/dehya/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:diluc",
+    "name": "Diluc",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/diluc",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/diluc/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/diluc/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:diona",
+    "name": "Diona",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/diona",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/diona/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/diona/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:dori",
+    "name": "Dori",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/dori",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/dori/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/dori/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:durin",
+    "name": "Durin",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/durin",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/durin/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/durin/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:emilie",
+    "name": "Emilie",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/emilie",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/emilie/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/emilie/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:escoffier",
+    "name": "Escoffier",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/escoffier",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/escoffier/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/escoffier/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:eula",
+    "name": "Eula",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/eula",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/eula/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/eula/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:faruzan",
+    "name": "Faruzan",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/faruzan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/faruzan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/faruzan/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:fischl",
+    "name": "Fischl",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/fischl",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/fischl/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/fischl/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:flins",
+    "name": "Flins",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/flins",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/flins/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/flins/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:freminet",
+    "name": "Freminet",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/freminet",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/freminet/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/freminet/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:furina",
+    "name": "Furina",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/furina",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/furina/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/furina/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:gaming",
+    "name": "Gaming",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/gaming",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/gaming/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/gaming/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:ganyu",
+    "name": "Ganyu",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/ganyu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/ganyu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/ganyu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:gorou",
+    "name": "Gorou",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/gorou",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/gorou/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/gorou/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:hu-tao",
+    "name": "Hu Tao",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/hu-tao",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/hu-tao/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/hu-tao/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:iansan",
+    "name": "Iansan",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/iansan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/iansan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/iansan/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:ifa",
+    "name": "Ifa",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/ifa",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/ifa/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/ifa/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:illuga",
+    "name": "Illuga",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/illuga",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/illuga/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/illuga/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:ineffa",
+    "name": "Ineffa",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/ineffa",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/ineffa/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/ineffa/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:jahoda",
+    "name": "Jahoda",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/jahoda",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/jahoda/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/jahoda/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:jean",
+    "name": "Jean",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/jean",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/jean/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/jean/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:kachina",
+    "name": "Kachina",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/kachina",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/kachina/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/kachina/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:kaedehara-kazuha",
+    "name": "Kaedehara Kazuha",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/kaedehara-kazuha",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/kaedehara-kazuha/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/kaedehara-kazuha/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:kaeya",
+    "name": "Kaeya",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/kaeya",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/kaeya/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/kaeya/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:kamisato-ayaka",
+    "name": "Kamisato Ayaka",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/kamisato-ayaka",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/kamisato-ayaka/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/kamisato-ayaka/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:kamisato-ayato",
+    "name": "Kamisato Ayato",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/kamisato-ayato",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/kamisato-ayato/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/kamisato-ayato/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:kaveh",
+    "name": "Kaveh",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/kaveh",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/kaveh/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/kaveh/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:keqing",
+    "name": "Keqing",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/keqing",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/keqing/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/keqing/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:kinich",
+    "name": "Kinich",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/kinich",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/kinich/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/kinich/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:kirara",
+    "name": "Kirara",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/kirara",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/kirara/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/kirara/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:klee",
+    "name": "Klee",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/klee",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/klee/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/klee/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:kujou-sara",
+    "name": "Kujou Sara",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/kujou-sara",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/kujou-sara/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/kujou-sara/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:kuki-shinobu",
+    "name": "Kuki Shinobu",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/kuki-shinobu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/kuki-shinobu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/kuki-shinobu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:lan-yan",
+    "name": "Lan Yan",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/lan-yan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/lan-yan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/lan-yan/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:lauma",
+    "name": "Lauma",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/lauma",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/lauma/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/lauma/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:layla",
+    "name": "Layla",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/layla",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/layla/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/layla/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:linnea",
+    "name": "Linnea",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/linnea",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/linnea/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/linnea/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:lisa",
+    "name": "Lisa",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/lisa",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/lisa/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/lisa/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:lohen",
+    "name": "Lohen",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/lohen",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/lohen/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/lohen/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:lynette",
+    "name": "Lynette",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/lynette",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/lynette/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/lynette/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:lyney",
+    "name": "Lyney",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/lyney",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/lyney/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/lyney/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:mavuika",
+    "name": "Mavuika",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/mavuika",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/mavuika/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/mavuika/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:mika",
+    "name": "Mika",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/mika",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/mika/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/mika/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:mitya",
+    "name": "Mitya",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/mitya",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/mitya/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/mitya/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:mona",
+    "name": "Mona",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/mona",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/mona/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/mona/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:mualani",
+    "name": "Mualani",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/mualani",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/mualani/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/mualani/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:nahida",
+    "name": "Nahida",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/nahida",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/nahida/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/nahida/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:navia",
+    "name": "Navia",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/navia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/navia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/navia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:nefer",
+    "name": "Nefer",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/nefer",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/nefer/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/nefer/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:neuvillette",
+    "name": "Neuvillette",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/neuvillette",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/neuvillette/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/neuvillette/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:nicole",
+    "name": "Nicole",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/nicole",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/nicole/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/nicole/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:nilou",
+    "name": "Nilou",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/nilou",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/nilou/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/nilou/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:ningguang",
+    "name": "Ningguang",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/ningguang",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/ningguang/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/ningguang/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:noelle",
+    "name": "Noelle",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/noelle",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/noelle/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/noelle/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:odette",
+    "name": "Odette",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/odette",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/odette/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/odette/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:ororon",
+    "name": "Ororon",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/ororon",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/ororon/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/ororon/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:prune",
+    "name": "Prune",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/prune",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/prune/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/prune/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:qiqi",
+    "name": "Qiqi",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/qiqi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/qiqi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/qiqi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:raiden-shogun",
+    "name": "Raiden Shogun",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/raiden-shogun",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/raiden-shogun/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/raiden-shogun/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:razor",
+    "name": "Razor",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/razor",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/razor/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/razor/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:rosaria",
+    "name": "Rosaria",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/rosaria",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/rosaria/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/rosaria/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:sandrone",
+    "name": "Sandrone",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/sandrone",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/sandrone/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/sandrone/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:sangonomiya-kokomi",
+    "name": "Sangonomiya Kokomi",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/sangonomiya-kokomi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/sangonomiya-kokomi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/sangonomiya-kokomi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:sayu",
+    "name": "Sayu",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/sayu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/sayu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/sayu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:sethos",
+    "name": "Sethos",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/sethos",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/sethos/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/sethos/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:shenhe",
+    "name": "Shenhe",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/shenhe",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/shenhe/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/shenhe/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:shikanoin-heizou",
+    "name": "Shikanoin Heizou",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/shikanoin-heizou",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/shikanoin-heizou/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/shikanoin-heizou/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:sigewinne",
+    "name": "Sigewinne",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/sigewinne",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/sigewinne/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/sigewinne/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:skirk",
+    "name": "Skirk",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/skirk",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/skirk/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/skirk/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:sucrose",
+    "name": "Sucrose",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/sucrose",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/sucrose/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/sucrose/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:tartaglia",
+    "name": "Tartaglia",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/tartaglia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/tartaglia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/tartaglia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:thoma",
+    "name": "Thoma",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/thoma",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/thoma/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/thoma/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:tighnari",
+    "name": "Tighnari",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/tighnari",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/tighnari/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/tighnari/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:traveler-anemo",
+    "name": "Traveler Anemo",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/traveler-anemo",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/traveler-anemo/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/traveler-anemo/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:traveler-cryo",
+    "name": "Traveler Cryo",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/traveler-cryo",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/traveler-cryo/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/traveler-cryo/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:traveler-dendro",
+    "name": "Traveler Dendro",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/traveler-dendro",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/traveler-dendro/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/traveler-dendro/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:traveler-electro",
+    "name": "Traveler Electro",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/traveler-electro",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/traveler-electro/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/traveler-electro/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:traveler-geo",
+    "name": "Traveler Geo",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/traveler-geo",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/traveler-geo/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/traveler-geo/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:traveler-hydro",
+    "name": "Traveler Hydro",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/traveler-hydro",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/traveler-hydro/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/traveler-hydro/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:traveler-pyro",
+    "name": "Traveler Pyro",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/traveler-pyro",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/traveler-pyro/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/traveler-pyro/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:valeriy",
+    "name": "Valeriy",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/valeriy",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/valeriy/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/valeriy/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:varesa",
+    "name": "Varesa",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/varesa",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/varesa/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/varesa/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:varka",
+    "name": "Varka",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/varka",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/varka/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/varka/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:venti",
+    "name": "Venti",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/venti",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/venti/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/venti/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:vesna",
+    "name": "Vesna",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/vesna",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/vesna/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/vesna/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:vodyanitsa",
+    "name": "Vodyanitsa",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/vodyanitsa",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/vodyanitsa/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/vodyanitsa/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:wanderer",
+    "name": "Wanderer",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/wanderer",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/wanderer/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/wanderer/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:wriothesley",
+    "name": "Wriothesley",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/wriothesley",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/wriothesley/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/wriothesley/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:xiangling",
+    "name": "Xiangling",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/xiangling",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/xiangling/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/xiangling/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:xianyun",
+    "name": "Xianyun",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/xianyun",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/xianyun/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/xianyun/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:xiao",
+    "name": "Xiao",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/xiao",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/xiao/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/xiao/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:xilonen",
+    "name": "Xilonen",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/xilonen",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/xilonen/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/xilonen/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:xingqiu",
+    "name": "Xingqiu",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/xingqiu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/xingqiu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/xingqiu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:xinyan",
+    "name": "Xinyan",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/xinyan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/xinyan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/xinyan/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:yae-miko",
+    "name": "Yae Miko",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/yae-miko",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/yae-miko/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/yae-miko/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:yanfei",
+    "name": "Yanfei",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/yanfei",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/yanfei/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/yanfei/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:yaoyao",
+    "name": "Yaoyao",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/yaoyao",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/yaoyao/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/yaoyao/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:yelan",
+    "name": "Yelan",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/yelan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/yelan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/yelan/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:yoimiya",
+    "name": "Yoimiya",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/yoimiya",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/yoimiya/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/yoimiya/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:yumemizuki-mizuki",
+    "name": "Yumemizuki Mizuki",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/yumemizuki-mizuki",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/yumemizuki-mizuki/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/yumemizuki-mizuki/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:yun-jin",
+    "name": "Yun Jin",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/yun-jin",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/yun-jin/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/yun-jin/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:zhongli",
+    "name": "Zhongli",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/zhongli",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/zhongli/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/zhongli/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "genshin:zibai",
+    "name": "Zibai",
+    "universeId": "genshin",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/zibai",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/genshin/zibai/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/genshin/zibai/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:adler",
+    "name": "Adler",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/adler",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/adler/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/adler/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:akane-rin",
+    "name": "Akane Rin",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/akane-rin",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/akane-rin/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/akane-rin/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:aurelia",
+    "name": "Aurelia",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/aurelia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/aurelia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/aurelia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:baicang",
+    "name": "Baicang",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/baicang",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/baicang/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/baicang/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:blackbird",
+    "name": "Blackbird",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/blackbird",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/blackbird/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/blackbird/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:chaos",
+    "name": "Chaos",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/chaos",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/chaos/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/chaos/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:chiz",
+    "name": "Chiz",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/chiz",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/chiz/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/chiz/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:daffodil",
+    "name": "Daffodill",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/daffodil",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/daffodil/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/daffodil/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:edgar",
+    "name": "Edgar",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/edgar",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/edgar/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/edgar/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:elyms",
+    "name": "Elyms",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/elyms",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/elyms/portrait.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:exe",
+    "name": "Exe",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/exe",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/exe/portrait.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:fadia",
+    "name": "Fadia",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/fadia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/fadia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/fadia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:haniel",
+    "name": "Haniel",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/haniel",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/haniel/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/haniel/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:hathor",
+    "name": "Hathor",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/hathor",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/hathor/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/hathor/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:hotori",
+    "name": "Hotori",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/hotori",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/hotori/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/hotori/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:iroi",
+    "name": "Iroi",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/iroi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/iroi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/iroi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:jiuyuan",
+    "name": "Jiuyuan",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/jiuyuan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/jiuyuan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/jiuyuan/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:lacrimosa",
+    "name": "Lacrimosa",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/lacrimosa",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/lacrimosa/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/lacrimosa/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:linko",
+    "name": "Linko",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/linko",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/linko/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/linko/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:mint",
+    "name": "Mint",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/mint",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/mint/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/mint/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:nanally",
+    "name": "Nanally",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/nanally",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/nanally/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/nanally/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:sakiri",
+    "name": "Sakiri",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/sakiri",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/sakiri/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/sakiri/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:shinku",
+    "name": "Shinku",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/shinku",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/shinku/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/shinku/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:skia",
+    "name": "Skia",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/skia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/skia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/skia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:zankou",
+    "name": "Zankou",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/zankou",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/zankou/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/zankou/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "nte:zero",
+    "name": "Zero",
+    "universeId": "nte",
+    "sourcePage": "https://www.prydwen.gg/neverness-to-everness/characters/zero",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/nte/zero/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/nte/zero/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:acheron",
+    "name": "Acheron",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/acheron",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/acheron/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/acheron/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:aglaea",
+    "name": "Aglaea",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/aglaea",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/aglaea/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/aglaea/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:aha",
+    "name": "Aha",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/aha",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/aha/portrait.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:anaxa",
+    "name": "Anaxa",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/anaxa",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/anaxa/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/anaxa/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:archer",
+    "name": "Archer",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/archer",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/archer/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/archer/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:argenti",
+    "name": "Argenti",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/argenti",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/argenti/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/argenti/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:arlan",
+    "name": "Arlan",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/arlan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/arlan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/arlan/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:ashveil",
+    "name": "Ashveil",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/ashveil",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/ashveil/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/ashveil/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:asta",
+    "name": "Asta",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/asta",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/asta/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/asta/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:astra-yao",
+    "name": "Astra Yao",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/astra-yao",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/astra-yao/portrait.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:aventurine",
+    "name": "Aventurine",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/aventurine",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/aventurine/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/aventurine/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:aventurine-waveflair",
+    "name": "Aventurine Waveflair",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/aventurine-waveflair",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/aventurine-waveflair/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/aventurine-waveflair/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:bailu",
+    "name": "Bailu",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/bailu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/bailu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/bailu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:black-swan",
+    "name": "Black Swan",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/black-swan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/black-swan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/black-swan/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:blade",
+    "name": "Blade",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/blade",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/blade/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/blade/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:boothill",
+    "name": "Boothill",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/boothill",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/boothill/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/boothill/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:bronya",
+    "name": "Bronya",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/bronya",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/bronya/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/bronya/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:castorice",
+    "name": "Castorice",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/castorice",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/castorice/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/castorice/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:cerydra",
+    "name": "Cerydra",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/cerydra",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/cerydra/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/cerydra/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:cipher",
+    "name": "Cipher",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/cipher",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/cipher/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/cipher/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:clara",
+    "name": "Clara",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/clara",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/clara/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/clara/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:cyrene",
+    "name": "Cyrene",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/cyrene",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/cyrene/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/cyrene/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:dan-heng",
+    "name": "Dan Heng",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/dan-heng",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/dan-heng-wind/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/dan-heng-wind/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:imbibitor-lunae",
+    "name": "Dan Heng • Imbibitor Lunae",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/imbibitor-lunae",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/imbibitor-lunae/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/imbibitor-lunae/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:dan-heng-permansor-terrae",
+    "name": "Dan Heng • Permansor Terrae",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/dan-heng-permansor-terrae",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/dan-heng-permansor-terrae/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/dan-heng-permansor-terrae/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:dr-ratio",
+    "name": "Dr. Ratio",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/dr-ratio",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/dr-ratio/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/dr-ratio/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:ellen",
+    "name": "Ellen",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/ellen",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/ellen/portrait.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:evanescia",
+    "name": "Evanescia",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/evanescia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/evanescia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/evanescia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:feixiao",
+    "name": "Feixiao",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/feixiao",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/feixiao/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/feixiao/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:firefly",
+    "name": "Firefly",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/firefly",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/firefly/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/firefly/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:fu-xuan",
+    "name": "Fu Xuan",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/fu-xuan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/fu-xuan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/fu-xuan/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:gallagher",
+    "name": "Gallagher",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/gallagher",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/gallagher/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/gallagher/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:gepard",
+    "name": "Gepard",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/gepard",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/gepard/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/gepard/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:gilgamesh",
+    "name": "Gilgamesh",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/gilgamesh",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/gilgamesh/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/gilgamesh/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:guinaifen",
+    "name": "Guinaifen",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/guinaifen",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/guinaifen/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/guinaifen/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:hanya",
+    "name": "Hanya",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/hanya",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/hanya/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/hanya/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:herta",
+    "name": "Herta",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/herta",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/herta/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/herta/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:himeko",
+    "name": "Himeko",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/himeko",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/himeko/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/himeko/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:himeko-nova",
+    "name": "Himeko Nova",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/himeko-nova",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/himeko-nova/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/himeko-nova/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:hook",
+    "name": "Hook",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/hook",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/hook/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/hook/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:huohuo",
+    "name": "Huohuo",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/huohuo",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/huohuo/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/huohuo/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:hyacine",
+    "name": "Hyacine",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/hyacine",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/hyacine/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/hyacine/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:hysilens",
+    "name": "Hysilens",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/hysilens",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/hysilens/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/hysilens/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:jade",
+    "name": "Jade",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/jade",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/jade/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/jade/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:jiaoqiu",
+    "name": "Jiaoqiu",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/jiaoqiu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/jiaoqiu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/jiaoqiu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:jing-yuan",
+    "name": "Jing Yuan",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/jing-yuan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/jing-yuan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/jing-yuan/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:jingliu",
+    "name": "Jingliu",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/jingliu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/jingliu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/jingliu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:kafka",
+    "name": "Kafka",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/kafka",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/kafka/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/kafka/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:lingsha",
+    "name": "Lingsha",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/lingsha",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/lingsha/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/lingsha/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:luka",
+    "name": "Luka",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/luka",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/luka/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/luka/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:luocha",
+    "name": "Luocha",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/luocha",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/luocha/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/luocha/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:lynx",
+    "name": "Lynx",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/lynx",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/lynx/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/lynx/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:march-7th",
+    "name": "March 7th",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/march-7th",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/march-7th-preservation/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/march-7th-preservation/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:march-7th-evernight",
+    "name": "March 7th • Evernight",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/march-7th-evernight",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/march-7th-evernight/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/march-7th-evernight/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:march-7th-swordmaster",
+    "name": "March 7th • The Hunt",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/march-7th-swordmaster",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/march-7th-swordmaster/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/march-7th-swordmaster/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:misha",
+    "name": "Misha",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/misha",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/misha/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/misha/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:blade-mortenax",
+    "name": "Mortenax Blade",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/blade-mortenax",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/blade-mortenax/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/blade-mortenax/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:moze",
+    "name": "Moze",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/moze",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/moze/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/moze/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:mydei",
+    "name": "Mydei",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/mydei",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/mydei/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/mydei/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:natasha",
+    "name": "Natasha",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/natasha",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/natasha/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/natasha/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:pearl",
+    "name": "Pearl",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/pearl",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/pearl/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/pearl/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:pela",
+    "name": "Pela",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/pela",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/pela/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/pela/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:phainon",
+    "name": "Phainon",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/phainon",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/phainon/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/phainon/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:qingque",
+    "name": "Qingque",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/qingque",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/qingque/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/qingque/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:rappa",
+    "name": "Rappa",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/rappa",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/rappa/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/rappa/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:rin-tohsaka",
+    "name": "Rin Tohsaka",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/rin-tohsaka",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/rin-tohsaka/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/rin-tohsaka/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:robin",
+    "name": "Robin",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/robin",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/robin/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/robin/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:robin-summeretto",
+    "name": "Robin Summeretto",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/robin-summeretto",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/robin-summeretto/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/robin-summeretto/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:ruan-mei",
+    "name": "Ruan Mei",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/ruan-mei",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/ruan-mei/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/ruan-mei/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:saber",
+    "name": "Saber",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/saber",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/saber/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/saber/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:sampo",
+    "name": "Sampo",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/sampo",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/sampo/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/sampo/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:serval",
+    "name": "Serval",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/serval",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/serval/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/serval/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:silver-wolf",
+    "name": "Silver Wolf",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/silver-wolf",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/silver-wolf/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/silver-wolf/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:silver-wolf-lv-999",
+    "name": "Silver Wolf • Lv. 999",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/silver-wolf-lv-999",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/silver-wolf-lv-999/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/silver-wolf-lv-999/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:sparkle",
+    "name": "Sparkle",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/sparkle",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/sparkle/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/sparkle/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:sparxie",
+    "name": "Sparxie",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/sparxie",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/sparxie/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/sparxie/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:sunday",
+    "name": "Sunday",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/sunday",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/sunday/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/sunday/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:sushang",
+    "name": "Sushang",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/sushang",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/sushang/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/sushang/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:the-dahlia",
+    "name": "The Dahlia",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/the-dahlia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/the-dahlia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/the-dahlia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:the-herta",
+    "name": "The Herta",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/the-herta",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/the-herta/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/the-herta/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:tingyun",
+    "name": "Tingyun",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/tingyun",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/tingyun/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/tingyun/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:tingyun-fugue",
+    "name": "Tingyun • Fugue",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/tingyun-fugue",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/tingyun-fugue/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/tingyun-fugue/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:topaz",
+    "name": "Topaz & Numby",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/topaz",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/topaz/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/topaz/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:trailblazer-destruction",
+    "name": "Trailblazer • Destruction",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/trailblazer-destruction",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/trailblazer-destruction/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/trailblazer-destruction/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:trailblazer-elation",
+    "name": "Trailblazer • Elation",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/trailblazer-elation",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/trailblazer-elation/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/trailblazer-elation/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:trailblazer-harmony",
+    "name": "Trailblazer • Harmony",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/trailblazer-harmony",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/trailblazer-harmony/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/trailblazer-harmony/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:trailblazer-preservation",
+    "name": "Trailblazer • Preservation",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/trailblazer-preservation",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/trailblazer-preservation/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/trailblazer-preservation/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:trailblazer-remembrance",
+    "name": "Trailblazer • Remembrance",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/trailblazer-remembrance",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/trailblazer-remembrance/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/trailblazer-remembrance/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:tribbie",
+    "name": "Tribbie",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/tribbie",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/tribbie/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/tribbie/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:welt",
+    "name": "Welt",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/welt",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/welt/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/welt/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:xueyi",
+    "name": "Xueyi",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/xueyi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/xueyi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/xueyi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:yanqing",
+    "name": "Yanqing",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/yanqing",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/yanqing/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/yanqing/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:yao-guang",
+    "name": "Yao Guang",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/yao-guang",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/yao-guang/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/yao-guang/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:yukong",
+    "name": "Yukong",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/yukong",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/yukong/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/yukong/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "star-rail:yunli",
+    "name": "Yunli",
+    "universeId": "star-rail",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/yunli",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/star-rail/yunli/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/star-rail/yunli/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:aalto",
+    "name": "Aalto",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/aalto",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/aalto/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/aalto/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:aemeath",
+    "name": "Aemeath",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/aemeath",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/aemeath/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/aemeath/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:augusta",
+    "name": "Augusta",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/augusta",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/augusta/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/augusta/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:baizhi",
+    "name": "Baizhi",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/baizhi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/baizhi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/baizhi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:brant",
+    "name": "Brant",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/brant",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/brant/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/brant/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:buling",
+    "name": "Buling",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/buling",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/buling/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/buling/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:calcharo",
+    "name": "Calcharo",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/calcharo",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/calcharo/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/calcharo/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:camellya",
+    "name": "Camellya",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/camellya",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/camellya/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/camellya/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:cantarella",
+    "name": "Cantarella",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/cantarella",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/cantarella/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/cantarella/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:carlotta",
+    "name": "Carlotta",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/carlotta",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/carlotta/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/carlotta/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:cartethyia",
+    "name": "Cartethyia",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/cartethyia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/cartethyia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/cartethyia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:changli",
+    "name": "Changli",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/changli",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/changli/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/changli/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:chisa",
+    "name": "Chisa",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/chisa",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/chisa/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/chisa/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:chixia",
+    "name": "Chixia",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/chixia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/chixia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/chixia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:ciaccona",
+    "name": "Ciaccona",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/ciaccona",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/ciaccona/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/ciaccona/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:danjin",
+    "name": "Danjin",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/danjin",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/danjin/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/danjin/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:denia",
+    "name": "Denia",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/denia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/denia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/denia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:encore",
+    "name": "Encore",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/encore",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/encore/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/encore/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:galbrena",
+    "name": "Galbrena",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/galbrena",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/galbrena/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/galbrena/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:hiyuki",
+    "name": "Hiyuki",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/hiyuki",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/hiyuki/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/hiyuki/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:hsin",
+    "name": "Hsin",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/hsin",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/hsin/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/hsin/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:iuno",
+    "name": "Iuno",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/iuno",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/iuno/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/iuno/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:jianxin",
+    "name": "Jianxin",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/jianxin",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/jianxin/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/jianxin/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:jingran",
+    "name": "Jingran",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/jingran",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/jingran/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/jingran/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:jinhsi",
+    "name": "Jinhsi",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/jinhsi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/jinhsi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/jinhsi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:jiyan",
+    "name": "Jiyan",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/jiyan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/jiyan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/jiyan/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:lily",
+    "name": "Lily",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/lily",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/lily/portrait.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:lingyang",
+    "name": "Lingyang",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/lingyang",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/lingyang/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/lingyang/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:lucilla",
+    "name": "Lucilla",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/lucilla",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/lucilla/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/lucilla/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:lucy",
+    "name": "Lucy",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/lucy",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/lucy/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/lucy/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:lumi",
+    "name": "Lumi",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/lumi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/lumi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/lumi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:lupa",
+    "name": "Lupa",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/lupa",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/lupa/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/lupa/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:luuk-herssen",
+    "name": "Luuk Herssen",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/luuk-herssen",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/luuk-herssen/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/luuk-herssen/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:lynae",
+    "name": "Lynae",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/lynae",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/lynae/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/lynae/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:mornye",
+    "name": "Mornye",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/mornye",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/mornye/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/mornye/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:mortefi",
+    "name": "Mortefi",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/mortefi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/mortefi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/mortefi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:phoebe",
+    "name": "Phoebe",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/phoebe",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/phoebe/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/phoebe/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:phrolova",
+    "name": "Phrolova",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/phrolova",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/phrolova/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/phrolova/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:qingxiao",
+    "name": "Qingxiao",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/qingxiao",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/qingxiao/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/qingxiao/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:qiuyuan",
+    "name": "Qiuyuan",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/qiuyuan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/qiuyuan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/qiuyuan/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:rebecca",
+    "name": "Rebecca",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/rebecca",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/rebecca/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/rebecca/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:roccia",
+    "name": "Roccia",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/roccia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/roccia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/roccia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:rover-aero",
+    "name": "Rover (Aero)",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/rover-aero",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/rover-aero/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/rover-aero/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:rover-electro",
+    "name": "Rover (Electro)",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/rover-electro",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/rover-electro/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/rover-electro/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:rover-havoc",
+    "name": "Rover (Havoc)",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/rover-havoc",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/rover-havoc/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/rover-havoc/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:rover-spectro",
+    "name": "Rover (Spectro)",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/rover-spectro",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/rover-spectro/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/rover-spectro/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:sanhua",
+    "name": "Sanhua",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/sanhua",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/sanhua/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/sanhua/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:sigrika",
+    "name": "Sigrika",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/sigrika",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/sigrika/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/sigrika/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:suisui",
+    "name": "Suisui",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/suisui",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/suisui/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/suisui/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:suoming",
+    "name": "Suoming",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/suoming",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/suoming/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/suoming/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:taoqi",
+    "name": "Taoqi",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/taoqi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/taoqi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/taoqi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:the-shorekeeper",
+    "name": "The Shorekeeper",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/the-shorekeeper",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/the-shorekeeper/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/the-shorekeeper/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:verina",
+    "name": "Verina",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/verina",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/verina/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/verina/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:xiangli-yao",
+    "name": "Xiangli Yao",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/xiangli-yao",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/xiangli-yao/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/xiangli-yao/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:yangyang",
+    "name": "Yangyang",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/yangyang",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/yangyang/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/yangyang/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:yangyang-xuanling",
+    "name": "Yangyang Xuanling",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/yangyang-xuanling",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/yangyang-xuanling/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/yangyang-xuanling/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:yinlin",
+    "name": "Yinlin",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/yinlin",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/yinlin/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/yinlin/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:youhu",
+    "name": "Youhu",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/youhu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/youhu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/youhu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:yuanwu",
+    "name": "Yuanwu",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/yuanwu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/yuanwu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/yuanwu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:zani",
+    "name": "Zani",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/zani",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/zani/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/zani/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "wuthering-waves:zhezhi",
+    "name": "Zhezhi",
+    "universeId": "wuthering-waves",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/zhezhi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/wuthering-waves/zhezhi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/wuthering-waves/zhezhi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:alice",
+    "name": "Alice",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/alice",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/alice/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/alice/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:anby-demara",
+    "name": "Anby",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/anby-demara",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/anby-demara/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/anby-demara/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:anby-demara-soldier-0",
+    "name": "Anby: Soldier 0",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/anby-demara-soldier-0",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/anby-demara-soldier-0/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/anby-demara-soldier-0/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:anton",
+    "name": "Anton",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/anton",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/anton/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/anton/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:aria",
+    "name": "Aria",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/aria",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/aria/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/aria/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:astra-yao",
+    "name": "Astra Yao",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/astra-yao",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/astra-yao/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/astra-yao/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:banyue",
+    "name": "Banyue",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/banyue",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/banyue/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/banyue/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:ben",
+    "name": "Ben",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/ben",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/ben/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/ben/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:billy-kid",
+    "name": "Billy",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/billy-kid",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/billy-kid/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/billy-kid/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:billy-starlight",
+    "name": "Billy - Starlight",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/billy-starlight",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/billy-starlight/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/billy-starlight/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:burnice",
+    "name": "Burnice",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/burnice",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/burnice/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/burnice/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:caesar",
+    "name": "Caesar",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/caesar",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/caesar/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/caesar/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:cissia",
+    "name": "Cissia",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/cissia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/cissia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/cissia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:claret",
+    "name": "Claret",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/claret",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/claret/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/claret/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:corin",
+    "name": "Corin",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/corin",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/corin/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/corin/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:dialyn",
+    "name": "Dialyn",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/dialyn",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/dialyn/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/dialyn/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:ellen",
+    "name": "Ellen",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/ellen",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/ellen/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/ellen/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:evelyn",
+    "name": "Evelyn",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/evelyn",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/evelyn/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/evelyn/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:grace-howard",
+    "name": "Grace",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/grace-howard",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/grace-howard/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/grace-howard/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:harumasa",
+    "name": "Harumasa",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/harumasa",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/harumasa/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/harumasa/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:hugo",
+    "name": "Hugo",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/hugo",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/hugo/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/hugo/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:jane-doe",
+    "name": "Jane Doe",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/jane-doe",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/jane-doe/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/jane-doe/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:ju-fufu",
+    "name": "Ju Fufu",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/ju-fufu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/ju-fufu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/ju-fufu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:kafka",
+    "name": "Kafka",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/kafka",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/kafka/portrait.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:koleda",
+    "name": "Koleda",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/koleda",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/koleda/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/koleda/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:lighter",
+    "name": "Lighter",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/lighter",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/lighter/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/lighter/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:lucia",
+    "name": "Lucia",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/lucia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/lucia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/lucia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:lucy",
+    "name": "Lucy",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/lucy",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/lucy/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/lucy/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:lycaon",
+    "name": "Lycaon",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/lycaon",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/lycaon/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/lycaon/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:manato",
+    "name": "Manato",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/manato",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/manato/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/manato/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:miyabi",
+    "name": "Miyabi",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/miyabi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/miyabi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/miyabi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:nangong-yu",
+    "name": "Nangong Yu",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/nangong-yu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/nangong-yu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/nangong-yu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:nekomata",
+    "name": "Nekomata",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/nekomata",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/nekomata/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/nekomata/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:nicole-demara",
+    "name": "Nicole",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/nicole-demara",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/nicole-demara/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/nicole-demara/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:norma",
+    "name": "Norma",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/norma",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/norma/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/norma/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:orphie-and-magus",
+    "name": "Orphie & Magus",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/orphie-and-magus",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/orphie-and-magus/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/orphie-and-magus/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:pan-yinhu",
+    "name": "Pan Yinhu",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/pan-yinhu",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/pan-yinhu/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/pan-yinhu/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:phoenix",
+    "name": "Phoenix",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/phoenix",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/phoenix/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/phoenix/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:piper",
+    "name": "Piper",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/piper",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/piper/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/piper/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:promeia",
+    "name": "Promeia",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/promeia",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/promeia/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/promeia/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:pulchra",
+    "name": "Pulchra",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/pulchra",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/pulchra/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/pulchra/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:pyrois",
+    "name": "Pyrois",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/pyrois",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/pyrois/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/pyrois/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:qingyi",
+    "name": "Qingyi",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/qingyi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/qingyi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/qingyi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:remielle",
+    "name": "Remielle",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/remielle",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/remielle/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/remielle/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:rina",
+    "name": "Rina",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/rina",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/rina/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/rina/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:robin",
+    "name": "Robin",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/robin",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/robin/portrait.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:roxy",
+    "name": "Roxy",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/roxy",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/roxy/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/roxy/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:seed",
+    "name": "Seed",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/seed",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/seed/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/seed/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:seth",
+    "name": "Seth",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/seth",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/seth/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/seth/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:severian",
+    "name": "Severian",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/severian",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/severian/portrait.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:sigrid",
+    "name": "Sigrid",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/sigrid",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/sigrid/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/sigrid/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:soldier-11",
+    "name": "Soldier 11",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/soldier-11",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/soldier-11/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/soldier-11/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:soukaku",
+    "name": "Soukaku",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/soukaku",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/soukaku/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/soukaku/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:sunbringer",
+    "name": "Sunbringer",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/sunbringer",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/sunbringer/portrait.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:sunna",
+    "name": "Sunna",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/sunna",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/sunna/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/sunna/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:the-storyteller",
+    "name": "The Storyteller",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/the-storyteller",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/the-storyteller/portrait.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:trigger",
+    "name": "Trigger",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/trigger",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/trigger/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/trigger/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:velina",
+    "name": "Velina",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/velina",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/velina/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/velina/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:vivian",
+    "name": "Vivian",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/vivian",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/vivian/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/vivian/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:yanagi",
+    "name": "Yanagi",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/yanagi",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/yanagi/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/yanagi/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:ye-shunguang",
+    "name": "Ye Shunguang",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/ye-shunguang",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/ye-shunguang/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/ye-shunguang/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:yidhari",
+    "name": "Yidhari",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/yidhari",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/yidhari/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/yidhari/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:yixuan",
+    "name": "Yixuan",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/yixuan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/yixuan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/yixuan/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:ukinami-yuzuha",
+    "name": "Yuzuha",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/ukinami-yuzuha",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/ukinami-yuzuha/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/ukinami-yuzuha/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:zhao",
+    "name": "Zhao",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/zhao",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/zhao/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/zhao/icon.webp"
+      }
+    ]
+  },
+  {
+    "id": "zenless:zhu-yuan",
+    "name": "Zhu Yuan",
+    "universeId": "zenless",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/zhu-yuan",
+    "assets": [
+      {
+        "type": "portrait",
+        "localPath": "/assets/characters/zenless/zhu-yuan/portrait.webp"
+      },
+      {
+        "type": "icon",
+        "localPath": "/assets/characters/zenless/zhu-yuan/icon.webp"
+      }
+    ]
+  }
+]

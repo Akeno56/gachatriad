@@ -1,0 +1,411 @@
+.album-filters,
+.market-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 18px;
+  margin: 28px 0 20px;
+}
+.album-filters label,
+.market-filters label {
+  display: grid;
+  gap: 8px;
+  font: 600 13px var(--sans);
+  color: #b8c9e3;
+  min-width: 0;
+}
+.album-filters select,
+.market-filters select {
+  min-height: 42px;
+}
+.card-unowned .playing-card {
+  filter: grayscale(1);
+  opacity: 0.47;
+}
+.card-unowned:hover .playing-card,
+.card-unowned:focus-visible .playing-card {
+  opacity: 0.75;
+}
+.catalog-grid article[data-owned='false'] > small {
+  color: #8a99ae;
+}
+.market-collection-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px 26px;
+}
+.market-collection-filters label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+}
+.market-collection-filters input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--gold);
+}
+.market-price-note,
+.finish-note {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #91a2bc;
+  margin: 20px 0;
+}
+.market-count {
+  font: 20px var(--pixel);
+  color: var(--gold);
+  margin: 22px 0;
+}
+.guest-market-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 24px;
+  margin: 24px 0;
+  border-color: var(--gold);
+}
+.guest-market-notice strong {
+  font: 28px var(--pixel);
+  color: var(--gold);
+}
+.guest-market-notice p {
+  line-height: 1.7;
+  margin: 7px 0 0;
+  font-size: 15px;
+}
+.guest-market-notice button {
+  flex-shrink: 0;
+}
+.eligibility-note {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #d2bc99;
+  margin: 14px 0 0;
+}
+.trade-offer .eligibility-note {
+  min-height: 22px;
+}
+.trade-offer h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+.trade-offer h2 a:hover {
+  text-decoration: underline;
+}
+.result-overlay {
+  inset: 0;
+  margin: auto !important;
+  width: min(860px, calc(100vw - 30px));
+  max-width: 860px;
+  max-height: 90dvh;
+  padding: 36px 30px 28px;
+  overflow: auto;
+  box-shadow: 0 18px 90px #000c;
+}
+.result-overlay .eyebrow {
+  color: #b3c4e0;
+  margin-bottom: 18px;
+}
+.result-overlay h2 {
+  font-size: 76px;
+  letter-spacing: 9px;
+  margin-bottom: 18px;
+}
+.result-overlay .result-score {
+  font: 36px var(--pixel);
+  color: #e8e5d9;
+}
+.result-score span {
+  color: #8b9cb7;
+  margin: 0 12px;
+}
+.result-settlement {
+  border-top: 1px solid #a9b9d233;
+  border-bottom: 1px solid #a9b9d233;
+  padding: 20px 0 0;
+  margin: 25px 0;
+}
+.result-settlement h3 {
+  font: 600 13px var(--sans);
+  color: var(--gold);
+  letter-spacing: 2px;
+  margin: 0 0 12px;
+}
+.result-overlay .trade-choices {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+.result-overlay .trade-choices button {
+  width: 100%;
+  height: 205px;
+}
+.result-overlay .trade-choices .card-caption strong {
+  font-size: 19px;
+}
+.result-overlay::backdrop {
+  background: #020612bf;
+  backdrop-filter: blur(3px);
+}
+.reopen-result {
+  display: block;
+  margin: 8px auto 15px;
+}
+.element-icon {
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  color: var(--element-color);
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 1px 2px #000);
+  flex-shrink: 0;
+}
+.element-icon svg {
+  width: 100%;
+  height: 100%;
+}
+.card-element {
+  position: absolute;
+  top: 23px;
+  right: 8px;
+  width: 23px;
+  height: 23px;
+  z-index: 5;
+  background: #081426b8;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  padding: 3px;
+}
+.element-modifier {
+  position: absolute;
+  right: 8px;
+  top: 52px;
+  z-index: 5;
+  font: 25px/1 var(--pixel);
+  text-shadow: 1px 2px 2px #000;
+  background: #051022ba;
+  padding: 1px 4px;
+  border: 1px solid currentColor;
+}
+.element-bonus {
+  color: #a4f0bc;
+}
+.element-penalty {
+  color: #ffaba2;
+}
+.cell-element {
+  position: absolute;
+  width: 48%;
+  height: 48%;
+  opacity: 0.62;
+  pointer-events: none;
+}
+.board-cell:has(.playing-card) > .cell-element {
+  z-index: 6;
+  inset: auto 7px 39px auto;
+  width: 20px;
+  height: 20px;
+  opacity: 0.75;
+}
+.board-cell .card-element {
+  top: 21px;
+  right: 6px;
+}
+.elemental-board .board-cell[data-element] {
+  border-color: #b5c7d155;
+  background: radial-gradient(ellipse, #45597588, #142139);
+}
+.playing-card.rarity-5 {
+  border: 3px double #ffe2a4;
+  outline: 1px solid #b78b4c;
+  outline-offset: -6px;
+  box-shadow:
+    inset 0 0 0 2px #422e20,
+    0 0 14px #e9ba6940;
+}
+.playing-card.rarity-5:after {
+  inset: 6px;
+  border-color: #fce0a485;
+  background:
+    linear-gradient(135deg, #ffe4a89e 0 5px, transparent 5px),
+    linear-gradient(225deg, #ffe4a89e 0 5px, transparent 5px),
+    linear-gradient(45deg, #ffe4a89e 0 5px, transparent 5px),
+    linear-gradient(315deg, #ffe4a89e 0 5px, transparent 5px);
+}
+.rarity-crown {
+  position: absolute;
+  z-index: 5;
+  width: 27px;
+  height: 19px;
+  top: 6px;
+  left: calc(50% - 14px);
+  color: #ffe1a0;
+  filter: drop-shadow(0 1px 2px #000);
+}
+.rarity-crown svg {
+  width: 100%;
+  height: 100%;
+  fill: #4c351dbb;
+  stroke: currentColor;
+  stroke-width: 1.4;
+}
+.holo-foil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 10%,
+    #87f3fd33 24%,
+    #b491ff55 32%,
+    #f5a7d933 42%,
+    #f9e4a944 52%,
+    #87f3fd33 65%,
+    transparent 78%
+  );
+  background-size: 280% 200%;
+  mix-blend-mode: screen;
+  animation: holo-drift 7s ease-in-out infinite;
+  opacity: 0.8;
+}
+.playing-card.holo-card {
+  border-color: #d4d5ff;
+  box-shadow:
+    inset 0 0 0 1px #8486bf,
+    0 0 12px #a8bcff50;
+}
+.playing-card.rarity-5.holo-card {
+  border-color: #ffe5ac;
+  box-shadow:
+    inset 0 0 0 2px #b1a1df66,
+    0 0 16px #b7b8ff66;
+}
+.card-finish {
+  position: absolute;
+  z-index: 6;
+  right: 8px;
+  bottom: 7px;
+  font: 600 7px var(--sans);
+  letter-spacing: 1px;
+  color: #e2d8ff;
+  text-shadow: 0 1px 2px #000;
+}
+.holo-card:before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(130deg, transparent 0 11px, #fff1 11px 12px);
+  opacity: 0.25;
+}
+.holo-card .ownership-mark {
+  bottom: 16px;
+}
+.compact .card-finish {
+  font-size: 7px;
+}
+.board .card-finish {
+  bottom: 6px;
+  right: 7px;
+}
+.board .holo-card .ownership-mark {
+  bottom: 17px;
+}
+.card-detail .card-finish {
+  font-size: 11px;
+}
+.card-detail .card-element {
+  width: 34px;
+  height: 34px;
+  top: 34px;
+  right: 13px;
+}
+@keyframes holo-drift {
+  0%,
+  100% {
+    background-position: 0% 40%;
+    opacity: 0.5;
+  }
+  50% {
+    background-position: 100% 60%;
+    opacity: 0.9;
+  }
+}
+@media (max-width: 680px) {
+  .album-filters,
+  .market-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px 12px;
+  }
+  .guest-market-notice {
+    flex-direction: column;
+    align-items: start;
+    padding: 20px;
+    gap: 18px;
+  }
+  .result-overlay {
+    padding: 28px 20px 22px;
+  }
+  .result-overlay h2 {
+    font-size: 54px;
+    letter-spacing: 6px;
+  }
+  .result-overlay .trade-choices {
+    display: flex;
+    overflow-x: auto;
+    padding: 5px 3px 12px;
+    scroll-snap-type: x proximity;
+  }
+  .result-overlay .trade-choices button {
+    width: 110px;
+    height: 165px;
+    flex: 0 0 110px;
+    scroll-snap-align: start;
+  }
+  .result-overlay .trade-choices .card-caption strong {
+    font-size: 17px;
+  }
+  .board .card-element {
+    width: 19px;
+    height: 19px;
+    top: 17px;
+    right: 4px;
+  }
+  .board .element-modifier {
+    font-size: 20px;
+    top: 39px;
+    right: 5px;
+  }
+  .board-cell:has(.playing-card) > .cell-element {
+    display: none;
+  }
+  .board .rarity-crown {
+    width: 21px;
+    left: calc(50% - 10px);
+  }
+  .board .card-finish {
+    font-size: 6px;
+  }
+  .card-finish {
+    right: 6px;
+  }
+  .result-overlay .result-actions {
+    gap: 12px;
+  }
+  .result-overlay .result-actions .primary-button,
+  .result-overlay .result-actions .outline-button {
+    font-size: 21px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .holo-foil {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}

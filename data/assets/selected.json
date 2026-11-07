@@ -1,0 +1,72 @@
+[
+  {
+    "cardId": "march-7th",
+    "universeId": "star-rail",
+    "characterId": "march-7th-preservation",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/march-7th",
+    "sourceUrl": "https://cdn.prydwen.gg/images/honkai-star-rail/characters/march-7th_card.webp"
+  },
+  {
+    "cardId": "amber",
+    "universeId": "genshin",
+    "characterId": "amber",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/amber",
+    "sourceUrl": "https://cdn.prydwen.gg/images/genshin-impact/characters/amber_full.webp"
+  },
+  {
+    "cardId": "billy-kid",
+    "universeId": "zenless",
+    "characterId": "billy-kid",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/billy-kid",
+    "sourceUrl": "https://cdn.prydwen.gg/images/zenless-zone-zero/characters/billy-kid_card.webp"
+  },
+  {
+    "cardId": "yangyang",
+    "universeId": "wuthering-waves",
+    "characterId": "yangyang",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/yangyang",
+    "sourceUrl": "https://cdn.prydwen.gg/images/ww/characters/yang_card.webp"
+  },
+  {
+    "cardId": "perlica",
+    "universeId": "endfield",
+    "characterId": "perlica",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/perlica",
+    "sourceUrl": "https://cdn.prydwen.gg/images/arknights-endfield/characters/perlica_card.webp"
+  },
+  {
+    "cardId": "dan-heng",
+    "universeId": "star-rail",
+    "characterId": "dan-heng-wind",
+    "sourcePage": "https://www.prydwen.gg/star-rail/characters/dan-heng",
+    "sourceUrl": "https://cdn.prydwen.gg/images/honkai-star-rail/characters/dan-heng_card.webp"
+  },
+  {
+    "cardId": "kaeya",
+    "universeId": "genshin",
+    "characterId": "kaeya",
+    "sourcePage": "https://www.prydwen.gg/genshin-impact/characters/kaeya",
+    "sourceUrl": "https://cdn.prydwen.gg/images/genshin-impact/characters/kaeya_full.webp"
+  },
+  {
+    "cardId": "anby",
+    "universeId": "zenless",
+    "characterId": "anby-demara",
+    "sourcePage": "https://www.prydwen.gg/zenless/characters/anby-demara",
+    "sourceUrl": "https://cdn.prydwen.gg/images/zenless-zone-zero/characters/anby-demara_card.webp"
+  },
+  {
+    "cardId": "chixia",
+    "universeId": "wuthering-waves",
+    "characterId": "chixia",
+    "sourcePage": "https://www.prydwen.gg/wuthering-waves/characters/chixia",
+    "sourceUrl": "https://cdn.prydwen.gg/images/ww/characters/chixia_card.webp"
+  },
+  {
+    "cardId": "endministrator",
+    "universeId": "endfield",
+    "characterId": "endministrator",
+    "sourcePage": "https://www.prydwen.gg/arknights-endfield/characters/endministrator",
+    "sourceUrl": "https://cdn.prydwen.gg/images/arknights-endfield/characters/endministrator_card.webp"
+  }
+]

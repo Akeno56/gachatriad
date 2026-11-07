@@ -1,0 +1,23 @@
+# Current architecture — v0.3
+
+## v0.4 extension
+
+The static Pages build has a repository base path and runtime server selection. A confirmed session address is saved per browser; signed Better Auth bearer tokens and selected profiles are scoped to that server address. Socket handshakes use the same signed token. Cookie authentication remains available for the local same-origin app. Allowed origins are explicit; mutation and socket origins are checked. No frontend token is sent merely because a link contains a new server address.
+
+`tools/server-control` is a separate loopback HTTP control tool. It owns only the game process it launches, uses IPC for graceful shutdown, reports authenticated socket presence, and can run an official Cloudflare Quick Tunnel to the game port. The game presence endpoint requires a per-controller secret. Host/origin checks and a local CSRF token protect control mutations. The tunnel never forwards the control panel. A read-only local static preview serves only exported frontend files; accounts/saves remain outside its root.
+
+Migrations add a public avatar choice and persistent tutorial completion. The server gates first duels, and public profile DTOs omit private decks and inventory. Holo definitions have distinct ownership IDs but share a base identity for deck uniqueness and collection achievements. No pack/currency acquisition is simulated.
+
+The pnpm workspace has a Next.js/React frontend, a Fastify server, and pure engine/shared/balance packages. Next rewrites `/api/*` to the local server; Socket.IO supplies change notifications. Clients refetch authenticated views. WebSocket payloads contain no private game state. A five-second refresh also recovers missed notifications. `NEXT_PUBLIC_SERVER_URL` can override the default Socket.IO address; `SERVER_URL` overrides the API proxy destination.
+
+The Fastify process is authoritative for move legality, deck ownership, Random, Draft pools, first player, Three Open selection, timers, CPU/bot turns, results, ratings, achievements and transfers. Clients submit a card ID, cell and expected match version. Invalid turns/cards/cells fail; stale versions return 409. Hidden hand entries contain only HMAC-derived opaque slot IDs and `card: null`. Three Open preserves the original three reveals as cards leave the hand; completed games reveal the remainder. CPU policies receive their own hand and public board only.
+
+PGlite supplies embedded PostgreSQL with persisted storage in `.data/postgres`. SQL migrations establish auth, profiles, inventories, reservations, matches, public lobbies, offers, ledger entries and achievements. A serial lease protects the single PostgreSQL connection across Better Auth/Kysely and game transactions. Stake reservation, match result, Elo updates, Trade One settlement and card exchanges use transactions. Unique ledger constraints and state checks prevent duplicate settlement. Bot-created activity uses the same store methods; only bot identity/provisioning is special.
+
+Better Auth supplies anonymous and email/password sessions, password hashing and HttpOnly cookies. Trusted origins, request limits and mutation origin checks apply. Registration links the guest profile. Signing into an existing account adds the guest profile as a separately selectable profile, preserving its progress without merging starter grants. API and socket profile selection are checked against account associations. Local bots have passwordless, non-sign-in-capable auth identities and persistent `is_bot` profiles.
+
+The timer recovers due CPU turns, online auto turns, Draft timeouts and overdue trade selections from stored state after restart. A disconnected player has the same turn deadline. Waiting lobbies expire after fifteen minutes. Disabling local population stops new bot tables/offers while bots continue existing duels. A bot exhibition maintains a visible 2/2 table alongside waiting 1/2 tables.
+
+The engine has no React, networking or persistence dependencies. Cards/rules are copied into each match snapshot. Artwork is resolved separately by universe/character identity. The balance calculator and asset importer do not mutate an active match or silently republish a catalog. The published release contains 400 approved cards; eleven unscored characters stay in the archive.
+
+The local single-process embedded database is intentional for this preview. Shared external PostgreSQL, multi-process coordination, deployment TLS/origin configuration, mail delivery, OAuth and operational monitoring are not implemented. Public deployments should set `NODE_ENV=production`; local bots then require explicit `LOCAL_BOTS=true`. The service currently binds to 127.0.0.1.

@@ -1,0 +1,41 @@
+{
+  "name": "gacha-triad",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n server,web \"pnpm --filter @gacha-triad/server dev\" \"pnpm --filter @gacha-triad/web dev\"",
+    "build": "pnpm --filter @gacha-triad/web build",
+    "build:pages": "node tools/build-pages.mjs",
+    "control": "node tools/server-control/index.mjs",
+    "test:host": "node tools/server-control/smoke.mjs",
+    "start": "concurrently -k -n server,web \"pnpm --filter @gacha-triad/server start\" \"pnpm --filter @gacha-triad/web start\"",
+    "typecheck": "pnpm -r typecheck && tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "assets:import": "node tools/asset-importer/import-saved.mjs",
+    "assets:inspect": "node tools/asset-importer/import-saved.mjs --dry-run",
+    "assets:import:selected": "node tools/asset-importer/import-selected.mjs",
+    "assets:validate": "node tools/asset-importer/validate.mjs",
+    "balance:draft": "node --experimental-strip-types tools/asset-importer/balance-draft.mjs",
+    "cards:promote": "node tools/asset-importer/promote-cards.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0",
+    "music-metadata": "^11.10.0",
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.0.0",
+    "cheerio": "^1.2.0",
+    "prettier": "^3.9.10",
+    "sharp": "^0.35.5",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.0"
+  }
+}

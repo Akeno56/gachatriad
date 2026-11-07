@@ -1,0 +1,17 @@
+{
+  "name": "@gacha-triad/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./combo-lesson": "./src/combo-lesson.ts",
+    "./platform": "./src/platform.ts"
+  },
+  "dependencies": {
+    "@gacha-triad/engine": "workspace:*"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}

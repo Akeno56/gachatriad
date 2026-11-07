@@ -1,0 +1,44 @@
+[
+  {
+    "id": "genshin",
+    "name": "Genshin Impact",
+    "shortName": "Genshin",
+    "sigil": "✧",
+    "color": "#cda47b"
+  },
+  {
+    "id": "star-rail",
+    "name": "Honkai: Star Rail",
+    "shortName": "Star Rail",
+    "sigil": "✦",
+    "color": "#b2a2d9"
+  },
+  {
+    "id": "zenless",
+    "name": "Zenless Zone Zero",
+    "shortName": "Zenless",
+    "sigil": "ϟ",
+    "color": "#c1cc87"
+  },
+  {
+    "id": "wuthering-waves",
+    "name": "Wuthering Waves",
+    "shortName": "Wuthering",
+    "sigil": "≋",
+    "color": "#7ebcb7"
+  },
+  {
+    "id": "endfield",
+    "name": "Arknights: Endfield",
+    "shortName": "Endfield",
+    "sigil": "⬡",
+    "color": "#cbb672"
+  },
+  {
+    "id": "nte",
+    "name": "Neverness to Everness",
+    "shortName": "NTE",
+    "sigil": "◇",
+    "color": "#a5c5d8"
+  }
+]

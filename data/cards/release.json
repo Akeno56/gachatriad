@@ -1,0 +1,22 @@
+{
+  "version": "approved-v1",
+  "approvedOn": "2026-11-07",
+  "sourceModel": "draft-v1",
+  "cards": 400,
+  "excluded": [
+    "nte:elyms",
+    "nte:exe",
+    "star-rail:aha",
+    "star-rail:astra-yao",
+    "star-rail:ellen",
+    "wuthering-waves:lily",
+    "zenless:kafka",
+    "zenless:robin",
+    "zenless:severian",
+    "zenless:sunbringer",
+    "zenless:the-storyteller"
+  ],
+  "approval": "User approved replacing the earlier test cards with these generated drafts.",
+  "sourceSnapshot": "5bbe8f36ab8e6e663dc18e9aeeb9b89d1562dc6c9cb19fe0ad85cf56668adb7f",
+  "modelDigest": "a837a37163f61155fa96b8065989765592f7963a70b635cbc302d4230a99168f"
+}

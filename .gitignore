@@ -1,0 +1,16 @@
+node_modules/
+.next/
+dist/
+coverage/
+playwright-report/
+test-results/
+.env*
+!.env.example
+*.tsbuildinfo
+.cache/
+prydwenData/
+kyaraData/
+.data/
+apps/web/out/
+.tools/
+/Final_Fantasy_8_Queen_of_Cards_OC_ReMix.mp3

@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Gacha Triad · Server Control</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font:
+          15px/1.6 system-ui,
+          sans-serif;
+        background: #080f1e;
+        color: #dce5f3;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 32px 24px 65px;
+      }
+      h1 {
+        font:
+          500 29px ui-monospace,
+          monospace;
+        letter-spacing: 1px;
+        color: #ead2a0;
+        margin: 12px 0;
+      }
+      h2 {
+        font:
+          500 19px ui-monospace,
+          monospace;
+        margin: 0 0 16px;
+        color: #d5c39c;
+      }
+      .eyebrow {
+        font:
+          12px ui-monospace,
+          monospace;
+        color: #8ea6cd;
+        letter-spacing: 3px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+        margin-bottom: 28px;
+      }
+      .status {
+        padding: 9px 16px;
+        border: 1px solid #667998;
+        background: #14233c;
+        color: #9eabc0;
+        white-space: nowrap;
+      }
+      .online {
+        color: #b0efc1;
+        border-color: #658a6b;
+      }
+      .panel {
+        border: 1px solid #7b8aa4;
+        border-radius: 4px;
+        box-shadow:
+          inset 0 0 0 2px #263552,
+          3px 4px #0006;
+        background: linear-gradient(140deg, #1b3054, #111b37);
+        padding: 24px;
+        margin: 20px 0;
+      }
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      button,
+      a.button {
+        font:
+          500 14px system-ui,
+          sans-serif;
+        padding: 11px 18px;
+        border: 1px solid #a3b4cb;
+        border-radius: 2px;
+        background: linear-gradient(#354d70, #1e3150);
+        color: #f0e7d3;
+        cursor: pointer;
+        display: inline-block;
+        text-decoration: none;
+      }
+      button.primary {
+        background: linear-gradient(#e6d29a, #ae9156);
+        color: #172133;
+        border-color: #ffedc0;
+      }
+      button:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      button.danger {
+        border-color: #b78080;
+        color: #f3bfbf;
+      }
+      p {
+        color: #aebfd7;
+        margin: 10px 0;
+      }
+      small {
+        color: #9cacbf;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+      }
+      .grid > .panel {
+        margin: 0;
+      }
+      label {
+        display: grid;
+        gap: 8px;
+        font-size: 13px;
+        color: #bdcce1;
+      }
+      input[type='url'] {
+        padding: 11px 12px;
+        background: #0c182e;
+        border: 1px solid #647a9c;
+        color: #eef2fa;
+        min-width: 0;
+        width: 100%;
+        font:
+          14px ui-monospace,
+          monospace;
+      }
+      .check {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 16px 0;
+      }
+      input[type='checkbox'] {
+        width: 18px;
+        height: 18px;
+        accent-color: #dcc48c;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        text-align: left;
+        border-bottom: 1px solid #66799844;
+        padding: 11px 8px;
+        font-size: 14px;
+      }
+      th {
+        color: #b7c8df;
+        font-weight: 500;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .empty {
+        color: #95a6c0;
+        text-align: center;
+        padding: 30px;
+      }
+      .linkbox {
+        overflow-wrap: anywhere;
+        font-family: ui-monospace, monospace;
+        color: #eee1b3;
+        font-size: 13px;
+        margin: 15px 0;
+      }
+      .log {
+        max-height: 260px;
+        overflow: auto;
+        font:
+          12px/1.7 ui-monospace,
+          monospace;
+        background: #060e1f;
+        border: 1px solid #4b5b77;
+        padding: 15px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .error {
+        color: #ffb5ac;
+        min-height: 24px;
+      }
+      .footer {
+        font-size: 13px;
+        color: #849bbd;
+      }
+      .summary {
+        display: flex;
+        gap: 28px;
+        flex-wrap: wrap;
+        font:
+          13px ui-monospace,
+          monospace;
+        color: #a8bad5;
+        margin: 18px 0;
+      }
+      .summary strong {
+        color: #ead6aa;
+        font-size: 22px;
+        margin-right: 8px;
+      }
+      a {
+        color: #d3bd87;
+      }
+      #preview {
+        margin-top: 14px;
+      }
+      @media (max-width: 730px) {
+        body {
+          padding: 22px 15px;
+        }
+        header {
+          align-items: start;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .panel {
+          padding: 19px;
+        }
+        h1 {
+          font-size: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <div class="eyebrow">LOCAL HOST CONSOLE</div>
+        <h1>GACHA TRIAD / SERVER CONTROL</h1>
+      </div>
+      <span id="status" class="status">Checking…</span>
+    </header>
+    <div class="panel">
+      <h2>Game server</h2>
+      <div class="actions">
+        <button id="start" class="primary" data-action="/start">Start server</button
+        ><button id="restart" data-action="/restart">Restart server</button
+        ><button id="stop" class="danger" data-action="/stop">Shut down server</button>
+      </div>
+      <p id="serverAddress"></p>
+      <p id="external" hidden>
+        A server is running outside this tool. Stop <code>pnpm dev</code> or
+        <code>pnpm start</code> before managing it here.
+      </p>
+      <div class="summary">
+        <span><strong id="playersCount">0</strong>players</span
+        ><span><strong id="connections">0</strong>connections</span
+        ><span><strong id="uptime">—</strong>uptime</span>
+      </div>
+      <a id="preview" class="button" target="_blank" rel="noreferrer" hidden
+        >Open local game preview</a
+      >
+      <p class="error" id="error" role="alert"></p>
+    </div>
+    <div class="grid">
+      <section class="panel">
+        <h2>GitHub Pages frontend</h2>
+        <form id="settings">
+          <label
+            >Published game URL<input
+              id="frontend"
+              type="url"
+              required
+              placeholder="https://akeno56.github.io/gachatriad/" /></label
+          ><label class="check"><input id="bots" type="checkbox" />Enable labeled demo bots</label
+          ><button type="submit">Save settings</button>
+        </form>
+        <p>
+          Saving settings restarts a running game server so its allowed frontend origin is updated.
+        </p>
+      </section>
+      <section class="panel">
+        <h2>Public HTTPS session</h2>
+        <div class="actions">
+          <button id="install" data-action="/tunnel/install">Install tunnel helper</button
+          ><button id="tunnelStart" class="primary" data-action="/tunnel/start">
+            Start public link</button
+          ><button id="tunnelStop" data-action="/tunnel/stop">Close public link</button>
+        </div>
+        <p>
+          Uses Cloudflare Quick Tunnel. The helper is downloaded from Cloudflare’s official GitHub
+          release into this project.
+        </p>
+        <div id="share" class="linkbox">Start the server, then start a public link.</div>
+        <button id="copy" disabled>Copy invitation link</button>
+        <p>
+          <small
+            >The public link changes when the tunnel restarts. Restarting only the game server keeps
+            the link. Your PC must remain running.</small
+          >
+        </p>
+      </section>
+    </div>
+    <section class="panel">
+      <h2>Connected players</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Account</th>
+            <th>Activity</th>
+          </tr>
+        </thead>
+        <tbody id="players">
+          <tr>
+            <td colspan="3" class="empty">No players connected.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>Server log</h2>
+      <div id="log" class="log" role="log"></div>
+    </section>
+    <p class="footer">
+      This console listens only on 127.0.0.1. The public tunnel forwards the game API and sockets,
+      never this console. Save files stay on this PC in <code>.data</code>. Setup guide:
+      <code>docs/ONLINE_DEMO.md</code>.
+    </p>
+    <script>
+      const token = '__CSRF__';
+      let current = null,
+        posting = false,
+        edited = false;
+      const el = (id) => document.getElementById(id);
+      function text(id, value) {
+        el(id).textContent = value;
+      }
+      function lock() {
+        document
+          .querySelectorAll('button[data-action],#settings button')
+          .forEach((b) => (b.disabled = posting || current?.busy));
+        if (!current) return;
+        el('start').disabled = posting || current.busy || current.running || current.external;
+        el('restart').disabled = posting || current.busy || !current.running;
+        el('stop').disabled = posting || current.busy || !current.running;
+        el('tunnelStart').disabled =
+          posting ||
+          current.busy ||
+          !current.running ||
+          !current.tunnelInstalled ||
+          current.tunnelRunning;
+        el('tunnelStop').disabled = posting || current.busy || !current.tunnelRunning;
+        el('install').hidden = current.tunnelInstalled;
+        el('copy').disabled = !current.shareURL;
+      }
+      async function refresh() {
+        try {
+          const response = await fetch('/state');
+          current = await response.json();
+          text(
+            'status',
+            current.busy
+              ? 'Working…'
+              : current.running
+                ? 'SERVER ONLINE'
+                : current.external
+                  ? 'EXTERNAL SERVER'
+                  : 'SERVER OFFLINE',
+          );
+          el('status').classList.toggle('online', current.running);
+          text('serverAddress', current.serverURL);
+          el('external').hidden = !current.external;
+          if (!edited) {
+            el('frontend').value = current.config.frontendURL;
+            el('bots').checked = current.config.allowBots;
+          }
+          text('playersCount', current.online?.players.length || 0);
+          text('connections', current.online?.connections || 0);
+          text('uptime', current.online ? Math.floor(current.online.uptime / 60) + 'm' : '—');
+          text('share', current.shareURL || 'Start the server, then start a public link.');
+          el('preview').hidden = !current.previewURL;
+          if (current.previewURL) el('preview').href = current.previewURL;
+          text('error', current.lastError);
+          const tbody = el('players');
+          tbody.replaceChildren();
+          for (const p of current.online?.players || []) {
+            const row = document.createElement('tr');
+            for (const value of [
+              p.name,
+              p.registered ? 'Registered' : 'Guest',
+              p.match ? p.match.mode + ' · ' + p.match.status : 'In the card hall',
+            ]) {
+              const cell = document.createElement('td');
+              cell.textContent = value;
+              row.append(cell);
+            }
+            tbody.append(row);
+          }
+          if (!tbody.children.length) {
+            const row = document.createElement('tr'),
+              cell = document.createElement('td');
+            cell.colSpan = 3;
+            cell.className = 'empty';
+            cell.textContent = 'No players connected.';
+            row.append(cell);
+            tbody.append(row);
+          }
+          text(
+            'log',
+            current.logs.map((l) => l.at.slice(11, 19) + ' [' + l.kind + '] ' + l.text).join('\n'),
+          );
+          lock();
+        } catch {
+          text('error', 'The local control panel is offline. Run pnpm control to start it.');
+        }
+      }
+      async function action(path, body = {}) {
+        posting = true;
+        lock();
+        text('error', '');
+        try {
+          const response = await fetch(path, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-control-token': token },
+            body: JSON.stringify(body),
+          });
+          const result = await response.json();
+          if (!response.ok) throw Error(result.error);
+          edited = false;
+        } catch (error) {
+          text('error', error.message);
+        } finally {
+          posting = false;
+          await refresh();
+        }
+      }
+      document
+        .querySelectorAll('[data-action]')
+        .forEach((b) => b.addEventListener('click', () => action(b.dataset.action)));
+      el('settings').addEventListener('submit', (e) => {
+        e.preventDefault();
+        action('/settings', { frontendURL: el('frontend').value, allowBots: el('bots').checked });
+      });
+      el('frontend').addEventListener('input', () => (edited = true));
+      el('bots').addEventListener('change', () => (edited = true));
+      el('copy').addEventListener('click', async () => {
+        await navigator.clipboard.writeText(current.shareURL);
+        text('copy', 'Copied');
+        setTimeout(() => text('copy', 'Copy invitation link'), 1500);
+      });
+      refresh();
+      setInterval(refresh, 2000);
+    </script>
+  </body>
+</html>

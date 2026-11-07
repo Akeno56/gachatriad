@@ -1,0 +1,99 @@
+.game-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  max-height: 90dvh;
+  overflow: auto;
+}
+.credits-button {
+  font: 500 10px var(--sans);
+  color: #8699b7;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  margin-left: auto;
+}
+.credits-button:hover {
+  color: var(--gold);
+  text-decoration: underline;
+}
+.tutorial-dialog {
+  width: min(740px, calc(100vw - 28px));
+  padding: 30px;
+}
+.tutorial-dialog h2 {
+  font: 40px var(--pixel);
+  color: var(--gold);
+  margin: 15px 0 24px;
+}
+.tutorial-layout {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 26px;
+  align-items: center;
+}
+.tutorial-card {
+  height: 225px;
+}
+.tutorial-layout p {
+  line-height: 1.8;
+  color: #c1cde0;
+  margin: 0 0 15px;
+  font-size: 16px;
+}
+.tutorial-dialog .result-actions {
+  margin-top: 25px;
+}
+.tutorial-dialog .eyebrow {
+  color: #a5b8d5;
+}
+.rulebook-onboarding {
+  padding: 26px;
+  margin: 32px 0;
+}
+.rulebook-onboarding h2 {
+  font: 32px var(--pixel);
+  color: var(--gold);
+  margin: 0 0 10px;
+}
+.rulebook-onboarding p {
+  line-height: 1.7;
+}
+.elemental-rule {
+  margin: 26px 0;
+  padding-left: 16px;
+  border-left: 2px solid var(--gold);
+}
+.elemental-rule h3 {
+  font: 29px var(--pixel);
+  color: var(--gold);
+}
+.elemental-rule p {
+  line-height: 1.8;
+  color: #c0cde1;
+}
+@media (max-width: 680px) {
+  .tutorial-dialog {
+    padding: 25px 20px;
+  }
+  .tutorial-dialog h2 {
+    font-size: 33px;
+  }
+  .tutorial-layout {
+    grid-template-columns: 100px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+  .tutorial-card {
+    height: 150px;
+  }
+  .tutorial-layout p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .tutorial-dialog .result-actions {
+    gap: 14px;
+  }
+  .tutorial-dialog .primary-button {
+    font-size: 21px;
+  }
+}

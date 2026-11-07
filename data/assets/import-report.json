@@ -1,0 +1,20 @@
+{
+  "runAt": "2026-11-07T14:43:10.425Z",
+  "input": "E:\\DEVPRG\\Codex\\GachaTriad\\prydwenData",
+  "offline": true,
+  "dryRun": false,
+  "pages": 12,
+  "characters": 411,
+  "imported": 0,
+  "cached": 811,
+  "byUniverse": {
+    "endfield": 34,
+    "genshin": 129,
+    "star-rail": 95,
+    "nte": 26,
+    "zenless": 66,
+    "wuthering-waves": 61
+  },
+  "warnings": [],
+  "failures": []
+}
