@@ -48,14 +48,15 @@ export class BotPopulation {
   ) {}
   async status(): Promise<PopulationView> {
     return this.store.db.read(async (sql) => {
-      const [e] = await sql<{ enabled: boolean }>(
-        'SELECT enabled FROM local_population WHERE id=1',
+      const [e] = await sql<{ enabled: boolean; difficulty: PopulationView['difficulty'] }>(
+        'SELECT enabled,difficulty FROM local_population WHERE id=1',
       );
       const [n] = await sql<{ n: number }>('SELECT count(*)::int n FROM profiles WHERE is_bot');
       const [m] = await sql<{ n: number }>(
         "SELECT count(*)::int n FROM matches WHERE status IN('playing','drafting') AND (player0 IN(SELECT id FROM profiles WHERE is_bot) OR player1 IN(SELECT id FROM profiles WHERE is_bot))",
       );
       return {
+        difficulty: e.difficulty,
         available: this.available,
         enabled: this.available && e.enabled,
         bots: n.n,
@@ -63,7 +64,20 @@ export class BotPopulation {
       };
     });
   }
-  async set(enabled: boolean) {
+  async set(enabled: boolean, difficulty?: unknown) {
+    if (difficulty !== undefined) {
+      if (!['easy', 'medium', 'hard'].includes(String(difficulty)))
+        throw new GameError('Choose Easy, Medium or Hard bots.');
+      await this.store.db.read((sql) =>
+        sql('UPDATE local_population SET difficulty=$1 WHERE id=1', [difficulty]),
+      );
+      if (difficulty === 'easy')
+        await this.store.db.read((sql) =>
+          sql(
+            "UPDATE lobbies SET status='closed' WHERE mode='ranked' AND status='waiting' AND host_id IN(SELECT id FROM profiles WHERE is_bot)",
+          ),
+        );
+    }
     if (!this.available && enabled)
       throw new GameError('Local bots are disabled on this server.', 403);
     if (enabled)
@@ -106,7 +120,8 @@ export class BotPopulation {
   }
   async tick() {
     if (this.closing) return false;
-    const enabled = (await this.status()).enabled;
+    const population = await this.status(),
+      enabled = population.enabled;
     const actors = await this.actors();
     let changed = false;
     for (let i = 0; i < actors.length; i++) {
@@ -129,7 +144,10 @@ export class BotPopulation {
             const { hands, ...publicView } = m.game;
             const move = chooseCpuMove(
               { ...publicView, hand: hands[m.seat].flatMap((c) => (c.card ? [c.card] : [])) },
-              'normal',
+              population.difficulty === 'medium' ||
+                (m.mode === 'ranked' && population.difficulty === 'easy')
+                ? 'normal'
+                : population.difficulty,
               seededRandom(randomInt(2 ** 32)),
             );
             if (move) await this.store.move(p.id, m.id, move.cardId, move.cell, m.version);
@@ -154,6 +172,9 @@ export class BotPopulation {
         const humanTable = lobbies.find(
           (l) =>
             l.status === 'waiting' &&
+            l.allowBots &&
+            !l.inviteOnly &&
+            (l.mode !== 'ranked' || population.difficulty !== 'easy') &&
             !l.host.startsWith('[BOT]') &&
             Date.now() - Date.parse(l.createdAt) > 5000,
         );
@@ -168,7 +189,7 @@ export class BotPopulation {
           } catch {}
           p = await this.store.profile(actor);
           await this.store.createLobby(p, {
-            mode: MODES[i],
+            mode: MODES[i] === 'ranked' && population.difficulty === 'easy' ? 'casual' : MODES[i],
             name: i === 8 ? '[BOT] Exhibition duel' : `[BOT] ${NAMES[i]}’s table`,
             rules: {
               ...STANDARD,

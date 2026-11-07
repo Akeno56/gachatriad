@@ -6,11 +6,14 @@ import type { PlayerProfileView } from '@gacha-triad/shared/platform';
 import { useSession } from '../../components/session';
 import { Card } from '../../components/card';
 import { api } from '../../lib/platform';
+import { AdminGrant } from '../../components/admin-grant';
 export default function PlayerProfile() {
   const { profile, revision, refresh, openAccount } = useSession();
   const [player, setPlayer] = useState<PlayerProfileView | null>(null),
     [error, setError] = useState(''),
     [avatar, setAvatar] = useState(''),
+    [title, setTitle] = useState(''),
+    [notice, setNotice] = useState(''),
     [busy, setBusy] = useState(false);
   useEffect(() => {
     if (!profile) return;
@@ -29,6 +32,7 @@ export default function PlayerProfile() {
     };
   }, [profile?.id, revision]);
   useEffect(() => setAvatar(profile?.avatarCardId ?? ''), [profile?.avatarCardId]);
+  useEffect(() => setTitle(profile?.titleId ?? ''), [profile?.titleId]);
   const self = player?.id === profile?.id;
   return (
     <div className="content-page profile-page">
@@ -56,6 +60,7 @@ export default function PlayerProfile() {
                     : 'CHALLENGER'}
               </span>
               <h2>{player.name}</h2>
+              {player.title && <p className="profile-title">{player.title}</p>}
               <p>Joined {new Date(player.joinedAt).toLocaleDateString()}</p>
               <p>
                 {player.collection.unique}/400 cards collected · {player.collection.copies} copies ·{' '}
@@ -71,6 +76,41 @@ export default function PlayerProfile() {
                   Meet in the card hall
                 </Link>
               )}
+              {!self && !player.isBot && profile?.registered && (
+                <div className="result-actions">
+                  <button
+                    className="outline-button"
+                    disabled={busy}
+                    onClick={async () => {
+                      try {
+                        await api('/friends/request', { playerId: player.id });
+                        await refresh();
+                        setNotice('Friend request sent.');
+                      } catch (e) {
+                        setError((e as Error).message);
+                      }
+                    }}
+                  >
+                    Add friend
+                  </button>
+                  <button
+                    className="outline-button"
+                    disabled={busy}
+                    onClick={async () => {
+                      try {
+                        await api('/invites', { playerId: player.id });
+                        await refresh();
+                        setNotice('Invitation sent. Open Chat & friends to manage it.');
+                      } catch (e) {
+                        setError((e as Error).message);
+                      }
+                    }}
+                  >
+                    Invite to duel
+                  </button>
+                </div>
+              )}
+              {notice && <p role="status">{notice}</p>}
             </div>
           </section>
           <section className="profile-stats" aria-label="Player statistics">
@@ -96,6 +136,7 @@ export default function PlayerProfile() {
                 setBusy(true);
                 try {
                   await api('/profile/avatar', { cardId: avatar || null });
+                  await api('/profile/title', { titleId: title || null });
                   await refresh();
                   setError('');
                 } catch (e) {
@@ -126,9 +167,42 @@ export default function PlayerProfile() {
               <button className="primary-button" disabled={busy}>
                 Save profile
               </button>
+              <label>
+                Equipped title
+                <select
+                  aria-label="Equipped title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                >
+                  <option value="">No title</option>
+                  {player.titles
+                    .filter((t) => t.unlocked)
+                    .map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                </select>
+              </label>
               <small>Your chosen card is public. Your deck and inventory stay private.</small>
             </form>
           )}
+          <details className="menu-window title-list">
+            <summary>
+              Titles · {player.titles.filter((t) => t.unlocked).length}/{player.titles.length}{' '}
+              unlocked
+            </summary>
+            {player.titles.map((t) => (
+              <p key={t.id}>
+                <strong>
+                  {t.unlocked ? '✓ ' : '🔒 '}
+                  {t.name}
+                </strong>{' '}
+                — {t.requirement}
+              </p>
+            ))}
+          </details>
+          <AdminGrant playerId={player.id} name={player.name} />
           <h2 className="profile-section-title">
             Earned achievements · {player.achievements.length}
           </h2>

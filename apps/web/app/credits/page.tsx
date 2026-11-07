@@ -36,8 +36,10 @@ export default function Credits() {
           (2023), supplied by the project owner. Original music composed by Nobuo Uematsu, © Square.
         </p>
         <p>
-          The original recording is preserved; playback crossfades the ending into the opening.
-          Sound effects are synthesized locally.
+          Battle music: the recording above. Menu music: Final Fantasy VIII “Shuffle or Boogie
+          (Ambient Remix) — Hands of Fate,” supplied by the project owner. Original composition by
+          Nobuo Uematsu, © Square. The supplied recordings remain intact; playback uses fades and
+          end-to-start crossfades. Sound effects are synthesized locally.
         </p>
       </section>
       <section className="menu-window">

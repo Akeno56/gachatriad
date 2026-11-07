@@ -37,6 +37,8 @@ import { Database, type Sql } from './database';
 import { GameError } from './errors';
 export { GameError } from './errors';
 import { Economy } from './economy';
+import { pruneDeck } from './inventory';
+import { titleName, titlesFor } from './titles';
 export interface Actor {
   id: string;
   name: string;
@@ -77,6 +79,8 @@ interface MatchRow {
   end_reason: string | null;
 }
 interface LobbyRow {
+  allow_bots: boolean;
+  invited_profile: string | null;
   id: string;
   host_id: string;
   guest_id: string | null;
@@ -145,6 +149,7 @@ export class GameStore {
       '003_profile.sql',
       '004_tutorial.sql',
       '005_economy_admin.sql',
+      '006_social_lifecycle.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -164,7 +169,7 @@ export class GameStore {
       if ((await sql('SELECT 1 FROM server_suspensions WHERE auth_user_id=$1', [actor.id])).length)
         throw new GameError('This account is suspended. Contact the server host.', 403);
       let rows = await sql<ProfileRow>(
-        `SELECT p.* FROM profiles p JOIN profile_accounts a ON a.profile_id=p.id WHERE a.auth_user_id=$1 ${requested ? 'AND p.id=$2' : ''} ORDER BY a.is_primary DESC,p.created_at LIMIT 1`,
+        `SELECT p.* FROM profiles p JOIN profile_accounts a ON a.profile_id=p.id WHERE a.auth_user_id=$1 AND a.is_primary ${requested ? 'AND p.id=$2' : ''} ORDER BY p.created_at LIMIT 1`,
         requested ? [actor.id, requested] : [actor.id],
       );
       if (!rows.length && requested) throw new GameError('You do not own that profile.', 403);
@@ -182,6 +187,19 @@ export class GameStore {
         rows = await sql<ProfileRow>('SELECT * FROM profiles WHERE id=$1', [id]);
       }
       const p = rows[0];
+      if (
+        actor.isAnonymous &&
+        Date.now() - new Date(p.last_seen_at as Date).getTime() > 7 * 86400000
+      )
+        throw new GameError(
+          'Your unused guest account has expired. Start a new guest session.',
+          401,
+        );
+      await sql('UPDATE profiles SET last_seen_at=now() WHERE id=$1', [p.id]);
+      await pruneDeck(sql, p.id);
+      const [current] = await sql<ProfileRow>('SELECT * FROM profiles WHERE id=$1', [p.id]);
+      p.default_deck = current.default_deck;
+      p.avatar_card = current.avatar_card;
       const owned = await sql<{ card_id: string; quantity: number; reserved: number }>(
         'SELECT * FROM inventory WHERE profile_id=$1 AND quantity>0',
         [p.id],
@@ -195,10 +213,12 @@ export class GameStore {
         [p.id],
       );
       const profiles = await sql<{ id: string; name: string }>(
-        'SELECT p.id,p.name FROM profiles p JOIN profile_accounts a ON a.profile_id=p.id WHERE a.auth_user_id=$1 ORDER BY a.is_primary DESC',
+        'SELECT p.id,p.name FROM profiles p JOIN profile_accounts a ON a.profile_id=p.id WHERE a.auth_user_id=$1 AND a.is_primary',
         [actor.id],
       );
       return {
+        rankedAcknowledged: p.ranked_acknowledged === true,
+        titleId: typeof p.selected_title === 'string' ? p.selected_title : null,
         isAdmin:
           !actor.isAnonymous &&
           (await sql('SELECT 1 FROM server_admins WHERE auth_user_id=$1', [actor.id])).length > 0,
@@ -261,10 +281,13 @@ export class GameStore {
   }
   private async deck(sql: Sql, id: string, random = false) {
     const pool = await this.available(sql, id);
-    if (random) return randomDeck(pool, rng());
     const [p] = await sql<ProfileRow>('SELECT * FROM profiles WHERE id=$1', [id]);
     if (p.default_deck.length !== 5)
-      throw new GameError('Open your starter boosters, then build a deck in Collection.', 428);
+      throw new GameError(
+        `Your active deck has ${p.default_deck.length}/5 cards. Add ${5 - p.default_deck.length} more in Collection before starting a duel.`,
+        428,
+      );
+    if (random) return randomDeck(pool, rng());
     const selected = cards(p.default_deck);
     if (validateDeck(selected).length || selected.some((c) => !pool.some((p) => p.id === c.id)))
       throw new GameError('Your saved deck has unavailable cards. Rebuild it in Collection.');
@@ -288,7 +311,15 @@ export class GameStore {
   }
   async rebuildDeck(id: string) {
     return this.db.tx(async (sql) => {
-      const next = randomDeck(await this.available(sql, id), rng()).map((c) => c.id);
+      let next: string[];
+      try {
+        next = randomDeck(await this.available(sql, id), rng()).map((c) => c.id);
+      } catch {
+        throw new GameError(
+          'Your available collection cannot form a legal five-card deck. Open a booster or cancel reserved trade offers.',
+          428,
+        );
+      }
       await sql('UPDATE profiles SET default_deck=$1::jsonb WHERE id=$2', [
         JSON.stringify(next),
         id,
@@ -388,6 +419,8 @@ export class GameStore {
         name: r.name,
         host: r.host,
         hostId: r.host_id,
+        allowBots: r.allow_bots,
+        inviteOnly: !!r.invited_profile,
         mode: r.mode,
         rules: r.rules,
         tradeRule: r.trade_rule,
@@ -410,7 +443,14 @@ export class GameStore {
   }
   async createLobby(
     profile: ProfileView,
-    input: { mode: Mode; name?: string; rules?: unknown; tradeRule?: string },
+    input: {
+      mode: Mode;
+      name?: string;
+      rules?: unknown;
+      tradeRule?: string;
+      allowBots?: boolean;
+      invitedProfile?: string;
+    },
   ) {
     const { id } = profile;
     const mode = input.mode;
@@ -428,12 +468,23 @@ export class GameStore {
       );
     return this.db.tx(async (sql) => {
       await this.busy(sql, id);
+      const [actor] = await sql<{ is_bot: boolean }>('SELECT is_bot FROM profiles WHERE id=$1', [
+        id,
+      ]);
+      if (mode === 'ranked') await this.rankedEligible(sql, id);
+      const allowBots = input.invitedProfile ? false : (input.allowBots ?? actor.is_bot);
       if (mode !== 'draft') await this.deck(sql, id, !!rules.random);
       if (mode !== 'custom') {
         const ratingField = mode === 'draft' ? 'draft_rating' : 'rating';
         const candidates = await sql<LobbyRow>(
-          `SELECT l.* FROM lobbies l JOIN profiles p ON p.id=l.host_id WHERE l.mode=$1 AND l.status='waiting' AND l.host_id<>$2 ORDER BY abs(p.${ratingField}-$3),l.created_at LIMIT 20`,
-          [mode, id, mode === 'draft' ? profile.draftRating : profile.rating],
+          `SELECT l.* FROM lobbies l JOIN profiles p ON p.id=l.host_id WHERE l.mode=$1 AND l.status='waiting' AND l.host_id<>$2 AND l.invited_profile IS NULL AND (l.allow_bots OR NOT $4) AND ($5 OR NOT p.is_bot) ORDER BY abs(p.${ratingField}-$3),l.created_at LIMIT 20`,
+          [
+            mode,
+            id,
+            mode === 'draft' ? profile.draftRating : profile.rating,
+            actor.is_bot,
+            allowBots,
+          ],
         );
         for (const row of candidates) {
           if (await this.related(sql, row.host_id, id)) continue;
@@ -442,7 +493,7 @@ export class GameStore {
       }
       const lobbyId = randomUUID();
       await sql(
-        "INSERT INTO lobbies(id,host_id,name,mode,rules,trade_rule,status) VALUES($1,$2,$3,$4,$5::jsonb,$6,'waiting')",
+        "INSERT INTO lobbies(id,host_id,name,mode,rules,trade_rule,status,allow_bots,invited_profile) VALUES($1,$2,$3,$4,$5::jsonb,$6,'waiting',$7,$8)",
         [
           lobbyId,
           id,
@@ -450,12 +501,35 @@ export class GameStore {
           mode,
           JSON.stringify(rules),
           trade,
+          allowBots,
+          input.invitedProfile ?? null,
         ],
       );
       return { lobbyId, matchId: null };
     });
   }
   private async joinRow(sql: Sql, p: ProfileView, lobby: LobbyRow) {
+    if (lobby.mode === 'ranked') {
+      await this.rankedEligible(sql, p.id);
+      await this.rankedEligible(sql, lobby.host_id);
+    }
+    if (lobby.invited_profile && lobby.invited_profile !== p.id)
+      throw new GameError('This table is reserved for an invited friend.', 403);
+    if (
+      lobby.invited_profile &&
+      !(
+        await sql(
+          "SELECT 1 FROM duel_invitations WHERE lobby_id=$1 AND status='pending' AND expires_at>now()",
+          [lobby.id],
+        )
+      ).length
+    )
+      throw new GameError('This invitation has ended.', 409);
+    if (
+      !lobby.allow_bots &&
+      (await sql<{ is_bot: boolean }>('SELECT is_bot FROM profiles WHERE id=$1', [p.id]))[0]?.is_bot
+    )
+      throw new GameError('Bots are not allowed at this table.', 403);
     if (lobby.trade_rule === 'one' && !supportsTradeOne(lobby.rules))
       throw new GameError(
         'This table’s Trade One rules are no longer valid. Its host must create a Closed / Same / Plus / Combo table.',
@@ -499,12 +573,19 @@ export class GameStore {
     });
   }
   async cancelLobby(profileId: string, id: string) {
-    await this.db.tx((sql) =>
-      sql("UPDATE lobbies SET status='closed' WHERE id=$1 AND host_id=$2 AND status='waiting'", [
-        id,
-        profileId,
-      ]),
-    );
+    await this.db.tx(async (sql) => {
+      const [lobby] = await sql<LobbyRow>('SELECT * FROM lobbies WHERE id=$1', [id]);
+      if (!lobby) throw new GameError('Lobby not found.', 404);
+      if (lobby.host_id !== profileId)
+        throw new GameError('Only the host can close this lobby.', 403);
+      if (lobby.status === 'playing')
+        throw new GameError('The duel has already started. Return to the match to leave it.', 409);
+      await sql("UPDATE lobbies SET status='closed' WHERE id=$1", [id]);
+      await sql(
+        "UPDATE duel_invitations SET status='expired' WHERE lobby_id=$1 AND status='pending'",
+        [id],
+      );
+    });
   }
   private async load(sql: Sql, id: string, profileId?: string) {
     const [row] = await sql<MatchRow>('SELECT * FROM matches WHERE id=$1', [id]);
@@ -517,10 +598,15 @@ export class GameStore {
     return this.db.read(async (sql) => {
       const m = await this.load(sql, id, profileId);
       const seat: Player = m.player0 === profileId ? 0 : 1;
-      const users = await sql<{ id: string; name: string }>(
-        'SELECT id,name FROM profiles WHERE id=$1 OR id=$2',
-        [m.player0, m.player1],
-      );
+      const users = await sql<{
+        id: string;
+        name: string;
+        avatar_card: string | null;
+        selected_title: string | null;
+      }>('SELECT id,name,avatar_card,selected_title FROM profiles WHERE id=$1 OR id=$2', [
+        m.player0,
+        m.player1,
+      ]);
       const game = m.state
         ? {
             ...m.state,
@@ -542,8 +628,18 @@ export class GameStore {
           }
         : null;
       if (game) delete (game as unknown as Record<string, unknown>).revealed;
+      const identity = (id: string | null) => {
+        const p = users.find((p) => p.id === id);
+        return {
+          id,
+          name: p?.name ?? (m.difficulty === 'normal' ? 'The Strategist' : 'The Wanderer'),
+          title: titleName(p?.selected_title),
+          avatar: p?.avatar_card ? (byId.get(p.avatar_card) ?? null) : null,
+        };
+      };
       return {
         id: m.id,
+        players: [identity(m.player0), identity(m.player1)],
         prismReward:
           (
             await sql<{ delta: number }>(
@@ -707,6 +803,7 @@ export class GameStore {
         ]);
       }
       await this.unlock(sql, id);
+      await sql('UPDATE profiles SET peak_rating=greatest(peak_rating,rating) WHERE id=$1', [id]);
     }
     await sql("UPDATE lobbies SET status='closed' WHERE match_id=$1", [m.id]);
   }
@@ -761,6 +858,7 @@ export class GameStore {
       [cardId, m.id],
     );
     await sql('UPDATE profiles SET trade_wins=trade_wins+1 WHERE id=$1', [recipient]);
+    await pruneDeck(sql, loser);
     await this.unlock(sql, recipient);
   }
   async claimCard(profileId: string, id: string, cardId: string) {
@@ -807,6 +905,9 @@ export class GameStore {
       );
       return {
         id: p.id,
+        titleId: typeof p.selected_title === 'string' ? p.selected_title : null,
+        title: titleName(p.selected_title),
+        titles: await titlesFor(sql, p.id),
         name: p.name,
         isBot: p.is_bot === true,
         joinedAt: (p.created_at as Date).toISOString(),
@@ -842,6 +943,38 @@ export class GameStore {
       }
       await sql('UPDATE profiles SET avatar_card=$1 WHERE id=$2', [cardId, id]);
     });
+  }
+  async setTitle(id: string, titleId: unknown) {
+    await this.db.tx(async (sql) => {
+      if (
+        titleId !== null &&
+        !(await titlesFor(sql, id)).some((t) => t.id === titleId && t.unlocked)
+      )
+        throw new GameError('Earn this title before equipping it.');
+      await sql('UPDATE profiles SET selected_title=$1 WHERE id=$2', [titleId, id]);
+    });
+  }
+  private async rankedEligible(sql: Sql, id: string) {
+    const [p] = await sql<{ is_bot: boolean; ranked_acknowledged: boolean }>(
+      'SELECT is_bot,ranked_acknowledged FROM profiles WHERE id=$1',
+      [id],
+    );
+    if (p.is_bot) {
+      if (
+        (await sql<{ difficulty: string }>('SELECT difficulty FROM local_population WHERE id=1'))[0]
+          .difficulty === 'easy'
+      )
+        throw new GameError('Ranked allows Medium and Hard bots only.', 403);
+    } else if (!p.ranked_acknowledged)
+      throw new GameError(
+        'Acknowledge the first-ranked Trade One warning before entering ranked.',
+        428,
+      );
+  }
+  async acknowledgeRanked(id: string) {
+    await this.db.read((sql) =>
+      sql('UPDATE profiles SET ranked_acknowledged=true WHERE id=$1', [id]),
+    );
   }
   async completeTutorial(id: string) {
     await this.db.read((sql) =>

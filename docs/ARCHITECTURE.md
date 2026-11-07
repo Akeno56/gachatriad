@@ -1,4 +1,16 @@
-# Current architecture — v0.5
+# Current architecture — v0.6
+
+## v0.6 community and lifecycle
+
+`Social` provides server-validated friendships, plain-text chat, recipient-reserved five-minute duel invitations and human ranked/Draft ladders. Socket.IO remains a change-notification channel; clients refetch authenticated views rather than receiving private game snapshots in broadcasts. Titles derive from persisted achievement unlocks and peak constructed rating after five ranked matches. Ranked entry requires a saved first-time Trade One acknowledgement; the lobby layer excludes Easy population bots.
+
+`GuestLifecycle` removes legacy secondary guest profiles and expires anonymous identities after seven inactive days. Registration preserves the guest when creating a new account; existing-account sign-in discards the temporary guest. Deletion settles active duels through normal reservation/transfer logic, removes private data and anonymizes historical participants. The host-only deletion endpoint requires an exact-name confirmation. The host console searches across accounts, grants retry-safe currency/gift boosters to a selected user and records audit entries. Public testing grants require a verified admin session.
+
+Inventory transfers prune saved deck entries only when the last exact-finish copy is lost. Unavailable entries from earlier saves are repaired at profile load. Match DTOs include public avatar/title identities, while private deck/inventory data remain protected. Bot difficulty is persisted and the Hard policy uses only its hand and the public board.
+
+Shutdown rejects new realtime handshakes and closes every tracked upgraded TCP connection, including unfinished Engine.IO connections, before Fastify drains HTTP and flushes PGlite. This avoids hanging on connections not yet present in Socket.IO's authenticated namespace and preserves automatic client reconnection after restart.
+
+The client uses separate menu/battle music scenes with scene fades and dual-player end-to-start crossfades. Music defaults on after a permitted gesture, both volumes default to 50%, and saved preferences override defaults. Booster opening is a client presentation of an already-persisted server receipt; closing or skipping animations cannot reroll or lose cards.
 
 ## v0.5 acquisition and host administration
 

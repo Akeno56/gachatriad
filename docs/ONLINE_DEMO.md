@@ -94,11 +94,13 @@ Pausing population closes bot waiting tables and trade offers; existing duels fi
 
 ## Publish later changes
 
+The console now also has a **Bot difficulty** selector (default Medium) and **Selected user tools**. Select the exact account, choose Stellar Prisms or boosters, enter the amount, and grant. To delete an account, select it, click **Delete selected account**, and type the exact current name. Deletion is permanent for that account's private data; other players keep anonymized match/trade history. These actions stay on the private PC console. See [account and social rules](SOCIAL_AND_ACCOUNTS.md).
+
 The GitHub Pages client and your PC server update separately. From Git Bash or PowerShell in the project folder, publish the code changes with:
 
 ```sh
 git add .
-git commit -m "Add boosters, Stellar Prisms and server moderation"
+git commit -m "Add community features and refine duels, packs and host tools"
 git push
 ```
 

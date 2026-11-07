@@ -16,6 +16,7 @@ export async function createController(options = {}) {
     frontendURL: 'https://akeno56.github.io/gachatriad/',
     gamePort: Number(options.gamePort || process.env.SERVER_PORT || 3001),
     allowBots: false,
+    botDifficulty: 'medium',
   };
   try {
     config = { ...config, ...JSON.parse(await readFile(settingsPath, 'utf8')) };
@@ -50,7 +51,7 @@ export async function createController(options = {}) {
       return false;
     }
   }
-  async function state() {
+  async function state(search = '') {
     let online = null;
     let moderation = { users: [], log: [] };
     try {
@@ -62,10 +63,15 @@ export async function createController(options = {}) {
     } catch {}
     if (online) {
       try {
-        const response = await fetch(localAPI() + '/api/local-control/users', {
-          headers: { 'x-local-control': controlSecret },
-          signal: AbortSignal.timeout(1500),
-        });
+        const response = await fetch(
+          localAPI() +
+            '/api/local-control/users?search=' +
+            encodeURIComponent(search.slice(0, 100)),
+          {
+            headers: { 'x-local-control': controlSecret },
+            signal: AbortSignal.timeout(1500),
+          },
+        );
         if (response.ok) moderation = await response.json();
       } catch {}
     }
@@ -134,6 +140,7 @@ export async function createController(options = {}) {
         LOCAL_CONTROL_SECRET: controlSecret,
         LOCAL_BOTS: 'true',
         POPULATE_BOTS: config.allowBots ? 'true' : 'false',
+        BOT_DIFFICULTY: config.botDifficulty,
       },
     });
     const current = child;
@@ -354,8 +361,10 @@ export async function createController(options = {}) {
       return;
     }
     res.setHeader('content-type', 'application/json');
-    if (req.method === 'GET' && req.url === '/state') {
-      res.end(JSON.stringify(await state()));
+    if (req.method === 'GET' && new URL(req.url, expected).pathname === '/state') {
+      res.end(
+        JSON.stringify(await state(new URL(req.url, expected).searchParams.get('search') || '')),
+      );
       return;
     }
     if (req.method !== 'POST' || req.headers['x-control-token'] !== csrf) {
@@ -394,13 +403,19 @@ export async function createController(options = {}) {
       } else if (req.url === '/tunnel/install') await installTunnel();
       else if (req.url === '/tunnel/start') await startTunnel();
       else if (req.url === '/tunnel/stop') await stopTunnel();
-      else if (req.url === '/moderation' || req.url === '/population') {
+      else if (['/moderation', '/population', '/grant', '/delete-account'].includes(req.url)) {
         if (!alive(child)) throw Error('Start the game server first.');
         const population = req.url === '/population';
         if (population && typeof body.enabled !== 'boolean')
           throw Error('Choose enabled or disabled.');
         const response = await fetch(
-          localAPI() + (population ? '/api/local-control/bots' : '/api/local-control/moderation'),
+          localAPI() +
+            {
+              '/population': '/api/local-control/bots',
+              '/moderation': '/api/local-control/moderation',
+              '/grant': '/api/local-control/grant',
+              '/delete-account': '/api/local-control/delete-account',
+            }[req.url],
           {
             method: 'POST',
             headers: { 'content-type': 'application/json', 'x-local-control': controlSecret },
@@ -411,14 +426,14 @@ export async function createController(options = {}) {
         const result = await response.json();
         if (!response.ok) throw Error(result.error || 'The server rejected this action.');
         if (population) {
-          config = { ...config, allowBots: body.enabled };
+          config = { ...config, allowBots: body.enabled, botDifficulty: result.difficulty };
           await writeFile(settingsPath, JSON.stringify(config, null, 2));
         }
         log(
           'control',
           population
             ? `Bot population ${body.enabled ? 'enabled' : 'paused'}.`
-            : `Moderation: ${body.action} (${body.profileId}).`,
+            : `User action: ${body.action || req.url.slice(1)} (${body.profileId}).`,
         );
       } else if (req.url === '/settings') {
         const url = new URL(body.frontendURL);

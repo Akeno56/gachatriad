@@ -6,8 +6,9 @@ import { Database, type Sql } from './database';
 import { GameError } from './errors';
 
 interface PackRow {
+  new_cards: string[];
   id: string;
-  source: 'starter' | 'purchase';
+  source: 'starter' | 'purchase' | 'admin';
   cost: number;
   cards: string[] | null;
   created_at: Date;
@@ -16,6 +17,7 @@ interface PackRow {
 const definitions = new Map(ALL_CARDS.map((c) => [c.id, c]));
 function view(pack: PackRow): BoosterView {
   return {
+    newCardIds: pack.opened_at ? (pack.new_cards ?? []) : [],
     id: pack.id,
     source: pack.source,
     cost: pack.cost,
@@ -94,6 +96,7 @@ export class Economy {
         owned.map((c) => definitions.get(c.card_id)?.baseCardId ?? c.card_id),
       );
       const selected: string[] = [];
+      const newCardIds: string[] = [];
       const selectedBases = new Set<string>();
       for (let slot = 0; slot < 5; slot++) {
         const weights =
@@ -113,6 +116,7 @@ export class Economy {
         selectedBases.add(base.id);
         const cardId = randomInt(10000) < ECONOMY.holoPer10000 ? `${base.id}::holo` : base.id;
         selected.push(cardId);
+        if (!owned.some((c) => c.card_id === cardId)) newCardIds.push(cardId);
         await sql(
           'INSERT INTO inventory(profile_id,card_id,quantity) VALUES($1,$2,1) ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=inventory.quantity+1',
           [profileId, cardId],
@@ -123,8 +127,8 @@ export class Economy {
         );
       }
       const [opened] = await sql<PackRow>(
-        'UPDATE booster_packs SET cards=$1::jsonb,opened_at=now() WHERE id=$2 RETURNING *',
-        [JSON.stringify(selected), packId],
+        'UPDATE booster_packs SET cards=$1::jsonb,opened_at=now(),new_cards=$3::jsonb WHERE id=$2 RETURNING *',
+        [JSON.stringify(selected), packId, JSON.stringify(newCardIds)],
       );
       const [p] = await sql<{ default_deck: string[] }>(
         'SELECT default_deck FROM profiles WHERE id=$1',
@@ -135,14 +139,20 @@ export class Economy {
           'SELECT card_id FROM inventory WHERE profile_id=$1 AND quantity>reserved',
           [profileId],
         );
-        const deck = randomDeck(
-          pool.map((c) => definitions.get(c.card_id)!),
-          seededRandom(randomInt(2 ** 32)),
-        );
-        await sql('UPDATE profiles SET default_deck=$1::jsonb WHERE id=$2', [
-          JSON.stringify(deck.map((c) => c.id)),
-          profileId,
-        ]);
+        let deck: string[] | null = null;
+        try {
+          deck = randomDeck(
+            pool.map((c) => definitions.get(c.card_id)!),
+            seededRandom(randomInt(2 ** 32)),
+          ).map((c) => c.id);
+        } catch {
+          /* Opening a paid/gift pack must still persist even when a legal deck cannot be built yet. */
+        }
+        if (deck)
+          await sql('UPDATE profiles SET default_deck=$1::jsonb WHERE id=$2', [
+            JSON.stringify(deck),
+            profileId,
+          ]);
       }
       return view(opened);
     });
@@ -154,5 +164,79 @@ export class Economy {
     );
     if (rows.length)
       await sql('UPDATE profiles SET prisms=prisms+$1 WHERE id=$2', [amount, profileId]);
+  }
+  async grant(
+    profileId: unknown,
+    kind: unknown,
+    amount: unknown,
+    requestId: unknown,
+    actor: string,
+  ) {
+    if (
+      typeof profileId !== 'string' ||
+      !['prisms', 'boosters'].includes(String(kind)) ||
+      !Number.isInteger(amount) ||
+      typeof amount !== 'number' ||
+      amount < 1 ||
+      amount > (kind === 'prisms' ? 1000000 : 100) ||
+      typeof requestId !== 'string' ||
+      !/^[a-zA-Z0-9-]{8,80}$/.test(requestId)
+    )
+      throw new GameError(
+        'Choose a player, 1–1,000,000 Prisms or 1–100 boosters, and a valid request ID.',
+      );
+    return this.db.tx(async (sql) => {
+      const [previous] = await sql<{ profile_id: string; kind: string; amount: number }>(
+        'SELECT * FROM admin_grants WHERE id=$1',
+        [requestId],
+      );
+      if (previous) {
+        if (
+          previous.profile_id !== profileId ||
+          previous.kind !== kind ||
+          previous.amount !== amount
+        )
+          throw new GameError('This grant request ID is already used.', 409);
+        return { ok: true };
+      }
+      if (
+        !(
+          await sql(
+            'SELECT 1 FROM profiles p JOIN profile_accounts a ON a.profile_id=p.id WHERE p.id=$1 AND NOT p.is_bot',
+            [profileId],
+          )
+        ).length
+      )
+        throw new GameError('Player not found.', 404);
+      await sql(
+        'INSERT INTO admin_grants(id,profile_id,kind,amount,actor) VALUES($1,$2,$3,$4,$5)',
+        [requestId, profileId, kind, amount, actor],
+      );
+      if (kind === 'prisms') {
+        if (
+          !(
+            await sql(
+              'UPDATE profiles SET prisms=prisms+$1 WHERE id=$2 AND prisms<=2147483647-$1 RETURNING id',
+              [amount, profileId],
+            )
+          ).length
+        )
+          throw new GameError('Currency balance limit reached.');
+        await sql(
+          "INSERT INTO prism_ledger(id,profile_id,delta,kind,reference) VALUES($1,$2,$3,'admin-grant',$4)",
+          [randomUUID(), profileId, amount, `grant:${requestId}`],
+        );
+      } else
+        for (let i = 0; i < amount; i++)
+          await sql(
+            "INSERT INTO booster_packs(id,profile_id,source,request_id) VALUES($1,$2,'admin',$3)",
+            [randomUUID(), profileId, `grant:${requestId}:${i}`],
+          );
+      await sql(
+        "INSERT INTO moderation_log(id,auth_user_id,action,reason) SELECT $1,auth_user_id,'grant',$2 FROM profile_accounts WHERE profile_id=$3 AND is_primary",
+        [randomUUID(), `${actor}: ${amount} ${kind}`, profileId],
+      );
+      return { ok: true };
+    });
   }
 }

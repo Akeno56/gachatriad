@@ -2,21 +2,25 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { RetroAudio, type Sound } from '../lib/audio';
+import { RetroAudio, type Sound, type MusicScene } from '../lib/audio';
 import { SessionProvider, AccountMenu } from './session';
 import { ServerConnection } from './server-connection';
 import { FirstDuelTutorial } from './tutorial';
 import { StarterBoosters } from './starter-boosters';
 import { useSession } from './session';
+import { RankedWarning } from './ranked-warning';
+import { SocialPanel } from './social-panel';
 const AudioContext = createContext<(sound: Sound) => void>(() => {});
+const MusicSceneContext = createContext<(scene: MusicScene) => void>(() => {});
 export const useGameAudio = () => useContext(AudioContext);
+export const useMusicScene = () => useContext(MusicSceneContext);
 export function GameShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const audio = useRef<RetroAudio | null>(null);
-  const musicWanted = useRef(false);
-  const [music, setMusic] = useState(false);
-  const [musicVolume, setMusicVolume] = useState(70),
-    [sfxVolume, setSfxVolume] = useState(70);
+  const musicWanted = useRef(true);
+  const [music, setMusic] = useState(true);
+  const [musicVolume, setMusicVolume] = useState(50),
+    [sfxVolume, setSfxVolume] = useState(50);
   const [sfx, setSfx] = useState(true);
   const [crt, setCrt] = useState(true);
   const [fullScreen, setFullScreen] = useState(false);
@@ -25,6 +29,12 @@ export function GameShell({ children }: { children: React.ReactNode }) {
     if (!audio.current) audio.current = new RetroAudio();
     return audio.current;
   }, []);
+  const changeMusicScene = useCallback(
+    (scene: MusicScene) => {
+      getAudio().setScene(scene);
+    },
+    [getAudio],
+  );
   const play = useCallback(
     (sound: Sound) => {
       try {
@@ -43,8 +53,8 @@ export function GameShell({ children }: { children: React.ReactNode }) {
       getAudio().setSfx(enabled);
       const readVolume = (key: string) => {
         const saved = localStorage.getItem(key),
-          value = saved === null ? 70 : Number(saved);
-        return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 70;
+          value = saved === null ? 50 : Number(saved);
+        return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 50;
       };
       const mv = readVolume('triad-music-volume'),
         sv = readVolume('triad-sfx-volume');
@@ -52,7 +62,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
       setSfxVolume(sv);
       getAudio().setMusicVolume(mv / 100);
       getAudio().setSfxVolume(sv / 100);
-      musicWanted.current = localStorage.getItem('triad-music') === 'on';
+      musicWanted.current = localStorage.getItem('triad-music') !== 'off';
       setMusic(musicWanted.current);
     } catch {
       /* Preferences are optional. */
@@ -122,138 +132,143 @@ export function GameShell({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <AudioContext.Provider value={play}>
-        <div className={`game-shell ${crt ? 'crt-enabled' : ''}`}>
-          <div className="screen-grain" aria-hidden="true" />
-          <header className="system-bar">
-            <Link href="/" className="system-brand" aria-label="Gacha Triad home">
-              GT<span>GACHA TRIAD</span>
-            </Link>
-            <nav aria-label="Main navigation">
-              {[
-                { href: '/', label: 'Play' },
-                { href: '/cards', label: 'Cards' },
-                { href: '/lobbies', label: 'Lobbies' },
-                { href: '/collection', label: 'Collection' },
-                { href: '/market', label: 'Trades' },
-                { href: '/boosters', label: 'Boosters' },
-                { href: '/rules', label: 'Rulebook' },
-              ].map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={pathname === item.href ? 'page' : undefined}
-                  onClick={() => play('menu')}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-            <div className="system-controls">
-              <nav className="player-navigation" aria-label="Player navigation">
+        <MusicSceneContext.Provider value={changeMusicScene}>
+          <div className={`game-shell ${crt ? 'crt-enabled' : ''}`}>
+            <div className="screen-grain" aria-hidden="true" />
+            <header className="system-bar">
+              <Link href="/" className="system-brand" aria-label="Gacha Triad home">
+                GT<span>GACHA TRIAD</span>
+              </Link>
+              <nav aria-label="Main navigation">
                 {[
-                  { href: '/profile', label: 'Profile' },
-                  { href: '/achievements', label: 'Achievements' },
+                  { href: '/', label: 'Play' },
+                  { href: '/cards', label: 'Cards' },
+                  { href: '/lobbies', label: 'Lobbies' },
+                  { href: '/collection', label: 'Collection' },
+                  { href: '/market', label: 'Trades' },
+                  { href: '/boosters', label: 'Boosters' },
+                  { href: '/ladder', label: 'Ladder' },
+                  { href: '/rules', label: 'Rulebook' },
                 ].map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
                     aria-current={pathname === item.href ? 'page' : undefined}
+                    onClick={() => play('menu')}
                   >
                     {item.label}
                   </Link>
                 ))}
               </nav>
-              <Wallet />
-              <AccountMenu />
-              <button
-                className="server-control"
-                onClick={() => window.dispatchEvent(new Event('triad:connection-settings'))}
-              >
-                Server
-              </button>
-              <button
-                aria-label={`Music ${music ? 'on' : 'off'}`}
-                aria-pressed={music}
-                onClick={toggleMusic}
-              >
-                ♫ <span>MUSIC</span> {music ? 'ON' : 'OFF'}
-              </button>
-              <button
-                aria-label={`Sound effects ${sfx ? 'on' : 'off'}`}
-                aria-pressed={sfx}
-                onClick={toggleSfx}
-              >
-                ♪ <span>SFX</span> {sfx ? 'ON' : 'OFF'}
-              </button>
-              <button
-                aria-label={`CRT filter ${crt ? 'on' : 'off'}`}
-                aria-pressed={crt}
-                onClick={toggleCrt}
-              >
-                <span>CRT</span> {crt ? 'ON' : 'OFF'}
-              </button>
-              <details className="volume-controls">
-                <summary>Volume</summary>
-                <div className="menu-window volume-panel">
-                  <label>
-                    Music volume <output>{musicVolume}%</output>
-                    <input
-                      aria-label="Music volume"
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={musicVolume}
-                      onChange={(e) => {
-                        const value = Number(e.target.value);
-                        setMusicVolume(value);
-                        getAudio().setMusicVolume(value / 100);
-                        try {
-                          localStorage.setItem('triad-music-volume', String(value));
-                        } catch {}
-                      }}
-                    />
-                  </label>
-                  <label>
-                    Sound effects volume <output>{sfxVolume}%</output>
-                    <input
-                      aria-label="Sound effects volume"
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={sfxVolume}
-                      onChange={(e) => {
-                        const value = Number(e.target.value);
-                        setSfxVolume(value);
-                        getAudio().setSfxVolume(value / 100);
-                        try {
-                          localStorage.setItem('triad-sfx-volume', String(value));
-                        } catch {}
-                      }}
-                    />
-                  </label>
-                </div>
-              </details>
-              <button
-                className="fullscreen-control"
-                aria-label={fullScreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-                onClick={toggleFullscreen}
-              >
-                ⛶
-              </button>
+              <div className="system-controls">
+                <nav className="player-navigation" aria-label="Player navigation">
+                  {[
+                    { href: '/profile', label: 'Profile' },
+                    { href: '/achievements', label: 'Achievements' },
+                  ].map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      aria-current={pathname === item.href ? 'page' : undefined}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </nav>
+                <Wallet />
+                <AccountMenu />
+                <button
+                  className="server-control"
+                  onClick={() => window.dispatchEvent(new Event('triad:connection-settings'))}
+                >
+                  Server
+                </button>
+                <button
+                  aria-label={`Music ${music ? 'on' : 'off'}`}
+                  aria-pressed={music}
+                  onClick={toggleMusic}
+                >
+                  ♫ <span>MUSIC</span> {music ? 'ON' : 'OFF'}
+                </button>
+                <button
+                  aria-label={`Sound effects ${sfx ? 'on' : 'off'}`}
+                  aria-pressed={sfx}
+                  onClick={toggleSfx}
+                >
+                  ♪ <span>SFX</span> {sfx ? 'ON' : 'OFF'}
+                </button>
+                <button
+                  aria-label={`CRT filter ${crt ? 'on' : 'off'}`}
+                  aria-pressed={crt}
+                  onClick={toggleCrt}
+                >
+                  <span>CRT</span> {crt ? 'ON' : 'OFF'}
+                </button>
+                <details className="volume-controls">
+                  <summary>Volume</summary>
+                  <div className="menu-window volume-panel">
+                    <label>
+                      Music volume <output>{musicVolume}%</output>
+                      <input
+                        aria-label="Music volume"
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={musicVolume}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          setMusicVolume(value);
+                          getAudio().setMusicVolume(value / 100);
+                          try {
+                            localStorage.setItem('triad-music-volume', String(value));
+                          } catch {}
+                        }}
+                      />
+                    </label>
+                    <label>
+                      Sound effects volume <output>{sfxVolume}%</output>
+                      <input
+                        aria-label="Sound effects volume"
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={sfxVolume}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          setSfxVolume(value);
+                          getAudio().setSfxVolume(value / 100);
+                          try {
+                            localStorage.setItem('triad-sfx-volume', String(value));
+                          } catch {}
+                        }}
+                      />
+                    </label>
+                  </div>
+                </details>
+                <button
+                  className="fullscreen-control"
+                  aria-label={fullScreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                  onClick={toggleFullscreen}
+                >
+                  ⛶
+                </button>
+              </div>
+            </header>
+            <main id="main">
+              <ServerConnection>
+                <StarterBoosters />
+                {children}
+                <FirstDuelTutorial />
+                <RankedWarning />
+                <SocialPanel />
+              </ServerConnection>
+            </main>
+            <div className="system-message" role="status">
+              {notice}
             </div>
-          </header>
-          <main id="main">
-            <ServerConnection>
-              <StarterBoosters />
-              {children}
-              <FirstDuelTutorial />
-            </ServerConnection>
-          </main>
-          <div className="system-message" role="status">
-            {notice}
+            <div className="crt-overlay" aria-hidden="true" />
           </div>
-          <div className="crt-overlay" aria-hidden="true" />
-        </div>
+        </MusicSceneContext.Provider>
       </AudioContext.Provider>
     </SessionProvider>
   );

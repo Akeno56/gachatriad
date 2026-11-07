@@ -357,7 +357,7 @@ export function applyMove(state: GameState, move: Move): GameState {
   };
 }
 
-export type Difficulty = 'easy' | 'normal';
+export type Difficulty = 'easy' | 'normal' | 'hard';
 /** CPU receives only its own hand and the public board. Opponent hidden cards are omitted. */
 export type CpuView = Omit<GameState, 'hands' | 'revealed'> & { readonly hand: readonly Card[] };
 export function cpuView(state: GameState): CpuView {
@@ -389,8 +389,25 @@ export function chooseCpuMove(
       (total, n) => total + Math.max(0, 6 - card.stats[n.side] - modifier),
       0,
     );
-    const value =
+    let value =
       captures * 12 + defense * 0.22 - weakness * 0.65 + (exposure.length === 0 ? 0.4 : 0);
+    if (difficulty === 'hard') {
+      // Evaluate exposed friendly edges, including flipped cards, without reading hidden hands.
+      let risk = 0;
+      for (let cell = 0; cell < 9; cell++) {
+        const placed = next.board[cell];
+        if (!placed || placed.owner !== view.turn) continue;
+        const mark = elementalModifier(next, placed.card, cell);
+        for (const edge of neighbors(cell))
+          if (!next.board[edge.cell]) risk += Math.max(0, 9 - placed.card.stats[edge.side] - mark);
+      }
+      value =
+        captures * 15 +
+        defense * 0.32 -
+        weakness * 0.85 -
+        risk * 0.9 +
+        (exposure.length === 0 ? 2 : 0);
+    }
     if (value > best + 0.0001) {
       best = value;
       candidates = [move];

@@ -2,6 +2,8 @@
 
 A local Triple Triad fan game with FF-style menus, CRT presentation, 400 playable cross-game cards and persistent multiplayer services.
 
+**v0.6:** friends, main chat, human ranked/Draft ladders and friend duel invitations; earned titles and square match avatars; separate ranked entry with first-time Trade One consent. Hosts can control bot difficulty, grant currency/boosters to a selected user and delete confirmed accounts. Guest accounts expire after seven inactive days; temporary guest profiles are discarded on existing-account sign-in. Lost last copies are removed from active decks. Booster opening now uses a centered pack, individual reveals and a final fan. Menu and battle music are separate, with fades, default ON and 50% volume. See [community/account rules](docs/SOCIAL_AND_ACCOUNTS.md).
+
 **v0.5:** three five-card starter boosters replace the old new-profile card grant; every pack guarantees a 3★ or better card. Standard boosters cost 150 **Stellar Prisms**, earned at 50/25/10 for completed wins/draws/losses. The private PC control panel manages bots, admin assignments and account moderation. Only explicitly appointed registered admins can see or use in-game bot controls. Music and SFX have saved volume sliders, Holo cards animate at rest, number shadows are lighter, and personal navigation sits on the right. See [booster rules](docs/BOOSTER_PACKS.md).
 
 **v0.4:** results now open over the board in a centered dialog; all game dialogs center consistently. Cards shows collection ownership and Standard/Holo finishes, with unowned copies greyed out. Character Library has been removed from the UI. Decks is now **Collection**, without artwork-inspection buttons. The main menu keeps a small bottom-right Credits link instead of a navigation tab. Music on/off is remembered and resumes on the next permitted gesture after reload.
@@ -32,7 +34,7 @@ Open [the game](http://127.0.0.1:3000). This starts Next.js on port 3000 and the
 
 ## Try the local world
 
-Open **Lobbies → Populate with bots**. Ten persistent players labeled **[BOT]** open waiting tables, play exhibition games, join player-created tables, draft, post card exchange offers and accept offers they can fulfil. Bots obey the real engine, reservations and inventory transfers. **Pause population** closes their waiting tables and offers; existing duels continue to completion. Bot activity affects this local save's cards, records and ratings. Bots are opt-in and disabled by default when `NODE_ENV=production`, unless `LOCAL_BOTS=true` is explicitly configured.
+Use the private server control panel's bot tools, or **Lobbies → Populate with bots** while signed in as an admin. Ten persistent players labeled **[BOT]** open waiting tables, play exhibition games, join tables that allow bots, draft, post card exchange offers and accept offers they can fulfil. Difficulty defaults to Medium and can be changed in the control panel. Bots obey the real engine, reservations and inventory transfers. **Pause population** closes their waiting tables and offers; existing duels continue to completion. Bot activity affects this local save's cards, records and ratings. Bots are opt-in and disabled by default when `NODE_ENV=production`, unless `LOCAL_BOTS=true` is explicitly configured.
 
 Guests can practice, build their starter deck, play unranked/custom/Roulette and browse the exchange. Use the account button to register with email and a password of at least ten characters; registration preserves guest progress. Ranked, rated Draft, and permanent card trades require an account. Email verification, recovery delivery and OAuth are not configured in this local prototype.
 
@@ -49,7 +51,7 @@ Guests can practice, build their starter deck, play unranked/custom/Roulette and
 - **Exchange:** permanent card-for-card offers with reservations, confirmation, atomic settlement and a ledger. A currency marketplace and auctions are future work.
 - **Achievements:** eleven persistent goals derived from server-recorded games, capture chains, collection and Trade One.
 
-Cards and board artwork are about 150% of v0.2 at full desktop width. Smaller screens use scrolling hands and artwork inspection. Menus retain their own scale. Music uses the supplied GlacialSpoon “Queen of Cards” MP3 with a six-second equal-power crossfade from ending to opening; this smooths playback without claiming a beat-perfect loop. Music is opt-in; hidden tabs pause it. Credits live on `/credits`, without individual Prydwen links in the library.
+Cards and board artwork are about 150% of v0.2 at full desktop width. Smaller screens use scrolling hands and artwork inspection. Menus retain their own scale. Menus use the supplied “Shuffle or Boogie (Ambient Remix) — Hands of Fate” recording; active duels use GlacialSpoon’s “Queen of Cards.” Both tracks loop with a six-second equal-power crossfade, and scene changes fade out/in. Fresh browsers default to Music ON and both volumes at 50%; playback waits for a permitted gesture and hidden tabs pause it. Saved choices take precedence. Credits live on `/credits`, without individual Prydwen links in the library.
 
 ## Cards and artwork
 

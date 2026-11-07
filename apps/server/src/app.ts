@@ -13,6 +13,8 @@ import { Trades } from './trades';
 import { BotPopulation } from './bots';
 import { allowedOrigins } from './config';
 import { Moderation } from './moderation';
+import { GuestLifecycle } from './lifecycle';
+import { Social } from './social';
 export async function createPlatform(
   root: string,
   options: { memory?: boolean; timers?: boolean; logger?: boolean } = {},
@@ -26,15 +28,21 @@ export async function createPlatform(
   const origin = process.env.CLIENT_ORIGIN || 'http://127.0.0.1:3000';
   const origins = allowedOrigins();
   const authURL = process.env.BETTER_AUTH_URL || origin;
-  const { auth, flushLinks } = await createAuth(db, root, authURL);
+  const { auth, flushLinks, setGuestCleanup } = await createAuth(db, root, authURL);
   const store = new GameStore(db, (await auth.$context).secret);
   await store.migrate(root);
+  const guests = new GuestLifecycle(store);
+  setGuestCleanup((ids) => guests.discard(ids));
+  await guests.cleanup();
   const trades = new Trades(db),
     bots = new BotPopulation(store, trades);
   const moderation = new Moderation(db);
+  const social = new Social(store);
   if (!bots.available) await bots.set(false);
   else if (process.env.POPULATE_BOTS === 'true') await bots.set(true);
   else if (process.env.POPULATE_BOTS === 'false') await bots.set(false);
+  if (process.env.BOT_DIFFICULTY)
+    await bots.set((await bots.status()).enabled, process.env.BOT_DIFFICULTY);
   const app = Fastify({
     trustProxy: '127.0.0.1',
     logger: options.logger ?? false,
@@ -43,6 +51,7 @@ export async function createPlatform(
   });
   await app.register(cors, {
     origin: origins,
+    methods: ['GET', 'HEAD', 'POST', 'DELETE', 'OPTIONS'],
     credentials: true,
     exposedHeaders: ['set-auth-token'],
   });
@@ -94,11 +103,23 @@ export async function createPlatform(
     const requested = req.headers['x-profile-id'];
     return store.profile(session.user, typeof requested === 'string' ? requested : undefined);
   }
+  let shuttingDown = false;
+  const upgradedSockets = new Set<import('node:stream').Duplex>();
   const io = new Server(app.server, {
     cors: { origin: origins, credentials: true },
     maxHttpBufferSize: 8192,
     allowRequest: (req, callback) =>
-      callback(null, !req.headers.origin || origins.includes(req.headers.origin)),
+      callback(
+        null,
+        !shuttingDown && (!req.headers.origin || origins.includes(req.headers.origin)),
+      ),
+  });
+  // Track upgrades even before Engine.IO/Socket.IO authentication has finished.
+  // http.Server.close() does not close upgraded TCP connections itself.
+  app.server.on('upgrade', (_req, socket) => {
+    upgradedSockets.add(socket);
+    socket.once('close', () => upgradedSockets.delete(socket));
+    if (shuttingDown) socket.destroy();
   });
   io.use(async (socket, next) => {
     try {
@@ -135,6 +156,93 @@ export async function createPlatform(
     )
       throw new GameError('Not found.', 404);
   }
+  app.post('/api/local-control/grant', async (req) => {
+    requireHost(req);
+    const b = body(req);
+    const result = await store.economy.grant(b.profileId, b.kind, b.amount, b.requestId, 'host');
+    notify();
+    return result;
+  });
+  app.post('/api/local-control/delete-account', async (req) => {
+    requireHost(req);
+    const b = body(req);
+    const ids = await guests.deleteAccount(b.profileId, b.confirmation);
+    if (!ids) throw new GameError('The selected account name must match your confirmation.', 409);
+    for (const socket of io.sockets.sockets.values())
+      if (ids.includes(socket.data.profileId)) socket.disconnect(true);
+    notify();
+    return { ok: true };
+  });
+  app.get('/api/social', async (req) =>
+    social.view(
+      await profile(req),
+      new Set(Array.from(io.sockets.sockets.values()).map((s) => s.data.profileId)),
+    ),
+  );
+  app.get('/api/players/search', async (req) =>
+    social.search(await profile(req), (req.query as { search?: string }).search),
+  );
+  app.post('/api/friends/request', async (req) => {
+    await social.friend(await profile(req), body(req).playerId, 'request');
+    notify();
+    return { ok: true };
+  });
+  app.post('/api/friends/:id/accept', async (req) => {
+    await social.friend(await profile(req), id(req), 'accept');
+    notify();
+    return { ok: true };
+  });
+  app.delete('/api/friends/:id', async (req) => {
+    await social.friend(await profile(req), id(req), 'remove');
+    notify();
+    return { ok: true };
+  });
+  app.post('/api/chat', async (req) => {
+    const result = await social.post(await profile(req), body(req).message, body(req).requestId);
+    notify();
+    return result;
+  });
+  app.delete('/api/chat/:id', async (req) => {
+    await social.deleteMessage(await profile(req), id(req));
+    notify();
+    return { ok: true };
+  });
+  app.post('/api/invites', async (req) => {
+    const result = await social.invite(await profile(req), body(req).playerId);
+    notify();
+    return result;
+  });
+  app.post('/api/invites/:id/respond', async (req) => {
+    if (typeof body(req).accept !== 'boolean')
+      throw new GameError('Accept or decline the invitation.');
+    const result = await social.respond(await profile(req), id(req), body(req).accept as boolean);
+    notify();
+    return result;
+  });
+  app.get('/api/ladder', async (req) => {
+    await profile(req);
+    return social.ladder((req.query as { mode?: string }).mode);
+  });
+  app.post('/api/profile/title', async (req) => {
+    await store.setTitle((await profile(req)).id, body(req).titleId);
+    notify();
+    return { ok: true };
+  });
+  app.post('/api/ranked/acknowledge', async (req) => {
+    const p = await profile(req);
+    if (!p.registered) throw new GameError('Register before entering ranked.', 403);
+    if (body(req).acknowledged !== true) throw new GameError('Acknowledge the Trade One warning.');
+    await store.acknowledgeRanked(p.id);
+    return { ok: true };
+  });
+  app.post('/api/admin/grants', async (req) => {
+    const p = await profile(req);
+    if (!p.isAdmin) throw new GameError('Administrator access required.', 403);
+    const b = body(req),
+      result = await store.economy.grant(b.profileId, b.kind, b.amount, b.requestId, p.id);
+    notify();
+    return result;
+  });
   app.get('/api/local-control/users', async (req) => {
     requireHost(req);
     return {
@@ -172,7 +280,7 @@ export async function createPlatform(
   app.post('/api/local-control/bots', async (req) => {
     requireHost(req);
     if (typeof body(req).enabled !== 'boolean') throw new GameError('Choose enabled or disabled.');
-    const result = await bots.set(body(req).enabled as boolean);
+    const result = await bots.set(body(req).enabled as boolean, body(req).difficulty);
     notify();
     return result;
   });
@@ -236,7 +344,7 @@ export async function createPlatform(
   app.post('/api/local-bots', async (req) => {
     if (!(await profile(req)).isAdmin) throw new GameError('Administrator access required.', 403);
     if (typeof body(req).enabled !== 'boolean') throw new GameError('Choose enabled or disabled.');
-    const status = await bots.set(body(req).enabled as boolean);
+    const status = await bots.set(body(req).enabled as boolean, body(req).difficulty);
     notify();
     return status;
   });
@@ -304,6 +412,7 @@ export async function createPlatform(
       name: typeof b.name === 'string' ? b.name : undefined,
       rules: b.rules,
       tradeRule: typeof b.tradeRule === 'string' ? b.tradeRule : undefined,
+      allowBots: typeof b.allowBots === 'boolean' ? b.allowBots : undefined,
     });
     notify();
     return result;
@@ -348,7 +457,8 @@ export async function createPlatform(
     return store.view(p.id, id(req));
   });
   let ticking = false,
-    lastBots = 0;
+    lastBots = 0,
+    lastGuestCleanup = Date.now();
   const timer =
     options.timers === false
       ? null
@@ -357,6 +467,10 @@ export async function createPlatform(
           ticking = true;
           try {
             let changed = (await store.tick()).length > 0;
+            if (Date.now() - lastGuestCleanup > 300000) {
+              lastGuestCleanup = Date.now();
+              changed = (await guests.cleanup()) > 0 || changed;
+            }
             if (Date.now() - lastBots > 1000) {
               lastBots = Date.now();
               changed = (await bots.tick()) || changed;
@@ -369,10 +483,12 @@ export async function createPlatform(
           }
         }, 250);
   app.addHook('preClose', async () => {
+    shuttingDown = true;
     bots.shutdown();
     app.log.info('Stopping game timers and player connections.');
     if (timer) clearInterval(timer);
     io.engine?.close();
+    for (const socket of upgradedSockets) socket.destroy();
     while (ticking) await new Promise((r) => setTimeout(r, 10));
     app.log.info('Game activity stopped.');
   });
@@ -386,5 +502,5 @@ export async function createPlatform(
       release();
     }
   });
-  return { app, store, db, auth, bots, trades, moderation };
+  return { app, store, db, auth, bots, trades, moderation, guests, social };
 }

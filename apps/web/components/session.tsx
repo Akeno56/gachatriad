@@ -2,8 +2,14 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import type { ProfileView } from '@gacha-triad/shared/platform';
-import { api, session, resetSession } from '../lib/platform';
-import { serverConfigured, socketURL, sessionToken, profileKey } from '../lib/connection';
+import { api, session, resetSession, ApiError } from '../lib/platform';
+import {
+  serverConfigured,
+  socketURL,
+  sessionToken,
+  profileKey,
+  clearToken,
+} from '../lib/connection';
 const Context = createContext<{
   profile: ProfileView | null;
   error: string;
@@ -42,6 +48,12 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         } catch (e) {
           if (localStorage.getItem(profileKey())) {
             localStorage.removeItem(profileKey());
+            next = await api<ProfileView>('/profile');
+          } else if (e instanceof ApiError && e.status === 401) {
+            await api('/auth/sign-out', {}).catch(() => {});
+            clearToken();
+            resetSession();
+            await session();
             next = await api<ProfileView>('/profile');
           } else throw e;
         }
@@ -129,24 +141,6 @@ export function AccountMenu() {
             <p>
               {profile.name} · Rating {profile.rating} · Draft {profile.draftRating}
             </p>
-            {profile.profiles.length > 1 && (
-              <label>
-                Active profile
-                <select
-                  value={profile.id}
-                  onChange={async (e) => {
-                    localStorage.setItem(profileKey(), e.target.value);
-                    await refresh();
-                  }}
-                >
-                  {profile.profiles.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
             <button
               className="outline-button"
               onClick={async () => {

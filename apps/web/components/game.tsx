@@ -18,9 +18,11 @@ import { Card } from './card';
 import { CardDetail } from './card-detail';
 import { RulesContent } from './rules-content';
 import { ComboLesson } from './combo-lesson';
-import { useGameAudio } from './game-shell';
+import { useGameAudio, useMusicScene } from './game-shell';
 import { ElementIcon } from './element-icon';
 import { ResultOverlay } from './result-overlay';
+import { Avatar } from './avatar';
+import { confirmRanked } from './ranked-warning';
 export function ruleNames(r: Rules) {
   return [
     r.allOpen ? 'All Open' : r.threeOpen ? 'Three Open' : 'Closed',
@@ -49,12 +51,19 @@ export function Game() {
     [draft, setDraft] = useState<string[]>([]),
     [clock, setClock] = useState(Date.now());
   const [resultOpen, setResultOpen] = useState(true);
+  const changeMusicScene = useMusicScene();
+  useEffect(() => {
+    changeMusicScene(match?.status === 'playing' ? 'battle' : 'menu');
+    return () => changeMusicScene('menu');
+  }, [match?.status, changeMusicScene]);
   useEffect(() => setResultOpen(true), [match?.id]);
   const dialogRef = useRef<HTMLDialogElement>(null),
     seen = useRef(''),
     resultSeen = useRef('');
   const sound = useGameAudio();
-  const preset = PRESETS.find((p) => p.id === presetId)!;
+  const preset =
+    PRESETS.find((p) => p.id === presetId && p.id !== 'ranked') ??
+    PRESETS.find((p) => p.id === 'unranked')!;
   const load = useCallback(async (id: string) => {
     try {
       const next = await api<MatchView>(`/matches/${id}`);
@@ -69,7 +78,9 @@ export function Game() {
   useEffect(() => {
     if (!profile) return;
     const query = new URLSearchParams(location.search).get('match');
-    if (!matchId && (query || profile.activeMatchId)) setMatchId(query || profile.activeMatchId);
+    if (profile.activeMatchId && profile.activeMatchId !== matchId)
+      setMatchId(profile.activeMatchId);
+    else if (!matchId && query) setMatchId(query);
   }, [profile, matchId]);
   useEffect(() => {
     if (matchId) {
@@ -214,7 +225,7 @@ export function Game() {
                 value={presetId}
                 onChange={(e) => setPresetId(e.target.value)}
               >
-                {PRESETS.map((p) => (
+                {PRESETS.filter((p) => p.id !== 'ranked').map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
                   </option>
@@ -231,6 +242,40 @@ export function Game() {
               <Link className="outline-button lobby-shortcut" href="/lobbies">
                 Play online
               </Link>
+              <button
+                className="outline-button ranked-play-button"
+                disabled={busy || !profile?.registered}
+                onClick={async () => {
+                  if (!(await confirmRanked(profile))) return;
+                  setBusy(true);
+                  try {
+                    const result = await api<{ matchId: string | null }>('/lobbies', {
+                      mode: 'ranked',
+                      allowBots: true,
+                    });
+                    await refresh();
+                    location.href = appPath(
+                      result.matchId ? `/?match=${result.matchId}` : '/lobbies',
+                    );
+                  } catch (e) {
+                    setError((e as Error).message);
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                Play ranked
+              </button>
+              <p className="ranked-stakes-note">
+                Players and Medium/Hard bots · Trade One: a loss can cost one card. Account
+                required.
+              </p>
+              {profile && profile.deck.length !== 5 && (
+                <p className="deck-warning" role="status">
+                  Your active deck has {profile.deck.length}/5 cards.{' '}
+                  <Link href="/collection">Complete your deck in Collection</Link> before playing.
+                </p>
+              )}
               <div className="setup-secondary">
                 <button className="text-button" onClick={() => setDialog('rules')}>
                   How to play
@@ -279,7 +324,7 @@ export function Game() {
             </p>
           </div>
           <div className="build-label">
-            400 CARDS · v0.4{' '}
+            400 CARDS · v0.6{' '}
             <Link href="/credits" className="credits-button">
               Credits
             </Link>
@@ -373,9 +418,16 @@ export function Game() {
                   <div
                     className={`player-heading ${game.turn === seat && match.status === 'playing' ? 'active-player' : ''}`}
                   >
-                    <span className="player-number">YOU</span>
+                    <Avatar
+                      key={match.players[seat].avatar?.id ?? 'you'}
+                      card={match.players[seat].avatar}
+                      name={match.names[seat]}
+                    />
                     <div>
                       <strong>{match.names[seat]}</strong>
+                      {match.players[seat].title && (
+                        <span className="battle-title">{match.players[seat].title}</span>
+                      )}
                       <small>
                         {game.turn === seat && match.status === 'playing'
                           ? 'YOUR TURN'
@@ -391,9 +443,23 @@ export function Game() {
                     className={`player-heading cpu-heading ${game.turn === other && match.status === 'playing' ? 'active-player' : ''}`}
                   >
                     <span className="cpu-score">{match.score[other]}</span>
+                    <Avatar
+                      key={match.players[other].avatar?.id ?? 'rival'}
+                      card={match.players[other].avatar}
+                      name={match.names[other]}
+                    />
                     <div>
                       <strong>{match.names[other]}</strong>
-                      <small>{match.mode === 'solo' ? 'CPU' : 'OPPONENT'}</small>
+                      {match.players[other].title && (
+                        <span className="battle-title">{match.players[other].title}</span>
+                      )}
+                      <small>
+                        {game.turn === other && match.status === 'playing'
+                          ? 'OPPONENT’S TURN'
+                          : match.mode === 'solo'
+                            ? 'CPU'
+                            : 'OPPONENT'}
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -439,7 +505,7 @@ export function Game() {
                   </div>
                   <div className="board-area">
                     <div
-                      className={`turn-banner ${game.turn === other ? 'cpu-turn' : ''}`}
+                      className={`turn-banner ${game.turn === other ? 'cpu-turn' : 'your-turn'}`}
                       role="status"
                       aria-live="polite"
                     >

@@ -325,6 +325,10 @@ describe('completion, scoring, and deterministic CPU', () => {
     expect(chooseCpuMove(view, 'normal', seededRandom(4))).toEqual(
       chooseCpuMove(cpuView(changed), 'normal', seededRandom(4)),
     );
+    expect(chooseCpuMove(view, 'hard', seededRandom(4))).toEqual(
+      chooseCpuMove(cpuView(changed), 'hard', seededRandom(4)),
+    );
+    expect(validateMove(state, chooseCpuMove(view, 'hard', seededRandom(4))!)).toBeNull();
   });
   it('replays identical seeded shuffles and games', () => {
     expect(shuffle(deck('a'), seededRandom(8))).toEqual(shuffle(deck('a'), seededRandom(8)));

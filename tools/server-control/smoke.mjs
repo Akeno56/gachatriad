@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { mkdir } from 'node:fs/promises';
 import { chromium, expect } from '@playwright/test';
 import { createController } from './index.mjs';
+import { checkSocial } from './social-smoke.mjs';
 const controller = await createController({
   port: 3130,
   gamePort: 3101,
@@ -13,6 +14,7 @@ let browser;
 const apiURL = 'http://127.0.0.1:3101',
   origin = 'http://127.0.0.1:3100';
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+let testIpCounter = 0;
 async function until(work, message) {
   for (let i = 0; i < 240; i++) {
     if (await work()) return;
@@ -52,6 +54,7 @@ try {
       headers: {
         origin,
         authorization: `Bearer ${client.token}`,
+        'x-forwarded-for': (client.testIp ||= `10.24.0.${++testIpCounter}`),
         ...(body === undefined ? {} : { 'content-type': 'application/json' }),
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
@@ -73,10 +76,16 @@ try {
     pages = [];
   for (let i = 0; i < 2; i++) {
     const context = await browser.newContext({ viewport: { width: i ? 390 : 1440, height: 1100 } });
+    await context.route(`${apiURL}/**`, (route) =>
+      route.continue({
+        headers: { ...route.request().headers(), 'x-forwarded-for': clients[i].testIp },
+      }),
+    );
     await context.addInitScript(
       ({ apiURL, token }) => {
         localStorage.setItem('triad-server', apiURL);
-        localStorage.setItem(`triad-session:${apiURL}`, token);
+        if (!localStorage.getItem(`triad-session:${apiURL}`))
+          localStorage.setItem(`triad-session:${apiURL}`, token);
       },
       { apiURL, token: clients[i].token },
     );
@@ -95,23 +104,24 @@ try {
         .getByRole('button', { name: /^Open starter booster/ })
         .first()
         .click();
-      const reveal = page.locator('.booster-reveal');
+      const reveal = page.locator('.pack-opening');
       await expect(reveal).toBeVisible();
-      await expect(reveal.locator('.booster-card-back')).toHaveCount(5);
+      await reveal.getByRole('button', { name: 'Open booster', exact: true }).click();
+      await expect(reveal.locator('.opening-card-back')).toBeVisible();
+      if (pack === 0) {
+        await reveal.getByRole('button', { name: 'Reveal card 1', exact: true }).click();
+        await expect(reveal.locator('.opening-card .playing-card')).toBeVisible();
+        await reveal.getByRole('button', { name: 'Next card', exact: true }).first().click();
+        await expect(
+          reveal.getByRole('button', { name: 'Reveal card 2', exact: true }),
+        ).toBeVisible();
+      }
       await reveal.getByRole('button', { name: 'Reveal all', exact: true }).click();
-      await expect(reveal.locator('.playing-card')).toHaveCount(5);
-      await expect
-        .poll(() =>
-          reveal
-            .locator('.booster-card-reveal')
-            .first()
-            .evaluate((el) => el.getAnimations().every((a) => a.playState === 'finished')),
-        )
-        .toBe(true);
+      await expect(reveal.locator('.opening-fan .playing-card')).toHaveCount(5);
       if (pack === 0) {
         await mkdir('docs/screenshots', { recursive: true });
         await page.screenshot({
-          path: `docs/screenshots/v05-booster-${i ? 'mobile' : 'desktop'}.png`,
+          path: `docs/screenshots/v06-booster-${i ? 'mobile' : 'desktop'}.png`,
           fullPage: true,
         });
       }
@@ -134,6 +144,14 @@ try {
     });
     assert.equal(forbidden.status, 403);
     await page.locator('.volume-controls summary').click();
+    await expect(page.getByRole('slider', { name: 'Music volume', exact: true })).toHaveValue('50');
+    await expect(
+      page.getByRole('slider', { name: 'Sound effects volume', exact: true }),
+    ).toHaveValue('50');
+    await expect(page.getByRole('button', { name: 'Music on', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await page.getByRole('slider', { name: 'Music volume', exact: true }).press('Home');
     await page.getByRole('slider', { name: 'Music volume', exact: true }).press('ArrowRight');
     await page.getByRole('slider', { name: 'Sound effects volume', exact: true }).press('End');
@@ -182,6 +200,15 @@ try {
     await page.goto(origin + `/gachatriad/?match=${joined.matchId}`);
     await page.locator('.board-cell').first().waitFor();
   }
+  await pages[0].locator('.turn-banner').click();
+  await expect(pages[0].locator('audio[data-bgm-track="0"]')).toHaveAttribute(
+    'data-bgm-scene',
+    'battle',
+  );
+  await expect(pages[0].locator('audio[data-bgm-track="0"]')).toHaveAttribute(
+    'src',
+    /queen-of-cards/,
+  );
   for (let i = 0; i < 9; i++) {
     const view = await api(clients[0], `/matches/${joined.matchId}`),
       actor = clients[view.game.turn],
@@ -195,6 +222,14 @@ try {
     });
   }
   for (const page of pages) await page.locator('.result-overlay').waitFor();
+  await expect(pages[0].locator('audio[data-bgm-track="0"]')).toHaveAttribute(
+    'data-bgm-scene',
+    'menu',
+  );
+  await expect(pages[0].locator('audio[data-bgm-track="0"]')).toHaveAttribute(
+    'src',
+    /shuffle-or-boogie-ambient/,
+  );
   const result = await api(clients[0], `/matches/${joined.matchId}`);
   assert.ok([10, 25, 50].includes(result.prismReward));
   await expect(pages[0].locator('.prism-reward')).toContainText(
@@ -258,6 +293,7 @@ try {
     return response.ok;
   }, 'Suspended account was not restored.');
   await pages[1].reload();
+  await checkSocial({ browser, api, apiURL, origin, controller, admin });
   await pages[0].goto(origin + '/gachatriad/cards');
   await pages[0].getByLabel('Finish', { exact: true }).selectOption('holo');
   await pages[0]
@@ -271,20 +307,32 @@ try {
   await expect
     .poll(() => foil.evaluate((el) => getComputedStyle(el).backgroundPosition))
     .not.toBe(foilBefore);
-  await pages[0].screenshot({ path: 'docs/screenshots/v05-holo-detail.png', fullPage: true });
+  await pages[0].screenshot({ path: 'docs/screenshots/v06-holo-detail.png', fullPage: true });
   await pages[0].keyboard.press('Escape');
-  await admin.screenshot({ path: 'docs/screenshots/v05-moderation.png', fullPage: true });
+  await admin.screenshot({ path: 'docs/screenshots/v06-moderation.png', fullPage: true });
   assert.equal(result.status, 'complete');
   // Cookie-free refresh proves the GitHub Pages path does not depend on third-party cookies.
   await contexts[0].clearCookies();
   await pages[0].goto(origin + `/gachatriad/?match=${joined.matchId}`);
   await pages[0].locator('.result-overlay').waitFor();
   await mkdir('docs/screenshots', { recursive: true });
-  await pages[0].screenshot({ path: 'docs/screenshots/v05-result-overlay.png', fullPage: true });
-  await pages[1].screenshot({ path: 'docs/screenshots/v05-result-mobile.png', fullPage: true });
+  await pages[0].screenshot({ path: 'docs/screenshots/v06-result-overlay.png', fullPage: true });
+  await pages[1].screenshot({ path: 'docs/screenshots/v06-result-mobile.png', fullPage: true });
   const before = await api(clients[0], '/profile');
   const packsBefore = await api(clients[0], '/boosters');
   const active = await api(clients[0], '/solo', { difficulty: 'easy', rules: { threeOpen: true } });
+  await pages[0].evaluate(
+    (apiURL) =>
+      new Promise((resolve, reject) => {
+        const probe = new WebSocket(
+          apiURL.replace('http:', 'ws:') + '/socket.io/?EIO=4&transport=websocket',
+        );
+        window.__triadShutdownProbe = probe;
+        probe.onopen = () => resolve(true);
+        probe.onerror = () => reject(Error('Shutdown probe could not connect.'));
+      }),
+    apiURL,
+  );
   await admin.getByRole('button', { name: 'Restart server', exact: true }).click();
   await until(async () => {
     try {
@@ -303,7 +351,7 @@ try {
     'Player connections did not recover after restart.',
   );
   await api(clients[0], `/matches/${active.matchId}/resign`, {});
-  await admin.screenshot({ path: 'docs/screenshots/v05-control-panel.png', fullPage: true });
+  await admin.screenshot({ path: 'docs/screenshots/v06-control-panel.png', fullPage: true });
   await contexts[0].close();
   await contexts[1].close();
   await admin.getByRole('button', { name: 'Shut down server', exact: true }).click();

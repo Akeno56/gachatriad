@@ -9,11 +9,17 @@ export function LocalBots() {
     [pending, setPending] = useState(false),
     [error, setError] = useState('');
   useEffect(() => {
-    setStatus(null);
-    if (profile?.isAdmin)
+    let active = true;
+    if (!profile?.isAdmin) setStatus(null);
+    else
       void api<PopulationView>('/local-bots')
-        .then(setStatus)
+        .then((next) => {
+          if (active) setStatus(next);
+        })
         .catch(() => {});
+    return () => {
+      active = false;
+    };
   }, [profile?.id, profile?.isAdmin, revision]);
   if (!profile?.isAdmin || !status?.available) return null;
   return (

@@ -8,6 +8,7 @@ import { api } from '../../lib/platform';
 import { useSession } from '../../components/session';
 import { ruleNames } from '../../components/game';
 import { LocalBots } from '../../components/local-bots';
+import { confirmRanked } from '../../components/ranked-warning';
 export default function Lobbies() {
   const { profile, revision, refresh, error: connectionError } = useSession(),
     router = useRouter();
@@ -25,7 +26,8 @@ export default function Lobbies() {
     [combo, setCombo] = useState(false),
     [elemental, setElemental] = useState(false),
     [random, setRandom] = useState(false),
-    [trade, setTrade] = useState(false);
+    [trade, setTrade] = useState(false),
+    [allowBots, setAllowBots] = useState(false);
   const tradeEligible = visibility === 'closed' && same && plus && combo;
   useEffect(() => {
     if (!same && !plus) setCombo(false);
@@ -43,6 +45,9 @@ export default function Lobbies() {
     if (profile?.activeMatchId) router.push(`/?match=${profile.activeMatchId}`);
   }, [profile?.activeMatchId, router]);
   async function enter(path: string, body: unknown) {
+    const requestedMode =
+      (body as { mode?: string }).mode ?? rows.find((r) => path === `/lobbies/${r.id}/join`)?.mode;
+    if (requestedMode === 'ranked' && !(await confirmRanked(profile))) return;
     setBusy(true);
     setError('');
     try {
@@ -90,7 +95,7 @@ export default function Lobbies() {
               !!profile.waitingLobbyId ||
               ((q.mode === 'ranked' || q.mode === 'draft') && !profile.registered)
             }
-            onClick={() => enter('/lobbies', { mode: q.mode as Mode })}
+            onClick={() => enter('/lobbies', { mode: q.mode as Mode, allowBots })}
           >
             <strong>{q.name}</strong>
             <span>{q.text}</span>
@@ -101,6 +106,14 @@ export default function Lobbies() {
         Trade One: the winner takes one card from the loser’s played deck, including on a forfeit.
         Draws trade nothing. Ranked and Draft require an account.
       </p>
+      <label className="check-label">
+        <input
+          type="checkbox"
+          checked={allowBots}
+          onChange={(e) => setAllowBots(e.target.checked)}
+        />
+        Allow bots to join my lobby / queue
+      </label>
       <LocalBots />
       {waiting && (
         <div className="menu-window waiting-lobby" role="status">
@@ -124,7 +137,7 @@ export default function Lobbies() {
               }
             }}
           >
-            Leave lobby
+            Close lobby
           </button>
         </div>
       )}
@@ -197,6 +210,7 @@ export default function Lobbies() {
                 elemental,
               },
               tradeRule: trade ? 'one' : 'none',
+              allowBots,
             });
           }}
         >
@@ -285,6 +299,13 @@ export default function Lobbies() {
                     <span key={r}>{r}</span>
                   ))}
                   <span>{row.tradeRule === 'one' ? 'Trade One' : 'No trade'}</span>
+                  <span>
+                    {row.inviteOnly
+                      ? 'Friend invitation'
+                      : row.allowBots
+                        ? 'Bots allowed'
+                        : 'Humans only'}
+                  </span>
                 </div>
               </div>
               <div className="lobby-join">
@@ -296,6 +317,7 @@ export default function Lobbies() {
                   disabled={
                     busy ||
                     row.status !== 'waiting' ||
+                    row.inviteOnly ||
                     !!profile?.waitingLobbyId ||
                     row.id === profile?.waitingLobbyId ||
                     ((row.mode === 'ranked' || row.mode === 'draft' || row.tradeRule === 'one') &&

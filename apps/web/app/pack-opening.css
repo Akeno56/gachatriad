@@ -1,0 +1,488 @@
+.game-dialog.pack-opening {
+  width: min(1350px, 96vw);
+  max-width: min(1350px, 96vw);
+  min-height: min(780px, 90dvh);
+  padding: 26px 32px;
+  background: radial-gradient(ellipse at 50% 45%, #152545, #070d1b 73%);
+  overflow-x: hidden;
+}
+.pack-opening-header {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 18px;
+}
+.pack-opening-header h2 {
+  font: 32px var(--pixel);
+  margin: 0 0 5px;
+  color: var(--gold);
+}
+.pack-opening-header span {
+  font-size: 15px;
+  color: #afbdd6;
+}
+.pack-aura {
+  position: absolute;
+  z-index: -1;
+  inset: 5% 12%;
+  background: radial-gradient(
+    ellipse,
+    color-mix(in srgb, var(--pack-aura) 22%, transparent),
+    transparent 64%
+  );
+  pointer-events: none;
+  filter: blur(15px);
+}
+.pack-ceremony,
+.single-card-stage,
+.opening-summary {
+  position: relative;
+  isolation: isolate;
+  text-align: center;
+}
+.pack-ceremony {
+  padding: 34px 0 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pack-ceremony > p {
+  color: #c8cee0;
+  margin: 28px 0 18px;
+}
+.pack-ceremony > .primary-button {
+  min-width: 240px;
+}
+.sealed-pack {
+  position: relative;
+  isolation: isolate;
+  width: 255px;
+  height: 370px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  overflow: hidden;
+  border: 2px solid #c8b482;
+  border-radius: 6px;
+  background:
+    repeating-linear-gradient(45deg, #dbd1ac0c 0 1px, transparent 1px 8px),
+    linear-gradient(120deg, #182b56, #445982 47%, #1d2b4f 53%, #101c39);
+  box-shadow:
+    inset 0 0 0 8px #08132c,
+    inset 0 0 0 10px #bca473,
+    0 22px 30px #0008;
+  transform: perspective(900px) rotateY(-6deg);
+  transition:
+    transform 0.4s,
+    box-shadow 0.4s;
+  color: #f6e0aa;
+}
+.sealed-pack:hover:not(:disabled),
+.sealed-pack:focus-visible {
+  transform: perspective(900px) rotateY(0) translateY(-5px);
+  box-shadow:
+    inset 0 0 0 8px #08132c,
+    inset 0 0 0 10px #bca473,
+    0 24px 38px #0009,
+    0 0 45px #d5b77d22;
+}
+.sealed-pack:before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 20px;
+  border: 1px solid #d8c79177;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  background: linear-gradient(125deg, transparent 30%, #dce8ff20 45%, transparent 60%);
+  background-size: 250% 100%;
+  animation: pack-foil 6s ease-in-out infinite;
+}
+.pack-brand {
+  font: 15px var(--sans);
+  letter-spacing: 4px;
+}
+.sealed-pack > strong {
+  font: 29px var(--pixel);
+  letter-spacing: 3px;
+}
+.sealed-pack > span:last-child {
+  font-size: 14px;
+}
+.pack-medallion {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  border: 4px double #e8d29a;
+  box-shadow:
+    0 0 0 8px #0d1735,
+    0 0 0 10px #a59368;
+  background: radial-gradient(circle at 35% 25%, #d9cd9e, #8c7948);
+  font: 105px var(--pixel);
+  color: #2b2940;
+}
+.pack-medallion b {
+  position: absolute;
+  font: 42px var(--pixel);
+  color: #f6e5b6;
+  text-shadow: 2px 2px #393024;
+  letter-spacing: 3px;
+}
+.pack-seal-top,
+.pack-seal-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 15px;
+  background: repeating-linear-gradient(90deg, #aca080 0 2px, #665a41 2px 4px);
+}
+.pack-seal-top {
+  top: 0;
+}
+.pack-seal-bottom {
+  bottom: 0;
+}
+.sealed-pack.is-opening {
+  animation: break-pack 0.65s ease-in both;
+  pointer-events: none;
+}
+.sealed-pack.is-opening .pack-seal-top {
+  animation: tear-seal 0.55s ease-in both;
+}
+.single-card-stage {
+  padding: 18px 0 10px;
+}
+.opening-card-stack {
+  position: relative;
+  width: 260px;
+  height: 390px;
+  margin: 0 auto 18px;
+  perspective: 1000px;
+}
+.opening-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: 0 15px 30px #0008;
+}
+.opening-card .playing-card {
+  height: 100%;
+  width: 100%;
+}
+.opening-card.is-face-up {
+  animation: draw-reveal 0.4s ease-out both;
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--pack-aura) 24%, transparent);
+}
+.opening-card .card-caption strong {
+  font-size: 32px;
+}
+.opening-card .card-values {
+  transform: scale(1.35);
+  transform-origin: top left;
+  top: 12px;
+  left: 12px;
+}
+.opening-card .card-stars {
+  font-size: 12px;
+}
+.opening-card .card-set {
+  font-size: 10px;
+}
+.stack-sheet {
+  position: absolute;
+  inset: 0;
+  border: 2px solid #a19471;
+  background: repeating-linear-gradient(45deg, #b9c7e00b 0 1px, transparent 1px 7px), #142141;
+  pointer-events: none;
+}
+.stack-sheet-one {
+  transform: translate(9px, -7px) rotate(2deg);
+}
+.stack-sheet-two {
+  transform: translate(16px, -12px) rotate(4deg);
+}
+.opening-card-back {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 54px;
+  border: 4px double #d6c491;
+  box-shadow: inset 0 0 0 9px #0d1730;
+  background:
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      transparent 0 12px,
+      #d3bd7c15 13px 14px,
+      transparent 15px 25px
+    ),
+    linear-gradient(135deg, #273e6e, #101a35);
+  color: #e9d49d;
+  font: 17px var(--pixel);
+  letter-spacing: 3px;
+}
+.opening-card-back b {
+  font: 78px var(--pixel);
+  border: 3px double #c8b78c;
+  border-radius: 50%;
+  width: 134px;
+  height: 134px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #bba66a;
+  color: #141d36;
+}
+.opening-card-caption {
+  min-height: 100px;
+  position: relative;
+  z-index: 2;
+}
+.opening-card-caption > span {
+  color: var(--pack-aura);
+  font: 22px var(--pixel);
+  letter-spacing: 2px;
+}
+.opening-card-caption h3 {
+  font: 32px var(--pixel);
+  margin: 4px 0 6px;
+  color: #f8f0da;
+}
+.opening-card-caption p {
+  color: #b3c1da;
+  font-size: 15px;
+  margin: 0;
+}
+.opening-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 14px 0;
+}
+.opening-progress button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 37px;
+  height: 51px;
+  border: 1px solid #8595b3;
+  background: #122143;
+  color: #cfbc8d;
+}
+.opening-progress .card-art {
+  inset: 0;
+  z-index: 0;
+}
+.opening-progress button.is-current {
+  outline: 2px solid var(--pack-aura);
+  outline-offset: 2px;
+}
+.single-card-stage > .result-actions {
+  justify-content: center;
+  margin: 20px 0 14px;
+}
+.single-card-stage > small {
+  font-size: 13px;
+  color: #9caecb;
+}
+.opening-fan {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  padding: 65px 16px 35px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+.opening-fan-card {
+  position: relative;
+  flex: 0 0 205px;
+  height: 305px;
+  transform: rotate(var(--fan-angle));
+  transform-origin: center bottom;
+  scroll-snap-align: center;
+}
+.opening-fan-card > .playing-card {
+  height: 100%;
+  width: 100%;
+}
+.opening-fan-card > span {
+  display: block;
+  margin-top: 12px;
+  font: 16px var(--pixel);
+  color: #c6d6f0;
+}
+.opening-fan-card.best-draw {
+  transform: rotate(0) translateY(-15px);
+  z-index: 2;
+  box-shadow: 0 0 40px color-mix(in srgb, var(--draw-color) 28%, transparent);
+}
+.best-draw-badge {
+  position: absolute;
+  z-index: 10;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 14px;
+  background: var(--draw-color);
+  color: #111c34;
+  font: 18px var(--pixel);
+  white-space: nowrap;
+  border: 1px solid #dfd6b0;
+}
+.opening-summary > .result-actions {
+  justify-content: center;
+  margin-top: 34px;
+}
+.opening-summary > p {
+  margin-top: 28px;
+}
+.booster-pack-art {
+  border-color: #c8b482;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 0 5px #08132c,
+    inset 0 0 0 7px #9b895e,
+    0 8px 18px #0007;
+  background:
+    repeating-linear-gradient(45deg, #d5be850c 0 1px, transparent 1px 7px),
+    linear-gradient(135deg, #263e72, #15203b 75%);
+}
+.booster-pack-art > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 85px;
+  height: 85px;
+  border: 3px double #d5c08c;
+  border-radius: 50%;
+  font-size: 37px;
+  color: #1a2440;
+  background: radial-gradient(circle at 30% 20%, #e5d8a8, #99824c);
+}
+@keyframes pack-foil {
+  0%,
+  100% {
+    background-position: 0 0;
+  }
+  50% {
+    background-position: 100% 0;
+  }
+}
+@keyframes break-pack {
+  0% {
+    transform: scale(1) rotateY(0);
+    opacity: 1;
+  }
+  40% {
+    transform: scale(1.04) rotateY(6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.85) translateY(50px);
+    opacity: 0;
+  }
+}
+@keyframes tear-seal {
+  to {
+    transform: translate(80px, -95px) rotate(25deg);
+    opacity: 0;
+  }
+}
+@keyframes draw-reveal {
+  from {
+    transform: rotateY(-75deg) scale(0.95);
+    opacity: 0.4;
+  }
+  to {
+    transform: rotateY(0) scale(1);
+    opacity: 1;
+  }
+}
+@media (max-width: 680px) {
+  .game-dialog.pack-opening {
+    padding: 18px 14px;
+    width: 96vw;
+    min-height: 0;
+    max-height: 94dvh;
+  }
+  .pack-opening-header h2 {
+    font-size: 26px;
+  }
+  .pack-opening-header span {
+    font-size: 12px;
+  }
+  .pack-ceremony {
+    padding: 26px 0 8px;
+  }
+  .sealed-pack {
+    width: 220px;
+    height: 330px;
+    gap: 20px;
+  }
+  .pack-medallion {
+    width: 106px;
+    height: 106px;
+    font-size: 87px;
+  }
+  .pack-medallion b {
+    font-size: 36px;
+  }
+  .opening-card-stack {
+    width: 220px;
+    height: 330px;
+  }
+  .opening-card .card-caption strong {
+    font-size: 27px;
+  }
+  .opening-card-caption h3 {
+    font-size: 26px;
+  }
+  .opening-card-caption {
+    min-height: 85px;
+  }
+  .opening-fan {
+    justify-content: flex-start;
+    padding: 38px 12px 30px;
+    gap: 25px;
+  }
+  .opening-fan-card {
+    flex-basis: 195px;
+    height: 290px;
+    transform: none;
+  }
+  .opening-fan-card.best-draw {
+    transform: translateY(-10px);
+  }
+  .opening-summary > .result-actions {
+    gap: 12px;
+  }
+  .single-card-stage {
+    padding-top: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sealed-pack:before,
+  .sealed-pack.is-opening,
+  .sealed-pack.is-opening .pack-seal-top,
+  .opening-card.is-face-up {
+    animation: none;
+  }
+  .sealed-pack,
+  .sealed-pack:hover:not(:disabled),
+  .opening-fan-card,
+  .opening-fan-card.best-draw {
+    transform: none;
+  }
+}

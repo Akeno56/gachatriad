@@ -139,10 +139,23 @@ test('demonstrates the approved-card Plus and two Combo captures', async ({ page
   await expect(page.locator('.combo-lesson .reason-combo')).toHaveCount(2);
   await page.screenshot({ path: info.outputPath('combo-lesson.png'), fullPage: true });
 });
+test('fits long card names at desktop and narrow phone widths', async ({ page }, info) => {
+  await page.goto('/cards');
+  await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
+  await page.getByLabel('Find a card').fill('Silver Wolf');
+  const name = page.locator('.catalog-grid .card-caption strong').filter({ hasText: 'Lv. 999' });
+  await expect(name).toBeVisible();
+  for (const width of [info.project.name === 'desktop' ? 1440 : 390, 320]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await expect.poll(() => name.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  }
+  await page.screenshot({ path: info.outputPath('long-card-name.png'), fullPage: true });
+});
 test('plays the supplied MP3 through an end-to-start crossfade and preserves preferences', async ({
   page,
 }) => {
   await ready(page);
+  await page.getByRole('button', { name: 'Music on', exact: true }).click();
   await page.getByRole('button', { name: 'Music off', exact: true }).click();
   await expect
     .poll(() =>
@@ -191,7 +204,7 @@ test('shows real lobbies, rule filters and a visible custom waiting room', async
   await page.getByLabel('Rule', { exact: true }).selectOption('random');
   await expect(page.locator('.lobby-row').filter({ hasText: name })).toContainText('1/2');
   await expect(page.locator('.lobby-row').filter({ hasText: name })).toContainText('All Open');
-  await page.getByRole('button', { name: 'Leave lobby' }).click();
+  await page.getByRole('button', { name: 'Close lobby' }).click();
   await expect(page.locator('.waiting-lobby')).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('lobbies.png'), fullPage: true });
 });

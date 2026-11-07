@@ -1,0 +1,349 @@
+.player-avatar {
+  display: inline-flex;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #9bacc5;
+  background: #172642;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 2px #0b1431;
+  font: 28px var(--pixel);
+  color: var(--gold);
+}
+.player-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+}
+.battle-title,
+.profile-title {
+  display: block;
+  color: #d9c693;
+  font: 18px var(--pixel);
+  letter-spacing: 0.5px;
+}
+.player-heading {
+  position: relative;
+  min-width: 0;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.player-heading > div {
+  min-width: 0;
+}
+.player-heading strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.scoreboard .active-player {
+  background: linear-gradient(115deg, #4a5d2a, #172d56 75%);
+  border: 2px solid #ffde79;
+  box-shadow:
+    inset 0 -4px #ffde7999,
+    0 0 16px #ffde7922;
+}
+.scoreboard .cpu-heading.active-player {
+  background: linear-gradient(245deg, #673a4a, #222a50 75%);
+  border-color: #ffb6ab;
+  box-shadow:
+    inset 0 -4px #ffb6ab88,
+    0 0 16px #ffb6ab22;
+}
+.active-player:before {
+  content: '▶';
+  position: absolute;
+  left: 7px;
+  top: 3px;
+  color: #ffe08f;
+  font: 18px var(--pixel);
+}
+.turn-banner {
+  font: 30px var(--pixel);
+  padding: 14px 18px;
+  min-height: 66px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+.turn-banner.your-turn {
+  color: #ffedb9;
+  background: #314526;
+  border: 2px solid #d4b76a;
+}
+.turn-banner.cpu-turn {
+  color: #ffd2ca;
+  background: #4d2c3c;
+  border: 2px solid #bf8b91;
+}
+.ranked-play-button {
+  margin-top: 14px;
+  width: 100%;
+}
+.ranked-stakes-note {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.45;
+  max-width: 380px;
+}
+.deck-warning {
+  padding: 14px;
+  border: 1px solid #dbc07b;
+  background: #382f29;
+  color: #ffe5ac;
+}
+.deck-warning a {
+  text-decoration: underline;
+}
+.profile-title {
+  font-size: 27px;
+  margin: 5px 0 15px;
+}
+.title-list,
+.admin-grant {
+  padding: 20px;
+  margin: 24px 0;
+}
+.title-list summary,
+.admin-grant summary {
+  font: 26px var(--pixel);
+  cursor: pointer;
+}
+.admin-grant form {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 18px;
+}
+.admin-grant label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.social-launcher {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 12;
+  box-shadow: 0 4px 18px #0008;
+  background: #14284c;
+}
+.social-launcher b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f0d38c;
+  color: #15203a;
+  font: 18px var(--pixel);
+}
+.social-dialog {
+  width: min(1050px, 95vw);
+  max-width: min(1050px, 95vw);
+}
+.social-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+.social-heading h2 {
+  font: 40px var(--pixel);
+  margin: 4px 0 18px;
+}
+.social-tabs {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid #7990b0;
+  padding-bottom: 14px;
+  flex-wrap: wrap;
+}
+.social-tabs button {
+  padding: 9px 18px;
+  font: 23px var(--pixel);
+  border: 1px solid #8390ad;
+}
+.social-tabs [aria-selected='true'] {
+  background: #d4bd7f;
+  color: #111c34;
+}
+.chat-messages {
+  height: min(400px, 48dvh);
+  overflow-y: auto;
+  margin: 18px 0;
+  padding: 12px;
+  background: #080f2388;
+  border: 1px solid #4b6085;
+}
+.chat-message {
+  display: flex;
+  gap: 13px;
+  margin-bottom: 18px;
+  align-items: flex-start;
+}
+.chat-message > div {
+  flex: 1;
+  min-width: 0;
+}
+.chat-message a {
+  font: 24px var(--pixel);
+  color: var(--gold);
+}
+.chat-message small {
+  display: block;
+  color: #b7c8df;
+}
+.chat-message time {
+  font-size: 12px;
+  color: #91a4c7;
+}
+.chat-message p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 6px 0;
+}
+.chat-compose {
+  display: flex;
+  gap: 14px;
+}
+.chat-compose input {
+  flex: 1;
+  min-width: 0;
+}
+.friend-search {
+  display: flex;
+  align-items: end;
+  gap: 15px;
+  margin: 22px 0;
+}
+.friend-search label {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+}
+.friend-row {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #526789;
+}
+.friend-row > div:not(.friend-actions) {
+  flex: 1;
+  min-width: 0;
+}
+.friend-row > a {
+  flex: 1;
+}
+.friend-row small {
+  display: block;
+  color: #b9c9df;
+}
+.friend-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ladder-table {
+  padding: 18px;
+  overflow-x: auto;
+}
+.ladder-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.ladder-table th,
+.ladder-table td {
+  padding: 14px 12px;
+  text-align: left;
+  border-bottom: 1px solid #526789;
+}
+.ladder-table a {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.ladder-table small {
+  display: block;
+  color: #b7c2d9;
+  font-size: 13px;
+}
+.ladder-table .is-self {
+  background: #82724933;
+}
+.ladder-page select {
+  margin-left: 18px;
+}
+@media (max-width: 680px) {
+  .scoreboard .player-avatar {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+  .player-heading {
+    gap: 7px;
+    padding: 12px 7px;
+  }
+  .battle-title {
+    font-size: 13px;
+    letter-spacing: 0;
+  }
+  .turn-banner {
+    font-size: 23px;
+    padding: 12px 8px;
+  }
+  .social-dialog {
+    padding: 18px 12px;
+  }
+  .friend-row {
+    flex-wrap: wrap;
+  }
+  .friend-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .social-tabs {
+    gap: 8px;
+  }
+  .social-tabs button {
+    font-size: 19px;
+    padding: 8px 10px;
+  }
+  .social-launcher {
+    right: 10px;
+    bottom: 10px;
+    font-size: 20px;
+    padding: 9px 13px;
+  }
+  .chat-message .player-avatar {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+  .chat-compose {
+    gap: 8px;
+  }
+  .friend-search {
+    flex-wrap: wrap;
+  }
+  .ladder-table {
+    padding: 8px;
+  }
+  .ladder-table td,
+  .ladder-table th {
+    padding: 10px 7px;
+  }
+  .ladder-table .player-avatar {
+    display: none;
+  }
+  .ladder-table a {
+    min-width: 130px;
+  }
+}

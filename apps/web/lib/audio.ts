@@ -1,10 +1,16 @@
 /** User-supplied recording with a dual-deck crossfade; locally synthesized sound effects. */
 import { assetPath } from './connection';
+export type MusicScene = 'menu' | 'battle';
 export type Sound =
   'menu' | 'select' | 'place' | 'capture' | 'combo' | 'victory' | 'defeat' | 'draw' | 'cancel';
 export class RetroAudio {
   private context: AudioContext | null = null;
   private musicBus: GainNode | null = null;
+  private sceneBus: GainNode | null = null;
+  private scene: MusicScene = 'menu';
+  private loadedScene: MusicScene | null = null;
+  private sceneTimer: ReturnType<typeof setTimeout> | null = null;
+  private generation = 0;
   private sfxBus: GainNode | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
   private decks: HTMLAudioElement[] = [];
@@ -15,15 +21,15 @@ export class RetroAudio {
   private starting = false;
   private musicEnabled = false;
   private sfxEnabled = true;
-  private musicVolume = 0.7;
-  private sfxVolume = 0.7;
+  private musicVolume = 0.5;
+  private sfxVolume = 0.5;
   setMusicVolume(value: number) {
-    this.musicVolume = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0.7;
+    this.musicVolume = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0.5;
     if (this.musicBus && this.context)
       this.musicBus.gain.setTargetAtTime(this.musicVolume * 0.48, this.context.currentTime, 0.025);
   }
   setSfxVolume(value: number) {
-    this.sfxVolume = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0.7;
+    this.sfxVolume = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0.5;
     if (this.sfxBus && this.context)
       this.sfxBus.gain.setTargetAtTime(this.sfxVolume * 0.36, this.context.currentTime, 0.025);
   }
@@ -32,6 +38,9 @@ export class RetroAudio {
       this.context = new AudioContext();
       this.musicBus = this.context.createGain();
       this.musicBus.gain.value = this.musicVolume * 0.48;
+      this.sceneBus = this.context.createGain();
+      this.sceneBus.gain.value = 0;
+      this.sceneBus.connect(this.musicBus);
       this.sfxBus = this.context.createGain();
       this.sfxBus.gain.value = this.sfxVolume * 0.36;
       const compressor = this.context.createDynamicsCompressor();
@@ -73,13 +82,15 @@ export class RetroAudio {
   setMusic(enabled: boolean) {
     this.musicEnabled = enabled;
     if (!enabled) {
+      if (this.sceneTimer) clearTimeout(this.sceneTimer);
+      this.sceneTimer = null;
       this.decks.forEach((d) => d.pause());
       return;
     }
     const ctx = this.ensure();
     if (!this.decks.length)
       for (let i = 0; i < 2; i++) {
-        const audio = new Audio(assetPath('/audio/queen-of-cards.mp3'));
+        const audio = new Audio();
         audio.preload = 'auto';
         audio.hidden = true;
         audio.dataset.bgmTrack = String(i);
@@ -87,19 +98,65 @@ export class RetroAudio {
         const gain = ctx.createGain();
         gain.gain.value = i === 0 ? 1 : 0;
         ctx.createMediaElementSource(audio).connect(gain);
-        gain.connect(this.musicBus!);
+        gain.connect(this.sceneBus!);
         this.decks.push(audio);
         this.gains.push(gain);
       }
+    if (this.loadedScene !== this.scene) this.loadScene();
+    this.fadeSceneIn();
     if (this.visible) {
       void this.decks[this.active].play().catch(() => {});
       if (this.fading) void this.decks[this.fading.to].play().catch(() => {});
     }
     if (!this.timer) this.timer = setInterval(() => this.crossfade(), 100);
   }
+  setScene(scene: MusicScene) {
+    if (scene === this.scene) return;
+    this.scene = scene;
+    if (!this.musicEnabled || !this.context || !this.sceneBus) return;
+    if (this.sceneTimer) clearTimeout(this.sceneTimer);
+    const now = this.context.currentTime;
+    this.sceneBus.gain.cancelScheduledValues(now);
+    this.sceneBus.gain.setValueAtTime(this.sceneBus.gain.value, now);
+    this.sceneBus.gain.linearRampToValueAtTime(0, now + 0.6);
+    this.sceneTimer = setTimeout(() => {
+      this.sceneTimer = null;
+      if (!this.musicEnabled) return;
+      this.loadScene();
+      this.fadeSceneIn();
+      if (this.visible) void this.decks[this.active]?.play().catch(() => {});
+    }, 650);
+  }
+  private fadeSceneIn() {
+    if (!this.context || !this.sceneBus) return;
+    const now = this.context.currentTime;
+    this.sceneBus.gain.cancelScheduledValues(now);
+    this.sceneBus.gain.setValueAtTime(0, now);
+    this.sceneBus.gain.linearRampToValueAtTime(1, now + 1.4);
+  }
+  private loadScene() {
+    this.generation++;
+    this.loadedScene = this.scene;
+    this.fading = null;
+    this.starting = false;
+    this.active = 0;
+    const path =
+      this.scene === 'battle'
+        ? '/audio/queen-of-cards.mp3'
+        : '/audio/shuffle-or-boogie-ambient.mp3';
+    this.decks.forEach((deck, i) => {
+      deck.pause();
+      deck.src = assetPath(path);
+      deck.dataset.bgmScene = this.scene;
+      this.gains[i].gain.cancelScheduledValues(this.context!.currentTime);
+      this.gains[i].gain.value = i === 0 ? 1 : 0;
+      deck.load();
+    });
+  }
   private crossfade() {
     const ctx = this.context;
-    if (!ctx || !this.musicEnabled || !this.visible || ctx.state !== 'running') return;
+    if (!ctx || !this.musicEnabled || !this.visible || this.sceneTimer || ctx.state !== 'running')
+      return;
     if (this.fading) {
       const f = this.fading;
       if (ctx.currentTime >= f.start + f.duration) {
@@ -118,6 +175,7 @@ export class RetroAudio {
     )
       return;
     this.starting = true;
+    const generation = this.generation;
     const from = this.active,
       to = 1 - from,
       incoming = this.decks[to];
@@ -125,6 +183,7 @@ export class RetroAudio {
     void incoming
       .play()
       .then(() => {
+        if (generation !== this.generation) return;
         if (!this.musicEnabled || !this.visible) {
           incoming.pause();
           return;
@@ -193,6 +252,10 @@ export class RetroAudio {
     }
   }
   dispose() {
+    this.musicEnabled = false;
+    this.generation++;
+    if (this.sceneTimer) clearTimeout(this.sceneTimer);
+    this.sceneTimer = null;
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
     this.decks.forEach((d) => {

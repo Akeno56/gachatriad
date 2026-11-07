@@ -1,8 +1,7 @@
 'use client';
-import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { ECONOMY, type BoosterView } from '@gacha-triad/shared/platform';
-import { Card } from '../../components/card';
+import { BoosterOpening } from '../../components/booster-opening';
 import { useSession } from '../../components/session';
 import { useGameAudio } from '../../components/game-shell';
 import { api } from '../../lib/platform';
@@ -12,12 +11,10 @@ export default function Boosters() {
     play = useGameAudio();
   const [packs, setPacks] = useState<BoosterView[]>([]),
     [receipt, setReceipt] = useState<BoosterView | null>(null);
-  const [revealed, setRevealed] = useState<number[]>([]),
-    [busy, setBusy] = useState(false),
+  const [busy, setBusy] = useState(false),
     [error, setError] = useState('');
   const [buyOpen, setBuyOpen] = useState(false);
-  const revealDialog = useRef<HTMLDialogElement>(null),
-    buyDialog = useRef<HTMLDialogElement>(null);
+  const buyDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     if (!profile) return;
     let active = true;
@@ -39,25 +36,10 @@ export default function Boosters() {
     setBuyOpen(false);
   }, [profile?.id]);
   useEffect(() => {
-    if (receipt) revealDialog.current?.showModal();
-  }, [receipt]);
-  useEffect(() => {
     if (buyOpen) buyDialog.current?.showModal();
   }, [buyOpen]);
-  async function open(pack: BoosterView) {
-    setBusy(true);
-    setError('');
-    try {
-      const next = pack.openedAt ? pack : await api<BoosterView>(`/boosters/${pack.id}/open`, {});
-      setReceipt(next);
-      setRevealed([]);
-      play('select');
-      await refresh();
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
+  function open(pack: BoosterView) {
+    setReceipt(pack);
   }
   async function buy() {
     if (!profile || busy) return;
@@ -137,14 +119,20 @@ export default function Boosters() {
               disabled={busy}
               key={p.id}
               onClick={() => void open(p)}
-              aria-label={`Open ${p.source === 'starter' ? 'starter' : 'standard'} booster ${i + 1}`}
+              aria-label={`Open ${p.source === 'starter' ? 'starter' : p.source === 'admin' ? 'gift' : 'standard'} booster ${i + 1}`}
             >
               <span className="booster-pack-art" aria-hidden="true">
                 <span>GT</span>
                 <b>BOOSTER</b>
                 <i>★★★★★</i>
               </span>
-              <strong>{p.source === 'starter' ? 'Starter booster' : 'Standard booster'}</strong>
+              <strong>
+                {p.source === 'starter'
+                  ? 'Starter booster'
+                  : p.source === 'admin'
+                    ? 'Gift booster'
+                    : 'Standard booster'}
+              </strong>
               <span>Open · 5 cards</span>
             </button>
           ))}
@@ -179,77 +167,24 @@ export default function Boosters() {
                 disabled={busy}
                 onClick={() => void open(p)}
               >
-                View {p.source === 'starter' ? 'starter' : 'standard'} booster ·{' '}
-                {new Date(p.openedAt!).toLocaleString()}
+                View{' '}
+                {p.source === 'starter' ? 'starter' : p.source === 'admin' ? 'gift' : 'standard'}{' '}
+                booster · {new Date(p.openedAt!).toLocaleString()}
               </button>
             ))}
           </div>
         </section>
       )}
       {receipt && (
-        <dialog
-          ref={revealDialog}
-          className="game-dialog menu-window booster-reveal"
-          aria-labelledby="booster-reveal-title"
-          onCancel={() => setReceipt(null)}
-        >
-          <div className="booster-heading">
-            <h2 id="booster-reveal-title">Your five cards</h2>
-            <span>Added to Collection</span>
-          </div>
-          <div className="booster-reveal-cards">
-            {receipt.cards.map((card, i) => (
-              <button
-                key={card.id}
-                className={`booster-card-reveal ${revealed.includes(i) ? 'is-revealed' : ''}`}
-                onClick={() => {
-                  if (!revealed.includes(i)) {
-                    setRevealed([...revealed, i]);
-                    play(card.rarity >= 4 ? 'victory' : 'select');
-                  }
-                }}
-                aria-label={
-                  revealed.includes(i)
-                    ? `${card.name}, ${card.rarity} stars${card.finish === 'holo' ? ', Holographic' : ''}`
-                    : `Reveal card ${i + 1}`
-                }
-              >
-                {revealed.includes(i) ? (
-                  <Card card={card} showElement />
-                ) : (
-                  <span className="booster-card-back">
-                    <b>GT</b>
-                    <span>{i === 4 ? '3★ OR HIGHER' : 'REVEAL'}</span>
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-          <div className="result-actions">
-            <button
-              className="primary-button"
-              disabled={revealed.length === 5}
-              onClick={() => {
-                setRevealed([0, 1, 2, 3, 4]);
-                play('victory');
-              }}
-            >
-              Reveal all
-            </button>
-            <button
-              className="outline-button"
-              onClick={() => {
-                revealDialog.current?.close();
-                setReceipt(null);
-              }}
-            >
-              Continue
-            </button>
-            <Link className="text-button" href="/collection">
-              Go to Collection
-            </Link>
-          </div>
-        </dialog>
+        <BoosterOpening
+          pack={receipt}
+          onClose={() => setReceipt(null)}
+          onNext={
+            unopened.some((p) => p.id !== receipt.id)
+              ? () => setReceipt(unopened.find((p) => p.id !== receipt.id)!)
+              : undefined
+          }
+        />
       )}
       {buyOpen && (
         <dialog

@@ -27,6 +27,7 @@ test('requires the first-duel tutorial, accepts the rulebook, and remembers comp
 test('restores music-on status after reload and resumes on the next gesture', async ({ page }) => {
   await page.goto('/cards');
   await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
+  await page.getByRole('button', { name: 'Music on', exact: true }).click();
   await page.getByRole('button', { name: 'Music off', exact: true }).click();
   await expect
     .poll(() =>

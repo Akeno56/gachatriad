@@ -9,6 +9,8 @@ import './refinements.css';
 import './profile-host.css';
 import './onboarding.css';
 import './boosters.css';
+import './community.css';
+import './pack-opening.css';
 
 export const metadata: Metadata = {
   title: 'Gacha Triad · Cross-world card battle',

@@ -7,6 +7,14 @@ import {
   clearToken,
   profileKey,
 } from './connection';
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
 export async function api<T>(
   path: string,
   body?: unknown,
@@ -32,11 +40,12 @@ export async function api<T>(
     if (path === '/auth/sign-out') clearToken();
   }
   if (!response.ok)
-    throw new Error(
+    throw new ApiError(
       result.error?.message ||
         result.error ||
         result.message ||
         'That action could not be completed.',
+      response.status,
     );
   return result;
 }

@@ -11,7 +11,12 @@ import {
   type Move,
 } from '@gacha-triad/engine';
 let platform: Awaited<ReturnType<typeof createPlatform>>;
-type Client = { cookie: string; profile: ProfileView };
+type Client = { cookie: string; profile: ProfileView; ip?: string };
+let ipCounter = 0;
+const testIp = () => {
+  const n = ++ipCounter;
+  return `10.2.${Math.floor(n / 250)}.${(n % 250) + 1}`;
+};
 async function request(
   client: Client | null,
   path: string,
@@ -19,6 +24,7 @@ async function request(
   method = body === undefined ? 'GET' : 'POST',
 ) {
   return platform.app.inject({
+    remoteAddress: client?.ip ?? testIp(),
     url: `/api${path}`,
     method: method as 'GET' | 'POST' | 'DELETE',
     headers: {
@@ -33,6 +39,7 @@ async function user(registered = false, openStarters = true) {
   const response = await request(null, '/auth/sign-in/anonymous', {});
   expect(response.statusCode, response.body).toBe(200);
   const client: Client = {
+    ip: testIp(),
     cookie: response.cookies.map((c) => `${c.name}=${c.value}`).join('; '),
     profile: null!,
   };
@@ -55,6 +62,8 @@ async function user(registered = false, openStarters = true) {
     client.profile = (await request(client, '/profile')).json();
     expect(client.profile.id).toBe(oldId);
     expect(client.profile.registered).toBe(true);
+    await request(client, '/ranked/acknowledge', { acknowledged: true });
+    client.profile = (await request(client, '/profile')).json();
   }
   return client;
 }
@@ -556,6 +565,287 @@ it('restricts bot status and mutations to explicit registered administrators and
     expect((await platform.store.lobbies()).some((l) => l.id === lobby.lobbyId)).toBe(false);
     expect((await host(account.profile.id, 'restore')).statusCode).toBe(200);
     expect((await request(account, '/profile')).statusCode).toBe(200);
+  } finally {
+    vi.unstubAllEnvs();
+  }
+});
+it('allows cross-origin DELETE and closes only the host’s waiting lobby, idempotently', async () => {
+  const a = await user(),
+    b = await user();
+  const preflight = await platform.app.inject({
+    method: 'OPTIONS',
+    url: '/api/lobbies/test',
+    headers: {
+      origin: 'http://127.0.0.1:3000',
+      'access-control-request-method': 'DELETE',
+      'access-control-request-headers': 'authorization,x-profile-id',
+    },
+  });
+  expect(preflight.headers['access-control-allow-methods']).toContain('DELETE');
+  const { lobbyId } = await ok<{ lobbyId: string }>(a, '/lobbies', {
+    mode: 'custom',
+    allowBots: false,
+  });
+  expect((await platform.store.lobbies()).find((l) => l.id === lobbyId)?.allowBots).toBe(false);
+  expect((await request(b, `/lobbies/${lobbyId}`, undefined, 'DELETE')).statusCode).toBe(403);
+  await ok(a, `/lobbies/${lobbyId}`, undefined, 'DELETE');
+  await ok(a, `/lobbies/${lobbyId}`, undefined, 'DELETE');
+  expect((await ok<ProfileView>(a, '/profile')).waitingLobbyId).toBeNull();
+  const next = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'custom', allowBots: true });
+  const joined = await ok<{ matchId: string }>(b, `/lobbies/${next.lobbyId}/join`, {});
+  expect((await request(a, `/lobbies/${next.lobbyId}`, undefined, 'DELETE')).statusCode).toBe(409);
+  await ok(a, `/matches/${joined.matchId}/resign`, {});
+});
+it('prunes traded last copies from saved decks and prompts for a five-card deck', async () => {
+  const a = await user(true),
+    b = await user(true),
+    give = a.profile.deck[0],
+    want = b.profile.deck[0];
+  await platform.db.read((sql) =>
+    sql('UPDATE inventory SET quantity=1 WHERE profile_id=$1 AND card_id=$2', [a.profile.id, give]),
+  );
+  const offer = await ok<{ id: string }>(a, '/trades', { offered: give, wanted: want });
+  await ok(b, `/trades/${offer.id}/accept`, {});
+  const after = await ok<ProfileView>(a, '/profile');
+  expect(after.deck).toHaveLength(4);
+  expect(after.deck).not.toContain(give);
+  const blocked = await request(a, '/solo', {});
+  expect(blocked.statusCode).toBe(428);
+  expect(blocked.json().error).toContain('4/5');
+  expect((await request(a, '/solo', { rules: { random: true } })).statusCode).toBe(428);
+  await ok(a, '/deck/auto', {});
+  const solo = await ok<{ matchId: string }>(a, '/solo', {});
+  await ok(a, `/matches/${solo.matchId}/resign`, {});
+});
+it('keeps medium difficulty as default, enforces no-bot tables and excludes Easy bots from ranked', async () => {
+  const a = await user(true);
+  await platform.bots.set(true, 'medium');
+  const bot = await platform.store.profile({
+    id: 'local-bot-0',
+    name: '[BOT] Nova',
+    isAnonymous: false,
+  });
+  if (bot.waitingLobbyId) await platform.store.cancelLobby(bot.id, bot.waitingLobbyId);
+  const own = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'custom', allowBots: false });
+  await expect(platform.store.joinLobby(bot, own.lobbyId)).rejects.toMatchObject({
+    statusCode: 403,
+  });
+  await ok(a, `/lobbies/${own.lobbyId}`, undefined, 'DELETE');
+  await platform.bots.set(true, 'easy');
+  await expect(platform.store.createLobby(bot, { mode: 'ranked' })).rejects.toMatchObject({
+    statusCode: 403,
+  });
+  expect((await platform.bots.status()).difficulty).toBe('easy');
+  await platform.bots.set(false, 'medium');
+  expect((await platform.bots.status()).difficulty).toBe('medium');
+});
+it('discards a temporary guest on existing-account sign-in and removes legacy extra guest profiles', async () => {
+  const account = await user(true),
+    guest = await user();
+  const temporaryId = guest.profile.id;
+  const response = await request(guest, '/auth/sign-in/email', {
+    email: `${account.profile.id}@test.invalid`,
+    password: 'a-test-password-123',
+  });
+  expect(response.statusCode, response.body).toBe(200);
+  guest.cookie = response.cookies.map((c) => `${c.name}=${c.value}`).join('; ');
+  const current = await ok<ProfileView>(guest, '/profile');
+  expect(current.id).toBe(account.profile.id);
+  expect(current.profiles).toHaveLength(1);
+  expect(
+    await platform.db.read((sql) => sql('SELECT 1 FROM profiles WHERE id=$1', [temporaryId])),
+  ).toHaveLength(0);
+  expect(
+    await platform.db.read((sql) =>
+      sql('SELECT 1 FROM inventory WHERE profile_id=$1', [temporaryId]),
+    ),
+  ).toHaveLength(0);
+  const [{ auth_user_id }] = await platform.db.read((sql) =>
+    sql<{ auth_user_id: string }>('SELECT auth_user_id FROM profile_accounts WHERE profile_id=$1', [
+      account.profile.id,
+    ]),
+  );
+  const legacyId = `legacy-${temporaryId}`;
+  await platform.db.tx(async (sql) => {
+    await sql("INSERT INTO profiles(id,name,default_deck) VALUES($1,'Guest old','[]')", [legacyId]);
+    await sql('INSERT INTO profile_accounts(user_key,profile_id,auth_user_id) VALUES($1,$2,$1)', [
+      auth_user_id,
+      legacyId,
+    ]);
+  });
+  await platform.guests.cleanup();
+  expect(
+    await platform.db.read((sql) => sql('SELECT 1 FROM profiles WHERE id=$1', [legacyId])),
+  ).toHaveLength(0);
+});
+it('deletes guests inactive for seven days without deleting active guests or registered accounts', async () => {
+  const expired = await user(),
+    active = await user(),
+    registered = await user(true);
+  await platform.db.read((sql) =>
+    sql("UPDATE profiles SET last_seen_at=now()-interval '8 days' WHERE id=$1 OR id=$2", [
+      expired.profile.id,
+      registered.profile.id,
+    ]),
+  );
+  await platform.guests.cleanup();
+  expect((await request(expired, '/profile')).statusCode).toBe(401);
+  expect((await request(active, '/profile')).statusCode).toBe(200);
+  expect((await request(registered, '/profile')).statusCode).toBe(200);
+  expect(
+    await platform.db.read((sql) =>
+      sql('SELECT 1 FROM profiles WHERE id=$1', [expired.profile.id]),
+    ),
+  ).toHaveLength(0);
+});
+it('supports private friend requests, global chat with rate limits, and recipient-only duel invitations', async () => {
+  const a = await user(true),
+    b = await user(true),
+    stranger = await user(true),
+    guest = await user();
+  expect((await request(guest, '/friends/request', { playerId: a.profile.id })).statusCode).toBe(
+    403,
+  );
+  await ok(a, '/friends/request', { playerId: b.profile.id });
+  expect(
+    (await ok<import('@gacha-triad/shared/social').SocialView>(b, '/social')).friends[0].status,
+  ).toBe('incoming');
+  expect((await request(a, `/friends/${b.profile.id}/accept`, {})).statusCode).toBe(409);
+  await ok(b, `/friends/${a.profile.id}/accept`, {});
+  const chat = await ok<{ id: string }>(a, '/chat', {
+    message: 'Hello <b>card hall</b>',
+    requestId: 'hello-chat-retry',
+  });
+  expect(
+    (
+      await ok<{ id: string }>(a, '/chat', {
+        message: 'Hello <b>card hall</b>',
+        requestId: 'hello-chat-retry',
+      })
+    ).id,
+  ).toBe(chat.id);
+  expect(
+    (await request(a, '/chat', { message: 'too fast', requestId: 'hello-too-fast' })).statusCode,
+  ).toBe(429);
+  expect(
+    (await request(guest, '/chat', { message: 'guest', requestId: 'guest-message' })).statusCode,
+  ).toBe(403);
+  expect((await request(b, `/chat/${chat.id}`, undefined, 'DELETE')).statusCode).toBe(403);
+  const invite = await ok<{ id: string; lobbyId: string }>(a, '/invites', {
+    playerId: b.profile.id,
+  });
+  expect((await request(stranger, `/lobbies/${invite.lobbyId}/join`, {})).statusCode).toBe(403);
+  expect(
+    (await request(stranger, `/invites/${invite.id}/respond`, { accept: true })).statusCode,
+  ).toBe(404);
+  const joined = await ok<{ matchId: string }>(b, `/invites/${invite.id}/respond`, {
+    accept: true,
+  });
+  expect(
+    (await ok<{ matchId: string }>(b, `/invites/${invite.id}/respond`, { accept: true })).matchId,
+  ).toBe(joined.matchId);
+  await ok(a, `/matches/${joined.matchId}/resign`, {});
+  const pending = await ok<{ id: string; lobbyId: string }>(a, '/invites', {
+    playerId: b.profile.id,
+  });
+  await platform.db.read((sql) =>
+    sql("UPDATE duel_invitations SET expires_at=now()-interval '1 second' WHERE id=$1", [
+      pending.id,
+    ]),
+  );
+  expect((await request(b, `/invites/${pending.id}/respond`, { accept: true })).statusCode).toBe(
+    409,
+  );
+  expect((await ok<ProfileView>(a, '/profile')).waitingLobbyId).toBeNull();
+  await ok(b, `/friends/${a.profile.id}`, undefined, 'DELETE');
+  expect(
+    (await ok<import('@gacha-triad/shared/social').SocialView>(a, '/social')).friends,
+  ).toHaveLength(0);
+});
+it('guards first ranked entry, equips earned titles, exposes match avatars and lists human ratings', async () => {
+  const a = await user(true),
+    b = await user(true);
+  await platform.db.read((sql) =>
+    sql('UPDATE profiles SET ranked_acknowledged=false WHERE id=$1', [a.profile.id]),
+  );
+  expect((await request(a, '/lobbies', { mode: 'ranked' })).statusCode).toBe(428);
+  expect((await request(a, '/ranked/acknowledge', {})).statusCode).toBe(400);
+  await ok(a, '/ranked/acknowledge', { acknowledged: true });
+  await ok(a, '/profile/avatar', { cardId: a.profile.deck[0] });
+  expect((await request(a, '/profile/title', { titleId: 'triad-master' })).statusCode).toBe(400);
+  const lobby = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'ranked', allowBots: false });
+  const joined = await ok<{ matchId: string }>(b, `/lobbies/${lobby.lobbyId}/join`, {});
+  const match = await ok<MatchView>(a, `/matches/${joined.matchId}`);
+  expect(match.players[0].avatar?.id).toBe(a.profile.deck[0]);
+  await ok(b, `/matches/${joined.matchId}/resign`, {});
+  await ok(a, `/matches/${joined.matchId}/claim`, { cardId: b.profile.deck[0] });
+  await ok(a, '/profile/title', { titleId: 'card-player' });
+  expect((await platform.store.playerProfile(a.profile.id)).title).toBe('Card Player');
+  const ladder = await ok<import('@gacha-triad/shared/social').LadderEntry[]>(a, '/ladder');
+  expect(ladder.some((p) => p.id === a.profile.id && p.games === 1)).toBe(true);
+  expect(ladder.every((p) => !p.name.startsWith('[BOT]'))).toBe(true);
+});
+it('protects retry-safe admin grants and deletes only the explicitly confirmed account', async () => {
+  const admin = await user(true),
+    target = await user(true),
+    other = await user(true);
+  const grant = {
+    profileId: target.profile.id,
+    kind: 'prisms',
+    amount: 300,
+    requestId: 'admin-currency-retry',
+  };
+  expect((await request(other, '/admin/grants', grant)).statusCode).toBe(403);
+  await platform.moderation.action(admin.profile.id, 'promote', 'test');
+  await ok(admin, '/admin/grants', grant);
+  await ok(admin, '/admin/grants', grant);
+  expect((await ok<ProfileView>(target, '/profile')).prisms).toBe(300);
+  const packs = { ...grant, kind: 'boosters', amount: 2, requestId: 'admin-boosters-retry' };
+  await ok(admin, '/admin/grants', packs);
+  await ok(admin, '/admin/grants', packs);
+  expect((await ok<ProfileView>(target, '/profile')).unopenedBoosters).toBe(2);
+  expect(
+    (await request(admin, '/admin/grants', { ...packs, requestId: 'bad-admin-amount', amount: -1 }))
+      .statusCode,
+  ).toBe(400);
+  vi.stubEnv('LOCAL_CONTROL_SECRET', 'delete-account-host');
+  try {
+    await ok(target, '/friends/request', { playerId: other.profile.id });
+    await ok(other, `/friends/${target.profile.id}/accept`, {});
+    await ok(target, '/chat', {
+      message: 'This account will be deleted',
+      requestId: 'deleted-chat-message',
+    });
+    const invite = await ok<{ id: string }>(target, '/invites', { playerId: other.profile.id });
+    const duel = await ok<{ matchId: string }>(other, `/invites/${invite.id}/respond`, {
+      accept: true,
+    });
+    const remove = (confirmation: string) =>
+      platform.app.inject({
+        method: 'POST',
+        url: '/api/local-control/delete-account',
+        headers: { 'x-local-control': 'delete-account-host' },
+        payload: { profileId: target.profile.id, confirmation },
+      });
+    expect((await remove('wrong name')).statusCode).toBe(409);
+    expect((await request(target, '/profile')).statusCode).toBe(200);
+    expect((await remove(target.profile.name)).statusCode).toBe(200);
+    expect((await request(target, '/profile')).statusCode).toBe(401);
+    expect(
+      await platform.db.read((sql) =>
+        sql('SELECT 1 FROM profiles WHERE id=$1', [target.profile.id]),
+      ),
+    ).toHaveLength(0);
+    expect((await request(other, '/profile')).statusCode).toBe(200);
+    expect((await ok<MatchView>(other, `/matches/${duel.matchId}`)).status).toBe('complete');
+    expect(
+      (await ok<import('@gacha-triad/shared/social').SocialView>(other, '/social')).friends,
+    ).toHaveLength(0);
+    expect(
+      await platform.db.read((sql) =>
+        sql('SELECT 1 FROM chat_messages WHERE profile_id=$1', [target.profile.id]),
+      ),
+    ).toHaveLength(0);
   } finally {
     vi.unstubAllEnvs();
   }

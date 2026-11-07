@@ -1,10 +1,12 @@
 import type { Card, GameState, Player, Rules } from '@gacha-triad/engine';
+import type { BattleIdentity, TitleView } from './social';
 export type Mode = 'solo' | 'casual' | 'custom' | 'ranked' | 'draft' | 'roulette';
 export interface HandCard {
   slotId: string;
   card: Card | null;
 }
 export interface MatchView {
+  players: readonly [BattleIdentity, BattleIdentity];
   prismReward: number;
   id: string;
   mode: Mode;
@@ -34,6 +36,8 @@ export interface MatchView {
   };
 }
 export interface LobbyView {
+  allowBots: boolean;
+  inviteOnly: boolean;
   hostId: string;
   id: string;
   name: string;
@@ -47,6 +51,8 @@ export interface LobbyView {
   createdAt: string;
 }
 export interface ProfileView {
+  rankedAcknowledged: boolean;
+  titleId: string | null;
   isAdmin: boolean;
   prisms: number;
   unopenedBoosters: number;
@@ -79,8 +85,9 @@ export const ECONOMY = {
   holoPer10000: 10,
 } as const;
 export interface BoosterView {
+  newCardIds: string[];
   id: string;
-  source: 'starter' | 'purchase';
+  source: 'starter' | 'purchase' | 'admin';
   cost: number;
   createdAt: string;
   openedAt: string | null;
@@ -166,6 +173,9 @@ export const ACHIEVEMENTS = [
   },
 ] as const;
 export interface PlayerProfileView {
+  title: string | null;
+  titleId: string | null;
+  titles: TitleView[];
   id: string;
   name: string;
   isBot: boolean;
@@ -197,6 +207,7 @@ export interface TradeOfferView {
   createdAt: string;
 }
 export interface PopulationView {
+  difficulty: 'easy' | 'medium' | 'hard';
   available: boolean;
   enabled: boolean;
   bots: number;

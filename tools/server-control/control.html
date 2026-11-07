@@ -327,10 +327,18 @@
     </section>
     <section class="panel">
       <h2>Bot population</h2>
+      <label
+        >Bot difficulty<select id="botDifficulty" aria-label="Bot difficulty">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select></label
+      >
       <p id="populationStatus">Start the server to manage bots.</p>
       <div class="actions">
         <button id="populate" type="button">Populate bots</button>
         <button id="pauseBots" type="button">Pause bots</button>
+        <button id="applyDifficulty" type="button">Apply difficulty</button>
       </div>
       <p>Pausing removes bot waiting tables and offers. Existing bot duels finish normally.</p>
     </section>
@@ -365,6 +373,38 @@
         <summary>Recent moderation actions</summary>
         <pre id="moderationLog"></pre>
       </details>
+      <h3>Selected user tools</h3>
+      <form id="grantForm">
+        <label
+          >Selected user<select id="grantUser" aria-label="Selected user" required>
+            <option value="">Choose a user</option>
+          </select></label
+        >
+        <label
+          >Grant<select id="grantKind" aria-label="Grant">
+            <option value="prisms">Stellar Prisms</option>
+            <option value="boosters">Standard boosters</option>
+          </select></label
+        >
+        <label
+          >Amount<input
+            id="grantAmount"
+            aria-label="Amount"
+            type="number"
+            min="1"
+            max="1000000"
+            value="150"
+            required
+        /></label>
+        <button type="submit">Grant to selected user</button>
+        <button type="button" id="deleteAccount">Delete selected account</button>
+      </form>
+      <p id="grantStatus" role="status"></p>
+      <p>
+        Grants are logged and retry-safe. Deletion removes the login, collection, currency and
+        social data. Other players keep anonymized match/trade history. You must type the selected
+        account's name to confirm deletion.
+      </p>
     </section>
     <section class="panel">
       <h2>Server log</h2>
@@ -384,7 +424,9 @@
       let current = null,
         posting = false,
         closed = false,
+        difficultyEdited = false,
         edited = false;
+      let pendingGrant = null;
       const el = (id) => document.getElementById(id);
       function text(id, value) {
         el(id).textContent = value;
@@ -399,6 +441,10 @@
           posting || current.busy || !current.running || !!population?.enabled;
         el('pauseBots').disabled =
           posting || current.busy || !current.running || !population?.enabled;
+        el('applyDifficulty').disabled = posting || current.busy || !current.running;
+        document
+          .querySelectorAll('#grantForm button')
+          .forEach((b) => (b.disabled = posting || current.busy || !current.running));
         document
           .querySelectorAll('#moderationUsers button')
           .forEach((b) => (b.disabled = posting || current.busy || !current.running));
@@ -418,7 +464,9 @@
       async function refresh() {
         if (closed) return;
         try {
-          const response = await fetch('/state');
+          const response = await fetch(
+            '/state?search=' + encodeURIComponent(el('userSearch').value),
+          );
           current = await response.json();
           text(
             'status',
@@ -446,6 +494,9 @@
           text('error', current.lastError);
           renderModeration();
           const population = current.online?.population;
+          if (!difficultyEdited)
+            el('botDifficulty').value =
+              population?.difficulty || current.config.botDifficulty || 'medium';
           text(
             'populationStatus',
             population
@@ -486,6 +537,11 @@
         }
       }
       function renderModeration() {
+        const selected = el('grantUser').value;
+        el('grantUser').replaceChildren(new Option('Choose a user', ''));
+        for (const user of current?.moderation?.users || [])
+          el('grantUser').append(new Option(`${user.name} (${user.id.slice(0, 8)})`, user.id));
+        el('grantUser').value = selected;
         const tbody = el('moderationUsers');
         tbody.replaceChildren();
         const search = el('userSearch').value.toLowerCase();
@@ -547,9 +603,56 @@
             .join('\n') || 'No moderation actions.',
         );
       }
-      el('userSearch').addEventListener('input', renderModeration);
-      el('populate').addEventListener('click', () => action('/population', { enabled: true }));
-      el('pauseBots').addEventListener('click', () => action('/population', { enabled: false }));
+      let searchTimer;
+      el('userSearch').addEventListener('input', () => {
+        renderModeration();
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(refresh, 200);
+      });
+      const populationAction = async (enabled) => {
+        if (await action('/population', { enabled, difficulty: el('botDifficulty').value }))
+          difficultyEdited = false;
+      };
+      el('botDifficulty').addEventListener('change', () => (difficultyEdited = true));
+      el('populate').addEventListener('click', () => populationAction(true));
+      el('pauseBots').addEventListener('click', () => populationAction(false));
+      el('applyDifficulty').addEventListener('click', () =>
+        populationAction(!!current.online?.population.enabled),
+      );
+      el('grantKind').addEventListener('change', () => {
+        el('grantAmount').max = el('grantKind').value === 'boosters' ? '100' : '1000000';
+        el('grantAmount').value = el('grantKind').value === 'boosters' ? '3' : '150';
+      });
+      el('grantForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const body = {
+          profileId: el('grantUser').value,
+          kind: el('grantKind').value,
+          amount: Number(el('grantAmount').value),
+        };
+        const signature = JSON.stringify(body);
+        if (pendingGrant?.signature !== signature)
+          pendingGrant = { signature, id: crypto.randomUUID() };
+        if (await action('/grant', { ...body, requestId: pendingGrant.id })) {
+          pendingGrant = null;
+          text(
+            'grantStatus',
+            `Granted ${body.amount} ${body.kind === 'prisms' ? 'Stellar Prisms' : 'boosters'} to the selected user.`,
+          );
+        }
+      });
+      el('deleteAccount').addEventListener('click', () => {
+        const user = current?.moderation?.users.find((u) => u.id === el('grantUser').value);
+        if (!user) {
+          text('error', 'Select a user first.');
+          return;
+        }
+        const confirmation = prompt(
+          `Permanently delete ${user.name} (${user.id})? This removes their account, cards, currency and social data. Type their exact name to confirm:`,
+        );
+        if (confirmation !== null)
+          void action('/delete-account', { profileId: user.id, confirmation });
+      });
       async function action(path, body = {}) {
         posting = true;
         lock();
@@ -564,8 +667,10 @@
           if (!response.ok) throw Error(result.error);
           if (path === '/exit') closed = true;
           edited = false;
+          return true;
         } catch (error) {
           text('error', error.message);
+          return false;
         } finally {
           posting = false;
           if (closed) {

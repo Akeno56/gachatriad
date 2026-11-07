@@ -1,4 +1,4 @@
-import { betterAuth } from 'better-auth';
+import { betterAuth, type BetterAuthOptions } from 'better-auth';
 import { anonymous, bearer } from 'better-auth/plugins';
 import { getMigrations } from 'better-auth/db/migration';
 import { PostgresDialect } from 'kysely';
@@ -21,7 +21,8 @@ export async function createAuth(db: Database, root: string, baseURL: string) {
     }
   }
   const links: { from: string; to: string; name: string }[] = [];
-  const auth = betterAuth({
+  let discardGuests: (ids: string[]) => Promise<void> = async () => {};
+  const options = {
     baseURL,
     basePath: '/api/auth',
     secret,
@@ -39,11 +40,24 @@ export async function createAuth(db: Database, root: string, baseURL: string) {
         },
       }),
     ],
-  });
-  await (await getMigrations(auth.options)).runMigrations();
+  } satisfies BetterAuthOptions;
+  await (await getMigrations(options)).runMigrations();
+  const auth = betterAuth(options);
   async function flushLinks() {
     while (links.length) {
       const link = links.shift()!;
+      const targetExists = await db.read((sql) =>
+        sql('SELECT 1 FROM profile_accounts WHERE auth_user_id=$1 AND is_primary', [link.to]),
+      );
+      if (targetExists.length) {
+        const temporary = await db.read((sql) =>
+          sql<{ profile_id: string }>('SELECT profile_id FROM profile_accounts WHERE user_key=$1', [
+            link.from,
+          ]),
+        );
+        await discardGuests(temporary.map((p) => p.profile_id));
+        continue;
+      }
       await db.tx(async (sql) => {
         const old = await sql<{ profile_id: string }>(
           'SELECT profile_id FROM profile_accounts WHERE user_key=$1',
@@ -61,5 +75,11 @@ export async function createAuth(db: Database, root: string, baseURL: string) {
       });
     }
   }
-  return { auth, flushLinks };
+  return {
+    auth,
+    flushLinks,
+    setGuestCleanup(fn: typeof discardGuests) {
+      discardGuests = fn;
+    },
+  };
 }

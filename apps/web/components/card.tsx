@@ -1,5 +1,5 @@
 'use client';
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   displayValue,
   type Card as CardData,
@@ -120,7 +120,7 @@ export function Card({
         <span className="card-stars" aria-label={`${card.rarity} stars`}>
           {'★'.repeat(card.rarity)}
         </span>
-        <strong>{card.name}</strong>
+        <FittedCardName name={card.name} />
       </div>
       {owner !== undefined && (
         <span className="ownership-mark" aria-hidden="true">
@@ -133,5 +133,41 @@ export function Card({
         </span>
       )}
     </div>
+  );
+}
+function FittedCardName({ name }: { name: string }) {
+  const ref = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let active = true,
+      lastWidth = -1;
+    const fit = () => {
+      if (!active || !el.clientWidth) return;
+      el.style.fontSize = '';
+      const base = parseFloat(getComputedStyle(el).fontSize),
+        ratio = Math.min(1, el.clientWidth / Math.max(1, el.scrollWidth));
+      if (ratio < 1)
+        el.style.fontSize = `${Math.max(base * 0.48, Math.floor(base * ratio * 10) / 10 - 0.2)}px`;
+    };
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0].contentRect.width;
+      if (width !== lastWidth) {
+        lastWidth = width;
+        fit();
+      }
+    });
+    observer.observe(el.parentElement!);
+    fit();
+    void document.fonts.ready.then(fit);
+    return () => {
+      active = false;
+      observer.disconnect();
+    };
+  }, [name]);
+  return (
+    <strong ref={ref} title={name}>
+      {name}
+    </strong>
   );
 }
