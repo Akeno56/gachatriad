@@ -176,7 +176,6 @@ export function Game() {
             <h1>
               <span>GACHA</span>TRIAD
             </h1>
-            <div className="title-rule">◆ FIVE CARDS. ONE DUEL. ◆</div>
           </div>
           <div className="title-layout">
             <section className="setup-panel menu-window" aria-label="Match setup">
@@ -224,7 +223,7 @@ export function Game() {
               <p className="preset-description">{preset.description}</p>
               <button
                 className="primary-button start-button"
-                disabled={busy || !profile}
+                disabled={busy || !profile || profile.deck.length !== 5}
                 onClick={start}
               >
                 {busy ? 'Preparing…' : 'Start match'} ▶
@@ -244,7 +243,6 @@ export function Game() {
             <section className="title-party" aria-label="Your saved deck">
               <div className="party-heading">
                 <span>YOUR DECK</span>
-                <strong>Five worlds. Your hand.</strong>
               </div>
               <div className="title-roster">
                 {(profile

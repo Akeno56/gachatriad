@@ -5,6 +5,7 @@ export interface HandCard {
   card: Card | null;
 }
 export interface MatchView {
+  prismReward: number;
   id: string;
   mode: Mode;
   version: number;
@@ -46,6 +47,9 @@ export interface LobbyView {
   createdAt: string;
 }
 export interface ProfileView {
+  isAdmin: boolean;
+  prisms: number;
+  unopenedBoosters: number;
   tutorialCompleted: boolean;
   avatarCardId: string | null;
   id: string;
@@ -62,6 +66,25 @@ export interface ProfileView {
   activeMatchId: string | null;
   waitingLobbyId: string | null;
   profiles: { id: string; name: string }[];
+}
+export const ECONOMY = {
+  currency: 'Stellar Prisms',
+  packCost: 150,
+  winReward: 50,
+  drawReward: 25,
+  lossReward: 10,
+  standardWeights: [55, 25, 15, 4, 1],
+  starterWeights: [55, 25, 15, 0, 0],
+  guaranteedWeights: [0, 0, 85, 13, 2],
+  holoPer10000: 10,
+} as const;
+export interface BoosterView {
+  id: string;
+  source: 'starter' | 'purchase';
+  cost: number;
+  createdAt: string;
+  openedAt: string | null;
+  cards: Card[];
 }
 export const ACHIEVEMENTS = [
   {

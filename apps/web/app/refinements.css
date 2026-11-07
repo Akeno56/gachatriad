@@ -270,7 +270,7 @@
   );
   background-size: 280% 200%;
   mix-blend-mode: screen;
-  animation: holo-drift 7s ease-in-out infinite;
+  animation: holo-drift 5s ease-in-out infinite;
   opacity: 0.8;
 }
 .playing-card.holo-card {
@@ -301,7 +301,9 @@
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: repeating-linear-gradient(130deg, transparent 0 11px, #fff1 11px 12px);
+  background: repeating-linear-gradient(130deg, transparent 0 11px, #fff2 11px 12px);
+  background-size: 160% 160%;
+  animation: holo-sparkle 8s linear infinite;
   opacity: 0.25;
 }
 .holo-card .ownership-mark {
@@ -335,6 +337,14 @@
   50% {
     background-position: 100% 60%;
     opacity: 0.9;
+  }
+}
+@keyframes holo-sparkle {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 100% 100%;
   }
 }
 @media (max-width: 680px) {

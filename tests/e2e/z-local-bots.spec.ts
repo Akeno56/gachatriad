@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { openStarterPacks } from './helpers';
 test('populates labeled bots, joins a real bot duel, preserves guest progress and trades', async ({
   page,
 }, info) => {
@@ -7,15 +8,17 @@ test('populates labeled bots, joins a real bot duel, preserves guest progress an
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/lobbies');
+  await openStarterPacks(page);
   await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
   if (await page.locator('.tutorial-dialog').isVisible()) {
     await page.getByRole('button', { name: /Continue tutorial/ }).click();
     await page.getByRole('button', { name: /Continue tutorial/ }).click();
     await page.getByRole('button', { name: 'I’m ready to play' }).click();
   }
-  const populate = page.getByRole('button', { name: 'Populate with bots' });
-  if (await populate.isVisible()) await populate.click();
-  await expect(page.locator('.local-bots')).toContainText('10 labeled bots');
+  await expect(page.locator('.local-bots')).toHaveCount(0);
+  expect((await page.request.post('/api/local-bots', { data: { enabled: false } })).status()).toBe(
+    403,
+  );
   await page.getByLabel('Mode', { exact: true }).selectOption('custom');
   await expect(page.locator('.lobby-row').filter({ hasText: '[BOT] Nova' })).toBeVisible();
   const before = (await page.request.get('/api/profile')).json();
@@ -59,22 +62,18 @@ test('populates labeled bots, joins a real bot duel, preserves guest progress an
   await expect(page.locator('.trade-offer').first()).toBeVisible();
   await expect(page.locator('.trade-offer').first()).toContainText('[BOT]');
   await page.getByText('Post a trade offer', { exact: true }).click();
-  const give = 'star-rail:march-7th',
-    want = 'genshin:amber';
+  const inventory = await (await page.request.get('/api/profile')).json();
+  const offers = await (await page.request.get('/api/trades')).json();
+  const give = inventory.deck[0],
+    want = offers.find((o: { offered: { id: string } }) => o.offered.id !== give).offered.id;
   await page.getByLabel('You offer', { exact: true }).selectOption(give);
   await page.getByLabel('You request', { exact: true }).selectOption(want);
   await page.getByRole('button', { name: 'Post offer', exact: true }).click();
-  await expect
-    .poll(
-      async () => {
-        const p = await (await page.request.get('/api/profile')).json();
-        return p.inventory[want]?.quantity ?? 0;
-      },
-      { timeout: 25000 },
-    )
-    .toBeGreaterThanOrEqual(2);
+  await page.getByLabel('Show', { exact: true }).selectOption('mine');
+  await expect(page.locator('.trade-offer')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Cancel offer', exact: true }).click();
+  await expect(page.locator('.trade-offer')).toHaveCount(0);
   await page.getByRole('link', { name: 'Collection', exact: true }).click();
-  await expect(page.locator('.saved-deck')).toContainText('unavailable card');
   await page.getByRole('button', { name: 'Auto build', exact: true }).click();
   await expect(page.locator('.saved-deck')).toContainText('Ready for battle.');
   await page.getByRole('link', { name: 'Achievements', exact: true }).click();

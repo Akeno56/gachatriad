@@ -1,4 +1,10 @@
-# Current architecture — v0.3
+# Current architecture — v0.5
+
+## v0.5 acquisition and host administration
+
+New profiles receive three unopened server-owned boosters rather than direct inventory. The transactional economy stores purchase request IDs, five-card opening receipts, inventory ledger entries and Stellar Prism debits/rewards. Database uniqueness prevents duplicate charges/openings/payouts, and a nonnegative balance constraint protects spending. Starter pack collation guarantees a legal first deck; paid pack odds and cosmetic Holo chance are published in the game. Existing saves are preserved. See [booster rules](BOOSTER_PACKS.md).
+
+Administrator privileges belong to authenticated registered user IDs in `server_admins`, independent of display names, email claims or selected profiles. Guests cannot become admins. Both reads and mutations of public bot controls enforce this role on the server. Role changes and suspensions require the host console's private control secret; the browser never receives that secret. Suspensions apply across linked profiles and are enforced during HTTP profile resolution and socket handshakes. The private console supports promotion/demotion, suspension/restoration, disconnection, bot population management and an audit log. Host/origin checks plus a CSRF token still protect its loopback API.
 
 ## v0.4 extension
 
@@ -6,7 +12,7 @@ The static Pages build has a repository base path and runtime server selection. 
 
 `tools/server-control` is a separate loopback HTTP control tool. It owns only the game process it launches, uses IPC for graceful shutdown, reports authenticated socket presence, and can run an official Cloudflare Quick Tunnel to the game port. The game presence endpoint requires a per-controller secret. Host/origin checks and a local CSRF token protect control mutations. The tunnel never forwards the control panel. A read-only local static preview serves only exported frontend files; accounts/saves remain outside its root.
 
-Migrations add a public avatar choice and persistent tutorial completion. The server gates first duels, and public profile DTOs omit private decks and inventory. Holo definitions have distinct ownership IDs but share a base identity for deck uniqueness and collection achievements. No pack/currency acquisition is simulated.
+Migrations add a public avatar choice and persistent tutorial completion. The server gates first duels, and public profile DTOs omit private decks and inventory. Holo definitions have distinct ownership IDs but share a base identity for deck uniqueness and collection achievements.
 
 The pnpm workspace has a Next.js/React frontend, a Fastify server, and pure engine/shared/balance packages. Next rewrites `/api/*` to the local server; Socket.IO supplies change notifications. Clients refetch authenticated views. WebSocket payloads contain no private game state. A five-second refresh also recovers missed notifications. `NEXT_PUBLIC_SERVER_URL` can override the default Socket.IO address; `SERVER_URL` overrides the API proxy destination.
 

@@ -1,7 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
+import { openStarterPacks } from './helpers';
 async function ready(page: Page) {
   await page.goto('/');
   await page.locator('.account-control').filter({ hasNotText: 'Connecting…' }).waitFor();
+  await openStarterPacks(page);
   if (await page.locator('.tutorial-dialog').isVisible()) {
     await page.getByRole('button', { name: /Continue tutorial/ }).click();
     await page.getByRole('button', { name: /Continue tutorial/ }).click();
@@ -92,14 +94,25 @@ test('shows owned and missing cards, previews Holo and removes Character Library
 }, info) => {
   await ready(page);
   await page.goto('/cards');
+  await page.getByLabel('Ownership', { exact: true }).selectOption('owned');
+  await expect(page.locator('.catalog-grid article').first()).toHaveAttribute('data-owned', 'true');
+  await page.getByLabel('Ownership', { exact: true }).selectOption('all');
+  const inventory = (await (await page.request.get('/api/profile')).json()).inventory;
   await page.getByLabel('Find a card').fill('Amber');
   await page.getByLabel('Universe', { exact: true }).selectOption('genshin');
   await expect(page.locator('.catalog-grid article')).toHaveCount(1);
-  await expect(page.locator('.catalog-grid article')).toHaveAttribute('data-owned', 'true');
+  await expect(page.locator('.catalog-grid article')).toHaveAttribute(
+    'data-owned',
+    inventory['genshin:amber']?.quantity ? 'true' : 'false',
+  );
   await expect(page.getByText('Character library', { exact: false })).toHaveCount(0);
   await page.getByLabel('Finish', { exact: true }).selectOption('holo');
-  await expect(page.locator('.catalog-grid article')).toHaveAttribute('data-owned', 'false');
-  await expect(page.locator('.card-unowned')).toHaveCount(1);
+  await expect(page.locator('.catalog-grid article')).toHaveAttribute(
+    'data-owned',
+    inventory['genshin:amber::holo']?.quantity ? 'true' : 'false',
+  );
+  if (!inventory['genshin:amber::holo']?.quantity)
+    await expect(page.locator('.card-unowned')).toHaveCount(1);
   await page.getByRole('button', { name: /Inspect Amber/ }).click();
   await expect(page.locator('.card-detail .holo-foil')).toBeVisible();
   const box = await page.locator('.card-detail').boundingBox(),

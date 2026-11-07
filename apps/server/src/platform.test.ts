@@ -29,7 +29,7 @@ async function request(
     ...(body === undefined ? {} : { payload: JSON.stringify(body) }),
   });
 }
-async function user(registered = false) {
+async function user(registered = false, openStarters = true) {
   const response = await request(null, '/auth/sign-in/anonymous', {});
   expect(response.statusCode, response.body).toBe(200);
   const client: Client = {
@@ -37,6 +37,10 @@ async function user(registered = false) {
     profile: null!,
   };
   client.profile = (await request(client, '/profile')).json();
+  if (openStarters) {
+    const packs = (await request(client, '/boosters')).json() as { id: string }[];
+    for (const pack of packs) await request(client, `/boosters/${pack.id}/open`, {});
+  }
   await request(client, '/tutorial/complete', {});
   client.profile = (await request(client, '/profile')).json();
   if (registered) {
@@ -71,7 +75,7 @@ it('preserves the starter collection across reload and anonymous account convers
   const p = await ok<ProfileView>(c, '/profile');
   expect(p.inventory).toEqual(c.profile.inventory);
   expect(p.deck).toHaveLength(5);
-  expect(Object.keys(p.inventory).length).toBeGreaterThan(20);
+  expect(Object.values(p.inventory).reduce((n, c) => n + c.quantity, 0)).toBe(15);
 });
 it('redacts two Three Open cards, rejects illegal and stale moves, and keeps public waiting/playing counts', async () => {
   const a = await user(),
@@ -211,6 +215,8 @@ it('a completed ranked draw releases all stakes and transfers no cards', async (
   }
   const result = await ok<MatchView>(a, `/matches/${matchId}`);
   expect(result.winner).toBe('draw');
+  expect(result.prismReward).toBe(25);
+  expect((await ok<MatchView>(b, `/matches/${matchId}`)).prismReward).toBe(25);
   expect(result.trade.pending).toBe(false);
   expect((await ok<ProfileView>(a, '/profile')).inventory).toEqual(a.profile.inventory);
   expect((await ok<ProfileView>(b, '/profile')).inventory).toEqual(b.profile.inventory);
@@ -243,6 +249,14 @@ it('atomically exchanges an offered owned card and rejects repeated acceptance',
     b = await user(true),
     give = a.profile.deck[0],
     want = a.profile.deck[1];
+  await platform.db.read(async (sql) => {
+    for (const profile of [a.profile, b.profile])
+      for (const cardId of [give, want])
+        await sql(
+          'INSERT INTO inventory(profile_id,card_id,quantity) VALUES($1,$2,1) ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=1',
+          [profile.id, cardId],
+        );
+  });
   const { id } = await ok<{ id: string }>(a, '/trades', { offered: give, wanted: want });
   expect((await ok<ProfileView>(a, '/profile')).inventory[give].available).toBe(0);
   const requests = await Promise.all([
@@ -347,16 +361,27 @@ it('blocks first duels and lobby joins until onboarding is complete', async () =
   expect((await request(c, '/solo', {})).statusCode).toBe(428);
   expect((await request(c, '/lobbies', { mode: 'casual' })).statusCode).toBe(428);
   await ok(c, '/tutorial/complete', {});
+  for (const pack of await ok<{ id: string }[]>(c, '/boosters'))
+    await ok(c, `/boosters/${pack.id}/open`, {});
   const { matchId } = await ok<{ matchId: string }>(c, '/solo', {});
   await ok(c, `/matches/${matchId}/resign`, {});
 });
 it('keeps Holo ownership separate, accepts it in a deck and trades the exact finish', async () => {
   const a = await user(true),
     b = await user(true),
-    base = a.profile.deck[0],
+    base = a.profile.deck[0].replace(/::holo$/, ''),
     holo = base + '::holo';
   await platform.db.read((sql) =>
-    sql('INSERT INTO inventory(profile_id,card_id,quantity) VALUES($1,$2,1)', [a.profile.id, holo]),
+    sql(
+      'INSERT INTO inventory(profile_id,card_id,quantity) VALUES($1,$2,1) ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=1',
+      [a.profile.id, holo],
+    ),
+  );
+  await platform.db.read((sql) =>
+    sql(
+      'INSERT INTO inventory(profile_id,card_id,quantity) VALUES($1,$2,1) ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=1',
+      [a.profile.id, base],
+    ),
   );
   const deck = [holo, ...a.profile.deck.slice(1)];
   await ok(a, '/deck', { cards: deck });
@@ -374,4 +399,164 @@ it('keeps Holo ownership separate, accepts it in a deck and trades the exact fin
   expect(pa.inventory[holo]).toBeUndefined();
   expect(pa.inventory[base].quantity).toBe(1);
   expect(pb.inventory[holo].quantity).toBe(1);
+});
+it('replaces new-account cards with three private, replay-safe starter boosters and preserves conversion', async () => {
+  const a = await user(false, false),
+    stranger = await user(false, false);
+  expect(a.profile.inventory).toEqual({});
+  expect(a.profile.deck).toEqual([]);
+  expect(a.profile.prisms).toBe(0);
+  expect(a.profile.unopenedBoosters).toBe(3);
+  const packs = await ok<import('@gacha-triad/shared/platform').BoosterView[]>(a, '/boosters');
+  expect(packs).toHaveLength(3);
+  expect(packs.every((p) => !p.openedAt && p.cards.length === 0)).toBe(true);
+  expect((await request(stranger, `/boosters/${packs[0].id}/open`, {})).statusCode).toBe(404);
+  const results = await Promise.all([
+    request(a, `/boosters/${packs[0].id}/open`, {}),
+    request(a, `/boosters/${packs[0].id}/open`, {}),
+  ]);
+  expect(results.map((r) => r.statusCode)).toEqual([200, 200]);
+  expect(results[0].json()).toEqual(results[1].json());
+  for (const pack of packs.slice(1)) await ok(a, `/boosters/${pack.id}/open`, {});
+  const opened = await ok<import('@gacha-triad/shared/platform').BoosterView[]>(a, '/boosters');
+  expect(opened.every((p) => p.cards.length === 5 && p.cards.some((c) => c.rarity >= 3))).toBe(
+    true,
+  );
+  expect(opened.every((p) => new Set(p.cards.map((c) => c.baseCardId ?? c.id)).size === 5)).toBe(
+    true,
+  );
+  const p = await ok<ProfileView>(a, '/profile');
+  expect(Object.values(p.inventory).reduce((n, c) => n + c.quantity, 0)).toBe(15);
+  expect(p.unopenedBoosters).toBe(0);
+  expect(p.deck).toHaveLength(5);
+  const signup = await request(a, '/auth/sign-up/email', {
+    name: 'Booster convert',
+    email: `${p.id}@test.invalid`,
+    password: 'test-password-12345',
+  });
+  a.cookie = signup.cookies.map((c) => `${c.name}=${c.value}`).join('; ');
+  const after = await ok<ProfileView>(a, '/profile');
+  expect(after.id).toBe(p.id);
+  expect(after.inventory).toEqual(p.inventory);
+  expect(after.unopenedBoosters).toBe(0);
+  expect((await ok<unknown[]>(a, '/boosters')).length).toBe(3);
+});
+it('charges purchases atomically, rejects insufficient funds and replays a purchase without charging again', async () => {
+  const c = await user();
+  expect((await request(c, '/boosters/buy', { requestId: 'initial-no-funds' })).statusCode).toBe(
+    409,
+  );
+  await platform.db.read((sql) =>
+    sql('UPDATE profiles SET prisms=300 WHERE id=$1', [c.profile.id]),
+  );
+  const attempts = await Promise.all(
+    ['purchase-one', 'purchase-two', 'purchase-three'].map((requestId) =>
+      request(c, '/boosters/buy', { requestId }),
+    ),
+  );
+  expect(attempts.map((r) => r.statusCode).sort()).toEqual([200, 200, 409]);
+  const index = attempts.findIndex((r) => r.statusCode === 200),
+    requestId = ['purchase-one', 'purchase-two', 'purchase-three'][index];
+  const retry = await ok<{ id: string }>(c, '/boosters/buy', { requestId });
+  expect(retry.id).toBe(attempts[index].json().id);
+  const p = await ok<ProfileView>(c, '/profile');
+  expect(p.prisms).toBe(0);
+  expect(p.unopenedBoosters).toBe(2);
+  expect((await request(c, '/boosters/buy', { requestId: 42 })).statusCode).toBe(400);
+  expect(
+    await platform.db.read((sql) =>
+      sql("SELECT * FROM prism_ledger WHERE profile_id=$1 AND kind='booster'", [p.id]),
+    ),
+  ).toHaveLength(2);
+});
+it('pays 50/25/10 once for a full duel, including guest players, and pays nothing for forfeits', async () => {
+  const a = await user(),
+    b = await user();
+  const { lobbyId } = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'casual' });
+  const { matchId } = await ok<{ matchId: string }>(b, `/lobbies/${lobbyId}/join`, {});
+  const [initial] = await platform.db.read((sql) =>
+    sql<{ state: GameState }>('SELECT state FROM matches WHERE id=$1', [matchId]),
+  );
+  let plan: Move[] | null = null;
+  for (let seed = 0; seed < 1000 && !plan; seed++) {
+    let state = initial.state;
+    const moves: Move[] = [],
+      random = seededRandom(seed);
+    while (state.status === 'playing') {
+      const options = legalMoves(state),
+        move = options[Math.floor(random() * options.length)];
+      moves.push(move);
+      state = applyMove(state, move);
+    }
+    if (state.status === 'complete' && state.board.filter(Boolean).length === 9) {
+      const counts = [0, 0];
+      for (const cell of state.board) if (cell) counts[cell.owner]++;
+      for (let seat = 0; seat < 2; seat++) counts[seat] += state.hands[seat].length;
+      if (counts[0] !== counts[1]) plan = moves;
+    }
+  }
+  expect(plan).not.toBeNull();
+  for (let version = 0; version < 9; version++) {
+    const move = plan![version];
+    await ok(move.player === 0 ? a : b, `/matches/${matchId}/move`, { ...move, version });
+  }
+  for (const c of [a, b]) {
+    const m = await ok<MatchView>(c, `/matches/${matchId}`);
+    const expected = m.winner === 'draw' ? 25 : m.winner === m.seat ? 50 : 10;
+    expect(m.prismReward).toBe(expected);
+    expect((await ok<ProfileView>(c, '/profile')).prisms).toBe(expected);
+    await ok(c, `/matches/${matchId}/resign`, {});
+    expect((await ok<ProfileView>(c, '/profile')).prisms).toBe(expected);
+  }
+  const prior = (await ok<ProfileView>(a, '/profile')).prisms;
+  const solo = await ok<{ matchId: string }>(a, '/solo', {});
+  const resigned = await ok<MatchView>(a, `/matches/${solo.matchId}/resign`, {});
+  expect(resigned.prismReward).toBe(0);
+  expect((await ok<ProfileView>(a, '/profile')).prisms).toBe(prior);
+});
+it('restricts bot status and mutations to explicit registered administrators and isolates host moderation', async () => {
+  const guest = await user(),
+    account = await user(true);
+  for (const c of [guest, account]) {
+    expect(c.profile.isAdmin).toBe(false);
+    expect((await request(c, '/local-bots')).statusCode).toBe(403);
+    expect((await request(c, '/local-bots', { enabled: true, isAdmin: true })).statusCode).toBe(
+      403,
+    );
+    expect((await request(c, '/local-control/users')).statusCode).toBe(404);
+    expect(
+      (
+        await request(c, '/local-control/moderation', {
+          profileId: c.profile.id,
+          action: 'promote',
+        })
+      ).statusCode,
+    ).toBe(404);
+  }
+  const secret = 'isolated-host-control-test';
+  vi.stubEnv('LOCAL_CONTROL_SECRET', secret);
+  try {
+    const host = async (profileId: string, action: string) =>
+      platform.app.inject({
+        url: '/api/local-control/moderation',
+        method: 'POST',
+        headers: { 'x-local-control': secret },
+        payload: { profileId, action, reason: 'test' },
+      });
+    expect((await host(guest.profile.id, 'promote')).statusCode).toBe(400);
+    expect((await host(account.profile.id, 'promote')).statusCode).toBe(200);
+    expect((await ok<ProfileView>(account, '/profile')).isAdmin).toBe(true);
+    expect((await request(account, '/local-bots')).statusCode).toBe(200);
+    expect((await request(account, '/local-bots', { enabled: false })).statusCode).toBe(200);
+    expect((await host(account.profile.id, 'demote')).statusCode).toBe(200);
+    expect((await request(account, '/local-bots')).statusCode).toBe(403);
+    const lobby = await ok<{ lobbyId: string }>(account, '/lobbies', { mode: 'casual' });
+    expect((await host(account.profile.id, 'suspend')).statusCode).toBe(200);
+    expect((await request(account, '/profile')).statusCode).toBe(403);
+    expect((await platform.store.lobbies()).some((l) => l.id === lobby.lobbyId)).toBe(false);
+    expect((await host(account.profile.id, 'restore')).statusCode).toBe(200);
+    expect((await request(account, '/profile')).statusCode).toBe(200);
+  } finally {
+    vi.unstubAllEnvs();
+  }
 });

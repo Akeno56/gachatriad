@@ -1,8 +1,10 @@
 import { expect, test } from '@playwright/test';
+import { openStarterPacks } from './helpers';
 test('requires the first-duel tutorial, accepts the rulebook, and remembers completion', async ({
   page,
 }) => {
   await page.goto('/');
+  await openStarterPacks(page);
   const tutorial = page.locator('.tutorial-dialog');
   await expect(tutorial).toBeVisible();
   const response = await page.request.post('/api/solo', { data: {} });
@@ -58,8 +60,8 @@ test('explains guest trading, filters offers and opens registration from the not
 }) => {
   await page.goto('/market');
   await expect(page.locator('.guest-market-notice')).toContainText('guest');
-  const populate = page.getByRole('button', { name: 'Populate with bots' });
-  if (await populate.isVisible()) await populate.click();
+  await expect(page.locator('.local-bots')).toHaveCount(0);
+  expect((await page.request.get('/api/local-bots')).status()).toBe(403);
   await expect(page.locator('.trade-offer').first()).toBeVisible();
   await expect(page.locator('.trade-offer').first().locator('.eligibility-note')).toContainText(
     'account',
@@ -78,6 +80,7 @@ test('saves a public profile card and removes artwork inspection from Collection
   page,
 }) => {
   await page.goto('/profile');
+  await openStarterPacks(page);
   await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible();
   const select = page.getByLabel('Profile card', { exact: true });
   await expect(select.locator('option').nth(1)).toBeAttached();
@@ -98,7 +101,7 @@ test('requires Closed, Same, Plus and Combo for custom Trade One and keeps added
   await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
   await page.request.post('/api/tutorial/complete', { data: {} });
   const signup = await page.request.post('/api/auth/sign-up/email', {
-    headers: { origin: 'http://127.0.0.1:3000' },
+    headers: { origin: new URL(page.url()).origin },
     data: {
       name: 'Rule tester',
       email: `rules-${Date.now()}@test.invalid`,

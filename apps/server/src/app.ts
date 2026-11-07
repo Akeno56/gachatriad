@@ -12,6 +12,7 @@ import type { Mode } from '@gacha-triad/shared/platform';
 import { Trades } from './trades';
 import { BotPopulation } from './bots';
 import { allowedOrigins } from './config';
+import { Moderation } from './moderation';
 export async function createPlatform(
   root: string,
   options: { memory?: boolean; timers?: boolean; logger?: boolean } = {},
@@ -30,8 +31,10 @@ export async function createPlatform(
   await store.migrate(root);
   const trades = new Trades(db),
     bots = new BotPopulation(store, trades);
+  const moderation = new Moderation(db);
   if (!bots.available) await bots.set(false);
   else if (process.env.POPULATE_BOTS === 'true') await bots.set(true);
+  else if (process.env.POPULATE_BOTS === 'false') await bots.set(false);
   const app = Fastify({
     trustProxy: '127.0.0.1',
     logger: options.logger ?? false,
@@ -125,12 +128,56 @@ export async function createPlatform(
     req.body && typeof req.body === 'object' ? (req.body as Record<string, unknown>) : {};
   const id = (req: FastifyRequest) => (req.params as { id: string }).id;
   app.get('/api/health', async () => ({ ok: true }));
-  app.get('/api/local-control/status', async (req) => {
+  function requireHost(req: FastifyRequest) {
     if (
       !process.env.LOCAL_CONTROL_SECRET ||
       req.headers['x-local-control'] !== process.env.LOCAL_CONTROL_SECRET
     )
       throw new GameError('Not found.', 404);
+  }
+  app.get('/api/local-control/users', async (req) => {
+    requireHost(req);
+    return {
+      users: await moderation.users(String((req.query as { search?: string }).search ?? '')),
+      log: await moderation.log(),
+    };
+  });
+  app.post('/api/local-control/moderation', async (req) => {
+    requireHost(req);
+    const b = body(req);
+    const ids = await moderation.action(b.profileId, b.action, b.reason);
+    if (b.action === 'suspend' || b.action === 'disconnect') {
+      for (const socket of io.sockets.sockets.values())
+        if (ids.includes(socket.data.profileId)) socket.disconnect(true);
+    }
+    if (b.action === 'suspend') {
+      const pending = await db.read((sql) =>
+        sql<{ id: string; player0: string; player1: string | null }>(
+          "SELECT id,player0,player1 FROM matches WHERE status IN('playing','drafting') AND (player0=ANY($1::text[]) OR player1=ANY($1::text[]))",
+          [ids],
+        ),
+      );
+      await db.read((sql) =>
+        sql(
+          "UPDATE lobbies SET status='closed' WHERE host_id=ANY($1::text[]) AND status='waiting'",
+          [ids],
+        ),
+      );
+      for (const match of pending)
+        await store.resign(ids.includes(match.player0) ? match.player0 : match.player1!, match.id);
+    }
+    notify();
+    return { ok: true };
+  });
+  app.post('/api/local-control/bots', async (req) => {
+    requireHost(req);
+    if (typeof body(req).enabled !== 'boolean') throw new GameError('Choose enabled or disabled.');
+    const result = await bots.set(body(req).enabled as boolean);
+    notify();
+    return result;
+  });
+  app.get('/api/local-control/status', async (req) => {
+    requireHost(req);
     const connected = Array.from(io.sockets.sockets.values());
     const players = [
       ...new Map(
@@ -150,6 +197,7 @@ export async function createPlatform(
         )
       : [];
     return {
+      population: await bots.status(),
       uptime: process.uptime(),
       connections: connected.length,
       players: players.map((p) => ({
@@ -182,15 +230,26 @@ export async function createPlatform(
   });
   app.get('/api/achievements', async (req) => store.achievements((await profile(req)).id));
   app.get('/api/local-bots', async (req) => {
-    await profile(req);
+    if (!(await profile(req)).isAdmin) throw new GameError('Administrator access required.', 403);
     return bots.status();
   });
   app.post('/api/local-bots', async (req) => {
-    await profile(req);
+    if (!(await profile(req)).isAdmin) throw new GameError('Administrator access required.', 403);
     if (typeof body(req).enabled !== 'boolean') throw new GameError('Choose enabled or disabled.');
     const status = await bots.set(body(req).enabled as boolean);
     notify();
     return status;
+  });
+  app.get('/api/boosters', async (req) => store.economy.list((await profile(req)).id));
+  app.post('/api/boosters/buy', async (req) => {
+    const pack = await store.economy.purchase((await profile(req)).id, body(req).requestId);
+    notify();
+    return pack;
+  });
+  app.post('/api/boosters/:id/open', async (req) => {
+    const pack = await store.economy.open((await profile(req)).id, id(req));
+    notify();
+    return pack;
   });
   app.get('/api/trades', async (req) => {
     await profile(req);
@@ -310,18 +369,22 @@ export async function createPlatform(
           }
         }, 250);
   app.addHook('preClose', async () => {
+    bots.shutdown();
+    app.log.info('Stopping game timers and player connections.');
     if (timer) clearInterval(timer);
     io.engine?.close();
     while (ticking) await new Promise((r) => setTimeout(r, 10));
+    app.log.info('Game activity stopped.');
   });
   app.addHook('onClose', async () => {
     await new Promise<void>((r) => io.close(() => r()));
     const release = await db.lease();
     try {
       await db.close();
+      app.log.info('Game database flushed and closed.');
     } finally {
       release();
     }
   });
-  return { app, store, db, auth, bots, trades };
+  return { app, store, db, auth, bots, trades, moderation };
 }

@@ -6,6 +6,8 @@ import { RetroAudio, type Sound } from '../lib/audio';
 import { SessionProvider, AccountMenu } from './session';
 import { ServerConnection } from './server-connection';
 import { FirstDuelTutorial } from './tutorial';
+import { StarterBoosters } from './starter-boosters';
+import { useSession } from './session';
 const AudioContext = createContext<(sound: Sound) => void>(() => {});
 export const useGameAudio = () => useContext(AudioContext);
 export function GameShell({ children }: { children: React.ReactNode }) {
@@ -13,6 +15,8 @@ export function GameShell({ children }: { children: React.ReactNode }) {
   const audio = useRef<RetroAudio | null>(null);
   const musicWanted = useRef(false);
   const [music, setMusic] = useState(false);
+  const [musicVolume, setMusicVolume] = useState(70),
+    [sfxVolume, setSfxVolume] = useState(70);
   const [sfx, setSfx] = useState(true);
   const [crt, setCrt] = useState(true);
   const [fullScreen, setFullScreen] = useState(false);
@@ -37,6 +41,17 @@ export function GameShell({ children }: { children: React.ReactNode }) {
       const enabled = localStorage.getItem('triad-sfx') !== 'off';
       setSfx(enabled);
       getAudio().setSfx(enabled);
+      const readVolume = (key: string) => {
+        const saved = localStorage.getItem(key),
+          value = saved === null ? 70 : Number(saved);
+        return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 70;
+      };
+      const mv = readVolume('triad-music-volume'),
+        sv = readVolume('triad-sfx-volume');
+      setMusicVolume(mv);
+      setSfxVolume(sv);
+      getAudio().setMusicVolume(mv / 100);
+      getAudio().setSfxVolume(sv / 100);
       musicWanted.current = localStorage.getItem('triad-music') === 'on';
       setMusic(musicWanted.current);
     } catch {
@@ -115,13 +130,12 @@ export function GameShell({ children }: { children: React.ReactNode }) {
             </Link>
             <nav aria-label="Main navigation">
               {[
-                { href: '/', label: 'Solo battle' },
+                { href: '/', label: 'Play' },
                 { href: '/cards', label: 'Cards' },
                 { href: '/lobbies', label: 'Lobbies' },
                 { href: '/collection', label: 'Collection' },
                 { href: '/market', label: 'Trades' },
-                { href: '/achievements', label: 'Achievements' },
-                { href: '/profile', label: 'Profile' },
+                { href: '/boosters', label: 'Boosters' },
                 { href: '/rules', label: 'Rulebook' },
               ].map((item) => (
                 <Link
@@ -135,6 +149,21 @@ export function GameShell({ children }: { children: React.ReactNode }) {
               ))}
             </nav>
             <div className="system-controls">
+              <nav className="player-navigation" aria-label="Player navigation">
+                {[
+                  { href: '/profile', label: 'Profile' },
+                  { href: '/achievements', label: 'Achievements' },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={pathname === item.href ? 'page' : undefined}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+              <Wallet />
               <AccountMenu />
               <button
                 className="server-control"
@@ -163,6 +192,47 @@ export function GameShell({ children }: { children: React.ReactNode }) {
               >
                 <span>CRT</span> {crt ? 'ON' : 'OFF'}
               </button>
+              <details className="volume-controls">
+                <summary>Volume</summary>
+                <div className="menu-window volume-panel">
+                  <label>
+                    Music volume <output>{musicVolume}%</output>
+                    <input
+                      aria-label="Music volume"
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={musicVolume}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+                        setMusicVolume(value);
+                        getAudio().setMusicVolume(value / 100);
+                        try {
+                          localStorage.setItem('triad-music-volume', String(value));
+                        } catch {}
+                      }}
+                    />
+                  </label>
+                  <label>
+                    Sound effects volume <output>{sfxVolume}%</output>
+                    <input
+                      aria-label="Sound effects volume"
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={sfxVolume}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+                        setSfxVolume(value);
+                        getAudio().setSfxVolume(value / 100);
+                        try {
+                          localStorage.setItem('triad-sfx-volume', String(value));
+                        } catch {}
+                      }}
+                    />
+                  </label>
+                </div>
+              </details>
               <button
                 className="fullscreen-control"
                 aria-label={fullScreen ? 'Exit fullscreen' : 'Enter fullscreen'}
@@ -174,6 +244,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
           </header>
           <main id="main">
             <ServerConnection>
+              <StarterBoosters />
               {children}
               <FirstDuelTutorial />
             </ServerConnection>
@@ -186,4 +257,12 @@ export function GameShell({ children }: { children: React.ReactNode }) {
       </AudioContext.Provider>
     </SessionProvider>
   );
+}
+function Wallet() {
+  const { profile } = useSession();
+  return profile ? (
+    <Link className="wallet" href="/boosters" aria-label={`${profile.prisms} Stellar Prisms`}>
+      ◇ {profile.prisms}
+    </Link>
+  ) : null;
 }

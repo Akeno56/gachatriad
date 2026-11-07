@@ -22,9 +22,10 @@ import {
   type Player,
   type Rules,
 } from '@gacha-triad/engine';
-import { CARDS, ALL_CARDS, STARTER_DECK, CPU_DECK } from '@gacha-triad/shared';
+import { CARDS, ALL_CARDS } from '@gacha-triad/shared';
 import {
   ACHIEVEMENTS,
+  ECONOMY,
   type AchievementView,
   type LobbyView,
   type MatchView,
@@ -33,14 +34,9 @@ import {
   type PlayerProfileView,
 } from '@gacha-triad/shared/platform';
 import { Database, type Sql } from './database';
-export class GameError extends Error {
-  constructor(
-    message: string,
-    readonly statusCode = 400,
-  ) {
-    super(message);
-  }
-}
+import { GameError } from './errors';
+export { GameError } from './errors';
+import { Economy } from './economy';
 export interface Actor {
   id: string;
   name: string;
@@ -135,16 +131,20 @@ function roulette(): Rules {
   };
 }
 export class GameStore {
+  readonly economy: Economy;
   constructor(
     readonly db: Database,
     readonly redactionSecret: string,
-  ) {}
+  ) {
+    this.economy = new Economy(db);
+  }
   async migrate(root: string) {
     for (const file of [
       '001_platform.sql',
       '002_local_population.sql',
       '003_profile.sql',
       '004_tutorial.sql',
+      '005_economy_admin.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -161,6 +161,8 @@ export class GameStore {
   }
   async profile(actor: Actor, requested?: string): Promise<ProfileView> {
     const result = await this.db.tx(async (sql) => {
+      if ((await sql('SELECT 1 FROM server_suspensions WHERE auth_user_id=$1', [actor.id])).length)
+        throw new GameError('This account is suspended. Contact the server host.', 403);
       let rows = await sql<ProfileRow>(
         `SELECT p.* FROM profiles p JOIN profile_accounts a ON a.profile_id=p.id WHERE a.auth_user_id=$1 ${requested ? 'AND p.id=$2' : ''} ORDER BY a.is_primary DESC,p.created_at LIMIT 1`,
         requested ? [actor.id, requested] : [actor.id],
@@ -168,44 +170,15 @@ export class GameStore {
       if (!rows.length && requested) throw new GameError('You do not own that profile.', 403);
       if (!rows.length) {
         const id = randomUUID();
-        const random = rng();
-        const starter = [
-          ...new Set(
-            [
-              ...STARTER_DECK,
-              ...CPU_DECK,
-              ...shuffle(
-                CARDS.filter((c) => c.rarity === 5),
-                random,
-              ).slice(0, 2),
-              ...shuffle(
-                CARDS.filter((c) => c.rarity === 4),
-                random,
-              ).slice(0, 4),
-              ...shuffle(
-                CARDS.filter((c) => c.rarity < 4),
-                random,
-              ).slice(0, 18),
-            ].map((c) => c.id),
-          ),
-        ];
         await sql(
           'INSERT INTO profiles(id,name,default_deck,starter_granted) VALUES($1,$2,$3::jsonb,true)',
-          [id, actor.name, JSON.stringify(STARTER_DECK.map((c) => c.id))],
+          [id, actor.name, '[]'],
         );
         await sql(
           'INSERT INTO profile_accounts(user_key,profile_id,auth_user_id,is_primary) VALUES($1,$2,$1,true)',
           [actor.id, id],
         );
-        await sql(
-          'INSERT INTO inventory(profile_id,card_id,quantity) SELECT $1,value,1 FROM jsonb_array_elements_text($2::jsonb)',
-          [id, JSON.stringify(starter)],
-        );
-        for (const cardId of starter)
-          await sql(
-            "INSERT INTO inventory_ledger(id,profile_id,card_id,delta,kind) VALUES($1,$2,$3,1,'starter')",
-            [randomUUID(), id, cardId],
-          );
+        await this.economy.grantStarter(sql, id);
         rows = await sql<ProfileRow>('SELECT * FROM profiles WHERE id=$1', [id]);
       }
       const p = rows[0];
@@ -226,6 +199,16 @@ export class GameStore {
         [actor.id],
       );
       return {
+        isAdmin:
+          !actor.isAnonymous &&
+          (await sql('SELECT 1 FROM server_admins WHERE auth_user_id=$1', [actor.id])).length > 0,
+        prisms: Number(p.prisms ?? 0),
+        unopenedBoosters: (
+          await sql<{ n: number }>(
+            'SELECT count(*)::int n FROM booster_packs WHERE profile_id=$1 AND opened_at IS NULL',
+            [p.id],
+          )
+        )[0].n,
         id: p.id,
         avatarCardId: typeof p.avatar_card === 'string' ? p.avatar_card : null,
         tutorialCompleted: p.tutorial_completed === true,
@@ -280,6 +263,8 @@ export class GameStore {
     const pool = await this.available(sql, id);
     if (random) return randomDeck(pool, rng());
     const [p] = await sql<ProfileRow>('SELECT * FROM profiles WHERE id=$1', [id]);
+    if (p.default_deck.length !== 5)
+      throw new GameError('Open your starter boosters, then build a deck in Collection.', 428);
     const selected = cards(p.default_deck);
     if (validateDeck(selected).length || selected.some((c) => !pool.some((p) => p.id === c.id)))
       throw new GameError('Your saved deck has unavailable cards. Rebuild it in Collection.');
@@ -559,6 +544,13 @@ export class GameStore {
       if (game) delete (game as unknown as Record<string, unknown>).revealed;
       return {
         id: m.id,
+        prismReward:
+          (
+            await sql<{ delta: number }>(
+              "SELECT delta FROM prism_ledger WHERE profile_id=$1 AND kind='match' AND reference=$2",
+              [profileId, `match:${m.id}`],
+            )
+          )[0]?.delta ?? 0,
         mode: m.mode,
         version: m.version,
         status: m.status,
@@ -680,6 +672,14 @@ export class GameStore {
       const turns = m.state?.history.filter((t) => t.move.player === seat) ?? [];
       const captures = turns.flatMap((t) => t.captures);
       const total = m.state ? scores(m.state)[seat] : 0;
+      // Only full duels pay out. Forfeits/abandoned drafts cannot farm instant rewards.
+      if (!reason && m.state?.history.length === 9 && !profileRows.find((p) => p.id === id)?.is_bot)
+        await this.economy.reward(
+          sql,
+          id,
+          m.id,
+          draw ? ECONOMY.drawReward : result === seat ? ECONOMY.winReward : ECONOMY.lossReward,
+        );
       await sql(
         'UPDATE profiles SET played=played+1,wins=wins+$1,losses=losses+$2,draws=draws+$3,captures=captures+$4,same_captures=same_captures+$5,plus_captures=plus_captures+$6,combo_captures=combo_captures+$7,best_combo=greatest(best_combo,$8),perfect_wins=perfect_wins+$9 WHERE id=$10',
         [

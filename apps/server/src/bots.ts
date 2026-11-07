@@ -36,6 +36,10 @@ const MODES: Mode[] = [
   'custom',
 ];
 export class BotPopulation {
+  private closing = false;
+  shutdown() {
+    this.closing = true;
+  }
   readonly available = process.env.LOCAL_BOTS === 'true' || process.env.NODE_ENV !== 'production';
   private next = new Map<string, number>();
   constructor(
@@ -75,6 +79,8 @@ export class BotPopulation {
         await this.store.db.read((sql) =>
           sql('UPDATE profiles SET is_bot=true WHERE id=$1', [p.id]),
         );
+        for (const pack of await this.store.economy.list(p.id))
+          if (!pack.openedAt) await this.store.economy.open(p.id, pack.id);
       }
     await this.store.db.read((sql) =>
       sql('UPDATE local_population SET enabled=$1 WHERE id=1', [enabled]),
@@ -99,10 +105,12 @@ export class BotPopulation {
     );
   }
   async tick() {
+    if (this.closing) return false;
     const enabled = (await this.status()).enabled;
     const actors = await this.actors();
     let changed = false;
     for (let i = 0; i < actors.length; i++) {
+      if (this.closing) break;
       const actor = actors[i];
       if ((this.next.get(actor.id) || 0) > Date.now()) continue;
       this.next.set(actor.id, Date.now() + 2200 + randomInt(1800));

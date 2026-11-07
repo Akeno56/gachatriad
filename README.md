@@ -2,15 +2,19 @@
 
 A local Triple Triad fan game with FF-style menus, CRT presentation, 400 playable cross-game cards and persistent multiplayer services.
 
+**v0.5:** three five-card starter boosters replace the old new-profile card grant; every pack guarantees a 3★ or better card. Standard boosters cost 150 **Stellar Prisms**, earned at 50/25/10 for completed wins/draws/losses. The private PC control panel manages bots, admin assignments and account moderation. Only explicitly appointed registered admins can see or use in-game bot controls. Music and SFX have saved volume sliders, Holo cards animate at rest, number shadows are lighter, and personal navigation sits on the right. See [booster rules](docs/BOOSTER_PACKS.md).
+
 **v0.4:** results now open over the board in a centered dialog; all game dialogs center consistently. Cards shows collection ownership and Standard/Holo finishes, with unowned copies greyed out. Character Library has been removed from the UI. Decks is now **Collection**, without artwork-inspection buttons. The main menu keeps a small bottom-right Credits link instead of a navigation tab. Music on/off is remembered and resumes on the next permitted gesture after reload.
 
 Elemental is available in practice, custom tables and Roulette: marked cells apply +1 for matching affinity and −1 for mismatches, including cards with no affinity. Same/Plus use printed ranks; ordinary and Combo captures use adjusted ranks. Card and cell icons expose the rule. Custom Combo is explicit, and Trade One requires Closed + Same + Plus + Combo; additional rules remain allowed. Fresh guests/accounts must complete the short tutorial or acknowledge the rulebook before their first duel; this is enforced by the server.
 
-Player profiles expose records, ratings, achievement unlocks and a chosen owned profile card. Private decks and inventory are not exposed. Every base card has a separate cosmetic Holo definition with identical stats and an animated foil; 5★ cards have an ornate crown/frame. Holo acquisition comes with the upcoming booster feature. The album can preview the finish now, and inventory/decks/matches/trades already preserve exact finishes.
+Player profiles expose records, ratings, achievement unlocks and a chosen owned profile card. Private decks and inventory are not exposed. Every base card has a separate cosmetic Holo definition with identical stats and an animated foil; 5★ cards have an ornate crown/frame. Boosters have a published 0.1% Holo chance per card. The album can preview the finish, and inventory/decks/matches/trades preserve exact finishes.
 
 ## Host a showcase from your PC
 
-See the complete [GitHub Pages + PC server guide](docs/ONLINE_DEMO.md). The expected project address is `https://akeno56.github.io/gachatriad/`; the repository has not been created or published automatically.
+See the complete [GitHub Pages + PC server guide](docs/ONLINE_DEMO.md). The project address is `https://akeno56.github.io/gachatriad/`. Local changes publish through the repository's Pages workflow after you commit and push them.
+
+On this Windows development PC, double-click **Start Server Control.cmd** to open the panel without terminal commands.
 
 ```sh
 pnpm build:pages

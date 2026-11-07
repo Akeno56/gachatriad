@@ -52,6 +52,7 @@ export async function createController(options = {}) {
   }
   async function state() {
     let online = null;
+    let moderation = { users: [], log: [] };
     try {
       const response = await fetch(localAPI() + '/api/local-control/status', {
         headers: { 'x-local-control': controlSecret },
@@ -59,6 +60,15 @@ export async function createController(options = {}) {
       });
       if (response.ok) online = await response.json();
     } catch {}
+    if (online) {
+      try {
+        const response = await fetch(localAPI() + '/api/local-control/users', {
+          headers: { 'x-local-control': controlSecret },
+          signal: AbortSignal.timeout(1500),
+        });
+        if (response.ok) moderation = await response.json();
+      } catch {}
+    }
     const running = alive(child);
     let base = '/gachatriad';
     try {
@@ -75,6 +85,7 @@ export async function createController(options = {}) {
       external: !running && (await gameHealth()),
       serverURL: localAPI(),
       online,
+      moderation,
       publicURL,
       shareURL: publicURL ? link.href : '',
       tunnelInstalled: existsSync(binary),
@@ -92,7 +103,7 @@ export async function createController(options = {}) {
     if (proc.connected) proc.send('shutdown');
     else proc.kill('SIGTERM');
     let timer;
-    await Promise.race([exited, new Promise((r) => (timer = setTimeout(r, 8000)))]);
+    await Promise.race([exited, new Promise((r) => (timer = setTimeout(r, 15000)))]);
     clearTimeout(timer);
     if (alive(proc)) {
       proc.kill('SIGKILL');
@@ -121,7 +132,7 @@ export async function createController(options = {}) {
         ALLOWED_ORIGINS: `http://127.0.0.1:${previewPort},http://localhost:${previewPort},http://127.0.0.1:3000,http://localhost:3000`,
         BETTER_AUTH_URL: publicURL || localAPI(),
         LOCAL_CONTROL_SECRET: controlSecret,
-        LOCAL_BOTS: config.allowBots ? 'true' : 'false',
+        LOCAL_BOTS: 'true',
         POPULATE_BOTS: config.allowBots ? 'true' : 'false',
       },
     });
@@ -366,6 +377,11 @@ export async function createController(options = {}) {
         if (raw.length > 4096) throw Error('Request too large.');
       }
       const body = raw ? JSON.parse(raw) : {};
+      if (req.url === '/exit') {
+        res.end(JSON.stringify({ ok: true }));
+        setTimeout(() => void close().catch((error) => log('error', error.message)), 50);
+        return;
+      }
       if (req.url === '/start') await startGame();
       else if (req.url === '/stop') {
         await stopTunnel();
@@ -378,7 +394,33 @@ export async function createController(options = {}) {
       } else if (req.url === '/tunnel/install') await installTunnel();
       else if (req.url === '/tunnel/start') await startTunnel();
       else if (req.url === '/tunnel/stop') await stopTunnel();
-      else if (req.url === '/settings') {
+      else if (req.url === '/moderation' || req.url === '/population') {
+        if (!alive(child)) throw Error('Start the game server first.');
+        const population = req.url === '/population';
+        if (population && typeof body.enabled !== 'boolean')
+          throw Error('Choose enabled or disabled.');
+        const response = await fetch(
+          localAPI() + (population ? '/api/local-control/bots' : '/api/local-control/moderation'),
+          {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-local-control': controlSecret },
+            body: JSON.stringify(body),
+            signal: AbortSignal.timeout(30000),
+          },
+        );
+        const result = await response.json();
+        if (!response.ok) throw Error(result.error || 'The server rejected this action.');
+        if (population) {
+          config = { ...config, allowBots: body.enabled };
+          await writeFile(settingsPath, JSON.stringify(config, null, 2));
+        }
+        log(
+          'control',
+          population
+            ? `Bot population ${body.enabled ? 'enabled' : 'paused'}.`
+            : `Moderation: ${body.action} (${body.profileId}).`,
+        );
+      } else if (req.url === '/settings') {
         const url = new URL(body.frontendURL);
         if (
           url.protocol !== 'https:' &&

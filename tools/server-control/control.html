@@ -278,7 +278,8 @@
               type="url"
               required
               placeholder="https://akeno56.github.io/gachatriad/" /></label
-          ><label class="check"><input id="bots" type="checkbox" />Enable labeled demo bots</label
+          ><label class="check"
+            ><input id="bots" type="checkbox" />Populate demo bots when the server starts</label
           ><button type="submit">Save settings</button>
         </form>
         <p>
@@ -325,6 +326,47 @@
       </table>
     </section>
     <section class="panel">
+      <h2>Bot population</h2>
+      <p id="populationStatus">Start the server to manage bots.</p>
+      <div class="actions">
+        <button id="populate" type="button">Populate bots</button>
+        <button id="pauseBots" type="button">Pause bots</button>
+      </div>
+      <p>Pausing removes bot waiting tables and offers. Existing bot duels finish normally.</p>
+    </section>
+    <section class="panel">
+      <h2>Moderation &amp; administrators</h2>
+      <p>
+        Only this private PC console can assign administrators or suspend accounts. Guests cannot
+        become administrators. Account suspension also closes waiting tables and forfeits active
+        duels.
+      </p>
+      <label
+        >Find player<input id="userSearch" type="search" placeholder="Player name or profile ID"
+      /></label>
+      <label
+        >Moderation note<input id="moderationNote" maxlength="200" placeholder="Optional reason"
+      /></label>
+      <table>
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Access</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="moderationUsers"></tbody>
+      </table>
+      <p>
+        Disconnect ends current socket connections; it does not suspend access. Suspend blocks this
+        account until you restore it. Showing up to 200 profiles.
+      </p>
+      <details>
+        <summary>Recent moderation actions</summary>
+        <pre id="moderationLog"></pre>
+      </details>
+    </section>
+    <section class="panel">
       <h2>Server log</h2>
       <div id="log" class="log" role="log"></div>
     </section>
@@ -333,10 +375,15 @@
       never this console. Save files stay on this PC in <code>.data</code>. Setup guide:
       <code>docs/ONLINE_DEMO.md</code>.
     </p>
+    <p>
+      <button data-action="/exit">Exit control tool</button> Stops the game server, public link and
+      this control tool. Reopen with Start Server Control.cmd.
+    </p>
     <script>
       const token = '__CSRF__';
       let current = null,
         posting = false,
+        closed = false,
         edited = false;
       const el = (id) => document.getElementById(id);
       function text(id, value) {
@@ -347,6 +394,14 @@
           .querySelectorAll('button[data-action],#settings button')
           .forEach((b) => (b.disabled = posting || current?.busy));
         if (!current) return;
+        const population = current.online?.population;
+        el('populate').disabled =
+          posting || current.busy || !current.running || !!population?.enabled;
+        el('pauseBots').disabled =
+          posting || current.busy || !current.running || !population?.enabled;
+        document
+          .querySelectorAll('#moderationUsers button')
+          .forEach((b) => (b.disabled = posting || current.busy || !current.running));
         el('start').disabled = posting || current.busy || current.running || current.external;
         el('restart').disabled = posting || current.busy || !current.running;
         el('stop').disabled = posting || current.busy || !current.running;
@@ -361,6 +416,7 @@
         el('copy').disabled = !current.shareURL;
       }
       async function refresh() {
+        if (closed) return;
         try {
           const response = await fetch('/state');
           current = await response.json();
@@ -388,6 +444,14 @@
           el('preview').hidden = !current.previewURL;
           if (current.previewURL) el('preview').href = current.previewURL;
           text('error', current.lastError);
+          renderModeration();
+          const population = current.online?.population;
+          text(
+            'populationStatus',
+            population
+              ? `${population.enabled ? 'ON' : 'PAUSED'} · ${population.bots} bots · ${population.activeGames} active games`
+              : 'Start the server to manage bots.',
+          );
           const tbody = el('players');
           tbody.replaceChildren();
           for (const p of current.online?.players || []) {
@@ -421,6 +485,71 @@
           text('error', 'The local control panel is offline. Run pnpm control to start it.');
         }
       }
+      function renderModeration() {
+        const tbody = el('moderationUsers');
+        tbody.replaceChildren();
+        const search = el('userSearch').value.toLowerCase();
+        for (const user of current?.moderation?.users || []) {
+          if (!`${user.name} ${user.id}`.toLowerCase().includes(search)) continue;
+          const row = document.createElement('tr');
+          const name = document.createElement('td');
+          name.textContent = `${user.name} (${user.id.slice(0, 8)})`;
+          const role = document.createElement('td');
+          role.textContent = user.suspended
+            ? `Suspended: ${user.reason}`
+            : user.isAdmin
+              ? 'Admin'
+              : user.registered
+                ? 'Registered'
+                : 'Guest';
+          const actions = document.createElement('td');
+          const choices = [
+            ['disconnect', 'Disconnect'],
+            [user.suspended ? 'restore' : 'suspend', user.suspended ? 'Restore access' : 'Suspend'],
+          ];
+          if (user.registered)
+            choices.push([
+              user.isAdmin ? 'demote' : 'promote',
+              user.isAdmin ? 'Remove admin' : 'Make admin',
+            ]);
+          for (const [key, label] of choices) {
+            const button = document.createElement('button');
+            button.textContent = label;
+            button.disabled = posting || current.busy || !current.running;
+            button.onclick = () => {
+              if (!confirm(`${label}: ${user.name}?`)) return;
+              void action('/moderation', {
+                profileId: user.id,
+                action: key,
+                reason: el('moderationNote').value,
+              });
+            };
+            actions.append(button);
+          }
+          row.append(name, role, actions);
+          tbody.append(row);
+        }
+        if (!tbody.children.length) {
+          const row = document.createElement('tr'),
+            cell = document.createElement('td');
+          cell.colSpan = 3;
+          cell.textContent = 'No matching players.';
+          row.append(cell);
+          tbody.append(row);
+        }
+        text(
+          'moderationLog',
+          (current?.moderation?.log || [])
+            .map(
+              (entry) =>
+                `${entry.created_at} · ${entry.action} · ${entry.name}${entry.reason ? ' · ' + entry.reason : ''}`,
+            )
+            .join('\n') || 'No moderation actions.',
+        );
+      }
+      el('userSearch').addEventListener('input', renderModeration);
+      el('populate').addEventListener('click', () => action('/population', { enabled: true }));
+      el('pauseBots').addEventListener('click', () => action('/population', { enabled: false }));
       async function action(path, body = {}) {
         posting = true;
         lock();
@@ -433,17 +562,29 @@
           });
           const result = await response.json();
           if (!response.ok) throw Error(result.error);
+          if (path === '/exit') closed = true;
           edited = false;
         } catch (error) {
           text('error', error.message);
         } finally {
           posting = false;
-          await refresh();
+          if (closed) {
+            text('status', 'CONTROL TOOL CLOSED');
+            text('error', 'Double-click Start Server Control.cmd to reopen.');
+            document.querySelectorAll('button').forEach((b) => (b.disabled = true));
+          } else await refresh();
         }
       }
-      document
-        .querySelectorAll('[data-action]')
-        .forEach((b) => b.addEventListener('click', () => action(b.dataset.action)));
+      document.querySelectorAll('[data-action]').forEach((b) =>
+        b.addEventListener('click', () => {
+          if (
+            b.dataset.action === '/exit' &&
+            !confirm('Stop the game server and public link, then exit the control tool?')
+          )
+            return;
+          void action(b.dataset.action);
+        }),
+      );
       el('settings').addEventListener('submit', (e) => {
         e.preventDefault();
         action('/settings', { frontendURL: el('frontend').value, allowBots: el('bots').checked });

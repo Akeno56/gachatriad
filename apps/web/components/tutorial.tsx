@@ -16,6 +16,7 @@ export function FirstDuelTutorial() {
   const required =
     !!profile &&
     profile.played === 0 &&
+    profile.deck.length === 5 &&
     !profile.tutorialCompleted &&
     !profile.activeMatchId &&
     ['/', '/lobbies'].includes(pathname.replace(/\/$/, '') || '/');

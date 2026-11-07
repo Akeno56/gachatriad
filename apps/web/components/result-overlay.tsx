@@ -41,6 +41,11 @@ export function ResultOverlay({
       )}
       {match.endReason && <p>{match.endReason}</p>}
       <section className="result-settlement" aria-label="Match settlement">
+        <p className="prism-reward">
+          {match.prismReward > 0
+            ? `+${match.prismReward} Stellar Prisms`
+            : 'No Stellar Prisms awarded.'}
+        </p>
         <h3>{match.trade.rule === 'one' ? 'TRADE ONE' : 'NO CARD TRADE'}</h3>
         {match.trade.pending ? (
           <>

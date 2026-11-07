@@ -9,12 +9,13 @@ export function LocalBots() {
     [pending, setPending] = useState(false),
     [error, setError] = useState('');
   useEffect(() => {
-    if (profile)
+    setStatus(null);
+    if (profile?.isAdmin)
       void api<PopulationView>('/local-bots')
         .then(setStatus)
         .catch(() => {});
-  }, [profile?.id, revision]);
-  if (!status?.available) return null;
+  }, [profile?.id, profile?.isAdmin, revision]);
+  if (!profile?.isAdmin || !status?.available) return null;
   return (
     <aside className="menu-window local-bots">
       <div>

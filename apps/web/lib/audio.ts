@@ -15,13 +15,25 @@ export class RetroAudio {
   private starting = false;
   private musicEnabled = false;
   private sfxEnabled = true;
+  private musicVolume = 0.7;
+  private sfxVolume = 0.7;
+  setMusicVolume(value: number) {
+    this.musicVolume = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0.7;
+    if (this.musicBus && this.context)
+      this.musicBus.gain.setTargetAtTime(this.musicVolume * 0.48, this.context.currentTime, 0.025);
+  }
+  setSfxVolume(value: number) {
+    this.sfxVolume = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0.7;
+    if (this.sfxBus && this.context)
+      this.sfxBus.gain.setTargetAtTime(this.sfxVolume * 0.36, this.context.currentTime, 0.025);
+  }
   private ensure() {
     if (!this.context) {
       this.context = new AudioContext();
       this.musicBus = this.context.createGain();
-      this.musicBus.gain.value = 0.34;
+      this.musicBus.gain.value = this.musicVolume * 0.48;
       this.sfxBus = this.context.createGain();
-      this.sfxBus.gain.value = 0.25;
+      this.sfxBus.gain.value = this.sfxVolume * 0.36;
       const compressor = this.context.createDynamicsCompressor();
       this.musicBus.connect(compressor);
       this.sfxBus.connect(compressor);

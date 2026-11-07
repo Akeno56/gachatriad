@@ -703,8 +703,8 @@ kbd {
   top: 7px;
   left: 5px;
   z-index: 2;
-  filter: drop-shadow(1px 2px #000);
-  background: radial-gradient(ellipse, #071020aa 35%, transparent 71%);
+  filter: drop-shadow(1px 1px #0005);
+  background: radial-gradient(ellipse, #07102044 28%, transparent 71%);
 }
 .value {
   position: absolute;
@@ -714,10 +714,10 @@ kbd {
   text-align: center;
   color: #fff5d1;
   text-shadow:
-    -1px -1px #07101e,
-    1px -1px #07101e,
-    -1px 1px #07101e,
-    1px 1px #07101e;
+    -1px -1px #07101e88,
+    1px -1px #07101e88,
+    -1px 1px #07101e88,
+    1px 1px #07101e88;
 }
 .value-0 {
   left: 15px;

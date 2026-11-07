@@ -337,7 +337,7 @@ export default function Market() {
         ))}
       </div>
       {!visible.length && (
-        <p className="empty-search">No offers match. Post an offer or enable the local bots.</p>
+        <p className="empty-search">No offers match. Adjust your filters or post an offer.</p>
       )}
       {selected && (
         <dialog
