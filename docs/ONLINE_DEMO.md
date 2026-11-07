@@ -38,11 +38,15 @@ Ignored `.data`, `.cache`, `.tools`, `.env`, `kyaraData`, `prydwenData`, `node_m
 
 ## 2. Enable Pages
 
-In **Akeno56/gachatriad → Settings → Pages → Build and deployment**, select **GitHub Actions** as the source. Open Actions and run **Publish game to GitHub Pages** if the initial push did not deploy. Later pushes to `main` rebuild and deploy automatically.
+In **Akeno56/gachatriad → Settings → Pages → Build and deployment**, select **GitHub Actions** as the source. Then open the project's [Publish game to GitHub Pages workflow directly](https://github.com/Akeno56/gachatriad/actions/workflows/pages.yml), click **Run workflow**, select **main**, and confirm **Run workflow**. Later pushes to `main` rebuild and deploy automatically.
+
+The workflow is supplied by this project's `.github/workflows/pages.yml`; it is not one of GitHub's suggested templates. If Actions still shows “Choose a workflow,” refresh or use the direct link above. Do not configure an additional Next.js template. The initial push may run before Pages is enabled and fail at **Configure Pages** with “Get Pages site failed / Not Found.” After selecting GitHub Actions as the Pages source, run the workflow again (or open that failed run and choose **Re-run all jobs**).
 
 The workflow installs Node 24 and pnpm 11.9, builds a static export, and uploads only `apps/web/out`. The expected address is **https://akeno56.github.io/gachatriad/**. A user site at the root would instead require the repository name `akeno56.github.io`; this project is prepared as a project site named `gachatriad`.
 
 The workflow calculates its base path from the repository name. Portraits, fonts, music and links respect that path. It contains no fixed public server address, so a new tunnel link does not require redeploying Pages.
+
+The workflow uses Node 24-compatible Pages actions (`configure-pages@v6`, `upload-pages-artifact@v5`, `deploy-pages@v5`) and pins both jobs to `ubuntu-24.04`. Older successful runs may still show Node 20 deprecation warnings or notices about `ubuntu-latest` changing versions; annotations on historical runs do not disappear when the workflow is updated. Commit and push the updated workflow to use the new versions on the next deployment.
 
 ## 3. Start the PC control tool
 
