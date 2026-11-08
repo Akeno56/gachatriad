@@ -152,7 +152,7 @@ export const TRAINING_STEPS: TrainingStep[] = [
     before: states[8],
     after: states[9],
     move: TRAINING_MOVES[8],
-    text: 'The rival has played on the Ice cell. Select your Fire card and place it on the Fire cell: all four values gain +1. A different affinity, or no affinity, would lose 1 instead. Neutral cells do nothing. Same and Plus still compare printed numbers; ordinary and Combo captures use the adjusted values.',
+    text: 'The rival has played on the Ice cell. Select your Fire card and place it on the Fire cell: all four values gain +1. A different affinity, or no affinity, would lose 1 instead. Neutral cells do nothing. Same, Plus, ordinary and Combo captures all use the adjusted values displayed on the cards.',
   },
   {
     title: 'Count the result',

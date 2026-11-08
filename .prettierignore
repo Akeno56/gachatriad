@@ -9,6 +9,10 @@ apps/web/AGENTS.md
 apps/web/next-env.d.ts
 prydwenData
 kyaraData
+hideoutGachaData
+apps/web/out
+.tools
+.data
 data/assets/manifest.json
 data/assets/import-report.json
 data/assets/card-artwork.json

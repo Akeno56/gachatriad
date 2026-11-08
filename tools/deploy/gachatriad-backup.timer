@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily Gacha Triad backup at 03:30 Paris time
+
+[Timer]
+OnCalendar=*-*-* 03:30:00 Europe/Paris
+RandomizedDelaySec=5m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

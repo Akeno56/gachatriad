@@ -3,6 +3,7 @@ import '@fontsource/vt323/400.css';
 import '@fontsource/rajdhani/500.css';
 import '@fontsource/rajdhani/600.css';
 import { GameShell } from '../components/game-shell';
+import { LanguageProvider } from '../components/i18n';
 import './globals.css';
 import './expansion.css';
 import './refinements.css';
@@ -18,6 +19,7 @@ import './community-layout.css';
 import './draft-shop.css';
 import './queues-training.css';
 import './release-twelve.css';
+import './localization.css';
 
 export const metadata: Metadata = {
   title: 'Gacha Triad · Cross-world card battle',
@@ -28,10 +30,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
-        <a className="skip-link" href="#main">
-          Skip to content
-        </a>
-        <GameShell>{children}</GameShell>
+        <LanguageProvider>
+          <GameShell>{children}</GameShell>
+        </LanguageProvider>
       </body>
     </html>
   );

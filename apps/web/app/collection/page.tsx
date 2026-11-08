@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView, NoTranslate } from '../../components/i18n';
+
 import { useEffect, useState } from 'react';
 import { ALL_CARDS as CARDS, UNIVERSES } from '@gacha-triad/shared';
 import { validateDeck } from '@gacha-triad/engine';
@@ -62,117 +64,119 @@ export default function Collection() {
     }
   }
   return (
-    <div className="content-page deck-page">
-      <div className="eyebrow">YOUR COLLECTION</div>
-      <h1>Collection</h1>
-      <p className="page-description">
-        Five unique cards. One 5★ and one 4★, or up to two 4★ without a 5★. Cards staked in another
-        match remain locked until settlement.
-      </p>
-      <section className="menu-window saved-deck">
-        <h2>Your deck · {deck.length}/5</h2>
-        <div className="deck-preview">
-          {selected.map((card) => (
+    <LocaleView>
+      <div className="content-page deck-page">
+        <div className="eyebrow">YOUR COLLECTION</div>
+        <h1>Collection</h1>
+        <p className="page-description">
+          Five unique cards. One 5★ and one 4★, or up to two 4★ without a 5★. Cards staked in
+          another match remain locked until settlement.
+        </p>
+        <section className="menu-window saved-deck">
+          <h2>Your deck · {deck.length}/5</h2>
+          <div className="deck-preview">
+            {selected.map((card) => (
+              <button
+                key={card.id}
+                aria-label={`Remove ${card.name}`}
+                onClick={() => setDeck((ids) => ids.filter((id) => id !== card.id))}
+              >
+                <Card card={card} />
+              </button>
+            ))}
+          </div>
+          <p>{errors.join(' ') || 'Ready for battle.'}</p>
+          <div className="result-actions">
             <button
-              key={card.id}
-              aria-label={`Remove ${card.name}`}
-              onClick={() => setDeck((ids) => ids.filter((id) => id !== card.id))}
+              className="primary-button"
+              disabled={busy || errors.length > 0}
+              onClick={() => save()}
             >
-              <Card card={card} />
+              Save deck
             </button>
+            <button
+              className="outline-button"
+              title="Maximize total rarity from available owned cards, with variety among cards of the same rarity."
+              disabled={busy || !profile}
+              onClick={() => save(true)}
+            >
+              Auto build
+            </button>
+          </div>
+        </section>
+        <DuplicateCards />
+        <div className="catalog-filters">
+          <label>
+            Find a card
+            <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </label>
+          <label>
+            Universe
+            <select
+              aria-label="Universe"
+              value={universe}
+              onChange={(e) => setUniverse(e.target.value)}
+            >
+              <option value="all">All universes</option>
+              {UNIVERSES.map((u) => (
+                <option key={u.id} value={u.id}>
+                  <NoTranslate>{u.name}</NoTranslate>
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="collection-sort">
+          <label>
+            Sort by
+            <select
+              aria-label="Sort collection"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+            >
+              <option value="rarity-desc">Rarity · highest first</option>
+              <option value="rarity-asc">Rarity · lowest first</option>
+              <option value="stats-desc">Total stats · highest first</option>
+              <option value="stats-asc">Total stats · lowest first</option>
+              <option value="universe">Universe · A–Z</option>
+              <option value="name-asc">Name · A–Z</option>
+              <option value="name-desc">Name · Z–A</option>
+            </select>
+          </label>
+        </div>
+        <p role="status">
+          {owned.length} owned cards · {message}
+        </p>
+        <p className="error-message" role="alert">
+          {connectionError}
+        </p>
+        <div className="catalog-grid">
+          {owned.map((card) => (
+            <article key={card.id}>
+              <button
+                className={`draft-card ${deck.includes(card.id) ? 'is-selected' : ''}`}
+                aria-label={`${deck.includes(card.id) ? 'Remove' : 'Add'} ${card.name}`}
+                aria-pressed={deck.includes(card.id)}
+                disabled={
+                  !deck.includes(card.id) &&
+                  (deck.length === 5 || !profile?.inventory[card.id]?.available)
+                }
+                onClick={() =>
+                  setDeck((ids) =>
+                    ids.includes(card.id) ? ids.filter((id) => id !== card.id) : [...ids, card.id],
+                  )
+                }
+              >
+                <Card card={card} />
+              </button>
+              <p>
+                {profile?.inventory[card.id]?.quantity} owned ·{' '}
+                {profile?.inventory[card.id]?.available} available
+              </p>
+            </article>
           ))}
         </div>
-        <p>{errors.join(' ') || 'Ready for battle.'}</p>
-        <div className="result-actions">
-          <button
-            className="primary-button"
-            disabled={busy || errors.length > 0}
-            onClick={() => save()}
-          >
-            Save deck
-          </button>
-          <button
-            className="outline-button"
-            title="Maximize total rarity from available owned cards, with variety among cards of the same rarity."
-            disabled={busy || !profile}
-            onClick={() => save(true)}
-          >
-            Auto build
-          </button>
-        </div>
-      </section>
-      <DuplicateCards />
-      <div className="catalog-filters">
-        <label>
-          Find a card
-          <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} />
-        </label>
-        <label>
-          Universe
-          <select
-            aria-label="Universe"
-            value={universe}
-            onChange={(e) => setUniverse(e.target.value)}
-          >
-            <option value="all">All universes</option>
-            {UNIVERSES.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name}
-              </option>
-            ))}
-          </select>
-        </label>
       </div>
-      <div className="collection-sort">
-        <label>
-          Sort by
-          <select
-            aria-label="Sort collection"
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-          >
-            <option value="rarity-desc">Rarity · highest first</option>
-            <option value="rarity-asc">Rarity · lowest first</option>
-            <option value="stats-desc">Total stats · highest first</option>
-            <option value="stats-asc">Total stats · lowest first</option>
-            <option value="universe">Universe · A–Z</option>
-            <option value="name-asc">Name · A–Z</option>
-            <option value="name-desc">Name · Z–A</option>
-          </select>
-        </label>
-      </div>
-      <p role="status">
-        {owned.length} owned cards · {message}
-      </p>
-      <p className="error-message" role="alert">
-        {connectionError}
-      </p>
-      <div className="catalog-grid">
-        {owned.map((card) => (
-          <article key={card.id}>
-            <button
-              className={`draft-card ${deck.includes(card.id) ? 'is-selected' : ''}`}
-              aria-label={`${deck.includes(card.id) ? 'Remove' : 'Add'} ${card.name}`}
-              aria-pressed={deck.includes(card.id)}
-              disabled={
-                !deck.includes(card.id) &&
-                (deck.length === 5 || !profile?.inventory[card.id]?.available)
-              }
-              onClick={() =>
-                setDeck((ids) =>
-                  ids.includes(card.id) ? ids.filter((id) => id !== card.id) : [...ids, card.id],
-                )
-              }
-            >
-              <Card card={card} />
-            </button>
-            <p>
-              {profile?.inventory[card.id]?.quantity} owned ·{' '}
-              {profile?.inventory[card.id]?.available} available
-            </p>
-          </article>
-        ))}
-      </div>
-    </div>
+    </LocaleView>
   );
 }

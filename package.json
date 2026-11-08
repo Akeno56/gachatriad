@@ -11,6 +11,7 @@
     "dev": "concurrently -k -n server,web \"pnpm --filter @gacha-triad/server dev\" \"pnpm --filter @gacha-triad/web dev\"",
     "build": "pnpm --filter @gacha-triad/web build",
     "build:pages": "node tools/build-pages.mjs",
+    "build:hosted": "node tools/build-hosted.mjs",
     "control": "node tools/server-control/index.mjs",
     "test:host": "node tools/server-control/smoke.mjs",
     "start": "concurrently -k -n server,web \"pnpm --filter @gacha-triad/server start\" \"pnpm --filter @gacha-triad/web start\"",

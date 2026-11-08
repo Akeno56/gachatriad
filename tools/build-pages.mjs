@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import { writeFile } from 'node:fs/promises';
+import { normalizeStaticExport } from './normalize-static-export.mjs';
 const repo = (process.env.GITHUB_REPOSITORY || 'Akeno56/gachatriad').split('/');
 const inferred =
   repo[1].toLowerCase() === `${repo[0].toLowerCase()}.github.io` ? '' : `/${repo[1]}`;
@@ -19,6 +20,9 @@ const child = spawn(
 );
 child.on('exit', async (code) => {
   if (code === 0) {
+    console.log(
+      `Normalized ${await normalizeStaticExport('apps/web/out')} static navigation payloads.`,
+    );
     await writeFile('apps/web/out/.nojekyll', '');
     await writeFile(
       'apps/web/out/build-info.json',

@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView } from './i18n';
+
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
@@ -18,25 +20,27 @@ export function StarterBoosters() {
   }, [needed]);
   if (!needed) return null;
   return (
-    <dialog
-      ref={dialog}
-      className="game-dialog menu-window starter-welcome"
-      aria-labelledby="starter-welcome-title"
-      onCancel={(e) => e.preventDefault()}
-    >
-      <img src={assetPath('/assets/ui/triad-logo.webp')} alt="" draggable={false} />
-      <div className="eyebrow">WELCOME TO GACHA TRIAD</div>
-      <h2 id="starter-welcome-title">Your first hand starts here</h2>
-      <p>Three free Starter boosters. Fifteen cards to build your collection.</p>
-      <p className="starter-welcome-details">
-        Five cards each · one 3★+ guaranteed · 1% Holo · no 5★ cards
-      </p>
-      <Link className="primary-button" href="/boosters?starter=1">
-        Open my {profile!.starterBoosters} Starter boosters
-      </Link>
-      <button className="text-button starter-login" onClick={openAccount}>
-        Already have an account? Login / Register
-      </button>
-    </dialog>
+    <LocaleView>
+      <dialog
+        ref={dialog}
+        className="game-dialog menu-window starter-welcome"
+        aria-labelledby="starter-welcome-title"
+        onCancel={(e) => e.preventDefault()}
+      >
+        <img src={assetPath('/assets/ui/triad-logo.webp')} alt="" draggable={false} />
+        <div className="eyebrow">WELCOME TO GACHA TRIAD</div>
+        <h2 id="starter-welcome-title">Your first hand starts here</h2>
+        <p>Three free Starter boosters. Fifteen cards to build your collection.</p>
+        <p className="starter-welcome-details">
+          Five cards each · one 3★+ guaranteed · 1% Holo · no 5★ cards
+        </p>
+        <Link className="primary-button" href="/boosters?starter=1">
+          Open my {profile!.starterBoosters} Starter boosters
+        </Link>
+        <button className="text-button starter-login" onClick={openAccount}>
+          Already have an account? Login / Register
+        </button>
+      </dialog>
+    </LocaleView>
   );
 }

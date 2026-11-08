@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView } from './i18n';
+
 import type { BoosterView } from '@gacha-triad/shared/platform';
 import { AutomaticBoosterOpening } from './automatic-booster-opening';
 export function BoosterOpening({
@@ -9,5 +11,9 @@ export function BoosterOpening({
   onClose: () => void;
   onNext?: () => void;
 }) {
-  return <AutomaticBoosterOpening key={pack.id} packs={[pack]} onClose={onClose} />;
+  return (
+    <LocaleView>
+      <AutomaticBoosterOpening key={pack.id} packs={[pack]} onClose={onClose} />
+    </LocaleView>
+  );
 }

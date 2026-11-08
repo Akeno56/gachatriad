@@ -1,9 +1,11 @@
 import type { Card } from '@gacha-triad/engine';
 import manifest from '../../../data/assets/card-artwork.json';
+import framing from '../../../data/assets/artwork-framing.json';
 import { assetPath } from './connection';
 const paths = new Map(manifest.map((a) => [`${a.universeId}:${a.characterId}`, a.localPath]));
 export function artworkPath(card: Card) {
-  const path = paths.get(`${card.universeId}:${card.characterId}`);
+  const id = `${card.universeId}:${card.characterId}`;
+  const path = (framing as Record<string, { localPath: string }>)[id]?.localPath ?? paths.get(id);
   return path ? assetPath(path) : null;
 }
 const loaded = new Map<string, Promise<void>>();

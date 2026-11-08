@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView, NoTranslate, LocalizedDate } from '../../components/i18n';
+
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ALL_CARDS, CARDS, SIDE_NAMES } from '@gacha-triad/shared';
@@ -39,117 +41,69 @@ export default function PlayerProfile() {
   const self = player?.id === profile?.id;
   const friendship = social.friends.find((f) => f.id === player?.id);
   return (
-    <div className="content-page profile-page">
-      <div className="eyebrow">PLAYER RECORD</div>
-      <h1>{self ? 'Your profile' : player?.name || 'Player profile'}</h1>
-      <p className="error-message" role="alert">
-        {error}
-      </p>
-      {player && (
-        <>
-          <section className="menu-window profile-header">
-            <div className="profile-portrait">
-              {player.avatar ? (
-                <Card card={player.avatar} showElement />
-              ) : (
-                <img
-                  className="profile-brand-emblem"
-                  src={assetPath('/assets/ui/triad-logo.webp')}
-                  alt="Gacha Triad"
-                />
-              )}
-            </div>
-            <div>
-              <span className="profile-kind">
-                {player.isBot
-                  ? 'LOCAL BOT'
-                  : self && !profile?.registered
-                    ? 'GUEST PLAYER'
-                    : 'CHALLENGER'}
-              </span>
-              <h2>{player.name}</h2>
-              {player.title && <p className="profile-title">{player.title}</p>}
-              <p>Joined {new Date(player.joinedAt).toLocaleDateString()}</p>
-              <p>
-                {player.collection.unique}/{CARDS.length} cards collected ·{' '}
-                {player.collection.copies} copies · {player.collection.holo} Holo
-              </p>
-              {self && !profile?.registered && (
-                <button className="outline-button" onClick={openAccount}>
-                  Register to keep this profile
-                </button>
-              )}
-              {!self && (
-                <Link href="/lobbies" className="outline-button">
-                  Meet in the card hall
-                </Link>
-              )}
-              {!self && !player.isBot && profile?.registered && (
-                <div className="result-actions">
-                  {socialReady && !friendship && (
-                    <button
-                      className="outline-button"
-                      disabled={busy}
-                      onClick={async () => {
-                        setBusy(true);
-                        setError('');
-                        try {
-                          await api('/friends/request', { playerId: player.id });
-                          await refresh();
-                          setNotice('Friend request sent.');
-                        } catch (e) {
-                          setError((e as Error).message);
-                        } finally {
-                          setBusy(false);
-                        }
-                      }}
-                    >
-                      Add friend
-                    </button>
-                  )}
-                  {friendship?.status === 'outgoing' && <span>Friend request sent</span>}
-                  {friendship?.status === 'incoming' && (
-                    <button
-                      className="outline-button"
-                      disabled={busy}
-                      onClick={async () => {
-                        setBusy(true);
-                        setError('');
-                        try {
-                          await api(`/friends/${player.id}/accept`, {});
-                          await refresh();
-                          setNotice('Friend request accepted.');
-                        } catch (e) {
-                          setError((e as Error).message);
-                        } finally {
-                          setBusy(false);
-                        }
-                      }}
-                    >
-                      Accept friend
-                    </button>
-                  )}
-                  {friendship?.status === 'friend' && (
-                    <>
-                      <span className="friend-status">✓ Friends</span>
-                      <button className="outline-button" onClick={() => openFriendChat(player.id)}>
-                        Message
-                      </button>
+    <LocaleView>
+      <div className="content-page profile-page">
+        <div className="eyebrow">PLAYER RECORD</div>
+        <h1>{self ? 'Your profile' : player?.name || 'Player profile'}</h1>
+        <p className="error-message" role="alert">
+          {error}
+        </p>
+        {player && (
+          <>
+            <section className="menu-window profile-header">
+              <div className="profile-portrait">
+                {player.avatar ? (
+                  <Card card={player.avatar} showElement />
+                ) : (
+                  <img
+                    className="profile-brand-emblem"
+                    src={assetPath('/assets/ui/triad-logo.webp')}
+                    alt="Gacha Triad"
+                  />
+                )}
+              </div>
+              <div>
+                <span className="profile-kind">
+                  {player.isBot
+                    ? 'LOCAL BOT'
+                    : self && !profile?.registered
+                      ? 'GUEST PLAYER'
+                      : 'CHALLENGER'}
+                </span>
+                <h2>
+                  <NoTranslate>{player.name}</NoTranslate>
+                </h2>
+                {player.title && <p className="profile-title">{player.title}</p>}
+                <p>
+                  Joined <LocalizedDate value={player.joinedAt} />
+                </p>
+                <p>
+                  {player.collection.unique}/{CARDS.length} cards collected ·{' '}
+                  {player.collection.copies} copies · {player.collection.holo} Holo
+                </p>
+                {self && !profile?.registered && (
+                  <button className="outline-button" onClick={openAccount}>
+                    Register to keep this profile
+                  </button>
+                )}
+                {!self && (
+                  <Link href="/lobbies" className="outline-button">
+                    Meet in the card hall
+                  </Link>
+                )}
+                {!self && !player.isBot && profile?.registered && (
+                  <div className="result-actions">
+                    {socialReady && !friendship && (
                       <button
                         className="outline-button"
-                        disabled={
-                          busy ||
-                          !!profile.activeMatchId ||
-                          !!profile.waitingLobbyId ||
-                          !!profile.pendingTrade
-                        }
+                        disabled={busy}
                         onClick={async () => {
                           setBusy(true);
                           setError('');
                           try {
-                            await api('/invites', { playerId: player.id });
+                            await api('/friends/request', { playerId: player.id });
                             await refresh();
-                            setNotice('Invitation sent. Open Friends & messages to manage it.');
+                            setNotice('Friend request sent.');
                           } catch (e) {
                             setError((e as Error).message);
                           } finally {
@@ -157,127 +111,188 @@ export default function PlayerProfile() {
                           }
                         }}
                       >
-                        Invite to duel
+                        Add friend
                       </button>
-                    </>
-                  )}
-                </div>
-              )}
-              {notice && <p role="status">{notice}</p>}
-            </div>
-          </section>
-          <section className="profile-stats" aria-label="Player statistics">
-            {[
-              ['Constructed rating', player.rating],
-              ['Draft rating', player.draftRating],
-              ['Games', player.played],
-              ['Wins', player.wins],
-              ['Losses', player.losses],
-              ['Draws', player.draws],
-            ].map(([label, value]) => (
-              <div className="menu-window" key={label}>
-                <span>{label}</span>
-                <strong>{value}</strong>
+                    )}
+                    {friendship?.status === 'outgoing' && <span>Friend request sent</span>}
+                    {friendship?.status === 'incoming' && (
+                      <button
+                        className="outline-button"
+                        disabled={busy}
+                        onClick={async () => {
+                          setBusy(true);
+                          setError('');
+                          try {
+                            await api(`/friends/${player.id}/accept`, {});
+                            await refresh();
+                            setNotice('Friend request accepted.');
+                          } catch (e) {
+                            setError((e as Error).message);
+                          } finally {
+                            setBusy(false);
+                          }
+                        }}
+                      >
+                        Accept friend
+                      </button>
+                    )}
+                    {friendship?.status === 'friend' && (
+                      <>
+                        <span className="friend-status">✓ Friends</span>
+                        <button
+                          className="outline-button"
+                          onClick={() => openFriendChat(player.id)}
+                        >
+                          Message
+                        </button>
+                        <button
+                          className="outline-button"
+                          disabled={
+                            busy ||
+                            !!profile.activeMatchId ||
+                            !!profile.waitingLobbyId ||
+                            !!profile.pendingTrade
+                          }
+                          onClick={async () => {
+                            setBusy(true);
+                            setError('');
+                            try {
+                              await api('/invites', { playerId: player.id });
+                              await refresh();
+                              setNotice('Invitation sent. Open Friends & messages to manage it.');
+                            } catch (e) {
+                              setError((e as Error).message);
+                            } finally {
+                              setBusy(false);
+                            }
+                          }}
+                        >
+                          Invite to duel
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+                {notice && <p role="status">{notice}</p>}
               </div>
-            ))}
-          </section>
-          {self && (
-            <form
-              className="menu-window profile-edit"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setBusy(true);
-                try {
-                  await api('/profile/avatar', { cardId: avatar || null });
-                  await api('/profile/title', { titleId: title || null });
-                  await refresh();
-                  setError('');
-                } catch (e) {
-                  setError((e as Error).message);
-                } finally {
-                  setBusy(false);
-                }
-              }}
-            >
-              <label>
-                Profile card
-                <select
-                  aria-label="Profile card"
-                  value={avatar}
-                  onChange={(e) => setAvatar(e.target.value)}
-                >
-                  <option value="">Default emblem</option>
-                  {ALL_CARDS.filter((c) => (profile?.inventory[c.id]?.quantity ?? 0) > 0).map(
-                    (c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                        {c.finish === 'holo'
-                          ? ` · Holo +1 ${SIDE_NAMES[c.holoBonusSide ?? 0]}`
-                          : ''}{' '}
-                        · {c.rarity}★
-                      </option>
-                    ),
-                  )}
-                </select>
-              </label>
-              <button className="primary-button" disabled={busy}>
-                Save profile
-              </button>
-              <label>
-                Equipped title
-                <select
-                  aria-label="Equipped title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                >
-                  <option value="">No title</option>
-                  {player.titles
-                    .filter((t) => t.unlocked)
-                    .map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                </select>
-              </label>
-              <small>Your chosen card is public. Your deck and inventory stay private.</small>
-            </form>
-          )}
-          <details className="menu-window title-list">
-            <summary>
-              Titles · {player.titles.filter((t) => t.unlocked).length}/{player.titles.length}{' '}
-              unlocked
-            </summary>
-            {player.titles.map((t) => (
-              <p key={t.id}>
-                <strong>
-                  {t.unlocked ? '✓ ' : '🔒 '}
-                  {t.name}
-                </strong>{' '}
-                — {t.requirement}
-              </p>
-            ))}
-          </details>
-          <AdminGrant playerId={player.id} name={player.name} />
-          <h2 className="profile-section-title">
-            Earned achievements · {player.achievements.length}
-          </h2>
-          <div className="achievement-grid">
-            {player.achievements.map((a) => (
-              <article key={a.id} className="menu-window achievement is-unlocked">
-                <span className="achievement-seal">★</span>
-                <div>
-                  <h2>{a.name}</h2>
-                  <small>{new Date(a.unlockedAt).toLocaleDateString()}</small>
+            </section>
+            <section className="profile-stats" aria-label="Player statistics">
+              {[
+                ['Constructed rating', player.rating],
+                ['Draft rating', player.draftRating],
+                ['Games', player.played],
+                ['Wins', player.wins],
+                ['Losses', player.losses],
+                ['Draws', player.draws],
+              ].map(([label, value]) => (
+                <div className="menu-window" key={label}>
+                  <span>{label}</span>
+                  <strong>{value}</strong>
                 </div>
-              </article>
-            ))}
-          </div>
-          {!player.achievements.length && (
-            <p>Every challenger starts somewhere. Finish a duel to earn your first achievement.</p>
-          )}
-        </>
-      )}
-    </div>
+              ))}
+            </section>
+            {self && (
+              <form
+                className="menu-window profile-edit"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setBusy(true);
+                  try {
+                    await api('/profile/avatar', { cardId: avatar || null });
+                    await api('/profile/title', { titleId: title || null });
+                    await refresh();
+                    setError('');
+                  } catch (e) {
+                    setError((e as Error).message);
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                <label>
+                  Profile card
+                  <select
+                    aria-label="Profile card"
+                    value={avatar}
+                    onChange={(e) => setAvatar(e.target.value)}
+                  >
+                    <option value="">Default emblem</option>
+                    {ALL_CARDS.filter((c) => (profile?.inventory[c.id]?.quantity ?? 0) > 0).map(
+                      (c) => (
+                        <option key={c.id} value={c.id}>
+                          <NoTranslate>{c.name}</NoTranslate>
+                          {c.finish === 'holo'
+                            ? ` · Holo +1 ${SIDE_NAMES[c.holoBonusSide ?? 0]}`
+                            : ''}{' '}
+                          · {c.rarity}★
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </label>
+                <button className="primary-button" disabled={busy}>
+                  Save profile
+                </button>
+                <label>
+                  Equipped title
+                  <select
+                    aria-label="Equipped title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  >
+                    <option value="">No title</option>
+                    {player.titles
+                      .filter((t) => t.unlocked)
+                      .map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+                <small>Your chosen card is public. Your deck and inventory stay private.</small>
+              </form>
+            )}
+            <details className="menu-window title-list">
+              <summary>
+                Titles · {player.titles.filter((t) => t.unlocked).length}/{player.titles.length}{' '}
+                unlocked
+              </summary>
+              {player.titles.map((t) => (
+                <p key={t.id}>
+                  <strong>
+                    {t.unlocked ? '✓ ' : '🔒 '}
+                    {t.name}
+                  </strong>{' '}
+                  — {t.requirement}
+                </p>
+              ))}
+            </details>
+            <AdminGrant playerId={player.id} name={player.name} />
+            <h2 className="profile-section-title">
+              Earned achievements · {player.achievements.length}
+            </h2>
+            <div className="achievement-grid">
+              {player.achievements.map((a) => (
+                <article key={a.id} className="menu-window achievement is-unlocked">
+                  <span className="achievement-seal">★</span>
+                  <div>
+                    <h2>{a.name}</h2>
+                    <small>
+                      <LocalizedDate value={a.unlockedAt} />
+                    </small>
+                  </div>
+                </article>
+              ))}
+            </div>
+            {!player.achievements.length && (
+              <p>
+                Every challenger starts somewhere. Finish a duel to earn your first achievement.
+              </p>
+            )}
+          </>
+        )}
+      </div>
+    </LocaleView>
   );
 }

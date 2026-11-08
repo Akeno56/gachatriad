@@ -1,0 +1,6 @@
+[Unit]
+Description=Consistent Gacha Triad save backup
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/gachatriad-backup

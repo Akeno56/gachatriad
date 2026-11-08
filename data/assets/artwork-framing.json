@@ -1,0 +1,1778 @@
+{
+  "epic-seven:abigail": {
+    "localPath": "/assets/characters/epic-seven/abigail/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:abyssal-yufine": {
+    "localPath": "/assets/characters/epic-seven/abyssal-yufine/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:achates": {
+    "localPath": "/assets/characters/epic-seven/achates/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:adin": {
+    "localPath": "/assets/characters/epic-seven/adin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:adlay": {
+    "localPath": "/assets/characters/epic-seven/adlay/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:adventurer-ras": {
+    "localPath": "/assets/characters/epic-seven/adventurer-ras/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ae-giselle": {
+    "localPath": "/assets/characters/epic-seven/ae-giselle/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ae-karina": {
+    "localPath": "/assets/characters/epic-seven/ae-karina/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ae-ningning": {
+    "localPath": "/assets/characters/epic-seven/ae-ningning/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ae-winter": {
+    "localPath": "/assets/characters/epic-seven/ae-winter/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:afternoon-soak-flan": {
+    "localPath": "/assets/characters/epic-seven/afternoon-soak-flan/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ainos": {
+    "localPath": "/assets/characters/epic-seven/ainos/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ainos-20": {
+    "localPath": "/assets/characters/epic-seven/ainos-20/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ains": {
+    "localPath": "/assets/characters/epic-seven/ains/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ainz-ooal-gown": {
+    "localPath": "/assets/characters/epic-seven/ainz-ooal-gown/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:aither": {
+    "localPath": "/assets/characters/epic-seven/aither/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:aki": {
+    "localPath": "/assets/characters/epic-seven/aki/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:albedo": {
+    "localPath": "/assets/characters/epic-seven/albedo/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:alencia": {
+    "localPath": "/assets/characters/epic-seven/alencia/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:alexa": {
+    "localPath": "/assets/characters/epic-seven/alexa/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:all-rounder-wanda": {
+    "localPath": "/assets/characters/epic-seven/all-rounder-wanda/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ambitious-tywin": {
+    "localPath": "/assets/characters/epic-seven/ambitious-tywin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:amid": {
+    "localPath": "/assets/characters/epic-seven/amid/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:amiki": {
+    "localPath": "/assets/characters/epic-seven/amiki/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:angel-of-light-angelica": {
+    "localPath": "/assets/characters/epic-seven/angel-of-light-angelica/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:angelic-montmorancy": {
+    "localPath": "/assets/characters/epic-seven/angelic-montmorancy/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:angelica": {
+    "localPath": "/assets/characters/epic-seven/angelica/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:apocalypse-ravi": {
+    "localPath": "/assets/characters/epic-seven/apocalypse-ravi/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:aram": {
+    "localPath": "/assets/characters/epic-seven/aram/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:aramintha": {
+    "localPath": "/assets/characters/epic-seven/aramintha/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:arbiter-vildred": {
+    "localPath": "/assets/characters/epic-seven/arbiter-vildred/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:archdemons-shadow": {
+    "localPath": "/assets/characters/epic-seven/archdemons-shadow/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:architect-laika": {
+    "localPath": "/assets/characters/epic-seven/architect-laika/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:argent-waves-hwayoung": {
+    "localPath": "/assets/characters/epic-seven/argent-waves-hwayoung/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:aria": {
+    "localPath": "/assets/characters/epic-seven/aria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:armin": {
+    "localPath": "/assets/characters/epic-seven/armin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:arowell": {
+    "localPath": "/assets/characters/epic-seven/arowell/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:arunka": {
+    "localPath": "/assets/characters/epic-seven/arunka/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:assassin-cartuja": {
+    "localPath": "/assets/characters/epic-seven/assassin-cartuja/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:assassin-cidd": {
+    "localPath": "/assets/characters/epic-seven/assassin-cidd/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:assassin-coli": {
+    "localPath": "/assets/characters/epic-seven/assassin-coli/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:astromancer-elena": {
+    "localPath": "/assets/characters/epic-seven/astromancer-elena/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:aubade-ludwig": {
+    "localPath": "/assets/characters/epic-seven/aubade-ludwig/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:aube": {
+    "localPath": "/assets/characters/epic-seven/aube/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:auxiliary-lots": {
+    "localPath": "/assets/characters/epic-seven/auxiliary-lots/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:azalea": {
+    "localPath": "/assets/characters/epic-seven/azalea/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:baal-and-sezan": {
+    "localPath": "/assets/characters/epic-seven/baal-and-sezan/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:bad-cat-armin": {
+    "localPath": "/assets/characters/epic-seven/bad-cat-armin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:baiken": {
+    "localPath": "/assets/characters/epic-seven/baiken/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:basar": {
+    "localPath": "/assets/characters/epic-seven/basar/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:bask": {
+    "localPath": "/assets/characters/epic-seven/bask/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:batisse": {
+    "localPath": "/assets/characters/epic-seven/batisse/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:beehoo": {
+    "localPath": "/assets/characters/epic-seven/beehoo/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:belian": {
+    "localPath": "/assets/characters/epic-seven/belian/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:bellona": {
+    "localPath": "/assets/characters/epic-seven/bellona/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:benevolent-romann": {
+    "localPath": "/assets/characters/epic-seven/benevolent-romann/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:benimaru": {
+    "localPath": "/assets/characters/epic-seven/benimaru/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:bernard": {
+    "localPath": "/assets/characters/epic-seven/bernard/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:birgitta": {
+    "localPath": "/assets/characters/epic-seven/birgitta/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:blaze-dingo": {
+    "localPath": "/assets/characters/epic-seven/blaze-dingo/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:blood-blade-karin": {
+    "localPath": "/assets/characters/epic-seven/blood-blade-karin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:blood-moon-haste": {
+    "localPath": "/assets/characters/epic-seven/blood-moon-haste/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:blooming-lidica": {
+    "localPath": "/assets/characters/epic-seven/blooming-lidica/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:bomb-model-kanna": {
+    "localPath": "/assets/characters/epic-seven/bomb-model-kanna/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:boss-arunka": {
+    "localPath": "/assets/characters/epic-seven/boss-arunka/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:briar-witch-iseria": {
+    "localPath": "/assets/characters/epic-seven/briar-witch-iseria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:brieg": {
+    "localPath": "/assets/characters/epic-seven/brieg/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:butcher-corps-inquisitor": {
+    "localPath": "/assets/characters/epic-seven/butcher-corps-inquisitor/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:byblis": {
+    "localPath": "/assets/characters/epic-seven/byblis/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:bystander-hwayoung": {
+    "localPath": "/assets/characters/epic-seven/bystander-hwayoung/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:camilla": {
+    "localPath": "/assets/characters/epic-seven/camilla/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:captain-rikoris": {
+    "localPath": "/assets/characters/epic-seven/captain-rikoris/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:carmainerose": {
+    "localPath": "/assets/characters/epic-seven/carmainerose/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:carrot": {
+    "localPath": "/assets/characters/epic-seven/carrot/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:cartuja": {
+    "localPath": "/assets/characters/epic-seven/cartuja/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:cecilia": {
+    "localPath": "/assets/characters/epic-seven/cecilia/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:celeste": {
+    "localPath": "/assets/characters/epic-seven/celeste/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:celestial-mercedes": {
+    "localPath": "/assets/characters/epic-seven/celestial-mercedes/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:celine": {
+    "localPath": "/assets/characters/epic-seven/celine/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:cerise": {
+    "localPath": "/assets/characters/epic-seven/cerise/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:cermia": {
+    "localPath": "/assets/characters/epic-seven/cermia/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:challenger-dominiel": {
+    "localPath": "/assets/characters/epic-seven/challenger-dominiel/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:champion-zerato": {
+    "localPath": "/assets/characters/epic-seven/champion-zerato/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:chaos-inquisitor": {
+    "localPath": "/assets/characters/epic-seven/chaos-inquisitor/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:chaos-sect-axe": {
+    "localPath": "/assets/characters/epic-seven/chaos-sect-axe/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:charles": {
+    "localPath": "/assets/characters/epic-seven/charles/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:charlotte": {
+    "localPath": "/assets/characters/epic-seven/charlotte/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:chloe": {
+    "localPath": "/assets/characters/epic-seven/chloe/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:choux": {
+    "localPath": "/assets/characters/epic-seven/choux/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:christy": {
+    "localPath": "/assets/characters/epic-seven/christy/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:church-of-ilryos-axe": {
+    "localPath": "/assets/characters/epic-seven/church-of-ilryos-axe/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:cidd": {
+    "localPath": "/assets/characters/epic-seven/cidd/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:clarissa": {
+    "localPath": "/assets/characters/epic-seven/clarissa/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:claudia": {
+    "localPath": "/assets/characters/epic-seven/claudia/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:closer-charles": {
+    "localPath": "/assets/characters/epic-seven/closer-charles/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:coli": {
+    "localPath": "/assets/characters/epic-seven/coli/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:command-model-laika": {
+    "localPath": "/assets/characters/epic-seven/command-model-laika/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:commander-lorina": {
+    "localPath": "/assets/characters/epic-seven/commander-lorina/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:commander-pavel": {
+    "localPath": "/assets/characters/epic-seven/commander-pavel/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:conqueror-lilias": {
+    "localPath": "/assets/characters/epic-seven/conqueror-lilias/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:corvus": {
+    "localPath": "/assets/characters/epic-seven/corvus/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:crescent-moon-rin": {
+    "localPath": "/assets/characters/epic-seven/crescent-moon-rin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:crimson-armin": {
+    "localPath": "/assets/characters/epic-seven/crimson-armin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:crozet": {
+    "localPath": "/assets/characters/epic-seven/crozet/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:dark-corvus": {
+    "localPath": "/assets/characters/epic-seven/dark-corvus/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:death-dealer-ray": {
+    "localPath": "/assets/characters/epic-seven/death-dealer-ray/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:desert-jewel-basar": {
+    "localPath": "/assets/characters/epic-seven/desert-jewel-basar/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:designer-lilibet": {
+    "localPath": "/assets/characters/epic-seven/designer-lilibet/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:destina": {
+    "localPath": "/assets/characters/epic-seven/destina/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:diene": {
+    "localPath": "/assets/characters/epic-seven/diene/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:dingo": {
+    "localPath": "/assets/characters/epic-seven/dingo/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:disciplinary-prefect-aria": {
+    "localPath": "/assets/characters/epic-seven/disciplinary-prefect-aria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:dizzy": {
+    "localPath": "/assets/characters/epic-seven/dizzy/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:doll-maker-pearlhorizon": {
+    "localPath": "/assets/characters/epic-seven/doll-maker-pearlhorizon/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:dominiel": {
+    "localPath": "/assets/characters/epic-seven/dominiel/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:doris": {
+    "localPath": "/assets/characters/epic-seven/doris/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:dragon-bride-senya": {
+    "localPath": "/assets/characters/epic-seven/dragon-bride-senya/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:dragon-king-sharun": {
+    "localPath": "/assets/characters/epic-seven/dragon-king-sharun/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:eaton": {
+    "localPath": "/assets/characters/epic-seven/eaton/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:eda": {
+    "localPath": "/assets/characters/epic-seven/eda/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:edward-elric": {
+    "localPath": "/assets/characters/epic-seven/edward-elric/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:elena": {
+    "localPath": "/assets/characters/epic-seven/elena/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:eligos": {
+    "localPath": "/assets/characters/epic-seven/eligos/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:elphelt": {
+    "localPath": "/assets/characters/epic-seven/elphelt/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:elson": {
+    "localPath": "/assets/characters/epic-seven/elson/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:elvira": {
+    "localPath": "/assets/characters/epic-seven/elvira/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:emilia": {
+    "localPath": "/assets/characters/epic-seven/emilia/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:empyrean-ilynav": {
+    "localPath": "/assets/characters/epic-seven/empyrean-ilynav/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:enott": {
+    "localPath": "/assets/characters/epic-seven/enott/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ervalen": {
+    "localPath": "/assets/characters/epic-seven/ervalen/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:estelle": {
+    "localPath": "/assets/characters/epic-seven/estelle/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:eternal-wanderer-ludwig": {
+    "localPath": "/assets/characters/epic-seven/eternal-wanderer-ludwig/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:eye-of-the-abyss-fumyr": {
+    "localPath": "/assets/characters/epic-seven/eye-of-the-abyss-fumyr/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ezra": {
+    "localPath": "/assets/characters/epic-seven/ezra/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:fairytale-tenebria": {
+    "localPath": "/assets/characters/epic-seven/fairytale-tenebria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:faithless-lidica": {
+    "localPath": "/assets/characters/epic-seven/faithless-lidica/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:falconer-kluri": {
+    "localPath": "/assets/characters/epic-seven/falconer-kluri/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:fallen-cecilia": {
+    "localPath": "/assets/characters/epic-seven/fallen-cecilia/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:fenne": {
+    "localPath": "/assets/characters/epic-seven/fenne/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:fenris": {
+    "localPath": "/assets/characters/epic-seven/fenris/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:fern": {
+    "localPath": "/assets/characters/epic-seven/fern/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:festive-eda": {
+    "localPath": "/assets/characters/epic-seven/festive-eda/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:fighter-maya": {
+    "localPath": "/assets/characters/epic-seven/fighter-maya/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:flan": {
+    "localPath": "/assets/characters/epic-seven/flan/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:free-spirit-tieria": {
+    "localPath": "/assets/characters/epic-seven/free-spirit-tieria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:frida": {
+    "localPath": "/assets/characters/epic-seven/frida/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:frieren": {
+    "localPath": "/assets/characters/epic-seven/frieren/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:fumyr": {
+    "localPath": "/assets/characters/epic-seven/fumyr/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:furious": {
+    "localPath": "/assets/characters/epic-seven/furious/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:general-purrgis": {
+    "localPath": "/assets/characters/epic-seven/general-purrgis/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:genesis-ras": {
+    "localPath": "/assets/characters/epic-seven/genesis-ras/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:glenn": {
+    "localPath": "/assets/characters/epic-seven/glenn/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:gloomyrain": {
+    "localPath": "/assets/characters/epic-seven/gloomyrain/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:godmother": {
+    "localPath": "/assets/characters/epic-seven/godmother/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:great-chief-khawana": {
+    "localPath": "/assets/characters/epic-seven/great-chief-khawana/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:guard-captain-krau": {
+    "localPath": "/assets/characters/epic-seven/guard-captain-krau/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:guider-aither": {
+    "localPath": "/assets/characters/epic-seven/guider-aither/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:gunther": {
+    "localPath": "/assets/characters/epic-seven/gunther/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:harsetti": {
+    "localPath": "/assets/characters/epic-seven/harsetti/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:haru": {
+    "localPath": "/assets/characters/epic-seven/haru/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:hasol": {
+    "localPath": "/assets/characters/epic-seven/hasol/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:haste": {
+    "localPath": "/assets/characters/epic-seven/haste/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:hataan": {
+    "localPath": "/assets/characters/epic-seven/hataan/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:hazel": {
+    "localPath": "/assets/characters/epic-seven/hazel/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:hecate": {
+    "localPath": "/assets/characters/epic-seven/hecate/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:helen": {
+    "localPath": "/assets/characters/epic-seven/helen/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:helga": {
+    "localPath": "/assets/characters/epic-seven/helga/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:hellion-lua": {
+    "localPath": "/assets/characters/epic-seven/hellion-lua/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:holiday-yufine": {
+    "localPath": "/assets/characters/epic-seven/holiday-yufine/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:holy-flame-adin": {
+    "localPath": "/assets/characters/epic-seven/holy-flame-adin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:hurado": {
+    "localPath": "/assets/characters/epic-seven/hurado/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:hwayoung": {
+    "localPath": "/assets/characters/epic-seven/hwayoung/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ian": {
+    "localPath": "/assets/characters/epic-seven/ian/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ilynav": {
+    "localPath": "/assets/characters/epic-seven/ilynav/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:immortal-wukong": {
+    "localPath": "/assets/characters/epic-seven/immortal-wukong/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:inferno-khawazu": {
+    "localPath": "/assets/characters/epic-seven/inferno-khawazu/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:infinite-horizon-achates": {
+    "localPath": "/assets/characters/epic-seven/infinite-horizon-achates/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:inheritor-amiki": {
+    "localPath": "/assets/characters/epic-seven/inheritor-amiki/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:iseria": {
+    "localPath": "/assets/characters/epic-seven/iseria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ivana": {
+    "localPath": "/assets/characters/epic-seven/ivana/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:jack-o": {
+    "localPath": "/assets/characters/epic-seven/jack-o/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:januta": {
+    "localPath": "/assets/characters/epic-seven/januta/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:jecht": {
+    "localPath": "/assets/characters/epic-seven/jecht/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:jena": {
+    "localPath": "/assets/characters/epic-seven/jena/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:jenua": {
+    "localPath": "/assets/characters/epic-seven/jenua/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:judge-kise": {
+    "localPath": "/assets/characters/epic-seven/judge-kise/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:judith": {
+    "localPath": "/assets/characters/epic-seven/judith/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:juni": {
+    "localPath": "/assets/characters/epic-seven/juni/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:kane": {
+    "localPath": "/assets/characters/epic-seven/kane/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:karin": {
+    "localPath": "/assets/characters/epic-seven/karin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:kawerik": {
+    "localPath": "/assets/characters/epic-seven/kawerik/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:kayron": {
+    "localPath": "/assets/characters/epic-seven/kayron/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ken": {
+    "localPath": "/assets/characters/epic-seven/ken/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:khawana": {
+    "localPath": "/assets/characters/epic-seven/khawana/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:khawazu": {
+    "localPath": "/assets/characters/epic-seven/khawazu/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:kikirat-v2": {
+    "localPath": "/assets/characters/epic-seven/kikirat-v2/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:kiris": {
+    "localPath": "/assets/characters/epic-seven/kiris/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:kise": {
+    "localPath": "/assets/characters/epic-seven/kise/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:kitty-clarissa": {
+    "localPath": "/assets/characters/epic-seven/kitty-clarissa/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:kizuna-ai": {
+    "localPath": "/assets/characters/epic-seven/kizuna-ai/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:kluri": {
+    "localPath": "/assets/characters/epic-seven/kluri/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:krau": {
+    "localPath": "/assets/characters/epic-seven/krau/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lady-of-the-scales": {
+    "localPath": "/assets/characters/epic-seven/lady-of-the-scales/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:laia": {
+    "localPath": "/assets/characters/epic-seven/laia/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:landy": {
+    "localPath": "/assets/characters/epic-seven/landy/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:last-piece-karin": {
+    "localPath": "/assets/characters/epic-seven/last-piece-karin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:last-rider-krau": {
+    "localPath": "/assets/characters/epic-seven/last-rider-krau/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:leah": {
+    "localPath": "/assets/characters/epic-seven/leah/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lena": {
+    "localPath": "/assets/characters/epic-seven/lena/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:leo": {
+    "localPath": "/assets/characters/epic-seven/leo/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lethe": {
+    "localPath": "/assets/characters/epic-seven/lethe/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lidica": {
+    "localPath": "/assets/characters/epic-seven/lidica/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lilias": {
+    "localPath": "/assets/characters/epic-seven/lilias/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lilibet": {
+    "localPath": "/assets/characters/epic-seven/lilibet/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lilka": {
+    "localPath": "/assets/characters/epic-seven/lilka/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lionheart-cermia": {
+    "localPath": "/assets/characters/epic-seven/lionheart-cermia/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lisette": {
+    "localPath": "/assets/characters/epic-seven/lisette/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:little-queen-charlotte": {
+    "localPath": "/assets/characters/epic-seven/little-queen-charlotte/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lone-crescent-bellona": {
+    "localPath": "/assets/characters/epic-seven/lone-crescent-bellona/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lone-wolf-peira": {
+    "localPath": "/assets/characters/epic-seven/lone-wolf-peira/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lorina": {
+    "localPath": "/assets/characters/epic-seven/lorina/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lots": {
+    "localPath": "/assets/characters/epic-seven/lots/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lua": {
+    "localPath": "/assets/characters/epic-seven/lua/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:lucy": {
+    "localPath": "/assets/characters/epic-seven/lucy/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ludwig": {
+    "localPath": "/assets/characters/epic-seven/ludwig/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:luluca": {
+    "localPath": "/assets/characters/epic-seven/luluca/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:luna": {
+    "localPath": "/assets/characters/epic-seven/luna/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:magic-scholar-doris": {
+    "localPath": "/assets/characters/epic-seven/magic-scholar-doris/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:maid-chloe": {
+    "localPath": "/assets/characters/epic-seven/maid-chloe/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:martial-artist-ken": {
+    "localPath": "/assets/characters/epic-seven/martial-artist-ken/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:mascot-hazel": {
+    "localPath": "/assets/characters/epic-seven/mascot-hazel/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:maya": {
+    "localPath": "/assets/characters/epic-seven/maya/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:mediator-kawerik": {
+    "localPath": "/assets/characters/epic-seven/mediator-kawerik/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:melany": {
+    "localPath": "/assets/characters/epic-seven/melany/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:melissa": {
+    "localPath": "/assets/characters/epic-seven/melissa/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:mercedes": {
+    "localPath": "/assets/characters/epic-seven/mercedes/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:mercenary-helga": {
+    "localPath": "/assets/characters/epic-seven/mercenary-helga/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:midnight-gala-lilias": {
+    "localPath": "/assets/characters/epic-seven/midnight-gala-lilias/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:milim": {
+    "localPath": "/assets/characters/epic-seven/milim/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:mirsa": {
+    "localPath": "/assets/characters/epic-seven/mirsa/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:mistychain": {
+    "localPath": "/assets/characters/epic-seven/mistychain/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:monarch-of-the-sword-iseria": {
+    "localPath": "/assets/characters/epic-seven/monarch-of-the-sword-iseria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:montmorancy": {
+    "localPath": "/assets/characters/epic-seven/montmorancy/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:moon-bunny-dominiel": {
+    "localPath": "/assets/characters/epic-seven/moon-bunny-dominiel/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:mort": {
+    "localPath": "/assets/characters/epic-seven/mort/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:mucacha": {
+    "localPath": "/assets/characters/epic-seven/mucacha/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:mui": {
+    "localPath": "/assets/characters/epic-seven/mui/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:muse-rima": {
+    "localPath": "/assets/characters/epic-seven/muse-rima/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:muwi": {
+    "localPath": "/assets/characters/epic-seven/muwi/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:nahkwol": {
+    "localPath": "/assets/characters/epic-seven/nahkwol/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:navy-captain-landy": {
+    "localPath": "/assets/characters/epic-seven/navy-captain-landy/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:nemunas": {
+    "localPath": "/assets/characters/epic-seven/nemunas/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:new-kid-adin": {
+    "localPath": "/assets/characters/epic-seven/new-kid-adin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:new-moon-luna": {
+    "localPath": "/assets/characters/epic-seven/new-moon-luna/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:notos": {
+    "localPath": "/assets/characters/epic-seven/notos/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ocean-breeze-luluca": {
+    "localPath": "/assets/characters/epic-seven/ocean-breeze-luluca/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:operator-sigret": {
+    "localPath": "/assets/characters/epic-seven/operator-sigret/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:orte": {
+    "localPath": "/assets/characters/epic-seven/orte/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:otillie": {
+    "localPath": "/assets/characters/epic-seven/otillie/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:pavel": {
+    "localPath": "/assets/characters/epic-seven/pavel/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:peacemaker-furious": {
+    "localPath": "/assets/characters/epic-seven/peacemaker-furious/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:pearlhorizon": {
+    "localPath": "/assets/characters/epic-seven/pearlhorizon/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:peira": {
+    "localPath": "/assets/characters/epic-seven/peira/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:penelope": {
+    "localPath": "/assets/characters/epic-seven/penelope/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:perfumer-byblis": {
+    "localPath": "/assets/characters/epic-seven/perfumer-byblis/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:pernilla": {
+    "localPath": "/assets/characters/epic-seven/pernilla/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:pirate-captain-flan": {
+    "localPath": "/assets/characters/epic-seven/pirate-captain-flan/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:politis": {
+    "localPath": "/assets/characters/epic-seven/politis/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:purrgis": {
+    "localPath": "/assets/characters/epic-seven/purrgis/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:pyllis": {
+    "localPath": "/assets/characters/epic-seven/pyllis/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ragnvald": {
+    "localPath": "/assets/characters/epic-seven/ragnvald/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ram": {
+    "localPath": "/assets/characters/epic-seven/ram/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ran": {
+    "localPath": "/assets/characters/epic-seven/ran/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ras": {
+    "localPath": "/assets/characters/epic-seven/ras/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ravi": {
+    "localPath": "/assets/characters/epic-seven/ravi/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ray": {
+    "localPath": "/assets/characters/epic-seven/ray/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:rem": {
+    "localPath": "/assets/characters/epic-seven/rem/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:remnant-violet": {
+    "localPath": "/assets/characters/epic-seven/remnant-violet/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:renoa": {
+    "localPath": "/assets/characters/epic-seven/renoa/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:requiem-roana": {
+    "localPath": "/assets/characters/epic-seven/requiem-roana/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:requiemroar": {
+    "localPath": "/assets/characters/epic-seven/requiemroar/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:researcher-carrot": {
+    "localPath": "/assets/characters/epic-seven/researcher-carrot/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:revna": {
+    "localPath": "/assets/characters/epic-seven/revna/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:rhianna-and-luciella": {
+    "localPath": "/assets/characters/epic-seven/rhianna-and-luciella/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:righteous-thief-roozid": {
+    "localPath": "/assets/characters/epic-seven/righteous-thief-roozid/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:rikoris": {
+    "localPath": "/assets/characters/epic-seven/rikoris/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:rima": {
+    "localPath": "/assets/characters/epic-seven/rima/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:rimuru": {
+    "localPath": "/assets/characters/epic-seven/rimuru/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:rin": {
+    "localPath": "/assets/characters/epic-seven/rin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:rinak": {
+    "localPath": "/assets/characters/epic-seven/rinak/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:riza-hawkeye": {
+    "localPath": "/assets/characters/epic-seven/riza-hawkeye/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:roaming-warrior-leo": {
+    "localPath": "/assets/characters/epic-seven/roaming-warrior-leo/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:roana": {
+    "localPath": "/assets/characters/epic-seven/roana/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:robin": {
+    "localPath": "/assets/characters/epic-seven/robin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:romann": {
+    "localPath": "/assets/characters/epic-seven/romann/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:roozid": {
+    "localPath": "/assets/characters/epic-seven/roozid/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:rose": {
+    "localPath": "/assets/characters/epic-seven/rose/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:roy-mustang": {
+    "localPath": "/assets/characters/epic-seven/roy-mustang/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ruele-of-light": {
+    "localPath": "/assets/characters/epic-seven/ruele-of-light/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:ruiza": {
+    "localPath": "/assets/characters/epic-seven/ruiza/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:sage-baal-and-sezan": {
+    "localPath": "/assets/characters/epic-seven/sage-baal-and-sezan/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:salome": {
+    "localPath": "/assets/characters/epic-seven/salome/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:saria": {
+    "localPath": "/assets/characters/epic-seven/saria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:savior-adin": {
+    "localPath": "/assets/characters/epic-seven/savior-adin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:schniel": {
+    "localPath": "/assets/characters/epic-seven/schniel/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:school-nurse-yulha": {
+    "localPath": "/assets/characters/epic-seven/school-nurse-yulha/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:schuri": {
+    "localPath": "/assets/characters/epic-seven/schuri/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:sea-phantom-politis": {
+    "localPath": "/assets/characters/epic-seven/sea-phantom-politis/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:sealed-eye-surin": {
+    "localPath": "/assets/characters/epic-seven/sealed-eye-surin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:seaside-bellona": {
+    "localPath": "/assets/characters/epic-seven/seaside-bellona/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:senya": {
+    "localPath": "/assets/characters/epic-seven/senya/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:serene-purity-adin": {
+    "localPath": "/assets/characters/epic-seven/serene-purity-adin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:serila": {
+    "localPath": "/assets/characters/epic-seven/serila/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:setsuka": {
+    "localPath": "/assets/characters/epic-seven/setsuka/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:sez": {
+    "localPath": "/assets/characters/epic-seven/sez/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:shadow-knight-pyllis": {
+    "localPath": "/assets/characters/epic-seven/shadow-knight-pyllis/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:shadow-rose": {
+    "localPath": "/assets/characters/epic-seven/shadow-rose/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:shalltear": {
+    "localPath": "/assets/characters/epic-seven/shalltear/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:sharun": {
+    "localPath": "/assets/characters/epic-seven/sharun/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:shepherd-jena": {
+    "localPath": "/assets/characters/epic-seven/shepherd-jena/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:shepherd-of-the-dark-diene": {
+    "localPath": "/assets/characters/epic-seven/shepherd-of-the-dark-diene/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:shooting-star-achates": {
+    "localPath": "/assets/characters/epic-seven/shooting-star-achates/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:shuna": {
+    "localPath": "/assets/characters/epic-seven/shuna/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:sigret": {
+    "localPath": "/assets/characters/epic-seven/sigret/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:silk": {
+    "localPath": "/assets/characters/epic-seven/silk/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:silver-blade-aramintha": {
+    "localPath": "/assets/characters/epic-seven/silver-blade-aramintha/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:silvertide-christy": {
+    "localPath": "/assets/characters/epic-seven/silvertide-christy/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:sinful-angelica": {
+    "localPath": "/assets/characters/epic-seven/sinful-angelica/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:sol": {
+    "localPath": "/assets/characters/epic-seven/sol/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:solitaria-of-the-snow": {
+    "localPath": "/assets/characters/epic-seven/solitaria-of-the-snow/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:sonia": {
+    "localPath": "/assets/characters/epic-seven/sonia/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:specimen-sez": {
+    "localPath": "/assets/characters/epic-seven/specimen-sez/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:specter-tenebria": {
+    "localPath": "/assets/characters/epic-seven/specter-tenebria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:spirit-eye-celine": {
+    "localPath": "/assets/characters/epic-seven/spirit-eye-celine/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:stark": {
+    "localPath": "/assets/characters/epic-seven/stark/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:straze": {
+    "localPath": "/assets/characters/epic-seven/straze/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:successor-taeyou": {
+    "localPath": "/assets/characters/epic-seven/successor-taeyou/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:summer-break-charlotte": {
+    "localPath": "/assets/characters/epic-seven/summer-break-charlotte/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:summers-disciple-alexa": {
+    "localPath": "/assets/characters/epic-seven/summers-disciple-alexa/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:summertime-iseria": {
+    "localPath": "/assets/characters/epic-seven/summertime-iseria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:support-model-brinus": {
+    "localPath": "/assets/characters/epic-seven/support-model-brinus/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:surin": {
+    "localPath": "/assets/characters/epic-seven/surin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:suthan": {
+    "localPath": "/assets/characters/epic-seven/suthan/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:sven": {
+    "localPath": "/assets/characters/epic-seven/sven/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:swift-flagbearer-sigret": {
+    "localPath": "/assets/characters/epic-seven/swift-flagbearer-sigret/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:sylvan-sage-vivian": {
+    "localPath": "/assets/characters/epic-seven/sylvan-sage-vivian/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:tactical-archetype-coli": {
+    "localPath": "/assets/characters/epic-seven/tactical-archetype-coli/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:taeyou": {
+    "localPath": "/assets/characters/epic-seven/taeyou/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:talaz": {
+    "localPath": "/assets/characters/epic-seven/talaz/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:talia": {
+    "localPath": "/assets/characters/epic-seven/talia/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:tamarinne": {
+    "localPath": "/assets/characters/epic-seven/tamarinne/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:taranor-guard": {
+    "localPath": "/assets/characters/epic-seven/taranor-guard/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:taranor-royal-guard": {
+    "localPath": "/assets/characters/epic-seven/taranor-royal-guard/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:tempest-surin": {
+    "localPath": "/assets/characters/epic-seven/tempest-surin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:tenebria": {
+    "localPath": "/assets/characters/epic-seven/tenebria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:tidal-rift-elvira": {
+    "localPath": "/assets/characters/epic-seven/tidal-rift-elvira/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:tieria": {
+    "localPath": "/assets/characters/epic-seven/tieria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:top-model-luluca": {
+    "localPath": "/assets/characters/epic-seven/top-model-luluca/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:tori": {
+    "localPath": "/assets/characters/epic-seven/tori/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:troublemaker-crozet": {
+    "localPath": "/assets/characters/epic-seven/troublemaker-crozet/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:twisted-eidolon-kayron": {
+    "localPath": "/assets/characters/epic-seven/twisted-eidolon-kayron/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:tywin": {
+    "localPath": "/assets/characters/epic-seven/tywin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:unbound-knight-arowell": {
+    "localPath": "/assets/characters/epic-seven/unbound-knight-arowell/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:uncharted-pioneer-politis": {
+    "localPath": "/assets/characters/epic-seven/uncharted-pioneer-politis/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:urban-shadow-choux": {
+    "localPath": "/assets/characters/epic-seven/urban-shadow-choux/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:verdant-adin": {
+    "localPath": "/assets/characters/epic-seven/verdant-adin/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:veronica": {
+    "localPath": "/assets/characters/epic-seven/veronica/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:victorika": {
+    "localPath": "/assets/characters/epic-seven/victorika/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:vigilante-leader-glenn": {
+    "localPath": "/assets/characters/epic-seven/vigilante-leader-glenn/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:vildred": {
+    "localPath": "/assets/characters/epic-seven/vildred/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:violet": {
+    "localPath": "/assets/characters/epic-seven/violet/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:vivian": {
+    "localPath": "/assets/characters/epic-seven/vivian/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:wanda": {
+    "localPath": "/assets/characters/epic-seven/wanda/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:wanderer-silk": {
+    "localPath": "/assets/characters/epic-seven/wanderer-silk/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:wandering-prince-cidd": {
+    "localPath": "/assets/characters/epic-seven/wandering-prince-cidd/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:watcher-schuri": {
+    "localPath": "/assets/characters/epic-seven/watcher-schuri/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:westwind-executioner-schuri": {
+    "localPath": "/assets/characters/epic-seven/westwind-executioner-schuri/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:witch-of-the-mere-tenebria": {
+    "localPath": "/assets/characters/epic-seven/witch-of-the-mere-tenebria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:wretched-rose": {
+    "localPath": "/assets/characters/epic-seven/wretched-rose/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:yoonryoung": {
+    "localPath": "/assets/characters/epic-seven/yoonryoung/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:young-senya": {
+    "localPath": "/assets/characters/epic-seven/young-senya/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:yufine": {
+    "localPath": "/assets/characters/epic-seven/yufine/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:yulha": {
+    "localPath": "/assets/characters/epic-seven/yulha/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:yuna": {
+    "localPath": "/assets/characters/epic-seven/yuna/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:zahhak": {
+    "localPath": "/assets/characters/epic-seven/zahhak/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:zealot-carmainerose": {
+    "localPath": "/assets/characters/epic-seven/zealot-carmainerose/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:zeno": {
+    "localPath": "/assets/characters/epic-seven/zeno/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:zerato": {
+    "localPath": "/assets/characters/epic-seven/zerato/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "epic-seven:zio": {
+    "localPath": "/assets/characters/epic-seven/zio/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:amora": {
+    "localPath": "/assets/characters/star-savior/amora/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:annah": {
+    "localPath": "/assets/characters/star-savior/annah/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:asherah": {
+    "localPath": "/assets/characters/star-savior/asherah/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:asherah-waltz-of-starlight": {
+    "localPath": "/assets/characters/star-savior/asherah-waltz-of-starlight/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:bell-rhys": {
+    "localPath": "/assets/characters/star-savior/bell-rhys/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:besta": {
+    "localPath": "/assets/characters/star-savior/besta/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:bunnygirl-charlotte": {
+    "localPath": "/assets/characters/star-savior/bunnygirl-charlotte/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:bunnygirl-claire": {
+    "localPath": "/assets/characters/star-savior/bunnygirl-claire/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:bunnygirl-scarlet": {
+    "localPath": "/assets/characters/star-savior/bunnygirl-scarlet/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:carmen": {
+    "localPath": "/assets/characters/star-savior/carmen/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:carmen-eternal-promise": {
+    "localPath": "/assets/characters/star-savior/carmen-eternal-promise/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:carnelia": {
+    "localPath": "/assets/characters/star-savior/carnelia/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:ceres": {
+    "localPath": "/assets/characters/star-savior/ceres/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:charlotte": {
+    "localPath": "/assets/characters/star-savior/charlotte/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:claire": {
+    "localPath": "/assets/characters/star-savior/claire/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:clarissa": {
+    "localPath": "/assets/characters/star-savior/clarissa/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:cristelle": {
+    "localPath": "/assets/characters/star-savior/cristelle/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:dana": {
+    "localPath": "/assets/characters/star-savior/dana/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:elisa": {
+    "localPath": "/assets/characters/star-savior/elisa/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:emilly": {
+    "localPath": "/assets/characters/star-savior/emilly/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:epindel": {
+    "localPath": "/assets/characters/star-savior/epindel/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:epindel-sun": {
+    "localPath": "/assets/characters/star-savior/epindel-sun/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:fei": {
+    "localPath": "/assets/characters/star-savior/fei/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:frey": {
+    "localPath": "/assets/characters/star-savior/frey/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:frey-noble-princess": {
+    "localPath": "/assets/characters/star-savior/frey-noble-princess/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:gwen": {
+    "localPath": "/assets/characters/star-savior/gwen/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:harley": {
+    "localPath": "/assets/characters/star-savior/harley/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:haydee": {
+    "localPath": "/assets/characters/star-savior/haydee/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:hilde": {
+    "localPath": "/assets/characters/star-savior/hilde/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:kyra": {
+    "localPath": "/assets/characters/star-savior/kyra/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:lacy": {
+    "localPath": "/assets/characters/star-savior/lacy/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:lily": {
+    "localPath": "/assets/characters/star-savior/lily/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:lugh": {
+    "localPath": "/assets/characters/star-savior/lugh/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:luna": {
+    "localPath": "/assets/characters/star-savior/luna/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:luna-white-pearl-trap": {
+    "localPath": "/assets/characters/star-savior/luna-white-pearl-trap/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:lydia": {
+    "localPath": "/assets/characters/star-savior/lydia/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:lyn": {
+    "localPath": "/assets/characters/star-savior/lyn/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:marcille": {
+    "localPath": "/assets/characters/star-savior/marcille/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:mina": {
+    "localPath": "/assets/characters/star-savior/mina/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:muriel": {
+    "localPath": "/assets/characters/star-savior/muriel/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:naru": {
+    "localPath": "/assets/characters/star-savior/naru/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:omega": {
+    "localPath": "/assets/characters/star-savior/omega/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:petra": {
+    "localPath": "/assets/characters/star-savior/petra/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:professor-m": {
+    "localPath": "/assets/characters/star-savior/professor-m/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:roberta": {
+    "localPath": "/assets/characters/star-savior/roberta/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:rosaria": {
+    "localPath": "/assets/characters/star-savior/rosaria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:scarlet": {
+    "localPath": "/assets/characters/star-savior/scarlet/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:seira": {
+    "localPath": "/assets/characters/star-savior/seira/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:serpang": {
+    "localPath": "/assets/characters/star-savior/serpang/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:smile": {
+    "localPath": "/assets/characters/star-savior/smile/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:smile-sunshine-cat": {
+    "localPath": "/assets/characters/star-savior/smile-sunshine-cat/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:tanya": {
+    "localPath": "/assets/characters/star-savior/tanya/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:trish": {
+    "localPath": "/assets/characters/star-savior/trish/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:tyria": {
+    "localPath": "/assets/characters/star-savior/tyria/listing.webp",
+    "source": "provider-curated-listing"
+  },
+  "star-savior:vera": {
+    "localPath": "/assets/characters/star-savior/vera/listing.webp",
+    "source": "provider-curated-listing"
+  }
+}

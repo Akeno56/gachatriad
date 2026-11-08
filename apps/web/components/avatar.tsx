@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView } from './i18n';
+
 import { useState } from 'react';
 import type { Card } from '@gacha-triad/engine';
 import artwork from '../../../data/assets/card-artwork.json';
@@ -18,19 +20,21 @@ export function Avatar({
     card &&
     artwork.find((a) => a.characterId === card.characterId && a.universeId === card.universeId);
   return (
-    <span className={`player-avatar ${className}`} aria-label={`${name} avatar`}>
-      {asset && !failed ? (
-        <img
-          src={assetPath(
-            portrait ? asset.localPath : asset.localPath.replace('/portrait.webp', '/icon.webp'),
-          )}
-          alt=""
-          loading="lazy"
-          onError={() => (portrait ? setFailed(true) : setPortrait(true))}
-        />
-      ) : (
-        <span aria-hidden="true">{name.trim().slice(0, 1).toUpperCase() || 'GT'}</span>
-      )}
-    </span>
+    <LocaleView>
+      <span className={`player-avatar ${className}`} aria-label={`${name} avatar`}>
+        {asset && !failed ? (
+          <img
+            src={assetPath(
+              portrait ? asset.localPath : asset.localPath.replace('/portrait.webp', '/icon.webp'),
+            )}
+            alt=""
+            loading="lazy"
+            onError={() => (portrait ? setFailed(true) : setPortrait(true))}
+          />
+        ) : (
+          <span aria-hidden="true">{name.trim().slice(0, 1).toUpperCase() || 'GT'}</span>
+        )}
+      </span>
+    </LocaleView>
   );
 }

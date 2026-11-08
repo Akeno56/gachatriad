@@ -1,4 +1,6 @@
 ﻿'use client';
+import { LocaleView } from './i18n';
+
 import { useEffect, useRef, useState } from 'react';
 import type { ProfileView } from '@gacha-triad/shared/platform';
 import { useSession } from './session';
@@ -59,86 +61,88 @@ export function RankedWarning() {
   const ranked = mode === 'ranked',
     draft = mode === 'draft';
   return (
-    <dialog
-      ref={ref}
-      className={`game-dialog menu-window mode-rules-dialog ${ranked ? 'ranked-warning' : ''}`}
-      aria-labelledby="queue-rules-title"
-      onCancel={() => close(false)}
-    >
-      <h2 id="queue-rules-title">
-        {ranked ? 'Ranked rules · Trade One' : draft ? 'Draft rules · Ranked' : 'Unranked rules'}
-      </h2>
-      <p>
-        <strong>{ranked ? 'Closed hands' : 'Three Open'}</strong> · Same · Plus · Combo
-      </p>
-      <p>
-        {ranked
-          ? 'Your hand stays hidden until cards are played.'
-          : 'Three randomly chosen cards from each starting hand are visible to the opponent.'}{' '}
-        Same matches touching numbers; Plus matches sums; both can start Combo chains.
-      </p>
-      {draft ? (
+    <LocaleView>
+      <dialog
+        ref={ref}
+        className={`game-dialog menu-window mode-rules-dialog ${ranked ? 'ranked-warning' : ''}`}
+        aria-labelledby="queue-rules-title"
+        onCancel={() => close(false)}
+      >
+        <h2 id="queue-rules-title">
+          {ranked ? 'Ranked rules · Trade One' : draft ? 'Draft rules · Ranked' : 'Unranked rules'}
+        </h2>
         <p>
-          Three temporary boosters open automatically. Choose five of fifteen cards within the deck
-          rarity limit. Draft rating applies; no card trade. Each booster guarantees a 3★+ and a 4★+
-          card, with 5% Holo. Your temporary cards never enter your collection.
+          <strong>{ranked ? 'Closed hands' : 'Three Open'}</strong> · Same · Plus · Combo
         </p>
-      ) : ranked ? (
-        <>
+        <p>
+          {ranked
+            ? 'Your hand stays hidden until cards are played.'
+            : 'Three randomly chosen cards from each starting hand are visible to the opponent.'}{' '}
+          Same matches touching numbers; Plus matches sums; both can start Combo chains.
+        </p>
+        {draft ? (
           <p>
-            <strong>If you lose, your opponent takes one card from your played deck.</strong> Trade
-            One also applies on a forfeit. A draw transfers no cards. Losing your last copy can
-            leave a deck slot empty.
+            Three temporary boosters open automatically. Choose five of fifteen cards within the
+            deck rarity limit. Draft rating applies; no card trade. Each booster guarantees a 3★+
+            and a 4★+ card, with 5% Holo. Your temporary cards never enter your collection.
           </p>
-          <p>Ranked rating applies. Opponents are players or Medium/Hard bots.</p>
-        </>
-      ) : (
-        <p>
-          <strong>No card trade and no rating change.</strong> Matchmaking can pair you with a
-          player or an available populated bot.
+        ) : ranked ? (
+          <>
+            <p>
+              <strong>If you lose, your opponent takes one card from your played deck.</strong>{' '}
+              Trade One also applies on a forfeit. A draw transfers no cards. Losing your last copy
+              can leave a deck slot empty.
+            </p>
+            <p>Ranked rating applies. Opponents are players or Medium/Hard bots.</p>
+          </>
+        ) : (
+          <p>
+            <strong>No card trade and no rating change.</strong> Matchmaking can pair you with a
+            player or an available populated bot.
+          </p>
+        )}
+        <p className="error-message" role="alert">
+          {error}
         </p>
-      )}
-      <p className="error-message" role="alert">
-        {error}
-      </p>
-      <label className="check-label queue-hide-prompt">
-        <input
-          type="checkbox"
-          checked={hideAgain}
-          onChange={(e) => setHideAgain(e.target.checked)}
-        />{' '}
-        Don’t show me again
-      </label>
-      <div className="result-actions">
-        <button
-          className="primary-button"
-          disabled={busy}
-          onClick={async () => {
-            setBusy(true);
-            try {
-              if (ranked && !profile?.rankedAcknowledged) {
-                await api('/ranked/acknowledge', { acknowledged: true });
-                await refresh();
+        <label className="check-label queue-hide-prompt">
+          <input
+            type="checkbox"
+            checked={hideAgain}
+            onChange={(e) => setHideAgain(e.target.checked)}
+          />{' '}
+          Don’t show me again
+        </label>
+        <div className="result-actions">
+          <button
+            className="primary-button"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                if (ranked && !profile?.rankedAcknowledged) {
+                  await api('/ranked/acknowledge', { acknowledged: true });
+                  await refresh();
+                }
+                if (hideAgain && profile) {
+                  try {
+                    localStorage.setItem(preferenceKey(profile.id, mode), 'on');
+                  } catch {}
+                }
+                close(true);
+              } catch (e) {
+                setError((e as Error).message);
+              } finally {
+                setBusy(false);
               }
-              if (hideAgain && profile) {
-                try {
-                  localStorage.setItem(preferenceKey(profile.id, mode), 'on');
-                } catch {}
-              }
-              close(true);
-            } catch (e) {
-              setError((e as Error).message);
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          Join {ranked ? 'Ranked' : draft ? 'Draft' : 'Unranked'} queue
-        </button>
-        <button className="outline-button" disabled={busy} onClick={() => close(false)}>
-          Cancel
-        </button>
-      </div>
-    </dialog>
+            }}
+          >
+            {`Join ${ranked ? 'Ranked' : draft ? 'Draft' : 'Unranked'} queue`}
+          </button>
+          <button className="outline-button" disabled={busy} onClick={() => close(false)}>
+            Cancel
+          </button>
+        </div>
+      </dialog>
+    </LocaleView>
   );
 }

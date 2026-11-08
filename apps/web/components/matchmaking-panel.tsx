@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView } from './i18n';
+
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from './session';
@@ -70,91 +72,93 @@ export function MatchmakingPanel({
     : 0;
   const elapsed = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
   return (
-    <section className="setup-panel menu-window matchmaking-panel" aria-label="Match setup">
-      <h2 className="window-label">Play a game</h2>
-      {(['casual', 'ranked', 'draft'] as const).map((mode) => {
-        const ranked = mode !== 'casual',
-          label = mode === 'draft' ? 'Draft (Ranked)' : ranked ? 'Ranked' : 'Unranked',
-          action = mode === 'draft' ? 'Start Draft (Ranked)' : `Start match (${label})`,
-          own = waiting?.mode === mode;
-        return (
-          <div className={`matchmaking-row ${own ? 'is-queued' : ''}`} key={mode}>
-            <button
-              className={
-                ranked ? 'outline-button ranked-play-button' : 'primary-button start-button'
-              }
-              disabled={
-                busy ||
-                !profile ||
-                !!profile.pendingTrade ||
-                !!profile.activeMatchId ||
-                !!profile.waitingLobbyId ||
-                (mode !== 'draft' && profile.deck.length !== 5) ||
-                (ranked && !profile.registered)
-              }
-              onClick={() => void queue(mode)}
-              aria-label={own ? `${label} matchmaking queue` : action}
-            >
-              {own ? (
-                <span role="timer" aria-live="off">
-                  In queue for : {elapsed}
-                </span>
-              ) : (
-                action
-              )}
-            </button>
-            {own && (
+    <LocaleView>
+      <section className="setup-panel menu-window matchmaking-panel" aria-label="Match setup">
+        <h2 className="window-label">Play a game</h2>
+        {(['casual', 'ranked', 'draft'] as const).map((mode) => {
+          const ranked = mode !== 'casual',
+            label = mode === 'draft' ? 'Draft (Ranked)' : ranked ? 'Ranked' : 'Unranked',
+            action = mode === 'draft' ? 'Start Draft (Ranked)' : `Start match (${label})`,
+            own = waiting?.mode === mode;
+          return (
+            <div className={`matchmaking-row ${own ? 'is-queued' : ''}`} key={mode}>
               <button
-                className="queue-cancel"
-                disabled={busy}
-                onClick={() => void leave()}
-                aria-label={`Leave ${label} queue`}
+                className={
+                  ranked ? 'outline-button ranked-play-button' : 'primary-button start-button'
+                }
+                disabled={
+                  busy ||
+                  !profile ||
+                  !!profile.pendingTrade ||
+                  !!profile.activeMatchId ||
+                  !!profile.waitingLobbyId ||
+                  (mode !== 'draft' && profile.deck.length !== 5) ||
+                  (ranked && !profile.registered)
+                }
+                onClick={() => void queue(mode)}
+                aria-label={own ? `${label} matchmaking queue` : action}
               >
-                ×
+                {own ? (
+                  <span role="timer" aria-live="off">
+                    In queue for : {elapsed}
+                  </span>
+                ) : (
+                  action
+                )}
               </button>
-            )}
-          </div>
-        );
-      })}
-      <Link className="outline-button lobby-shortcut" href="/lobbies">
-        Browse lobbies
-      </Link>
-      {waiting && !['casual', 'ranked', 'draft'].includes(waiting.mode) && (
-        <p className="waiting-other-lobby">
-          {waiting.invited ? 'Waiting for your invited opponent.' : 'You have a waiting lobby.'}{' '}
-          <button
-            className="queue-cancel"
-            disabled={busy}
-            onClick={() => void leave()}
-            aria-label="Close waiting lobby"
-          >
-            ×
+              {own && (
+                <button
+                  className="queue-cancel"
+                  disabled={busy}
+                  onClick={() => void leave()}
+                  aria-label={`Leave ${label} queue`}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          );
+        })}
+        <Link className="outline-button lobby-shortcut" href="/lobbies">
+          Browse lobbies
+        </Link>
+        {waiting && !['casual', 'ranked', 'draft'].includes(waiting.mode) && (
+          <p className="waiting-other-lobby">
+            {waiting.invited ? 'Waiting for your invited opponent.' : 'You have a waiting lobby.'}{' '}
+            <button
+              className="queue-cancel"
+              disabled={busy}
+              onClick={() => void leave()}
+              aria-label="Close waiting lobby"
+            >
+              ×
+            </button>
+          </p>
+        )}
+        {profile && profile.deck.length !== 5 && (
+          <p className="deck-warning" role="status">
+            Your active deck has {profile.deck.length}/5 cards.{' '}
+            <Link href="/collection">Complete your deck in Collection</Link> before playing.
+          </p>
+        )}
+        {!profile?.registered && (
+          <p className="queue-account-note">An account is required for Ranked.</p>
+        )}
+        <div className="setup-secondary">
+          <button className="text-button" onClick={onTutorial}>
+            How to play
           </button>
+          <button className="text-button" onClick={onRules}>
+            Rulebook
+          </button>
+          <button className="text-button" onClick={onCombo}>
+            Combo lesson
+          </button>
+        </div>
+        <p className="error-message" role="alert">
+          {error}
         </p>
-      )}
-      {profile && profile.deck.length !== 5 && (
-        <p className="deck-warning" role="status">
-          Your active deck has {profile.deck.length}/5 cards.{' '}
-          <Link href="/collection">Complete your deck in Collection</Link> before playing.
-        </p>
-      )}
-      {!profile?.registered && (
-        <p className="queue-account-note">An account is required for Ranked.</p>
-      )}
-      <div className="setup-secondary">
-        <button className="text-button" onClick={onTutorial}>
-          How to play
-        </button>
-        <button className="text-button" onClick={onRules}>
-          Rulebook
-        </button>
-        <button className="text-button" onClick={onCombo}>
-          Combo lesson
-        </button>
-      </div>
-      <p className="error-message" role="alert">
-        {error}
-      </p>
-    </section>
+      </section>
+    </LocaleView>
   );
 }

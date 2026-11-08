@@ -1,5 +1,7 @@
 # GitHub Pages frontend + game server on your PC
 
+For a permanent HTTPS site and game server that run while this PC is off, use the [VPS installation and update guide](DEDICATED_HOSTING.md). The PC/tunnel workflow below remains available for local development and demonstrations.
+
 The intended layout is:
 
 ```text
@@ -45,6 +47,8 @@ The workflow is supplied by this project's `.github/workflows/pages.yml`; it is 
 The workflow installs Node 24 and pnpm 11.9, builds a static export, and uploads only `apps/web/out`. The expected address is **https://akeno56.github.io/gachatriad/**. A user site at the root would instead require the repository name `akeno56.github.io`; this project is prepared as a project site named `gachatriad`.
 
 The workflow calculates its base path from the repository name. Portraits, fonts, music and links respect that path. It contains no fixed public server address, so a new tunnel link does not require redeploying Pages.
+
+Both export commands normalize Next's segment-navigation payload filenames after a Windows build. The static browser protocol expects dotted filenames; the upstream Windows exporter can leave directory separators in them. The compatibility step retains the original files, adds identical portable aliases, and refuses to overwrite conflicting payloads. Linux-generated exports already use the correct names. This also keeps the local preview free of navigation-prefetch 404s.
 
 The workflow uses Node 24-compatible Pages actions (`configure-pages@v6`, `upload-pages-artifact@v5`, `deploy-pages@v5`) and pins both jobs to `ubuntu-24.04`. Older successful runs may still show Node 20 deprecation warnings or notices about `ubuntu-latest` changing versions; annotations on historical runs do not disappear when the workflow is updated. Commit and push the updated workflow to use the new versions on the next deployment.
 

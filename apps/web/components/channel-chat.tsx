@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView, NoTranslate } from './i18n';
+
 import { useEffect, useRef, useState } from 'react';
 import { CHAT_CHANNELS } from '@gacha-triad/shared/social';
 import { useSocial } from './social-state';
@@ -33,137 +35,144 @@ export function ChannelChat({ compact = false }: { compact?: boolean }) {
     if (sticky.current && list.current) list.current.scrollTop = list.current.scrollHeight;
   }, [messages.at(-1)?.id, channel]);
   return (
-    <section
-      className={`menu-window main-chat ${compact ? 'chat-compact' : ''}`}
-      aria-labelledby="main-chat-title"
-    >
-      <div className="channel-heading">
-        <h2 id="main-chat-title" className="window-label">
-          Main chat
-        </h2>
-        <div className="chat-channel-tabs" role="tablist" aria-label="Public chat channels">
-          {CHAT_CHANNELS.map((c) => (
-            <button key={c} role="tab" aria-selected={c === channel} onClick={() => setChannel(c)}>
-              {labels[c]}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="public-chat-body">
-        <div
-          className="chat-messages"
-          ref={list}
-          role="log"
-          aria-label={`${labels[channel]} chat messages`}
-          aria-live="polite"
-          onScroll={() => {
-            const el = list.current;
-            if (el) sticky.current = el.scrollHeight - el.scrollTop - el.clientHeight < 70;
-          }}
-        >
-          {!messages.length && <p>No messages in {labels[channel]} yet.</p>}
-          {messages.map((m) => (
-            <article key={m.id} className="chat-message">
-              <ChatMessageContent
-                person={{ ...m, id: m.playerId }}
-                createdAt={m.createdAt}
-                body={m.body}
-              />
-              {profile?.isAdmin && (
-                <button
-                  className="text-button"
-                  disabled={busy}
-                  aria-label={`Remove message from ${m.name}`}
-                  onClick={async () => {
-                    setBusy(true);
-                    setError('');
-                    try {
-                      await api(`/chat/${m.id}`, undefined, 'DELETE');
-                      await refresh();
-                    } catch (e) {
-                      setError((e as Error).message);
-                    } finally {
-                      setBusy(false);
-                    }
-                  }}
-                >
-                  Remove
-                </button>
-              )}
-            </article>
-          ))}
-        </div>
-        <aside className="chat-user-list" aria-label="Online players">
-          <h3>
-            Online <span>{onlinePlayers.length}</span>
-          </h3>
-          <div>
-            {onlinePlayers.map((p) => (
-              <a key={p.id} href={appPath(`/profile?id=${p.id}`)}>
-                <Avatar card={p.avatar} name={p.name} />
-                <span>
-                  {p.name}
-                  {p.id === profile?.id ? ' (you)' : ''}
-                  {p.title && <small>{p.title}</small>}
-                </span>
-              </a>
+    <LocaleView>
+      <section
+        className={`menu-window main-chat ${compact ? 'chat-compact' : ''}`}
+        aria-labelledby="main-chat-title"
+      >
+        <div className="channel-heading">
+          <h2 id="main-chat-title" className="window-label">
+            Main chat
+          </h2>
+          <div className="chat-channel-tabs" role="tablist" aria-label="Public chat channels">
+            {CHAT_CHANNELS.map((c) => (
+              <button
+                key={c}
+                role="tab"
+                aria-selected={c === channel}
+                onClick={() => setChannel(c)}
+              >
+                {labels[c]}
+              </button>
             ))}
           </div>
-        </aside>
-      </div>
-      <form
-        className="chat-compose"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          if (busy || !message.trim()) return;
-          const text = message.trim(),
-            target = channel;
-          if (pending.current?.text !== text || pending.current?.channel !== target)
-            pending.current = { text, channel: target, id: crypto.randomUUID() };
-          setBusy(true);
-          setError('');
-          try {
-            await api('/chat', { message: text, requestId: pending.current.id, channel: target });
-            setDrafts((current) => ({ ...current, [target]: '' }));
-            pending.current = null;
-            sticky.current = true;
-            await refresh();
-          } catch (e) {
-            setError((e as Error).message);
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        <label className="sr-only" htmlFor="main-chat-message">
-          Main chat message
-        </label>
-        <input
-          id="main-chat-message"
-          placeholder={`Message ${labels[channel]}…`}
-          maxLength={300}
-          value={message}
-          disabled={!profile?.registered}
-          onChange={(e) => setDrafts({ ...drafts, [channel]: e.target.value })}
-        />
-        <button
-          className="primary-button"
-          disabled={busy || !profile?.registered || !message.trim()}
+        </div>
+        <div className="public-chat-body">
+          <div
+            className="chat-messages"
+            ref={list}
+            role="log"
+            aria-label={`${labels[channel]} chat messages`}
+            aria-live="polite"
+            onScroll={() => {
+              const el = list.current;
+              if (el) sticky.current = el.scrollHeight - el.scrollTop - el.clientHeight < 70;
+            }}
+          >
+            {!messages.length && <p>No messages in {labels[channel]} yet.</p>}
+            {messages.map((m) => (
+              <article key={m.id} className="chat-message">
+                <ChatMessageContent
+                  person={{ ...m, id: m.playerId }}
+                  createdAt={m.createdAt}
+                  body={m.body}
+                />
+                {profile?.isAdmin && (
+                  <button
+                    className="text-button"
+                    disabled={busy}
+                    aria-label={`Remove message from ${m.name}`}
+                    onClick={async () => {
+                      setBusy(true);
+                      setError('');
+                      try {
+                        await api(`/chat/${m.id}`, undefined, 'DELETE');
+                        await refresh();
+                      } catch (e) {
+                        setError((e as Error).message);
+                      } finally {
+                        setBusy(false);
+                      }
+                    }}
+                  >
+                    Remove
+                  </button>
+                )}
+              </article>
+            ))}
+          </div>
+          <aside className="chat-user-list" aria-label="Online players">
+            <h3>
+              Online <span>{onlinePlayers.length}</span>
+            </h3>
+            <div>
+              {onlinePlayers.map((p) => (
+                <a key={p.id} href={appPath(`/profile?id=${p.id}`)}>
+                  <Avatar card={p.avatar} name={p.name} />
+                  <span>
+                    <NoTranslate>{p.name}</NoTranslate>
+                    {p.id === profile?.id ? ' (you)' : ''}
+                    {p.title && <small>{p.title}</small>}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </aside>
+        </div>
+        <form
+          className="chat-compose"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (busy || !message.trim()) return;
+            const text = message.trim(),
+              target = channel;
+            if (pending.current?.text !== text || pending.current?.channel !== target)
+              pending.current = { text, channel: target, id: crypto.randomUUID() };
+            setBusy(true);
+            setError('');
+            try {
+              await api('/chat', { message: text, requestId: pending.current.id, channel: target });
+              setDrafts((current) => ({ ...current, [target]: '' }));
+              pending.current = null;
+              sticky.current = true;
+              await refresh();
+            } catch (e) {
+              setError((e as Error).message);
+            } finally {
+              setBusy(false);
+            }
+          }}
         >
-          Send
-        </button>
-      </form>
-      {!profile?.registered && (
-        <p className="chat-registration">
-          <button className="text-button" onClick={openAccount}>
-            Sign in to chat
-          </button>{' '}
-          to send messages.
+          <label className="sr-only" htmlFor="main-chat-message">
+            Main chat message
+          </label>
+          <input
+            id="main-chat-message"
+            placeholder={`Message ${labels[channel]}…`}
+            maxLength={300}
+            value={message}
+            disabled={!profile?.registered}
+            onChange={(e) => setDrafts({ ...drafts, [channel]: e.target.value })}
+          />
+          <button
+            className="primary-button"
+            disabled={busy || !profile?.registered || !message.trim()}
+          >
+            Send
+          </button>
+        </form>
+        {!profile?.registered && (
+          <p className="chat-registration">
+            <button className="text-button" onClick={openAccount}>
+              Sign in to chat
+            </button>{' '}
+            to send messages.
+          </p>
+        )}
+        <p className="error-message" role="alert">
+          {error || loadError}
         </p>
-      )}
-      <p className="error-message" role="alert">
-        {error || loadError}
-      </p>
-    </section>
+      </section>
+    </LocaleView>
   );
 }

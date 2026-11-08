@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView, NoTranslate } from './i18n';
+
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import type { ProfileView } from '@gacha-triad/shared/platform';
@@ -105,20 +107,22 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     };
   }, [profile?.id, profile?.registered, refresh]);
   return (
-    <Context.Provider
-      value={{
-        profile,
-        error,
-        revision,
-        refresh,
-        changeAccount,
-        accountOpen,
-        openAccount,
-        closeAccount,
-      }}
-    >
-      {children}
-    </Context.Provider>
+    <LocaleView>
+      <Context.Provider
+        value={{
+          profile,
+          error,
+          revision,
+          refresh,
+          changeAccount,
+          accountOpen,
+          openAccount,
+          closeAccount,
+        }}
+      >
+        {children}
+      </Context.Provider>
+    </LocaleView>
   );
 }
 export function AccountMenu() {
@@ -176,72 +180,83 @@ export function AccountMenu() {
     }
   }
   return (
-    <>
-      <button
-        className="account-control"
-        disabled={pending}
-        onClick={() => (profile?.registered ? void logout() : setOpen(true))}
-      >
-        {profile?.registered
-          ? 'Logout'
-          : !profile && serverConfigured() && !error
-            ? 'Connecting…'
-            : 'Login/Register'}
-      </button>
-      <dialog ref={ref} className="game-dialog account-dialog" onCancel={() => setOpen(false)}>
-        <button className="dialog-close" onClick={() => setOpen(false)} aria-label="Close account">
-          ×
+    <LocaleView>
+      <>
+        <button
+          className="account-control"
+          disabled={pending}
+          onClick={() => (profile?.registered ? void logout() : setOpen(true))}
+        >
+          {profile?.registered
+            ? 'Logout'
+            : !profile && serverConfigured() && !error
+              ? 'Connecting…'
+              : 'Login/Register'}
         </button>
-        <h2>
-          {profile?.registered ? 'Your account' : register ? 'Keep your progress' : 'Welcome back'}
-        </h2>
-        {profile?.registered ? (
-          <>
-            <p>
-              {profile.name} · Rating {profile.rating} · Draft {profile.draftRating}
-            </p>
-            <button className="outline-button" disabled={pending} onClick={() => void logout()}>
-              Logout
-            </button>
-          </>
-        ) : (
-          <>
-            <p>
-              Your guest collection is kept when you register. An account is required for ranked,
-              rated Draft and Trade One.
-            </p>
-            <form onSubmit={submit}>
-              {register && (
-                <label>
-                  Player name
-                  <input required name="name" maxLength={32} autoComplete="nickname" />
-                </label>
-              )}
-              <label>
-                Email
-                <input required name="email" type="email" autoComplete="email" />
-              </label>
-              <label>
-                Password
-                <input
-                  required
-                  name="password"
-                  type="password"
-                  minLength={10}
-                  autoComplete={register ? 'new-password' : 'current-password'}
-                />
-              </label>
-              <button className="primary-button" disabled={pending}>
-                {pending ? 'Connecting…' : register ? 'Create account' : 'Sign in'}
+        <dialog ref={ref} className="game-dialog account-dialog" onCancel={() => setOpen(false)}>
+          <button
+            className="dialog-close"
+            onClick={() => setOpen(false)}
+            aria-label="Close account"
+          >
+            ×
+          </button>
+          <h2>
+            {profile?.registered
+              ? 'Your account'
+              : register
+                ? 'Keep your progress'
+                : 'Welcome back'}
+          </h2>
+          {profile?.registered ? (
+            <>
+              <p>
+                <NoTranslate>{profile.name}</NoTranslate> · Rating {profile.rating} · Draft{' '}
+                {profile.draftRating}
+              </p>
+              <button className="outline-button" disabled={pending} onClick={() => void logout()}>
+                Logout
               </button>
-            </form>
-            <button className="text-button" onClick={() => setRegister(!register)}>
-              {register ? 'Already registered? Sign in' : 'Create a new account'}
-            </button>
-          </>
-        )}
-        <p role="alert">{message || error}</p>
-      </dialog>
-    </>
+            </>
+          ) : (
+            <>
+              <p>
+                Your guest collection is kept when you register. An account is required for ranked,
+                rated Draft and Trade One.
+              </p>
+              <form onSubmit={submit}>
+                {register && (
+                  <label>
+                    Player name
+                    <input required name="name" maxLength={32} autoComplete="nickname" />
+                  </label>
+                )}
+                <label>
+                  Email
+                  <input required name="email" type="email" autoComplete="email" />
+                </label>
+                <label>
+                  Password
+                  <input
+                    required
+                    name="password"
+                    type="password"
+                    minLength={10}
+                    autoComplete={register ? 'new-password' : 'current-password'}
+                  />
+                </label>
+                <button className="primary-button" disabled={pending}>
+                  {pending ? 'Connecting…' : register ? 'Create account' : 'Sign in'}
+                </button>
+              </form>
+              <button className="text-button" onClick={() => setRegister(!register)}>
+                {register ? 'Already registered? Sign in' : 'Create a new account'}
+              </button>
+            </>
+          )}
+          <p role="alert">{message || error}</p>
+        </dialog>
+      </>
+    </LocaleView>
   );
 }

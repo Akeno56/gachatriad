@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView, LocalizedDate } from '../../components/i18n';
+
 import { useEffect, useState } from 'react';
 import type { AchievementView } from '@gacha-triad/shared/platform';
 import { useSession } from '../../components/session';
@@ -14,38 +16,44 @@ export default function Achievements() {
         .catch((e) => setError(e.message));
   }, [profile?.id, revision]);
   return (
-    <div className="content-page">
-      <div className="eyebrow">A CHALLENGER’S RECORD</div>
-      <h1>Achievements</h1>
-      <p className="page-description">
-        {profile?.name ?? 'Your record'} · {items.filter((a) => a.unlockedAt).length}/{items.length}{' '}
-        earned. Progress comes from completed games and stays with your profile.
-      </p>
-      <p className="error-message" role="alert">
-        {error || connectionError}
-      </p>
-      <div className="achievement-grid">
-        {items.map((a) => (
-          <article
-            className={`menu-window achievement ${a.unlockedAt ? 'is-unlocked' : ''}`}
-            key={a.id}
-          >
-            <span className="achievement-seal" aria-hidden="true">
-              {a.unlockedAt ? '★' : '◇'}
-            </span>
-            <div>
-              <h2>{a.name}</h2>
-              <p>{a.description}</p>
-              <progress value={a.progress} max={a.target} aria-label={`${a.name} progress`} />
-              <small>
-                {a.unlockedAt
-                  ? `Earned ${new Date(a.unlockedAt).toLocaleDateString()}`
-                  : `${a.progress} / ${a.target}`}
-              </small>
-            </div>
-          </article>
-        ))}
+    <LocaleView>
+      <div className="content-page">
+        <div className="eyebrow">A CHALLENGER’S RECORD</div>
+        <h1>Achievements</h1>
+        <p className="page-description">
+          {profile?.name ?? 'Your record'} · {items.filter((a) => a.unlockedAt).length}/
+          {items.length} earned. Progress comes from completed games and stays with your profile.
+        </p>
+        <p className="error-message" role="alert">
+          {error || connectionError}
+        </p>
+        <div className="achievement-grid">
+          {items.map((a) => (
+            <article
+              className={`menu-window achievement ${a.unlockedAt ? 'is-unlocked' : ''}`}
+              key={a.id}
+            >
+              <span className="achievement-seal" aria-hidden="true">
+                {a.unlockedAt ? '★' : '◇'}
+              </span>
+              <div>
+                <h2>{a.name}</h2>
+                <p>{a.description}</p>
+                <progress value={a.progress} max={a.target} aria-label={`${a.name} progress`} />
+                <small>
+                  {a.unlockedAt ? (
+                    <>
+                      Earned <LocalizedDate value={a.unlockedAt} />
+                    </>
+                  ) : (
+                    `${a.progress} / ${a.target}`
+                  )}
+                </small>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
-    </div>
+    </LocaleView>
   );
 }

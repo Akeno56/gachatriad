@@ -1,5 +1,7 @@
 # Sharing review — v0.9
 
+**v0.13 follow-up:** French translation is local React rendering; user messages and names are not sent to a translation service or interpreted as markup. Optional VPS templates keep both the backend and private controller on loopback, deny the private-control path at the public proxy, and store data/secrets outside static releases. The controller's managed-service mode uses a private shared control secret for moderation/grants and refuses to launch another database writer. An isolated test checks those operations and confirms closing the panel leaves the externally managed game running. Linux provisioning/Caddy/systemd behavior still requires verification on the chosen VPS; the files are deployment templates, not an independently audited production installation. See [hosting](DEDICATED_HOSTING.md).
+
 Reviewed 8 November 2026. The game is suitable for a small, trusted-friend demo with the private host console kept on this PC. This is a source review and automated regression check, not a penetration-test certificate or a guarantee against attacks.
 
 ## What was checked

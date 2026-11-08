@@ -29,7 +29,7 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
     shopAfter.inventory[target.id].quantity,
     (shopBefore.inventory[target.id]?.quantity ?? 0) + 1,
   );
-  await page.screenshot({ path: 'docs/screenshots/v12-card-shop.png', fullPage: true });
+  await page.screenshot({ path: 'docs/screenshots/v13-card-shop.png', fullPage: true });
   await page.getByLabel('Finish', { exact: true }).selectOption('holo');
   await expect(page.locator('.card-buy-button')).toHaveCount(0);
   await page.goto(origin + '/gachatriad/boosters');
@@ -50,7 +50,7 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
   ).toBeVisible();
   await expect(page.locator('.booster-count').filter({ hasText: '×10' })).toBeVisible();
   assert.equal((await api(client, '/profile')).prisms, before.prisms - 1500);
-  await page.screenshot({ path: 'docs/screenshots/v12-booster-stacks.png', fullPage: true });
+  await page.screenshot({ path: 'docs/screenshots/v13-booster-stacks.png', fullPage: true });
   await page
     .getByRole('button', {
       name: 'Open Gacha Universe II Booster (10 of 10 available)',
@@ -75,7 +75,7 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
         .map((a) => a.finished.catch(() => {})),
     );
   });
-  await page.screenshot({ path: 'docs/screenshots/v12-open-ten.png' });
+  await page.screenshot({ path: 'docs/screenshots/v13-open-ten.png' });
   await batch.getByRole('button', { name: 'Continue', exact: true }).click();
   const purchased = await api(client, '/boosters/buy', {
     quantity: 50,
@@ -126,7 +126,7 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
   await page.getByRole('button', { name: 'Confirm', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Trade Up complete', exact: true })).toBeVisible();
   await expect(page.locator('.duplicate-reward .playing-card')).toHaveClass(/rarity-2/);
-  await page.screenshot({ path: 'docs/screenshots/v12-trade-up.png' });
+  await page.screenshot({ path: 'docs/screenshots/v13-trade-up.png' });
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
   const after = await api(client, '/profile');
   assert.equal(after.prisms, p.prisms + 5);

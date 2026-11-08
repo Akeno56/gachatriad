@@ -125,7 +125,7 @@ export const PRESETS = [
     id: 'elemental',
     name: 'Elemental',
     description:
-      'Marked cells grant +1 for a matching element, −1 otherwise. Same/Plus use printed values.',
+      'Marked cells grant +1 for a matching element, −1 otherwise. All captures, including Same/Plus, use adjusted values.',
     rules: { ...STANDARD, allOpen: true, elemental: true },
   },
 ] as const;
@@ -335,18 +335,25 @@ export function applyMove(state: GameState, move: Move): GameState {
   const board = state.board.map((item) => (item ? { ...item } : null));
   board[move.cell] = { card, owner: move.player, originalOwner: move.player };
   const adjacent = neighbors(move.cell).filter((n) => board[n.cell]);
+  const attackModifier = elementalModifier(state, card, move.cell);
+  const touchingValues = (n: Neighbor) => [
+    card.stats[n.side] + attackModifier,
+    board[n.cell]!.card.stats[n.opposite] + elementalModifier(state, board[n.cell]!.card, n.cell),
+  ];
   const special = new Map<number, CaptureReason>();
   // Same and Plus use the same pre-capture snapshot; friendly neighbors count.
   if (state.rules.same) {
-    const equal = adjacent.filter(
-      (n) => card.stats[n.side] === board[n.cell]!.card.stats[n.opposite],
-    );
+    const equal = adjacent.filter((n) => {
+      const [attack, defense] = touchingValues(n);
+      return attack === defense;
+    });
     if (equal.length >= 2) for (const n of equal) special.set(n.cell, 'same');
   }
   if (state.rules.plus) {
     const groups = new Map<number, Neighbor[]>();
     for (const n of adjacent) {
-      const sum = card.stats[n.side] + board[n.cell]!.card.stats[n.opposite];
+      const [attack, defense] = touchingValues(n);
+      const sum = attack + defense;
       groups.set(sum, [...(groups.get(sum) ?? []), n]);
     }
     for (const group of groups.values())

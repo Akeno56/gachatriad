@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView, NoTranslate } from './i18n';
+
 import { useEffect, useRef, useState } from 'react';
 import type { FriendMessage } from '@gacha-triad/shared/social';
 import { useSession } from './session';
@@ -62,127 +64,141 @@ export function FriendChat({
     if (sticky.current && list.current) list.current.scrollTop = list.current.scrollHeight;
   }, [messages.at(-1)?.id]);
   return (
-    <section className="friend-chat" aria-label="Friend chat">
-      <div className="conversation-list" aria-label="Private conversations">
-        {!friends.length && <p>Add a friend to start a private conversation.</p>}
-        {[...friends]
-          .sort((a, b) =>
-            (data.conversations.find((c) => c.playerId === b.id)?.lastAt ?? '').localeCompare(
-              data.conversations.find((c) => c.playerId === a.id)?.lastAt ?? '',
-            ),
-          )
-          .map((f) => {
-            const thread = data.conversations.find((c) => c.playerId === f.id);
-            return (
-              <button
-                key={f.id}
-                className={`conversation-choice ${friend?.id === f.id ? 'is-selected' : ''}`}
-                aria-pressed={friend?.id === f.id}
-                onClick={() => select(f.id)}
-              >
-                <Avatar card={f.avatar} name={f.name} />
-                <span>
-                  <strong>{f.name}</strong>
-                  {f.title && <small className="friend-chat-title">{f.title}</small>}
-                  <small>{thread?.lastMessage || (f.online ? 'Online' : 'Offline')}</small>
-                </span>
-                {!!thread?.unread && <b>{thread.unread}</b>}
-              </button>
-            );
-          })}
-      </div>
-      <div className="conversation-body">
-        {friend ? (
-          <>
-            <div className="friend-conversation-heading">
-              <ChatMessageContent person={friend} />
-            </div>
-            <small className="conversation-presence">
-              {friend.online ? 'Online' : 'Offline'} · Private conversation
-            </small>
-            <div
-              ref={list}
-              className="chat-messages"
-              role="log"
-              aria-live="polite"
-              aria-label={`Messages with ${friend.name}`}
-              onScroll={() => {
-                const el = list.current;
-                if (el) sticky.current = el.scrollHeight - el.scrollTop - el.clientHeight < 70;
-              }}
-            >
-              {!messages.length && <p>No messages yet. Say hello.</p>}
-              {messages.map((m) => (
-                <article
-                  key={m.id}
-                  className={`private-message ${m.senderId === profile?.id ? 'is-own' : ''}`}
+    <LocaleView>
+      <section className="friend-chat" aria-label="Friend chat">
+        <div className="conversation-list" aria-label="Private conversations">
+          {!friends.length && <p>Add a friend to start a private conversation.</p>}
+          {[...friends]
+            .sort((a, b) =>
+              (data.conversations.find((c) => c.playerId === b.id)?.lastAt ?? '').localeCompare(
+                data.conversations.find((c) => c.playerId === a.id)?.lastAt ?? '',
+              ),
+            )
+            .map((f) => {
+              const thread = data.conversations.find((c) => c.playerId === f.id);
+              return (
+                <button
+                  key={f.id}
+                  className={`conversation-choice ${friend?.id === f.id ? 'is-selected' : ''}`}
+                  aria-pressed={friend?.id === f.id}
+                  onClick={() => select(f.id)}
                 >
-                  <ChatMessageContent
-                    person={
-                      m.senderId === profile?.id
-                        ? {
-                            id: profile.id,
-                            name: profile.name,
-                            title: TITLES.find((t) => t.id === profile.titleId)?.name ?? null,
-                            avatar: ALL_CARDS.find((c) => c.id === profile.avatarCardId) ?? null,
-                          }
-                        : friend
+                  <Avatar card={f.avatar} name={f.name} />
+                  <span>
+                    <strong>
+                      <NoTranslate>{f.name}</NoTranslate>
+                    </strong>
+                    {f.title && <small className="friend-chat-title">{f.title}</small>}
+                    <small>
+                      {thread?.lastMessage ? (
+                        <NoTranslate>{thread.lastMessage}</NoTranslate>
+                      ) : f.online ? (
+                        'Online'
+                      ) : (
+                        'Offline'
+                      )}
+                    </small>
+                  </span>
+                  {!!thread?.unread && <b>{thread.unread}</b>}
+                </button>
+              );
+            })}
+        </div>
+        <div className="conversation-body">
+          {friend ? (
+            <>
+              <div className="friend-conversation-heading">
+                <ChatMessageContent person={friend} />
+              </div>
+              <small className="conversation-presence">
+                {friend.online ? 'Online' : 'Offline'} · Private conversation
+              </small>
+              <div
+                ref={list}
+                className="chat-messages"
+                role="log"
+                aria-live="polite"
+                aria-label={`Messages with ${friend.name}`}
+                onScroll={() => {
+                  const el = list.current;
+                  if (el) sticky.current = el.scrollHeight - el.scrollTop - el.clientHeight < 70;
+                }}
+              >
+                {!messages.length && <p>No messages yet. Say hello.</p>}
+                {messages.map((m) => (
+                  <article
+                    key={m.id}
+                    className={`private-message ${m.senderId === profile?.id ? 'is-own' : ''}`}
+                  >
+                    <ChatMessageContent
+                      person={
+                        m.senderId === profile?.id
+                          ? {
+                              id: profile.id,
+                              name: profile.name,
+                              title: TITLES.find((t) => t.id === profile.titleId)?.name ?? null,
+                              avatar: ALL_CARDS.find((c) => c.id === profile.avatarCardId) ?? null,
+                            }
+                          : friend
+                      }
+                      createdAt={m.createdAt}
+                      body={m.body}
+                    />
+                  </article>
+                ))}
+              </div>
+              <form
+                className="chat-compose"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (busy || !message.trim()) return;
+                  const target = friend.id,
+                    text = message.trim();
+                  if (pending.current?.text !== text)
+                    pending.current = { text, id: crypto.randomUUID() };
+                  setBusy(true);
+                  setError('');
+                  try {
+                    await api(`/friends/${target}/messages`, {
+                      message: text,
+                      requestId: pending.current.id,
+                    });
+                    if (currentTarget.current === target) {
+                      setMessage('');
+                      pending.current = null;
+                      sticky.current = true;
                     }
-                    createdAt={m.createdAt}
-                    body={m.body}
-                  />
-                </article>
-              ))}
-            </div>
-            <form
-              className="chat-compose"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                if (busy || !message.trim()) return;
-                const target = friend.id,
-                  text = message.trim();
-                if (pending.current?.text !== text)
-                  pending.current = { text, id: crypto.randomUUID() };
-                setBusy(true);
-                setError('');
-                try {
-                  await api(`/friends/${target}/messages`, {
-                    message: text,
-                    requestId: pending.current.id,
-                  });
-                  if (currentTarget.current === target) {
-                    setMessage('');
-                    pending.current = null;
-                    sticky.current = true;
+                    await refresh();
+                  } catch (e) {
+                    if (currentTarget.current === target) setError((e as Error).message);
+                  } finally {
+                    setBusy(false);
                   }
-                  await refresh();
-                } catch (e) {
-                  if (currentTarget.current === target) setError((e as Error).message);
-                } finally {
-                  setBusy(false);
-                }
-              }}
-            >
-              <input
-                aria-label={`Message ${friend.name}`}
-                placeholder={`Message ${friend.name}…`}
-                maxLength={300}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-              />
-              <button className="primary-button" disabled={busy || !message.trim()}>
-                Send
-              </button>
-            </form>
-            <small>Only you and {friend.name} can read this conversation.</small>
-          </>
-        ) : (
-          <p>Select a friend to open your conversation.</p>
-        )}
-        <p className="error-message" role="alert">
-          {error}
-        </p>
-      </div>
-    </section>
+                }}
+              >
+                <input
+                  aria-label={`Message ${friend.name}`}
+                  placeholder={`Message ${friend.name}…`}
+                  maxLength={300}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                />
+                <button className="primary-button" disabled={busy || !message.trim()}>
+                  Send
+                </button>
+              </form>
+              <small>
+                Only you and <NoTranslate>{friend.name}</NoTranslate> can read this conversation.
+              </small>
+            </>
+          ) : (
+            <p>Select a friend to open your conversation.</p>
+          )}
+          <p className="error-message" role="alert">
+            {error}
+          </p>
+        </div>
+      </section>
+    </LocaleView>
   );
 }

@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView } from './i18n';
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { type ChatChannel, type SocialView } from '@gacha-triad/shared/social';
 import { useSession } from './session';
@@ -51,7 +53,11 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
       active = false;
     };
   }, [profile?.id, revision]);
-  return <Context.Provider value={{ ...state, channel, setChannel }}>{children}</Context.Provider>;
+  return (
+    <LocaleView>
+      <Context.Provider value={{ ...state, channel, setChannel }}>{children}</Context.Provider>
+    </LocaleView>
+  );
 }
 export function openFriendChat(playerId: string) {
   window.dispatchEvent(new CustomEvent('triad:friend-chat', { detail: playerId }));

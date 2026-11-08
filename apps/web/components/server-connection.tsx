@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView } from './i18n';
+
 import { useEffect, useRef, useState } from 'react';
 import {
   appPath,
@@ -75,45 +77,47 @@ export function ServerConnection({ children }: { children: React.ReactNode }) {
     </form>
   );
   return (
-    <>
-      {blocked ? (
-        <section className="content-page connect-page">
-          <div className="menu-window connect-window">
-            <div className="eyebrow">ENTER THE CARD HALL</div>
-            <h1>Connect to the host</h1>
-            {form}
-          </div>
-        </section>
-      ) : (
-        children
-      )}
-      <dialog
-        ref={ref}
-        className="game-dialog menu-window connection-dialog"
-        aria-label="Game server connection"
-        onCancel={() => setOpen(false)}
-      >
-        <button
-          className="dialog-close"
-          aria-label="Close server connection"
-          onClick={() => setOpen(false)}
-        >
-          ×
-        </button>
-        <h2>Game server</h2>
-        {form}
-        {!STATIC_BUILD && (
-          <button
-            className="text-button"
-            onClick={() => {
-              localStorage.removeItem('triad-server');
-              location.assign(appPath('/'));
-            }}
-          >
-            Use local server
-          </button>
+    <LocaleView>
+      <>
+        {blocked ? (
+          <section className="content-page connect-page">
+            <div className="menu-window connect-window">
+              <div className="eyebrow">ENTER THE CARD HALL</div>
+              <h1>Connect to the host</h1>
+              {form}
+            </div>
+          </section>
+        ) : (
+          children
         )}
-      </dialog>
-    </>
+        <dialog
+          ref={ref}
+          className="game-dialog menu-window connection-dialog"
+          aria-label="Game server connection"
+          onCancel={() => setOpen(false)}
+        >
+          <button
+            className="dialog-close"
+            aria-label="Close server connection"
+            onClick={() => setOpen(false)}
+          >
+            ×
+          </button>
+          <h2>Game server</h2>
+          {form}
+          {!STATIC_BUILD && (
+            <button
+              className="text-button"
+              onClick={() => {
+                localStorage.removeItem('triad-server');
+                location.assign(appPath('/'));
+              }}
+            >
+              Use local server
+            </button>
+          )}
+        </dialog>
+      </>
+    </LocaleView>
   );
 }

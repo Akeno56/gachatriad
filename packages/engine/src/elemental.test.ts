@@ -86,7 +86,7 @@ it('penalties can prevent a normal capture and effective ranks can reach zero or
   const high = card('high', [10, 10, 10, 10], 'fire');
   expect(high.stats[0] + elementalModifier(s, high, 4)).toBe(11);
 });
-it('Same uses printed values despite different elemental modifiers', () => {
+it('Same does not trigger from printed equality when the adjusted values differ', () => {
   const s = fixture(
     card('attack', [5, 5, 1, 1], 'ice'),
     [
@@ -100,20 +100,59 @@ it('Same uses printed values despite different elemental modifiers', () => {
     play(s)
       .history.at(-1)!
       .captures.map((c) => c.reason),
-  ).toEqual(['same', 'same']);
+  ).toEqual([]);
 });
-it('Plus uses printed sums and Combo comparisons use the adjusted ordinary values', () => {
+it('Same matches adjusted ranks on both attacker and defender cells', () => {
+  const s = fixture(
+    card('attack', [5, 5, 1, 1], 'ice'),
+    [
+      [1, card('top', [1, 1, 3, 1], 'fire')],
+      [5, card('right', [1, 1, 1, 4])],
+    ],
+    { 4: 'fire', 1: 'fire' },
+    { same: true },
+  );
+  expect(
+    play(s)
+      .history.at(-1)!
+      .captures.map((c) => c.reason),
+  ).toEqual(['same', 'same']);
+  expect(s.hands[0][0].stats).toEqual([5, 5, 1, 1]);
+});
+it('Plus uses adjusted sums and starts a Combo with adjusted ordinary values', () => {
   const s = fixture(
     card('attack', [3, 4, 1, 1]),
     [
       [1, card('top', [1, 1, 5, 1])],
-      [5, card('right', [4, 1, 1, 4], 'fire')],
+      [5, card('right', [4, 1, 1, 3], 'fire')],
       [2, card('chain', [1, 1, 4, 9])],
     ],
     { 5: 'fire' },
     { plus: true, combo: true },
   );
   const n = play(s);
+  expect(
+    n.history
+      .at(-1)!
+      .captures.filter((c) => c.reason === 'plus')
+      .map((c) => c.cell),
+  ).toEqual([1, 5]);
   expect(n.history.at(-1)!.captures).toContainEqual({ cell: 2, from: 1, to: 0, reason: 'combo' });
   expect(n.board[2]?.owner).toBe(0);
+});
+it('Plus does not trigger from printed sums when a defender modifier breaks equality', () => {
+  const s = fixture(
+    card('attack', [3, 4, 1, 1]),
+    [
+      [1, card('top', [1, 1, 5, 1])],
+      [5, card('right', [1, 1, 1, 4], 'fire')],
+    ],
+    { 5: 'fire' },
+    { plus: true },
+  );
+  expect(
+    play(s)
+      .history.at(-1)!
+      .captures.some((c) => c.reason === 'plus'),
+  ).toBe(false);
 });

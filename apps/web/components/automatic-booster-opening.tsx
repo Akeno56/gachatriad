@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView, NoTranslate } from './i18n';
+
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { BOOSTER_TYPES, type BoosterView } from '@gacha-triad/shared/platform';
@@ -119,119 +121,123 @@ export function AutomaticBoosterOpening({
         a.card.name.localeCompare(b.card.name),
     );
   return (
-    <dialog
-      ref={dialog}
-      className={`game-dialog menu-window pack-opening automatic-opening ${phase === 'summary' ? 'pack-stage-summary' : 'pack-stage-reveal'}`}
-      aria-labelledby="automatic-pack-title"
-      onCancel={(e) => {
-        e.preventDefault();
-        close();
-      }}
-      data-phase={phase}
-      data-position={position}
-    >
-      <header className="pack-opening-header">
-        <div>
-          <h2 id="automatic-pack-title">
-            {phase === 'summary'
-              ? `${results.length * 5} cards added`
-              : (BOOSTER_TYPES.find((p) => p.id === currentPack.type)?.name ?? 'Booster opening')}
-          </h2>
-          <span role="status">
-            {phase === 'summary'
-              ? 'Saved to your Collection'
-              : `Automatic opening · Booster ${Math.floor(position / 5) + 1}/${packs.length} · Card ${(position % 5) + 1}/5`}
-          </span>
-        </div>
-        <button
-          className="text-button"
-          aria-label="Close booster opening"
-          disabled={!results.length && !error}
-          onClick={close}
-        >
-          Close ×
-        </button>
-      </header>
-      {error && (
-        <div role="alert">
-          <p>{error}</p>
-          <button className="primary-button" onClick={() => setRetry((n) => n + 1)}>
-            Resume opening
+    <LocaleView>
+      <dialog
+        ref={dialog}
+        className={`game-dialog menu-window pack-opening automatic-opening ${phase === 'summary' ? 'pack-stage-summary' : 'pack-stage-reveal'}`}
+        aria-labelledby="automatic-pack-title"
+        onCancel={(e) => {
+          e.preventDefault();
+          close();
+        }}
+        data-phase={phase}
+        data-position={position}
+      >
+        <header className="pack-opening-header">
+          <div>
+            <h2 id="automatic-pack-title">
+              {phase === 'summary'
+                ? `${results.length * 5} cards added`
+                : (BOOSTER_TYPES.find((p) => p.id === currentPack.type)?.name ?? 'Booster opening')}
+            </h2>
+            <span role="status">
+              {phase === 'summary'
+                ? 'Saved to your Collection'
+                : `Automatic opening · Booster ${Math.floor(position / 5) + 1}/${packs.length} · Card ${(position % 5) + 1}/5`}
+            </span>
+          </div>
+          <button
+            className="text-button"
+            aria-label="Close booster opening"
+            disabled={!results.length && !error}
+            onClick={close}
+          >
+            Close ×
           </button>
-        </div>
-      )}
-      {phase === 'pack' && (
-        <div className="auto-opening-stage">
-          <div className={`sealed-pack is-opening ${packArt ? 'has-pack-image' : ''}`}>
-            <span className="pack-brand">GACHA TRIAD</span>
-            <img
-              src={assetPath(packArt ?? '/assets/ui/triad-logo.webp')}
-              alt=""
-              draggable={false}
-            />
-            <strong>
-              {currentPack.type === 'starter' ? 'STARTER' : currentPack.type.toUpperCase()}
-            </strong>
-            <span>5 CARDS</span>
+        </header>
+        {error && (
+          <div role="alert">
+            <p>{error}</p>
+            <button className="primary-button" onClick={() => setRetry((n) => n + 1)}>
+              Resume opening
+            </button>
           </div>
-          <p>Opening booster {Math.floor(position / 5) + 1}…</p>
-        </div>
-      )}
-      {phase === 'reveal' && card && (
-        <div className="auto-opening-stage">
-          <div className="auto-revealed-card" key={position}>
-            <Card card={card} showElement />
+        )}
+        {phase === 'pack' && (
+          <div className="auto-opening-stage">
+            <div className={`sealed-pack is-opening ${packArt ? 'has-pack-image' : ''}`}>
+              <span className="pack-brand">GACHA TRIAD</span>
+              <img
+                src={assetPath(packArt ?? '/assets/ui/triad-logo.webp')}
+                alt=""
+                draggable={false}
+              />
+              <strong>
+                {currentPack.type === 'starter' ? 'STARTER' : currentPack.type.toUpperCase()}
+              </strong>
+              <span>5 CARDS</span>
+            </div>
+            <p>Opening booster {Math.floor(position / 5) + 1}…</p>
           </div>
-          <h3>{card.name}</h3>
-          <p>
-            {'★'.repeat(card.rarity)}
-            {card.finish === 'holo' ? ' · HOLOGRAPHIC +1' : ''}
-          </p>
-          <p>
-            {currentPack.newCardIds.includes(card.id)
-              ? 'New to your collection'
-              : 'Another copy added'}
-          </p>
-        </div>
-      )}
-      {phase === 'spread' && (
-        <div className="auto-pack-spread">
-          {currentPack.cards.map((card) => (
-            <div key={card.id}>
+        )}
+        {phase === 'reveal' && card && (
+          <div className="auto-opening-stage">
+            <div className="auto-revealed-card" key={position}>
               <Card card={card} showElement />
             </div>
-          ))}
-        </div>
-      )}
-      {phase === 'summary' && (
-        <>
-          <section
-            className={`auto-results-grid ${packs.length === 1 ? 'single-pack-results' : ''}`}
-            aria-label="Booster results"
-          >
-            {rows.map(({ card, count, fresh }) => (
-              <article key={card.id}>
-                <Card card={card} showElement />
-                <p>
-                  {fresh ? 'NEW · ' : ''}
-                  {count > 1 ? `×${count} copies` : '1 copy'}
-                </p>
-              </article>
-            ))}
-          </section>
-          <div className="result-actions">
-            <button className="primary-button" onClick={close}>
-              Continue
-            </button>
-            <Link className="outline-button" href="/" onClick={close}>
-              Play a game
-            </Link>
-            <Link className="text-button" href="/collection" onClick={close}>
-              Go to Collection
-            </Link>
+            <h3>
+              <NoTranslate>{card.name}</NoTranslate>
+            </h3>
+            <p>
+              {'★'.repeat(card.rarity)}
+              {card.finish === 'holo' ? ' · HOLOGRAPHIC +1' : ''}
+            </p>
+            <p>
+              {currentPack.newCardIds.includes(card.id)
+                ? 'New to your collection'
+                : 'Another copy added'}
+            </p>
           </div>
-        </>
-      )}
-    </dialog>
+        )}
+        {phase === 'spread' && (
+          <div className="auto-pack-spread">
+            {currentPack.cards.map((card) => (
+              <div key={card.id}>
+                <Card card={card} showElement />
+              </div>
+            ))}
+          </div>
+        )}
+        {phase === 'summary' && (
+          <>
+            <section
+              className={`auto-results-grid ${packs.length === 1 ? 'single-pack-results' : ''}`}
+              aria-label="Booster results"
+            >
+              {rows.map(({ card, count, fresh }) => (
+                <article key={card.id}>
+                  <Card card={card} showElement />
+                  <p>
+                    {fresh ? 'NEW · ' : ''}
+                    {count > 1 ? `×${count} copies` : '1 copy'}
+                  </p>
+                </article>
+              ))}
+            </section>
+            <div className="result-actions">
+              <button className="primary-button" onClick={close}>
+                Continue
+              </button>
+              <Link className="outline-button" href="/" onClick={close}>
+                Play a game
+              </Link>
+              <Link className="text-button" href="/collection" onClick={close}>
+                Go to Collection
+              </Link>
+            </div>
+          </>
+        )}
+      </dialog>
+    </LocaleView>
   );
 }

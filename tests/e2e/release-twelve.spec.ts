@@ -117,12 +117,13 @@ test('welcomes a new player with centered starters, then automatically reveals a
     );
   }
 });
-test('fits the three booster types on desktop and uses the supplied logo in the sticky header', async ({
+test('fits the two purchasable booster types on desktop and uses the supplied logo in the sticky header', async ({
   page,
 }, info) => {
   if (info.project.name === 'desktop') await page.setViewportSize({ width: 1366, height: 768 });
   await prepared(page);
-  await expect(page.locator('.booster-type-tile')).toHaveCount(3);
+  await expect(page.locator('.booster-type-tile')).toHaveCount(2);
+  await expect(page.getByRole('heading', { name: 'Starter Booster', exact: true })).toHaveCount(0);
   for (const suffix of ['i', 'ii']) {
     await expect(
       page.locator(`.booster-tile-art img[src$="gacha-universe-${suffix}.webp"]`),
@@ -255,9 +256,17 @@ test('resolves Same then Plus then Combo with centered splashes and staged owner
     await expect(splash).toHaveText('COMBO');
     await expect(page.getByTestId('cell-5')).toHaveAttribute('data-owner', '0');
     await expect(page.getByTestId('cell-0')).toHaveAttribute('data-owner', '1');
-    const box = (await splash.boundingBox())!,
-      v = page.viewportSize()!;
-    expect(Math.abs(box.x + box.width / 2 - v.width / 2)).toBeLessThan(3);
+    // The splash slides into its centered hold; don't measure its entrance frame.
+    await expect
+      .poll(
+        async () => {
+          const box = await splash.boundingBox(),
+            v = page.viewportSize()!;
+          return box ? Math.abs(box.x + box.width / 2 - v.width / 2) : Infinity;
+        },
+        { intervals: [16, 32, 50, 75], timeout: 500 },
+      )
+      .toBeLessThan(3);
     await page.screenshot({ path: info.outputPath('combo-splash.png') });
     await expect(splash).toHaveCount(0);
     for (const cell of [0, 2, 3, 5])

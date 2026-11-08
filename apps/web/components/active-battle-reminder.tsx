@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView } from './i18n';
+
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from './session';
@@ -28,42 +30,44 @@ export function ActiveBattleReminder() {
     else dialog.current?.close();
   }, [open]);
   return (
-    <dialog
-      ref={dialog}
-      className="game-dialog menu-window active-battle-reminder"
-      aria-labelledby="active-battle-title"
-      onCancel={(e) => (pending?.canClaim ? e.preventDefault() : setOpen(false))}
-    >
-      <h2 id="active-battle-title">
-        {pending
-          ? pending.canClaim
-            ? 'Choose your Trade One card first'
-            : 'Trade One is awaiting selection'
-          : 'You have an active battle'}
-      </h2>
-      <p>
-        {pending
-          ? pending.canClaim
-            ? 'Your victory has an unclaimed card. Return to the result and choose the card you want to take before continuing.'
-            : 'Your opponent is choosing a card. You cannot start another game until the transfer is resolved. Selection is automatic after two minutes.'
-          : 'Your battle is still in progress. Return to the board to play your turn.'}
-      </p>
-      <div className="result-actions">
-        <button
-          className="primary-button"
-          onClick={() => {
-            setOpen(false);
-            router.push(`/?match=${pending?.matchId ?? profile?.activeMatchId}`);
-          }}
-        >
-          {pending ? 'Return to card selection' : 'Go back to the battle'}
-        </button>
-        {!pending?.canClaim && (
-          <button className="outline-button" onClick={() => setOpen(false)}>
-            Continue browsing
+    <LocaleView>
+      <dialog
+        ref={dialog}
+        className="game-dialog menu-window active-battle-reminder"
+        aria-labelledby="active-battle-title"
+        onCancel={(e) => (pending?.canClaim ? e.preventDefault() : setOpen(false))}
+      >
+        <h2 id="active-battle-title">
+          {pending
+            ? pending.canClaim
+              ? 'Choose your Trade One card first'
+              : 'Trade One is awaiting selection'
+            : 'You have an active battle'}
+        </h2>
+        <p>
+          {pending
+            ? pending.canClaim
+              ? 'Your victory has an unclaimed card. Return to the result and choose the card you want to take before continuing.'
+              : 'Your opponent is choosing a card. You cannot start another game until the transfer is resolved. Selection is automatic after two minutes.'
+            : 'Your battle is still in progress. Return to the board to play your turn.'}
+        </p>
+        <div className="result-actions">
+          <button
+            className="primary-button"
+            onClick={() => {
+              setOpen(false);
+              router.push(`/?match=${pending?.matchId ?? profile?.activeMatchId}`);
+            }}
+          >
+            {pending ? 'Return to card selection' : 'Go back to the battle'}
           </button>
-        )}
-      </div>
-    </dialog>
+          {!pending?.canClaim && (
+            <button className="outline-button" onClick={() => setOpen(false)}>
+              Continue browsing
+            </button>
+          )}
+        </div>
+      </dialog>
+    </LocaleView>
   );
 }

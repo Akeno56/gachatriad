@@ -410,14 +410,14 @@
       <h2>Server log</h2>
       <div id="log" class="log" role="log"></div>
     </section>
-    <p class="footer">
+    <p class="footer" id="setupNote">
       This console listens only on 127.0.0.1. The public tunnel forwards the game API and sockets,
       never this console. Save files stay on this PC in <code>.data</code>. Setup guide:
       <code>docs/ONLINE_DEMO.md</code>.
     </p>
     <p>
-      <button data-action="/exit">Exit control tool</button> Stops the game server, public link and
-      this control tool. Reopen with Start Server Control.cmd.
+      <button data-action="/exit" id="exitTool">Exit control tool</button> Stops the game server,
+      public link and this control tool. Reopen with Start Server Control.cmd.
     </p>
     <script>
       const token = '__CSRF__';
@@ -437,18 +437,18 @@
           .forEach((b) => (b.disabled = posting || current?.busy));
         if (!current) return;
         const population = current.online?.population;
-        el('populate').disabled =
-          posting || current.busy || !current.running || !!population?.enabled;
-        el('pauseBots').disabled =
-          posting || current.busy || !current.running || !population?.enabled;
-        el('applyDifficulty').disabled = posting || current.busy || !current.running;
+        const canAdmin = current.running || (current.managedExternal && !!current.online);
+        el('populate').disabled = posting || current.busy || !canAdmin || !!population?.enabled;
+        el('pauseBots').disabled = posting || current.busy || !canAdmin || !population?.enabled;
+        el('applyDifficulty').disabled = posting || current.busy || !canAdmin;
         document
           .querySelectorAll('#grantForm button')
-          .forEach((b) => (b.disabled = posting || current.busy || !current.running));
+          .forEach((b) => (b.disabled = posting || current.busy || !canAdmin));
         document
           .querySelectorAll('#moderationUsers button')
-          .forEach((b) => (b.disabled = posting || current.busy || !current.running));
-        el('start').disabled = posting || current.busy || current.running || current.external;
+          .forEach((b) => (b.disabled = posting || current.busy || !canAdmin));
+        el('start').disabled =
+          posting || current.busy || current.managedExternal || current.running || current.external;
         el('restart').disabled = posting || current.busy || !current.running;
         el('stop').disabled = posting || current.busy || !current.running;
         el('tunnelStart').disabled =
@@ -458,7 +458,16 @@
           !current.tunnelInstalled ||
           current.tunnelRunning;
         el('tunnelStop').disabled = posting || current.busy || !current.tunnelRunning;
-        el('install').hidden = current.tunnelInstalled;
+        el('install').hidden = current.managedExternal || current.tunnelInstalled;
+        el('exitTool').parentElement.hidden = current.managedExternal;
+        if (current.managedExternal)
+          text(
+            'setupNote',
+            'Private hosted console on loopback. Access it through SSH; persistent saves are stored on the VPS. Setup and updates: docs/DEDICATED_HOSTING.md.',
+          );
+        document.querySelectorAll('#settings button').forEach((b) => {
+          b.disabled = posting || current.busy || current.managedExternal;
+        });
         el('copy').disabled = !current.shareURL;
       }
       async function refresh() {
@@ -478,9 +487,17 @@
                   ? 'EXTERNAL SERVER'
                   : 'SERVER OFFLINE',
           );
-          el('status').classList.toggle('online', current.running);
+          el('status').classList.toggle(
+            'online',
+            current.running || (current.managedExternal && !!current.online),
+          );
           text('serverAddress', current.serverURL);
-          el('external').hidden = !current.external;
+          el('external').hidden = !current.external && !current.managedExternal;
+          if (current.managedExternal)
+            text(
+              'external',
+              'Always-on hosted service. Moderation and bot tools are available here; use systemd to restart the server or apply updates.',
+            );
           if (!edited) {
             el('frontend').value = current.config.frontendURL;
             el('bots').checked = current.config.allowBots;
@@ -488,7 +505,12 @@
           text('playersCount', current.online?.players.length || 0);
           text('connections', current.online?.connections || 0);
           text('uptime', current.online ? Math.floor(current.online.uptime / 60) + 'm' : '—');
-          text('share', current.shareURL || 'Start the server, then start a public link.');
+          text(
+            'share',
+            current.managedExternal
+              ? 'Hosted service: share your game website. Use systemd for server lifecycle and updates.'
+              : current.shareURL || 'Start the server, then start a public link.',
+          );
           el('preview').hidden = !current.previewURL;
           if (current.previewURL) el('preview').href = current.previewURL;
           text('error', current.lastError);

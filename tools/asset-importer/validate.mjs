@@ -6,6 +6,9 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const publicRoot = resolve(root, 'apps/web/public');
 const catalog = JSON.parse(await readFile(resolve(root, 'data/characters/catalog.json'), 'utf8'));
 const assets = JSON.parse(await readFile(resolve(root, 'data/assets/manifest.json'), 'utf8'));
+const framing = JSON.parse(
+  await readFile(resolve(root, 'data/assets/artwork-framing.json'), 'utf8'),
+);
 const errors = [];
 const keys = new Set();
 for (const asset of assets) {
@@ -34,6 +37,13 @@ if (new Set(catalog.map((c) => c.id)).size !== catalog.length)
   errors.push('Duplicate character IDs.');
 for (const c of catalog)
   if (!c.assets.some((a) => a.type === 'portrait')) errors.push(`Missing portrait: ${c.id}`);
+for (const [id, selected] of Object.entries(framing)) {
+  const character = catalog.find((c) => c.id === id);
+  if (!character?.assets.some((asset) => asset.localPath === selected.localPath))
+    errors.push(`Unknown framed artwork: ${id}`);
+}
+for (const character of catalog.filter((c) => ['epic-seven', 'star-savior'].includes(c.universeId)))
+  if (!framing[character.id]) errors.push(`Missing framed artwork selection: ${character.id}`);
 console.log(
   JSON.stringify(
     {
@@ -41,6 +51,7 @@ console.log(
       assets: assets.length,
       portraits: assets.filter((a) => a.assetType === 'portrait').length,
       icons: assets.filter((a) => a.assetType === 'icon').length,
+      framedPortraits: Object.keys(framing).length,
       universes: Object.fromEntries(
         [...new Set(catalog.map((c) => c.universeId))].map((u) => [
           u,

@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView, NoTranslate } from './i18n';
+
 import { useEffect, useRef } from 'react';
 import type { Card as CardData } from '@gacha-triad/engine';
 import { universeName, SIDE_NAMES } from '@gacha-triad/shared';
@@ -18,32 +20,36 @@ export function CardDetail({
     else ref.current?.close();
   }, [card]);
   return (
-    <dialog ref={ref} className="game-dialog card-detail" onCancel={onClose}>
-      <button className="dialog-close" aria-label="Close card detail" onClick={onClose}>
-        ×
-      </button>
-      {card && (
-        <>
-          <Card card={card} showElement modifier={modifier} />
-          <h2>{card.name}</h2>
-          {card.holoBonusSide !== undefined && (
-            <p>Holo bonus: +1 {SIDE_NAMES[card.holoBonusSide]} · fixed when acquired</p>
-          )}
-          <p>
-            {universeName(card.universeId)} · {card.rarity} stars
-          </p>
-          <p>
-            {card.element || 'No elemental affinity'} · Total{' '}
-            {card.stats.reduce((a, b) => a + b, 0) + modifier * 4}
-          </p>
-          {modifier !== 0 && (
-            <small>
-              Elemental {modifier > 0 ? '+1' : '−1'} applied. Printed values{' '}
-              {card.stats.join(' / ')} still apply to Same and Plus.
-            </small>
-          )}
-        </>
-      )}
-    </dialog>
+    <LocaleView>
+      <dialog ref={ref} className="game-dialog card-detail" onCancel={onClose}>
+        <button className="dialog-close" aria-label="Close card detail" onClick={onClose}>
+          ×
+        </button>
+        {card && (
+          <>
+            <Card card={card} showElement modifier={modifier} />
+            <h2>
+              <NoTranslate>{card.name}</NoTranslate>
+            </h2>
+            {card.holoBonusSide !== undefined && (
+              <p>Holo bonus: +1 {SIDE_NAMES[card.holoBonusSide]} · fixed when acquired</p>
+            )}
+            <p>
+              {universeName(card.universeId)} · {card.rarity} stars
+            </p>
+            <p>
+              {card.element || 'No elemental affinity'} · Total{' '}
+              {card.stats.reduce((a, b) => a + b, 0) + modifier * 4}
+            </p>
+            {modifier !== 0 && (
+              <small>
+                Elemental {modifier > 0 ? '+1' : '−1'} applied. Printed values{' '}
+                {card.stats.join(' / ')}. Same and Plus use the adjusted values shown above.
+              </small>
+            )}
+          </>
+        )}
+      </dialog>
+    </LocaleView>
   );
 }

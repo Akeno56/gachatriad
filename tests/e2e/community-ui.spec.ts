@@ -142,7 +142,7 @@ test('automatic pack reveals prevent selecting card text and artwork', async ({ 
   await page.goto('/boosters');
   await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
   await page.getByLabel('Boosters to open').selectOption('1');
-  await page.getByRole('button', { name: /Open Starter Booster/ }).click();
+  await page.getByRole('button', { name: 'Open 1 packs', exact: true }).click();
   const pack = page.locator('.automatic-opening');
   await expect(pack.locator('.auto-revealed-card')).toBeVisible();
   await pack.locator('.auto-opening-stage h3').dblclick();

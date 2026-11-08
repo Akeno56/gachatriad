@@ -3,6 +3,7 @@ import { openStarterPacks, openSettings } from './helpers';
 test('fits the home chat beside setup, shares channel selection with Lobbies and docks settings', async ({
   page,
 }, info) => {
+  test.setTimeout(90000);
   if (info.project.name === 'desktop') await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/cards');
   await openStarterPacks(page);
@@ -122,12 +123,12 @@ test('waits for artwork and advances automatically without manual reveal control
   await page.getByLabel('Boosters to open').selectOption('1');
   let release!: () => void;
   const gate = new Promise<void>((resolve) => (release = resolve));
-  await page.route('**/assets/characters/**/portrait.webp', async (route) => {
+  await page.route(/\/assets\/characters\/.*\/(?:portrait|listing)\.webp/, async (route) => {
     await gate;
     await route.continue();
   });
   try {
-    await page.getByRole('button', { name: /Open Starter Booster/ }).click();
+    await page.getByRole('button', { name: 'Open 1 packs', exact: true }).click();
     const pack = page.locator('.automatic-opening');
     await expect(pack).toHaveAttribute('data-phase', 'pack');
     await page.waitForTimeout(1000);

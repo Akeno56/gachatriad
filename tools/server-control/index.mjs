@@ -13,7 +13,7 @@ export async function createController(options = {}) {
   await mkdir(dataDir, { recursive: true });
   const settingsPath = resolve(dataDir, 'server-control.json');
   let config = {
-    frontendURL: 'https://akeno56.github.io/gachatriad/',
+    frontendURL: process.env.FRONTEND_URL || 'https://akeno56.github.io/gachatriad/',
     gamePort: Number(options.gamePort || process.env.SERVER_PORT || 3001),
     allowBots: false,
     botDifficulty: 'medium',
@@ -23,8 +23,15 @@ export async function createController(options = {}) {
   } catch {}
   const port = Number(options.port || process.env.CONTROL_PORT || 3030),
     previewPort = Number(options.previewPort || process.env.PREVIEW_PORT || 3000);
+  const managedExternal = options.managedExternal ?? process.env.EXTERNAL_GAME_SERVER === 'true';
   const csrf = randomBytes(32).toString('hex'),
-    controlSecret = randomBytes(32).toString('hex');
+    controlSecret = managedExternal
+      ? process.env.LOCAL_CONTROL_SECRET
+      : randomBytes(32).toString('hex');
+  if (managedExternal && (!controlSecret || controlSecret.length < 32))
+    throw Error(
+      'Set a private LOCAL_CONTROL_SECRET of at least 32 characters for the managed server.',
+    );
   let child = null,
     tunnel = null,
     preview = null,
@@ -42,7 +49,7 @@ export async function createController(options = {}) {
     }
     logs = logs.slice(-160);
   };
-  const alive = (proc) => proc && proc.exitCode === null && proc.signalCode === null;
+  const alive = (proc) => !!proc && proc.exitCode === null && proc.signalCode === null;
   const localAPI = () => `http://127.0.0.1:${config.gamePort}`;
   async function gameHealth() {
     try {
@@ -89,6 +96,7 @@ export async function createController(options = {}) {
       busy,
       running,
       external: !running && (await gameHealth()),
+      managedExternal,
       serverURL: localAPI(),
       online,
       moderation,
@@ -249,6 +257,7 @@ export async function createController(options = {}) {
     throw Error('The HTTPS tunnel did not produce an address.');
   }
   const mime = {
+    '.txt': 'text/plain; charset=utf-8',
     '.html': 'text/html; charset=utf-8',
     '.js': 'text/javascript',
     '.css': 'text/css',
@@ -395,6 +404,14 @@ export async function createController(options = {}) {
         setTimeout(() => void close().catch((error) => log('error', error.message)), 50);
         return;
       }
+      if (
+        managedExternal &&
+        (['/start', '/stop', '/restart', '/settings'].includes(req.url) ||
+          req.url.startsWith('/tunnel/'))
+      )
+        throw Error(
+          'This game is managed by the operating system service manager. Use its service controls for lifecycle and configuration.',
+        );
       if (req.url === '/start') await startGame();
       else if (req.url === '/stop') {
         await stopTunnel();
@@ -408,7 +425,8 @@ export async function createController(options = {}) {
       else if (req.url === '/tunnel/start') await startTunnel();
       else if (req.url === '/tunnel/stop') await stopTunnel();
       else if (['/moderation', '/population', '/grant', '/delete-account'].includes(req.url)) {
-        if (!alive(child)) throw Error('Start the game server first.');
+        if (!alive(child) && !(managedExternal && (await gameHealth())))
+          throw Error('Start the game server first.');
         const population = req.url === '/population';
         if (population && typeof body.enabled !== 'boolean')
           throw Error('Choose enabled or disabled.');
@@ -470,7 +488,7 @@ export async function createController(options = {}) {
     server.once('error', reject);
     server.listen(port, '127.0.0.1', resolve);
   });
-  await startPreview();
+  if (!managedExternal) await startPreview();
   async function close() {
     if (closing) return;
     closing = true;

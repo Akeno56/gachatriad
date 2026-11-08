@@ -1,5 +1,7 @@
 # Boosters and Stellar Prisms — v0.12
 
+**v0.13 shop presentation:** only Gacha Universe I and II are shown as shop tiles. Starter boosters remain exclusive grants and appear in the unopened inventory/count; use the shared Open packs control to open them. Removing their shop tile does not remove a player's starter packs.
+
 ## Pack types and odds
 
 | Type              | Pool                                         | First four slots, 1★ / 2★ / 3★ / 4★ / 5★ | Guaranteed fifth slot | Holo per card |

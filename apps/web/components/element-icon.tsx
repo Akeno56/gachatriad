@@ -1,3 +1,4 @@
+import { LocaleView } from './i18n';
 import type { CSSProperties } from 'react';
 const ELEMENTS: Record<string, { name: string; color: string; path: string }> = {
   fire: {
@@ -33,25 +34,27 @@ export function ElementIcon({ element, className = '' }: { element: string; clas
   const icon = ELEMENTS[element];
   if (!icon) return null;
   return (
-    <span
-      className={`element-icon ${className}`}
-      data-element={element}
-      style={{ '--element-color': icon.color } as CSSProperties}
-      role="img"
-      aria-label={`${icon.name} element`}
-      title={icon.name}
-    >
-      <svg
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+    <LocaleView>
+      <span
+        className={`element-icon ${className}`}
+        data-element={element}
+        style={{ '--element-color': icon.color } as CSSProperties}
+        role="img"
+        aria-label={`${icon.name} element`}
+        title={icon.name}
       >
-        <path d={icon.path} />
-      </svg>
-    </span>
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d={icon.path} />
+        </svg>
+      </span>
+    </LocaleView>
   );
 }

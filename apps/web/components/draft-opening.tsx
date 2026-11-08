@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView } from './i18n';
+
 import { useEffect, useRef, useState } from 'react';
 import type { MatchView } from '@gacha-triad/shared/platform';
 import { Card } from './card';
@@ -67,59 +69,61 @@ export function DraftOpening({
   const pack = Math.floor(position / 5),
     card = match.draftPool[position];
   return (
-    <section
-      className={`menu-window draft-opening draft-opening-${phase}`}
-      aria-label="Automatic Draft booster opening"
-    >
-      <header>
-        <h1>Draft boosters</h1>
-        <p role="status">
-          Automatic opening · Booster {pack + 1}/{Math.ceil(match.draftPool.length / 5)} · Card{' '}
-          {(position % 5) + 1}/5
-        </p>
-      </header>
-      <div className="draft-pack-track" aria-label="Three temporary boosters">
-        {[0, 1, 2].map((n) => (
-          <span key={n} className={n === pack ? 'is-current' : n < pack ? 'is-opened' : ''}>
-            {n < pack ? '✓' : n + 1}
-          </span>
-        ))}
-      </div>
-      <div className="draft-reveal-stage">
-        {phase === 'pack' ? (
-          <div className="sealed-pack" aria-label={`Opening temporary booster ${pack + 1}`}>
-            <span className="pack-medallion">
-              <img src={assetPath('/assets/ui/triad-logo.webp')} alt="" />
+    <LocaleView>
+      <section
+        className={`menu-window draft-opening draft-opening-${phase}`}
+        aria-label="Automatic Draft booster opening"
+      >
+        <header>
+          <h1>Draft boosters</h1>
+          <p role="status">
+            Automatic opening · Booster {pack + 1}/{Math.ceil(match.draftPool.length / 5)} · Card{' '}
+            {(position % 5) + 1}/5
+          </p>
+        </header>
+        <div className="draft-pack-track" aria-label="Three temporary boosters">
+          {[0, 1, 2].map((n) => (
+            <span key={n} className={n === pack ? 'is-current' : n < pack ? 'is-opened' : ''}>
+              {n < pack ? '✓' : n + 1}
             </span>
-            <strong>DRAFT</strong>
-          </div>
-        ) : phase === 'spread' ? (
-          <div className="draft-pack-spread">
-            {match.draftPool.slice(pack * 5, pack * 5 + 5).map((c) => (
-              <div key={c.id}>
-                <Card card={c} showElement />
-              </div>
-            ))}
-          </div>
-        ) : card ? (
-          <div className="draft-reveal-card" key={position}>
-            <Card card={card} showElement />
-          </div>
-        ) : null}
-      </div>
-      <p>Temporary cards · 5% Holo · Each booster: three random cards, one 3★+, one 4★+.</p>
-      <small>
-        Random: 50/27/17/5/1% · 3★+: 80/17/3% · 4★+: 85/15%. Choose your five-card deck after all
-        three boosters.
-      </small>
-      {error && (
-        <div role="alert">
-          <p>{error}</p>
-          <button className="primary-button" onClick={() => setRetry((n) => n + 1)}>
-            Resume opening
-          </button>
+          ))}
         </div>
-      )}
-    </section>
+        <div className="draft-reveal-stage">
+          {phase === 'pack' ? (
+            <div className="sealed-pack" aria-label={`Opening temporary booster ${pack + 1}`}>
+              <span className="pack-medallion">
+                <img src={assetPath('/assets/ui/triad-logo.webp')} alt="" />
+              </span>
+              <strong>DRAFT</strong>
+            </div>
+          ) : phase === 'spread' ? (
+            <div className="draft-pack-spread">
+              {match.draftPool.slice(pack * 5, pack * 5 + 5).map((c) => (
+                <div key={c.id}>
+                  <Card card={c} showElement />
+                </div>
+              ))}
+            </div>
+          ) : card ? (
+            <div className="draft-reveal-card" key={position}>
+              <Card card={card} showElement />
+            </div>
+          ) : null}
+        </div>
+        <p>Temporary cards · 5% Holo · Each booster: three random cards, one 3★+, one 4★+.</p>
+        <small>
+          Random: 50/27/17/5/1% · 3★+: 80/17/3% · 4★+: 85/15%. Choose your five-card deck after all
+          three boosters.
+        </small>
+        {error && (
+          <div role="alert">
+            <p>{error}</p>
+            <button className="primary-button" onClick={() => setRetry((n) => n + 1)}>
+              Resume opening
+            </button>
+          </div>
+        )}
+      </section>
+    </LocaleView>
   );
 }

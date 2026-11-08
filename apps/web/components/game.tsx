@@ -1,4 +1,6 @@
 'use client';
+import { LocaleView, NoTranslate } from './i18n';
+
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -217,479 +219,491 @@ export function Game() {
   const draftErrors = validateDeck(match?.draftPool.filter((c) => draft.includes(c.id)) ?? []);
   if (!profile || (!profile.activeMatchId && !profile.deck.length && profile.starterBoosters > 0))
     return (
-      <section className="first-visit-screen">
-        <img src={assetPath('/assets/ui/triad-logo.webp')} alt="Gacha Triad" />
-        <h1>Gacha Triad</h1>
-        <p>{profile ? 'Your first cards are waiting.' : 'Connecting to the card hall…'}</p>
-        {connectionError && <p role="alert">{connectionError}</p>}
-      </section>
+      <LocaleView>
+        <section className="first-visit-screen">
+          <img src={assetPath('/assets/ui/triad-logo.webp')} alt="Gacha Triad" />
+          <h1>Gacha Triad</h1>
+          <p>{profile ? 'Your first cards are waiting.' : 'Connecting to the card hall…'}</p>
+          {connectionError && <p role="alert">{connectionError}</p>}
+        </section>
+      </LocaleView>
     );
   return (
-    <div className={`play-page ${match ? 'battle-screen' : 'title-screen'}`}>
-      {callout && (
-        <div
-          key={callout + ':' + match?.game?.history.length}
-          className={`capture-splash splash-${callout.toLowerCase()}`}
-          role="status"
-        >
-          {callout}
-        </div>
-      )}
-      {!match ? (
-        <>
-          <div className="game-title">
-            <h1>
-              <span>GACHA</span>TRIAD
-            </h1>
-          </div>
-          <div className="title-layout">
-            <MatchmakingPanel
-              onMatch={setMatchId}
-              onRules={() => setDialog('rules')}
-              onTutorial={() => window.dispatchEvent(new Event('triad:show-tutorial'))}
-              onCombo={() => setDialog('combo')}
-            />
-            <section className="title-party" aria-label="Your saved deck">
-              <div className="party-heading">
-                <span>YOUR DECK</span>
-              </div>
-              <div className="title-roster">
-                {(profile
-                  ? profile.deck.map((id) => CARDS.find((c) => c.id === id)!).filter(Boolean)
-                  : STARTER_DECK
-                ).map((card, i) => (
-                  <button
-                    className={`title-card title-card-${i}`}
-                    key={card.id}
-                    onClick={() => inspect(card)}
-                    aria-label={`Inspect ${card.name}`}
-                  >
-                    <Card card={card} owner={0} />
-                  </button>
-                ))}
-              </div>
-              <MainChat />
-            </section>
-          </div>
-          <div className="build-label">
-            {CARDS.filter((card) => !card.finish).length} CARDS · v0.12{' '}
-            <Link href="/credits" className="credits-button">
-              Credits
-            </Link>
-          </div>
-        </>
-      ) : (
-        <section className="match" aria-label="Triple Triad match">
-          <div className="match-toolbar">
-            <div className="battle-mode">
-              <span>{match.mode.toUpperCase()} BATTLE</span>
-              <strong>
-                {match.status === 'drafting'
-                  ? 'Choose your hand'
-                  : match.mode === 'solo'
-                    ? 'Practice duel'
-                    : 'Online duel'}
-              </strong>
-            </div>
-            <div className="rule-badges">
-              {ruleNames(match.rules).map((r) => (
-                <span key={r}>{r}</span>
-              ))}
-              {match.trade.rule === 'one' && <span>Trade One</span>}
-            </div>
-            <div className="battle-actions">
-              <button className="text-button" onClick={() => setDialog('rules')}>
-                How to play
-              </button>
-              <button
-                className="text-button"
-                onClick={() => (match.status === 'complete' ? menu() : setDialog('exit'))}
-              >
-                {match.status === 'complete' ? 'Return to menu' : 'Leave match'}
-              </button>
-            </div>
-          </div>
-          {match.status === 'drafting' && !draftCeremonyDone && !match.draftLocked ? (
-            <DraftOpening
-              key={match.id}
-              match={match}
-              onUpdate={updateDraft}
-              onComplete={completeDraftOpening}
-            />
-          ) : match.status === 'drafting' ? (
-            <div className="draft-selection">
-              <div className="menu-window draft-heading">
-                <h1>Draft your hand</h1>
-                <p>
-                  Choose 5 of these {match.draftPool.length} temporary cards. Up to one 5★ plus one
-                  4★, or two 4★. These cards do not enter your collection.
-                </p>
-                <p>
-                  {match.draftLocked
-                    ? 'Hand locked. Waiting for your opponent…'
-                    : `${draft.length}/5 selected`}{' '}
-                  · {Math.max(0, Math.ceil(((match.deadline ?? clock) - clock) / 1000))}s remaining
-                </p>
-              </div>
-              <label className="draft-sort">
-                Order cards{' '}
-                <select
-                  aria-label="Order draft cards"
-                  value={draftSort}
-                  onChange={(e) => setDraftSort(e.target.value as 'stats' | 'rarity')}
-                >
-                  <option value="stats">Total stats ↓ · Rarity ↓</option>
-                  <option value="rarity">Rarity ↓ · Total stats ↓</option>
-                </select>
-              </label>
-              <div className="draft-grid">
-                {orderedDraft.map((card) => (
-                  <button
-                    key={card.id}
-                    data-total={card.stats.reduce((sum, n) => sum + n, 0)}
-                    data-rarity={card.rarity}
-                    className={`draft-card ${draft.includes(card.id) ? 'is-selected' : ''}`}
-                    aria-pressed={draft.includes(card.id)}
-                    disabled={match.draftLocked || busy}
-                    onClick={() =>
-                      setDraft((ids) =>
-                        ids.includes(card.id)
-                          ? ids.filter((id) => id !== card.id)
-                          : ids.length < 5
-                            ? [...ids, card.id]
-                            : ids,
-                      )
-                    }
-                    aria-label={`Draft ${card.name}`}
-                    title={`${card.name} · ${card.rarity}★ · Total ${card.stats.reduce((sum, n) => sum + n, 0)}`}
-                  >
-                    <Card card={card} />
-                    <span className="draft-summary">
-                      {card.rarity}★ · {card.stats.reduce((sum, n) => sum + n, 0)} total
-                    </span>
-                  </button>
-                ))}
-              </div>
-              <p>
-                {draft.length === 5
-                  ? draftErrors.join(' ')
-                  : 'Select five cards to lock your hand.'}
-              </p>
-              <button
-                className="primary-button"
-                disabled={draftErrors.length > 0 || busy || match.draftLocked}
-                onClick={() => action(`/matches/${match.id}/draft`, { cards: draft })}
-              >
-                Lock hand
-              </button>
-            </div>
-          ) : (
-            game && (
-              <>
-                <div className="scoreboard">
-                  <div
-                    className={`player-heading ${game.turn === seat && match.status === 'playing' ? 'active-player' : ''}`}
-                  >
-                    <Avatar
-                      key={match.players[seat].avatar?.id ?? 'you'}
-                      card={match.players[seat].avatar}
-                      name={match.names[seat]}
-                    />
-                    <div>
-                      <strong>{match.names[seat]}</strong>
-                      {match.players[seat].title && (
-                        <span className="battle-title">{match.players[seat].title}</span>
-                      )}
-                      <small>
-                        {game.turn === seat && match.status === 'playing'
-                          ? 'YOUR TURN'
-                          : 'CHALLENGER'}
-                      </small>
-                    </div>
-                    <span className="your-score">{displayScore[seat]}</span>
-                  </div>
-                  <div className="score-divider">
-                    VS<small>{game.history.length}/9</small>
-                  </div>
-                  <div
-                    className={`player-heading cpu-heading ${game.turn === other && match.status === 'playing' ? 'active-player' : ''}`}
-                  >
-                    <span className="cpu-score">{displayScore[other]}</span>
-                    <Avatar
-                      key={match.players[other].avatar?.id ?? 'rival'}
-                      card={match.players[other].avatar}
-                      name={match.names[other]}
-                    />
-                    <div>
-                      <strong>{match.names[other]}</strong>
-                      {match.players[other].title && (
-                        <span className="battle-title">{match.players[other].title}</span>
-                      )}
-                      <small>
-                        {game.turn === other && match.status === 'playing'
-                          ? 'OPPONENT’S TURN'
-                          : match.mode === 'solo'
-                            ? 'CPU'
-                            : 'OPPONENT'}
-                      </small>
-                    </div>
-                  </div>
-                </div>
-                <div className="battle-layout">
-                  <div className="hand player-hand">
-                    <div className="hand-label">
-                      YOUR HAND <span>{own.length}/5</span>
-                    </div>
-                    <div className="hand-cards">
-                      {own.map(
-                        ({ slotId, card }) =>
-                          card && (
-                            <button
-                              key={slotId}
-                              className={`hand-card ${selected === card.id ? 'is-selected' : ''}`}
-                              data-testid="player-card"
-                              aria-label={`Select ${describe(card)}`}
-                              aria-pressed={selected === card.id}
-                              disabled={!canPlay}
-                              onClick={() => {
-                                setSelected(card.id === selected ? null : card.id);
-                                setError('');
-                                sound('menu');
-                              }}
-                            >
-                              <Card
-                                card={card}
-                                owner={0}
-                                compact
-                                showElement={!!match.rules.elemental}
-                              />
-                              <span className="selected-marker">▶</span>
-                            </button>
-                          ),
-                      )}
-                    </div>
-                    {selectedCard && (
-                      <button className="card-inspector" onClick={() => inspect(selectedCard)}>
-                        <strong>{selectedCard.name}</strong>
-                        <span>Inspect artwork ↗</span>
-                      </button>
-                    )}
-                  </div>
-                  <div className="board-area">
-                    <div
-                      className={`turn-banner ${game.turn === other ? 'cpu-turn' : 'your-turn'}`}
-                      role="status"
-                      aria-live="polite"
-                    >
-                      {resolving
-                        ? 'RESOLVING CAPTURES…'
-                        : match.status === 'complete'
-                          ? 'MATCH COMPLETE'
-                          : game.turn === seat
-                            ? selected
-                              ? 'Choose an empty space'
-                              : 'Your turn · Select a card'
-                            : `${match.names[other]} is ${match.mode === 'solo' ? 'thinking' : 'playing'}…`}
-                      {match.mode !== 'solo' && match.status === 'playing' && (
-                        <small>
-                          {' '}
-                          · {Math.max(0, Math.ceil(((match.deadline ?? clock) - clock) / 1000))}s
-                        </small>
-                      )}
-                    </div>
-                    {match.status === 'complete' && !resultOpen && (
-                      <button
-                        className="outline-button reopen-result"
-                        onClick={() => setResultOpen(true)}
-                      >
-                        View result
-                      </button>
-                    )}
-                    <div
-                      className={`board ${match.rules.elemental ? 'elemental-board' : ''}`}
-                      aria-label="Three by three game board"
-                    >
-                      {game.board.map((item, cell) => {
-                        const capture = latest?.captures.find((c) => c.cell === cell);
-                        const waitingCapture =
-                          capture && revealedCaptures !== null && !revealedCaptures.has(cell);
-                        const visibleOwner = waitingCapture ? capture.from : item?.owner;
-                        const animatedCapture = capture && flipping.includes(cell);
-                        const modifier = item ? elementalModifier(game, item.card, cell) : 0;
-                        const preview =
-                          !item && selectedCard && canPlay && game.cellElements?.[cell]
-                            ? elementalModifier(game, selectedCard, cell)
-                            : 0;
-                        return (
-                          <button
-                            key={cell}
-                            data-testid={`cell-${cell}`}
-                            data-element={game.cellElements?.[cell] ?? undefined}
-                            data-owner={visibleOwner}
-                            data-modifier={preview || undefined}
-                            className={`board-cell ${!item && selected && canPlay ? 'legal-cell' : ''} ${preview > 0 ? 'elemental-preview-buff' : preview < 0 ? 'elemental-preview-penalty' : ''}`}
-                            disabled={!item && !canPlay}
-                            onClick={() => (item ? inspect(item.card, modifier) : place(cell))}
-                            aria-label={`Row ${Math.floor(cell / 3) + 1}, column ${(cell % 3) + 1}${item ? `: ${describe(item.card, modifier)}, ${visibleOwner === seat ? 'your' : 'opponent'} card` : `: empty${preview ? `, elemental ${preview > 0 ? 'bonus +1' : 'penalty −1'} for selected card` : ''}`}`}
-                          >
-                            {match.rules.elemental && game.cellElements?.[cell] && (
-                              <ElementIcon
-                                element={game.cellElements[cell]!}
-                                className="cell-element"
-                              />
-                            )}
-                            {item ? (
-                              <CaptureCard
-                                stamp={`${match.id}:${game.history.length}:${cell}`}
-                                card={item.card}
-                                showElement={!!match.rules.elemental}
-                                modifier={elementalModifier(game, item.card, cell)}
-                                owner={visibleOwner === seat ? 0 : 1}
-                                fromOwner={
-                                  animatedCapture ? (capture.from === seat ? 0 : 1) : undefined
-                                }
-                                captureReason={animatedCapture ? capture.reason : undefined}
-                                captureOrder={Math.max(0, flipping.indexOf(cell))}
-                              />
-                            ) : null}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <div className="board-bottom">
-                      <span>
-                        <i className="legend-dot mint-dot" /> YOU
-                      </span>
-                      <span>{game.history.length}/9 PLACED</span>
-                      <span>
-                        <i className="legend-dot rose-dot" /> OPPONENT
-                      </span>
-                    </div>
-                  </div>
-                  <div className="hand cpu-hand">
-                    <div className="hand-label">
-                      OPPONENT <span>{opponent.length}/5</span>
-                    </div>
-                    <div className="hand-cards">
-                      {opponent.map(({ slotId, card }) => (
-                        <button
-                          key={slotId}
-                          className="opponent-card"
-                          disabled={!card}
-                          aria-label={card ? describe(card) : 'Hidden opponent card'}
-                          onClick={() => card && inspect(card)}
-                        >
-                          <Card
-                            card={card ?? undefined}
-                            hidden={!card}
-                            owner={1}
-                            compact
-                            showElement={!!match.rules.elemental}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <div className="battle-message menu-window match-status">
-                  <span className="window-label">BATTLE LOG</span>
-                  <span className="message-cursor">▶</span>
-                  <p role="log" aria-live="polite">
-                    {latest
-                      ? `${match.names[latest.move.player]} played ${CARDS.find((c) => c.id === latest.move.cardId)?.name ?? 'a card'}. ${latest.captures.length} captured${latest.captures.some((c) => c.reason === 'combo') ? ' — Combo!' : ''}.`
-                      : 'Select a card, then choose an empty space.'}
-                  </p>
-                </div>
-                <details className="match-history">
-                  <summary>
-                    Turn history <span>{game.history.length} moves</span>
-                  </summary>
-                  <ol>
-                    {game.history.map((turn, i) => (
-                      <li key={i}>
-                        <span>{i + 1}</span> {match.names[turn.move.player]} ·{' '}
-                        {String.fromCharCode(65 + Math.floor(turn.move.cell / 3))}
-                        {(turn.move.cell % 3) + 1}
-                        {turn.captures.length
-                          ? ` · ${turn.captures.map((c) => `${c.reason} ${String.fromCharCode(65 + Math.floor(c.cell / 3))}${(c.cell % 3) + 1}`).join(', ')}`
-                          : ''}
-                      </li>
-                    ))}
-                  </ol>
-                </details>
-              </>
-            )
-          )}
-        </section>
-      )}
-      <p className="error-message" role="alert">
-        {error || connectionError}
-      </p>
-      <dialog
-        ref={dialogRef}
-        className={`game-dialog ${dialog === 'combo' ? 'combo-dialog' : ''}`}
-        aria-labelledby="dialog-title"
-        onCancel={() => setDialog(null)}
-      >
-        <div className="dialog-header">
-          <h2 id="dialog-title">
-            {dialog === 'rules'
-              ? 'How to play'
-              : dialog === 'combo'
-                ? 'The Combo lesson'
-                : 'Leave this match?'}
-          </h2>
-          <button
-            className="close-button"
-            aria-label="Close dialog"
-            onClick={() => setDialog(null)}
+    <LocaleView>
+      <div className={`play-page ${match ? 'battle-screen' : 'title-screen'}`}>
+        {callout && (
+          <div
+            key={callout + ':' + match?.game?.history.length}
+            className={`capture-splash splash-${callout.toLowerCase()}`}
+            role="status"
           >
-            ×
-          </button>
-        </div>
-        {dialog === 'rules' ? (
-          <RulesContent />
-        ) : dialog === 'combo' ? (
-          <ComboLesson />
-        ) : dialog === 'exit' ? (
+            {callout}
+          </div>
+        )}
+        {!match ? (
           <>
-            <p>
-              Leaving forfeits this duel.
-              {match?.trade.rule === 'one'
-                ? ' Trade One still applies: your opponent may take one of your five cards.'
-                : ''}
-            </p>
-            <div className="result-actions">
-              <button className="outline-button" onClick={() => setDialog(null)}>
-                Keep playing
-              </button>
-              <button
-                className="primary-button"
-                disabled={busy}
-                onClick={async () => {
-                  if (match) await action(`/matches/${match.id}/resign`, {});
-                  setDialog(null);
-                }}
-              >
-                Forfeit match
-              </button>
+            <div className="game-title">
+              <h1>
+                <span>GACHA</span>TRIAD
+              </h1>
+            </div>
+            <div className="title-layout">
+              <MatchmakingPanel
+                onMatch={setMatchId}
+                onRules={() => setDialog('rules')}
+                onTutorial={() => window.dispatchEvent(new Event('triad:show-tutorial'))}
+                onCombo={() => setDialog('combo')}
+              />
+              <section className="title-party" aria-label="Your saved deck">
+                <div className="party-heading">
+                  <span>YOUR DECK</span>
+                </div>
+                <div className="title-roster">
+                  {(profile
+                    ? profile.deck.map((id) => CARDS.find((c) => c.id === id)!).filter(Boolean)
+                    : STARTER_DECK
+                  ).map((card, i) => (
+                    <button
+                      className={`title-card title-card-${i}`}
+                      key={card.id}
+                      onClick={() => inspect(card)}
+                      aria-label={`Inspect ${card.name}`}
+                    >
+                      <Card card={card} owner={0} />
+                    </button>
+                  ))}
+                </div>
+                <MainChat />
+              </section>
+            </div>
+            <div className="build-label">
+              {CARDS.filter((card) => !card.finish).length} CARDS · v0.13{' '}
+              <Link href="/credits" className="credits-button">
+                Credits
+              </Link>
             </div>
           </>
-        ) : null}
-      </dialog>
-      <CardDetail card={detail} modifier={detailModifier} onClose={() => setDetail(null)} />
-      {match?.status === 'complete' && !resolving && resultOpen && (
-        <ResultOverlay
-          match={match}
-          busy={busy}
-          onClose={() => setResultOpen(false)}
-          onPlayAgain={start}
-          onClaim={(cardId) => action(`/matches/${match.id}/claim`, { cardId })}
-          onRematch={() => action(`/matches/${match.id}/rematch`, {})}
-          onCancelRematch={() => action(`/matches/${match.id}/rematch`, { cancel: true })}
-          error={error}
-        />
-      )}
-    </div>
+        ) : (
+          <section className="match" aria-label="Triple Triad match">
+            <div className="match-toolbar">
+              <div className="battle-mode">
+                <span>{match.mode.toUpperCase()} BATTLE</span>
+                <strong>
+                  {match.status === 'drafting'
+                    ? 'Choose your hand'
+                    : match.mode === 'solo'
+                      ? 'Practice duel'
+                      : 'Online duel'}
+                </strong>
+              </div>
+              <div className="rule-badges">
+                {ruleNames(match.rules).map((r) => (
+                  <span key={r}>{r}</span>
+                ))}
+                {match.trade.rule === 'one' && <span>Trade One</span>}
+              </div>
+              <div className="battle-actions">
+                <button className="text-button" onClick={() => setDialog('rules')}>
+                  How to play
+                </button>
+                <button
+                  className="text-button"
+                  onClick={() => (match.status === 'complete' ? menu() : setDialog('exit'))}
+                >
+                  {match.status === 'complete' ? 'Return to menu' : 'Leave match'}
+                </button>
+              </div>
+            </div>
+            {match.status === 'drafting' && !draftCeremonyDone && !match.draftLocked ? (
+              <DraftOpening
+                key={match.id}
+                match={match}
+                onUpdate={updateDraft}
+                onComplete={completeDraftOpening}
+              />
+            ) : match.status === 'drafting' ? (
+              <div className="draft-selection">
+                <div className="menu-window draft-heading">
+                  <h1>Draft your hand</h1>
+                  <p>
+                    Choose 5 of these {match.draftPool.length} temporary cards. Up to one 5★ plus
+                    one 4★, or two 4★. These cards do not enter your collection.
+                  </p>
+                  <p>
+                    {match.draftLocked
+                      ? 'Hand locked. Waiting for your opponent…'
+                      : `${draft.length}/5 selected`}{' '}
+                    · {Math.max(0, Math.ceil(((match.deadline ?? clock) - clock) / 1000))}s
+                    remaining
+                  </p>
+                </div>
+                <label className="draft-sort">
+                  Order cards{' '}
+                  <select
+                    aria-label="Order draft cards"
+                    value={draftSort}
+                    onChange={(e) => setDraftSort(e.target.value as 'stats' | 'rarity')}
+                  >
+                    <option value="stats">Total stats ↓ · Rarity ↓</option>
+                    <option value="rarity">Rarity ↓ · Total stats ↓</option>
+                  </select>
+                </label>
+                <div className="draft-grid">
+                  {orderedDraft.map((card) => (
+                    <button
+                      key={card.id}
+                      data-total={card.stats.reduce((sum, n) => sum + n, 0)}
+                      data-rarity={card.rarity}
+                      className={`draft-card ${draft.includes(card.id) ? 'is-selected' : ''}`}
+                      aria-pressed={draft.includes(card.id)}
+                      disabled={match.draftLocked || busy}
+                      onClick={() =>
+                        setDraft((ids) =>
+                          ids.includes(card.id)
+                            ? ids.filter((id) => id !== card.id)
+                            : ids.length < 5
+                              ? [...ids, card.id]
+                              : ids,
+                        )
+                      }
+                      aria-label={`Draft ${card.name}`}
+                      title={`${card.name} · ${card.rarity}★ · Total ${card.stats.reduce((sum, n) => sum + n, 0)}`}
+                    >
+                      <Card card={card} />
+                      <span className="draft-summary">
+                        {card.rarity}★ · {card.stats.reduce((sum, n) => sum + n, 0)} total
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <p>
+                  {draft.length === 5
+                    ? draftErrors.join(' ')
+                    : 'Select five cards to lock your hand.'}
+                </p>
+                <button
+                  className="primary-button"
+                  disabled={draftErrors.length > 0 || busy || match.draftLocked}
+                  onClick={() => action(`/matches/${match.id}/draft`, { cards: draft })}
+                >
+                  Lock hand
+                </button>
+              </div>
+            ) : (
+              game && (
+                <>
+                  <div className="scoreboard">
+                    <div
+                      className={`player-heading ${game.turn === seat && match.status === 'playing' ? 'active-player' : ''}`}
+                    >
+                      <Avatar
+                        key={match.players[seat].avatar?.id ?? 'you'}
+                        card={match.players[seat].avatar}
+                        name={match.names[seat]}
+                      />
+                      <div>
+                        <strong>
+                          <NoTranslate>{match.names[seat]}</NoTranslate>
+                        </strong>
+                        {match.players[seat].title && (
+                          <span className="battle-title">{match.players[seat].title}</span>
+                        )}
+                        <small>
+                          {game.turn === seat && match.status === 'playing'
+                            ? 'YOUR TURN'
+                            : 'CHALLENGER'}
+                        </small>
+                      </div>
+                      <span className="your-score">{displayScore[seat]}</span>
+                    </div>
+                    <div className="score-divider">
+                      VS<small>{game.history.length}/9</small>
+                    </div>
+                    <div
+                      className={`player-heading cpu-heading ${game.turn === other && match.status === 'playing' ? 'active-player' : ''}`}
+                    >
+                      <span className="cpu-score">{displayScore[other]}</span>
+                      <Avatar
+                        key={match.players[other].avatar?.id ?? 'rival'}
+                        card={match.players[other].avatar}
+                        name={match.names[other]}
+                      />
+                      <div>
+                        <strong>
+                          <NoTranslate>{match.names[other]}</NoTranslate>
+                        </strong>
+                        {match.players[other].title && (
+                          <span className="battle-title">{match.players[other].title}</span>
+                        )}
+                        <small>
+                          {game.turn === other && match.status === 'playing'
+                            ? 'OPPONENT’S TURN'
+                            : match.mode === 'solo'
+                              ? 'CPU'
+                              : 'OPPONENT'}
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="battle-layout">
+                    <div className="hand player-hand">
+                      <div className="hand-label">
+                        YOUR HAND <span>{own.length}/5</span>
+                      </div>
+                      <div className="hand-cards">
+                        {own.map(
+                          ({ slotId, card }) =>
+                            card && (
+                              <button
+                                key={slotId}
+                                className={`hand-card ${selected === card.id ? 'is-selected' : ''}`}
+                                data-testid="player-card"
+                                aria-label={`Select ${describe(card)}`}
+                                aria-pressed={selected === card.id}
+                                disabled={!canPlay}
+                                onClick={() => {
+                                  setSelected(card.id === selected ? null : card.id);
+                                  setError('');
+                                  sound('menu');
+                                }}
+                              >
+                                <Card
+                                  card={card}
+                                  owner={0}
+                                  compact
+                                  showElement={!!match.rules.elemental}
+                                />
+                                <span className="selected-marker">▶</span>
+                              </button>
+                            ),
+                        )}
+                      </div>
+                      {selectedCard && (
+                        <button className="card-inspector" onClick={() => inspect(selectedCard)}>
+                          <strong>
+                            <NoTranslate>{selectedCard.name}</NoTranslate>
+                          </strong>
+                          <span>Inspect artwork ↗</span>
+                        </button>
+                      )}
+                    </div>
+                    <div className="board-area">
+                      <div
+                        className={`turn-banner ${game.turn === other ? 'cpu-turn' : 'your-turn'}`}
+                        role="status"
+                        aria-live="polite"
+                      >
+                        {resolving
+                          ? 'RESOLVING CAPTURES…'
+                          : match.status === 'complete'
+                            ? 'MATCH COMPLETE'
+                            : game.turn === seat
+                              ? selected
+                                ? 'Choose an empty space'
+                                : 'Your turn · Select a card'
+                              : `${match.names[other]} is ${match.mode === 'solo' ? 'thinking' : 'playing'}…`}
+                        {match.mode !== 'solo' && match.status === 'playing' && (
+                          <small>
+                            {' '}
+                            · {Math.max(0, Math.ceil(((match.deadline ?? clock) - clock) / 1000))}s
+                          </small>
+                        )}
+                      </div>
+                      {match.status === 'complete' && !resultOpen && (
+                        <button
+                          className="outline-button reopen-result"
+                          onClick={() => setResultOpen(true)}
+                        >
+                          View result
+                        </button>
+                      )}
+                      <div
+                        className={`board ${match.rules.elemental ? 'elemental-board' : ''}`}
+                        aria-label="Three by three game board"
+                      >
+                        {game.board.map((item, cell) => {
+                          const capture = latest?.captures.find((c) => c.cell === cell);
+                          const waitingCapture =
+                            capture && revealedCaptures !== null && !revealedCaptures.has(cell);
+                          const visibleOwner = waitingCapture ? capture.from : item?.owner;
+                          const animatedCapture = capture && flipping.includes(cell);
+                          const modifier = item ? elementalModifier(game, item.card, cell) : 0;
+                          const preview =
+                            !item && selectedCard && canPlay && game.cellElements?.[cell]
+                              ? elementalModifier(game, selectedCard, cell)
+                              : 0;
+                          return (
+                            <button
+                              key={cell}
+                              data-testid={`cell-${cell}`}
+                              data-element={game.cellElements?.[cell] ?? undefined}
+                              data-owner={visibleOwner}
+                              data-modifier={preview || undefined}
+                              className={`board-cell ${!item && selected && canPlay ? 'legal-cell' : ''} ${preview > 0 ? 'elemental-preview-buff' : preview < 0 ? 'elemental-preview-penalty' : ''}`}
+                              disabled={!item && !canPlay}
+                              onClick={() => (item ? inspect(item.card, modifier) : place(cell))}
+                              aria-label={`Row ${Math.floor(cell / 3) + 1}, column ${(cell % 3) + 1}${item ? `: ${describe(item.card, modifier)}, ${visibleOwner === seat ? 'your' : 'opponent'} card` : `: empty${preview ? `, elemental ${preview > 0 ? 'bonus +1' : 'penalty −1'} for selected card` : ''}`}`}
+                            >
+                              {match.rules.elemental && game.cellElements?.[cell] && (
+                                <ElementIcon
+                                  element={game.cellElements[cell]!}
+                                  className="cell-element"
+                                />
+                              )}
+                              {item ? (
+                                <CaptureCard
+                                  stamp={`${match.id}:${game.history.length}:${cell}`}
+                                  card={item.card}
+                                  showElement={!!match.rules.elemental}
+                                  modifier={elementalModifier(game, item.card, cell)}
+                                  owner={visibleOwner === seat ? 0 : 1}
+                                  fromOwner={
+                                    animatedCapture ? (capture.from === seat ? 0 : 1) : undefined
+                                  }
+                                  captureReason={animatedCapture ? capture.reason : undefined}
+                                  captureOrder={Math.max(0, flipping.indexOf(cell))}
+                                />
+                              ) : null}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="board-bottom">
+                        <span>
+                          <i className="legend-dot mint-dot" /> YOU
+                        </span>
+                        <span>{game.history.length}/9 PLACED</span>
+                        <span>
+                          <i className="legend-dot rose-dot" /> OPPONENT
+                        </span>
+                      </div>
+                    </div>
+                    <div className="hand cpu-hand">
+                      <div className="hand-label">
+                        OPPONENT <span>{opponent.length}/5</span>
+                      </div>
+                      <div className="hand-cards">
+                        {opponent.map(({ slotId, card }) => (
+                          <button
+                            key={slotId}
+                            className="opponent-card"
+                            disabled={!card}
+                            aria-label={card ? describe(card) : 'Hidden opponent card'}
+                            onClick={() => card && inspect(card)}
+                          >
+                            <Card
+                              card={card ?? undefined}
+                              hidden={!card}
+                              owner={1}
+                              compact
+                              showElement={!!match.rules.elemental}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="battle-message menu-window match-status">
+                    <span className="window-label">BATTLE LOG</span>
+                    <span className="message-cursor">▶</span>
+                    <p role="log" aria-live="polite">
+                      {latest
+                        ? `${match.names[latest.move.player]} played ${CARDS.find((c) => c.id === latest.move.cardId)?.name ?? 'a card'}. ${latest.captures.length} captured${latest.captures.some((c) => c.reason === 'combo') ? ' — Combo!' : ''}.`
+                        : 'Select a card, then choose an empty space.'}
+                    </p>
+                  </div>
+                  <details className="match-history">
+                    <summary>
+                      Turn history <span>{game.history.length} moves</span>
+                    </summary>
+                    <ol>
+                      {game.history.map((turn, i) => (
+                        <li key={i}>
+                          <span>{i + 1}</span>{' '}
+                          <NoTranslate>{match.names[turn.move.player]}</NoTranslate> ·{' '}
+                          {String.fromCharCode(65 + Math.floor(turn.move.cell / 3))}
+                          {(turn.move.cell % 3) + 1}
+                          {turn.captures.length
+                            ? ` · ${turn.captures.map((c) => `${c.reason} ${String.fromCharCode(65 + Math.floor(c.cell / 3))}${(c.cell % 3) + 1}`).join(', ')}`
+                            : ''}
+                        </li>
+                      ))}
+                    </ol>
+                  </details>
+                </>
+              )
+            )}
+          </section>
+        )}
+        <p className="error-message" role="alert">
+          {error || connectionError}
+        </p>
+        <dialog
+          ref={dialogRef}
+          className={`game-dialog ${dialog === 'combo' ? 'combo-dialog' : ''}`}
+          aria-labelledby="dialog-title"
+          onCancel={() => setDialog(null)}
+        >
+          <div className="dialog-header">
+            <h2 id="dialog-title">
+              {dialog === 'rules'
+                ? 'How to play'
+                : dialog === 'combo'
+                  ? 'The Combo lesson'
+                  : 'Leave this match?'}
+            </h2>
+            <button
+              className="close-button"
+              aria-label="Close dialog"
+              onClick={() => setDialog(null)}
+            >
+              ×
+            </button>
+          </div>
+          {dialog === 'rules' ? (
+            <RulesContent />
+          ) : dialog === 'combo' ? (
+            <ComboLesson />
+          ) : dialog === 'exit' ? (
+            <>
+              <p>
+                Leaving forfeits this duel.
+                {match?.trade.rule === 'one'
+                  ? ' Trade One still applies: your opponent may take one of your five cards.'
+                  : ''}
+              </p>
+              <div className="result-actions">
+                <button className="outline-button" onClick={() => setDialog(null)}>
+                  Keep playing
+                </button>
+                <button
+                  className="primary-button"
+                  disabled={busy}
+                  onClick={async () => {
+                    if (match) await action(`/matches/${match.id}/resign`, {});
+                    setDialog(null);
+                  }}
+                >
+                  Forfeit match
+                </button>
+              </div>
+            </>
+          ) : null}
+        </dialog>
+        <CardDetail card={detail} modifier={detailModifier} onClose={() => setDetail(null)} />
+        {match?.status === 'complete' && !resolving && resultOpen && (
+          <ResultOverlay
+            match={match}
+            busy={busy}
+            onClose={() => setResultOpen(false)}
+            onPlayAgain={start}
+            onClaim={(cardId) => action(`/matches/${match.id}/claim`, { cardId })}
+            onRematch={() => action(`/matches/${match.id}/rematch`, {})}
+            onCancelRematch={() => action(`/matches/${match.id}/rematch`, { cancel: true })}
+            error={error}
+          />
+        )}
+      </div>
+    </LocaleView>
   );
 }
