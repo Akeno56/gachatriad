@@ -285,16 +285,6 @@
     inset 0 0 0 2px #b1a1df66,
     0 0 16px #b7b8ff66;
 }
-.card-finish {
-  position: absolute;
-  z-index: 6;
-  right: 8px;
-  bottom: 7px;
-  font: 600 7px var(--sans);
-  letter-spacing: 1px;
-  color: #e2d8ff;
-  text-shadow: 0 1px 2px #000;
-}
 .holo-card:before {
   content: '';
   position: absolute;
@@ -312,22 +302,6 @@
   mix-blend-mode: screen;
   animation: holo-sweep 3.5s linear infinite;
   opacity: 0.7;
-}
-.holo-card .ownership-mark {
-  bottom: 16px;
-}
-.compact .card-finish {
-  font-size: 7px;
-}
-.board .card-finish {
-  bottom: 6px;
-  right: 7px;
-}
-.board .holo-card .ownership-mark {
-  bottom: 17px;
-}
-.card-detail .card-finish {
-  font-size: 11px;
 }
 .card-detail .card-element {
   width: 34px;
@@ -414,12 +388,6 @@
   .board .rarity-crown {
     width: 21px;
     left: calc(50% - 10px);
-  }
-  .board .card-finish {
-    font-size: 6px;
-  }
-  .card-finish {
-    right: 6px;
   }
   .result-overlay .result-actions {
     gap: 12px;

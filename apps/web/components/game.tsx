@@ -25,6 +25,7 @@ import { Avatar } from './avatar';
 import { confirmRanked } from './ranked-warning';
 import { MainChat } from './main-chat';
 import { CaptureCard } from './capture-card';
+import { DraftOpening } from './draft-opening';
 export function ruleNames(r: Rules) {
   return [
     r.allOpen ? 'All Open' : r.threeOpen ? 'Three Open' : 'Closed',
@@ -54,6 +55,16 @@ export function Game() {
     [draft, setDraft] = useState<string[]>([]),
     [clock, setClock] = useState(Date.now());
   const [resultOpen, setResultOpen] = useState(true);
+  const [draftCeremonyDone, setDraftCeremonyDone] = useState(false);
+  const completeDraftOpening = useCallback(() => setDraftCeremonyDone(true), []);
+  const updateDraft = useCallback(
+    (next: MatchView) =>
+      setMatch((current) =>
+        current?.id === next.id && current.version > next.version ? current : next,
+      ),
+    [],
+  );
+  useEffect(() => setDraftCeremonyDone(false), [match?.id]);
   const changeMusicScene = useMusicScene();
   useEffect(() => {
     changeMusicScene(match?.status === 'playing' ? 'battle' : 'menu');
@@ -85,10 +96,16 @@ export function Game() {
   useEffect(() => {
     if (!profile) return;
     const query = new URLSearchParams(location.search).get('match');
-    if (profile.activeMatchId && profile.activeMatchId !== matchId)
-      setMatchId(profile.activeMatchId);
+    const target = profile.pendingTrade?.matchId ?? profile.activeMatchId;
+    if (target && target !== matchId) setMatchId(target);
     else if (!matchId && query) setMatchId(query);
   }, [profile, matchId]);
+  useEffect(() => {
+    if (match?.rematch?.matchId) {
+      setDraft([]);
+      setMatchId(match.rematch.matchId);
+    }
+  }, [match?.rematch?.matchId]);
   useEffect(() => {
     if (matchId) void load(matchId);
   }, [matchId, revision, load]);
@@ -341,7 +358,7 @@ export function Game() {
             </section>
           </div>
           <div className="build-label">
-            400 CARDS · v0.9{' '}
+            400 CARDS · v0.10{' '}
             <Link href="/credits" className="credits-button">
               Credits
             </Link>
@@ -378,13 +395,20 @@ export function Game() {
               </button>
             </div>
           </div>
-          {match.status === 'drafting' ? (
+          {match.status === 'drafting' && !draftCeremonyDone && !match.draftLocked ? (
+            <DraftOpening
+              key={match.id}
+              match={match}
+              onUpdate={updateDraft}
+              onComplete={completeDraftOpening}
+            />
+          ) : match.status === 'drafting' ? (
             <div className="draft-selection">
               <div className="menu-window draft-heading">
                 <h1>Draft your hand</h1>
                 <p>
-                  Choose 5 of these 8 temporary cards. Up to one 5★ plus one 4★, or two 4★. These
-                  cards do not enter your collection.
+                  Choose 5 of these {match.draftPool.length} temporary cards. Up to one 5★ plus one
+                  4★, or two 4★. These cards do not enter your collection.
                 </p>
                 <p>
                   {match.draftLocked
@@ -732,6 +756,9 @@ export function Game() {
           onClose={() => setResultOpen(false)}
           onPlayAgain={start}
           onClaim={(cardId) => action(`/matches/${match.id}/claim`, { cardId })}
+          onRematch={() => action(`/matches/${match.id}/rematch`, {})}
+          onCancelRematch={() => action(`/matches/${match.id}/rematch`, { cancel: true })}
+          error={error}
         />
       )}
     </div>

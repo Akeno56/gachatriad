@@ -1,0 +1,260 @@
+/* Public chat keeps three ordinary messages visible, including equipped titles. */
+.main-chat .chat-messages {
+  height: 200px;
+  padding: 10px;
+}
+.main-chat .chat-message {
+  margin-bottom: 10px;
+  min-height: 48px;
+}
+.main-chat .message-heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+}
+.main-chat .message-heading > a {
+  order: 0;
+}
+.main-chat .message-heading > .message-title {
+  order: 1;
+  font-size: 12px;
+}
+.main-chat .message-heading > time {
+  order: 2;
+  margin-left: auto;
+  font-size: 10px;
+}
+.main-chat .message-content > p {
+  margin: 3px 0 0;
+  line-height: 1.25;
+}
+.main-chat .chat-user-list {
+  height: 200px;
+  max-height: 200px;
+}
+.chat-compact .chat-messages,
+.chat-compact .chat-user-list {
+  height: 236px;
+  max-height: 236px;
+}
+.friend-chat .chat-messages {
+  min-height: 400px;
+}
+.title-screen .game-title h1 {
+  font-size: 64px;
+}
+.title-screen .game-title {
+  margin-bottom: 6px;
+}
+.title-screen .title-roster {
+  height: 300px;
+  margin-top: 0;
+}
+.title-screen .title-card-0,
+.title-screen .title-card-4 {
+  top: 10px;
+}
+.title-screen .title-card-1,
+.title-screen .title-card-3 {
+  top: 4px;
+}
+.title-screen .title-card-2 {
+  top: 0;
+}
+.title-screen.play-page {
+  padding-bottom: 12px;
+}
+.album-card-footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 9px;
+}
+.album-card-info {
+  min-width: 0;
+  flex: 1;
+}
+.album-card-info h2 {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.album-card-info p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.catalog-grid article[data-owned='false'] .album-card-info > small {
+  color: #8a99ae;
+}
+.card-buy-button {
+  flex: none;
+  white-space: nowrap;
+  margin: 0;
+  padding: 6px 10px;
+  min-height: 34px;
+  font: 20px/1 var(--pixel);
+}
+.card-purchase-dialog {
+  max-width: 600px;
+}
+.card-purchase-dialog h2 {
+  font: 36px var(--pixel);
+  color: var(--gold);
+}
+.card-purchase-notice {
+  color: #b5e2bc;
+  min-height: 18px;
+  margin: 7px 0;
+  text-align: center;
+  font-size: 14px;
+}
+.draft-opening {
+  text-align: center;
+  padding: 24px;
+  margin-top: 24px;
+}
+.draft-opening h1 {
+  margin: 0;
+  font: 40px var(--pixel);
+  color: var(--gold);
+}
+.draft-opening header p {
+  color: #c6d5ef;
+}
+.draft-pack-track {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 20px 0;
+}
+.draft-pack-track span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 44px;
+  border: 1px solid #8497b5;
+  background: #132440;
+  font: 26px var(--pixel);
+}
+.draft-pack-track .is-current {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px #d7be7566;
+  color: var(--gold);
+}
+.draft-pack-track .is-opened {
+  color: #a8dbb0;
+}
+.draft-reveal-stage {
+  min-height: 380px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.draft-reveal-stage .sealed-pack {
+  width: 240px;
+  height: 350px;
+  cursor: default;
+}
+.draft-reveal-card {
+  width: 250px;
+  height: 360px;
+  animation: draft-reveal 0.4s ease-out both;
+}
+.draft-reveal-card .card-caption strong {
+  font-size: 28px;
+}
+.draft-pack-spread {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.draft-pack-spread > div {
+  width: 160px;
+  height: 230px;
+}
+.draft-opening > small {
+  color: var(--muted);
+}
+.rematch-status {
+  color: var(--gold);
+}
+@keyframes draft-reveal {
+  from {
+    transform: rotateY(80deg) scale(0.92);
+    opacity: 0.4;
+  }
+  to {
+    transform: rotateY(0) scale(1);
+    opacity: 1;
+  }
+}
+@media (max-width: 680px) {
+  .album-card-footer {
+    gap: 5px;
+  }
+  .card-buy-button {
+    font-size: 15px;
+    padding: 5px 6px;
+    min-height: 28px;
+  }
+  .main-chat .chat-messages,
+  .main-chat .chat-user-list {
+    height: 360px;
+    max-height: 360px;
+  }
+  .main-chat .message-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 8px;
+  }
+  .main-chat .message-heading > a {
+    min-width: 0;
+    font-size: 19px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .main-chat .message-heading > .message-title {
+    grid-column: 1/-1;
+    grid-row: 2;
+  }
+  .main-chat .message-heading > time {
+    grid-column: 2;
+    grid-row: 1;
+    margin-left: 0;
+  }
+  .main-chat .chat-message {
+    margin-bottom: 12px;
+  }
+  .title-screen .title-roster {
+    height: auto;
+  }
+  .title-screen .game-title h1 {
+    font-size: 64px;
+  }
+  .draft-opening {
+    padding: 18px 12px;
+  }
+  .draft-pack-spread > div {
+    width: 100px;
+    height: 150px;
+  }
+  .draft-reveal-stage {
+    min-height: 365px;
+  }
+  .friend-chat .chat-messages {
+    height: 400px;
+    min-height: 400px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .draft-reveal-card {
+    animation: none;
+  }
+}

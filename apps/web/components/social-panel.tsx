@@ -207,7 +207,12 @@ export function SocialPanel() {
                     {f.status === 'friend' && (
                       <button
                         className="primary-button"
-                        disabled={busy || !!profile?.activeMatchId || !!profile?.waitingLobbyId}
+                        disabled={
+                          busy ||
+                          !!profile?.activeMatchId ||
+                          !!profile?.waitingLobbyId ||
+                          !!profile?.pendingTrade
+                        }
                         onClick={() => void action('/invites', { playerId: f.id })}
                       >
                         Invite to duel

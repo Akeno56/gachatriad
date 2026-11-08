@@ -2,6 +2,8 @@
 
 A local Triple Triad fan game with FF-style menus, CRT presentation, 400 playable cross-game cards and persistent multiplayer services.
 
+**v0.10:** page-specific chat defaults (Play → General, Lobbies → Lobbies, Trades → Trade), shared chat in Trades and space for at least three ordinary messages. Standard cards can be bought directly for 50/125/200/300/500 Prisms, with compact buttons beside the card details; Holo stays drop-only. Normal booster odds are 50/27/17/5/1%, the guaranteed slot is 80/17/3%, and Holo is 0.5%. Draft automatically reveals three temporary boosters with both 3★+ and 4★+ guarantees and 5% Holo before choosing five of 15 cards. Pending Trade One results block new games and bring the winner back to card selection. Multiplayer results support consensual rematches with the same opponent and rules. Holo uses its animated foil without a text badge overlapping YOU/RIVAL. See [economy and Draft details](docs/BOOSTER_PACKS.md).
+
 **v0.9:** Play places the shared General/Trade/Lobbies chat and online-player list below your hand, beside duel setup; Lobbies uses the same compact chat. Settings live in a bottom-left cog. Collection sorting is independent of filters. Open any available booster count up to ten across stack sources; individual reveals preload artwork and wait 0.8 seconds between cards. Captures turn from the old owner's face/color to the new owner's face/color, including Same/Plus/Combo chains. The rulebook demonstrates All Open, Three Open and Closed hands. See the [sharing/security review](docs/SECURITY_REVIEW.md).
 
 The top-right account button now reads **Login/Register** for guests and **Logout** for signed-in players. Logout signs out directly.
@@ -18,7 +20,7 @@ The top-right account button now reads **Login/Register** for guests and **Logou
 
 Elemental is available in practice, custom tables and Roulette: marked cells apply +1 for matching affinity and −1 for mismatches, including cards with no affinity. Same/Plus use printed ranks; ordinary and Combo captures use adjusted ranks. Card and cell icons expose the rule. Custom Combo is explicit, and Trade One requires Closed + Same + Plus + Combo; additional rules remain allowed. Fresh guests/accounts must complete the short tutorial or acknowledge the rulebook before their first duel; this is enforced by the server.
 
-Player profiles expose records, ratings, achievement unlocks and a chosen owned profile card. Private decks and inventory are not exposed. Every base card has a separate cosmetic Holo definition with identical stats and an animated foil; 5★ cards have an ornate crown/frame. Boosters have a published 0.1% Holo chance per card. The album can preview the finish, and inventory/decks/matches/trades preserve exact finishes.
+Player profiles expose records, ratings, achievement unlocks and a chosen owned profile card. Private decks and inventory are not exposed. Every base card has a separate cosmetic Holo definition with identical stats and an animated foil; 5★ cards have an ornate crown/frame. Ordinary boosters have a published 0.5% Holo chance per card; temporary Draft boosters use 5%. The album can preview the finish, and inventory/decks/matches/trades preserve exact finishes.
 
 ## Host a showcase from your PC
 
@@ -54,7 +56,7 @@ Guests can practice, build their starter deck, play unranked/custom/Roulette and
 - **Unranked:** Three Open, Same, Plus, Combo; no trade.
 - **Ranked:** closed hands, Same, Plus, Combo and **Trade One**. The winner chooses one card from the losing original five-card deck. Draws trade nothing; forfeits retain the stakes. The loser’s five reserved copies remain locked until selection. After two minutes, the server selects a card automatically.
 - **Custom:** visible public tables combining Closed/Three Open/All Open, Same, Plus, Random and optional Trade One. All custom rules share the lobby browser.
-- **Draft:** separate rated queue; choose five legal cards from eight temporary offers, then play Three Open + Same/Plus/Combo with no trade. Draft cards do not enter permanent inventory.
+- **Draft:** separate rated queue; three temporary boosters open automatically, then choose five legal cards from 15 offers and play Three Open + Same/Plus/Combo with no trade. Draft cards do not enter permanent inventory.
 - **Roulette:** separate queue; compatible advanced rules are drawn when the match begins.
 - **Online turns:** 60 seconds. A missed turn plays automatically; three missed turns forfeit. Waiting rooms expire after 15 minutes.
 - **Collection:** five distinct owned available characters per deck; at most one 5★ and one 4★, or two 4★ without a 5★. Auto build repairs a deck after losing or trading a card. Cosmetic finishes do not add a second character slot.

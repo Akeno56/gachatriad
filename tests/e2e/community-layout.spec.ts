@@ -34,7 +34,7 @@ test('fits the home chat beside setup, shares channel selection with Lobbies and
   await chat.getByRole('tab', { name: 'Trade', exact: true }).click();
   await page.getByRole('link', { name: 'Lobbies', exact: true }).click();
   await expect(page.locator('.main-chat')).toHaveClass(/chat-compact/);
-  await expect(page.getByRole('tab', { name: 'Trade', exact: true })).toHaveAttribute(
+  await expect(page.getByRole('tab', { name: 'Lobbies', exact: true })).toHaveAttribute(
     'aria-selected',
     'true',
   );

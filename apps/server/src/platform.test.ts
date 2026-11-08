@@ -2,6 +2,8 @@ import { beforeAll, afterAll, expect, it, vi } from 'vitest';
 import { resolve } from 'node:path';
 import { createPlatform } from './app';
 import type { MatchView, ProfileView, LobbyView } from '@gacha-triad/shared/platform';
+import { CARDS } from '@gacha-triad/shared';
+import { ECONOMY } from '@gacha-triad/shared/platform';
 import {
   applyMove,
   legalMoves,
@@ -72,6 +74,160 @@ async function ok<T>(c: Client, path: string, body?: unknown, method?: string): 
   expect(r.statusCode, r.body).toBe(200);
   return r.json();
 }
+it('buys Standard cards at server prices atomically and deduplicates retries', async () => {
+  const a = await user(),
+    b = await user();
+  await platform.db.tx((sql) =>
+    sql('UPDATE profiles SET prisms=10000 WHERE id=$1', [a.profile.id]),
+  );
+  let spent = 0;
+  for (let rank = 1; rank <= 5; rank++) {
+    const card = CARDS.find((c) => c.rarity === rank)!;
+    const before = await ok<ProfileView>(a, '/profile');
+    const body = {
+      cardId: card.id,
+      requestId: `shop-rank-${rank}-request`,
+      cost: 1,
+      profileId: b.profile.id,
+    };
+    const responses = await Promise.all([
+      request(a, '/cards/buy', body),
+      request(a, '/cards/buy', body),
+    ]);
+    expect(responses.map((r) => r.statusCode)).toEqual([200, 200]);
+    const after = await ok<ProfileView>(a, '/profile');
+    spent += ECONOMY.cardPrices[rank - 1];
+    expect(after.prisms).toBe(10000 - spent);
+    expect(after.inventory[card.id].quantity).toBe((before.inventory[card.id]?.quantity ?? 0) + 1);
+    expect(
+      (await request(a, '/cards/buy', { ...body, cardId: CARDS.find((c) => c.id !== card.id)!.id }))
+        .statusCode,
+    ).toBe(409);
+  }
+  const card = CARDS[0];
+  expect(
+    (await request(a, '/cards/buy', { cardId: `${card.id}::holo`, requestId: 'no-buying-holo' }))
+      .statusCode,
+  ).toBe(400);
+  expect(
+    (await request(a, '/cards/buy', { cardId: 'unknown', requestId: 'unknown-card-buy' }))
+      .statusCode,
+  ).toBe(400);
+  const before = await ok<ProfileView>(b, '/profile');
+  expect(
+    (await request(b, '/cards/buy', { cardId: card.id, requestId: 'not-enough-prisms' }))
+      .statusCode,
+  ).toBe(409);
+  expect((await ok<ProfileView>(b, '/profile')).inventory).toEqual(before.inventory);
+  await platform.guests.deleteAccount(a.profile.id, a.profile.name);
+  expect(
+    await platform.db.read((sql) =>
+      sql('SELECT 1 FROM card_purchases WHERE profile_id=$1', [a.profile.id]),
+    ),
+  ).toEqual([]);
+});
+it('keeps both Ranked players blocked until Trade One settles and reports the pending result', async () => {
+  const a = await user(true),
+    b = await user(true);
+  const lobby = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'ranked', allowBots: false });
+  const joined = await ok<{ matchId: string }>(b, `/lobbies/${lobby.lobbyId}/join`, {});
+  const result = await ok<MatchView>(b, `/matches/${joined.matchId}/resign`, {});
+  for (const [c, canClaim] of [
+    [a, true],
+    [b, false],
+  ] as const) {
+    expect((await ok<ProfileView>(c, '/profile')).pendingTrade).toEqual({
+      matchId: result.id,
+      canClaim,
+    });
+    expect((await request(c, '/solo', {})).statusCode).toBe(409);
+    for (const mode of ['casual', 'draft', 'ranked'])
+      expect((await request(c, '/lobbies', { mode })).statusCode).toBe(409);
+    expect((await request(c, `/matches/${result.id}/rematch`, {})).statusCode).toBe(409);
+  }
+  await ok(a, `/matches/${result.id}/claim`, { cardId: result.trade.choices[0].id });
+  for (const c of [a, b]) {
+    expect((await ok<ProfileView>(c, '/profile')).pendingTrade).toBeNull();
+    await ok(c, '/deck/auto', {});
+    const solo = await ok<{ matchId: string }>(c, '/solo', {});
+    await ok(c, `/matches/${solo.matchId}/resign`, {});
+  }
+});
+it('requires both human players to accept a rematch, preserves rules and creates it once', async () => {
+  const a = await user(),
+    b = await user(),
+    stranger = await user();
+  const lobby = await ok<{ lobbyId: string }>(a, '/lobbies', {
+    mode: 'custom',
+    allowBots: false,
+    rules: { allOpen: true, same: true, plus: true, combo: true },
+  });
+  const joined = await ok<{ matchId: string }>(b, `/lobbies/${lobby.lobbyId}/join`, {});
+  const result = await ok<MatchView>(b, `/matches/${joined.matchId}/resign`, {});
+  expect((await request(stranger, `/matches/${result.id}/rematch`, {})).statusCode).toBe(403);
+  const first = await ok<MatchView>(a, `/matches/${result.id}/rematch`, {});
+  expect(first.rematch.requestedBy).toBe(a.profile.id);
+  expect(first.rematch.matchId).toBeNull();
+  expect((await ok<ProfileView>(a, '/profile')).activeMatchId).toBeNull();
+  expect((await request(b, `/matches/${result.id}/rematch`, { cancel: true })).statusCode).toBe(
+    403,
+  );
+  await ok(a, `/matches/${result.id}/rematch`, { cancel: true });
+  expect((await ok<MatchView>(b, `/matches/${result.id}`)).rematch.requestedBy).toBeNull();
+  await ok(a, `/matches/${result.id}/rematch`, {});
+  await platform.db.tx((sql) =>
+    sql("UPDATE matches SET rematch_requested_at=now()-interval '6 minutes' WHERE id=$1", [
+      result.id,
+    ]),
+  );
+  const expired = await ok<MatchView>(b, `/matches/${result.id}/rematch`, {});
+  expect(expired.rematch.requestedBy).toBe(b.profile.id);
+  expect(expired.rematch.matchId).toBeNull();
+  await ok(b, `/matches/${result.id}/rematch`, { cancel: true });
+  await ok(a, `/matches/${result.id}/rematch`, {});
+  const accepted = await ok<MatchView>(b, `/matches/${result.id}/rematch`, {});
+  expect(accepted.rematch.matchId).toBeTruthy();
+  const retry = await ok<MatchView>(b, `/matches/${result.id}/rematch`, {});
+  expect(retry.rematch.matchId).toBe(accepted.rematch.matchId);
+  const next = await ok<MatchView>(a, `/matches/${accepted.rematch.matchId}`);
+  expect(next.rules).toEqual(result.rules);
+  expect(next.mode).toBe(result.mode);
+  expect(next.names).toEqual(result.names);
+  expect(
+    (await platform.store.lobbies()).some(
+      (l) => l.matchId === next.id && l.players === 2 && l.status === 'playing',
+    ),
+  ).toBe(true);
+  for (const c of [a, b])
+    expect((await ok<ProfileView>(c, '/profile')).activeMatchId).toBe(next.id);
+  await ok(a, `/matches/${next.id}/resign`, {});
+});
+it('rematches an idle bot and closes its spare waiting table without matchmaking another opponent', async () => {
+  const a = await user();
+  await platform.bots.set(true, 'medium');
+  try {
+    const bot = await platform.store.profile({
+      id: 'local-bot-0',
+      name: '[BOT] Nova',
+      isAnonymous: false,
+    });
+    const lobby = await platform.store.createLobby(bot, { mode: 'custom', allowBots: true });
+    const joined = await ok<{ matchId: string }>(a, `/lobbies/${lobby.lobbyId}/join`, {});
+    const result = await ok<MatchView>(a, `/matches/${joined.matchId}/resign`, {});
+    const spare = await platform.store.createLobby(
+      await platform.store.profile({ id: 'local-bot-0', name: '[BOT] Nova', isAnonymous: false }),
+      { mode: 'custom', allowBots: true },
+    );
+    const accepted = await ok<MatchView>(a, `/matches/${result.id}/rematch`, {});
+    expect(accepted.rematch.matchId).toBeTruthy();
+    const next = await ok<MatchView>(a, `/matches/${accepted.rematch.matchId}`);
+    expect(next.names).toEqual(result.names);
+    expect((await platform.store.lobbies()).some((l) => l.id === spare.lobbyId)).toBe(false);
+    await ok(a, `/matches/${next.id}/resign`, {});
+  } finally {
+    await platform.bots.set(false);
+  }
+});
 it('keeps friend messages private, retry-safe, read-tracked and tied to accepted friendships', async () => {
   const a = await user(true),
     b = await user(true),
@@ -630,8 +786,22 @@ it('locks only offered Draft cards and completes a full server-authoritative gam
   const { matchId } = await ok<{ matchId: string }>(b, `/lobbies/${lobbyId}/join`, {});
   for (const c of [a, b]) {
     const m = await ok<MatchView>(c, `/matches/${matchId}`);
-    expect(m.draftPool).toHaveLength(8);
+    expect(m.draftPool).toHaveLength(15);
     expect(m.game).toBeNull();
+    expect(
+      (
+        await request(c, `/matches/${matchId}/draft`, {
+          cards: randomDeck(m.draftPool, seededRandom(123)).map((c) => c.id),
+        })
+      ).statusCode,
+    ).toBe(409);
+    expect((await request(c, `/matches/${matchId}/draft/reveal`, { step: 2 })).statusCode).toBe(
+      409,
+    );
+    for (let step = 0; step < 15; step++) await ok(c, `/matches/${matchId}/draft/reveal`, { step });
+    const replay = await ok<MatchView>(c, `/matches/${matchId}/draft/reveal`, { step: 0 });
+    expect(replay.draftRevealed).toBe(15);
+    expect(replay.draftPool).toEqual(m.draftPool);
     await ok(c, `/matches/${matchId}/draft`, {
       cards: randomDeck(m.draftPool, seededRandom(123)).map((c) => c.id),
     });

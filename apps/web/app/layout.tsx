@@ -15,6 +15,7 @@ import './rule-examples.css';
 import './duplicate-cards.css';
 import './duel-refinements.css';
 import './community-layout.css';
+import './draft-shop.css';
 
 export const metadata: Metadata = {
   title: 'Gacha Triad · Cross-world card battle',

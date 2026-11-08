@@ -20,15 +20,25 @@ Collection has **Duplicate cards · Recycle & Trade Up** tools. Select spare cop
 | 4★     | 40 Stellar Prisms        |
 | 5★     | 75 Stellar Prisms        |
 
-**Trade Up** consumes exactly five spare copies of one rarity (mixed characters allowed), from 1★ through 4★, for one uniformly random enabled character of the next rarity. Each result has an independent **0.1% Holo chance**. 5★ cards cannot be traded up. Recycle and Trade Up recheck ownership/reservations on confirmation, write inventory/currency ledgers and preserve durable retry receipts. Guests can use these tools too. Confirmation is required before consuming copies.
+**Trade Up** consumes exactly five spare copies of one rarity (mixed characters allowed), from 1★ through 4★, for one uniformly random enabled character of the next rarity. Each result has an independent **0.5% Holo chance**, matching normal boosters. 5★ cards cannot be traded up. Recycle and Trade Up recheck ownership/reservations on confirmation, write inventory/currency ledgers and preserve durable retry receipts. Guests can use these tools too. Confirmation is required before consuming copies.
 
 ## Individual boosters and duel rewards
 
 New guest and registered profiles receive **three unopened starter boosters** instead of the old random starter collection. Each contains five cards, including one guaranteed 3★ or higher. Existing collections, decks, saves and accounts are preserved. Registering a guest preserves inventory, currency and unopened packs without granting another welcome bundle.
 
-The first starter booster automatically builds a legal five-card deck. Its first four slots roll 1–3★ cards with weights 55:25:15, favoring unowned characters. Its fifth slot rolls 3★ 85%, 4★ 13%, 5★ 2%. Every pack has five distinct characters, ensuring that the first starter pack can form a legal deck. Duplicates between packs add inventory copies.
+The first starter booster automatically builds a legal five-card deck. Its first four slots roll 1–3★ cards with weights 50:27:17, favoring unowned characters. Its fifth slot rolls 3★ 80%, 4★ 17%, 5★ 3%. Every pack has five distinct characters, ensuring that the first starter pack can form a legal deck. Duplicates between packs add inventory copies.
 
-Standard boosters cost **150 Stellar Prisms**. The first four slots independently roll 1★ 55%, 2★ 25%, 3★ 15%, 4★ 4%, 5★ 1%; the fifth uses the guaranteed-slot odds above. Characters at the selected rarity are equally likely. Each card independently has a **0.1% Holo chance**; Holo is cosmetic and keeps identical stats. The Boosters screen publishes these odds and saved opening receipts.
+Standard boosters cost **150 Stellar Prisms**. The first four slots independently roll 1★ 50%, 2★ 27%, 3★ 17%, 4★ 5%, 5★ 1%; the fifth uses the guaranteed-slot odds above. Characters at the selected rarity are equally likely. Each card independently has a **0.5% Holo chance**; Holo is cosmetic and keeps identical stats. The Boosters screen publishes these odds and saved opening receipts. Updated odds apply to newly opened packs; saved opening receipts keep their existing results.
+
+## Individual Standard cards
+
+The Cards album has a compact Buy button beside each Standard card's name/ownership details. One copy costs **50 / 125 / 200 / 300 / 500 Stellar Prisms** for 1★–5★. Holo copies cannot be purchased directly. Guests can spend their earned Prisms too. A confirmation displays the cost and resulting balance. The server validates the definition and price, atomically charges currency and grants one copy, records both ledgers, and deduplicates a repeated request ID. A cancelled confirmation spends nothing. Purchases add collection copies without changing the active deck automatically.
+
+## Temporary Draft boosters
+
+Each matched Draft player receives three server-rolled five-card boosters, revealed automatically one by one before selecting a deck. Each pack has **random / random / random / 3★+ / 4★+** slots. Random and 3★+ slots use the normal revised odds above; the 4★+ slot uses **85% 4★ / 15% 5★**. Every slot has a **5% Holo chance**. The 15 characters are distinct, and an exceptional pool that cannot form a legal deck is resampled.
+
+All 15 offers and the player's reveal count persist with the match. Reloading resumes opening without rerolling or granting extra cards. Reveal requests advance one position and are retry-safe; early deck locking is rejected. A player chooses five legal cards after revealing the packs, with the usual one-5★/one-4★ or two-4★ limit. The three-minute drafting deadline includes the opening ceremony; timed-out picks still complete automatically. Legacy unfinished eight-card drafts retain their original offers. These packs cost no Prisms, consume no permanent boosters, and never add cards to inventory. Draft duels keep Three Open, Same, Plus and Combo with no card trade.
 
 A completed nine-placement duel awards **50 Prisms for a win, 25 for a draw, 10 for a loss**. Solo, multiplayer and guests participate. Forfeits, missed-turn forfeits and abandoned drafts pay nothing; bots receive no currency. The result overlay displays the persisted payout. Values and odds live in `ECONOMY` in `packages/shared/src/platform.ts`.
 

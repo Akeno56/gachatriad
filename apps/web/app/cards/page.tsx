@@ -1,12 +1,25 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CARDS, HOLO_CARDS, UNIVERSES, universeName } from '@gacha-triad/shared';
 import type { Card as CardData } from '@gacha-triad/engine';
 import { Card } from '../../components/card';
 import { CardDetail } from '../../components/card-detail';
 import { useSession } from '../../components/session';
+import { ECONOMY } from '@gacha-triad/shared/platform';
+import { api } from '../../lib/platform';
 export default function CardsPage() {
-  const { profile, error } = useSession();
+  const { profile, error, refresh } = useSession();
+  const [purchase, setPurchase] = useState<CardData | null>(null),
+    [buying, setBuying] = useState(false),
+    [purchased, setPurchased] = useState(false),
+    [message, setMessage] = useState('');
+  const purchaseDialog = useRef<HTMLDialogElement>(null),
+    purchaseId = useRef('');
+  useEffect(() => {
+    if (purchase) purchaseDialog.current?.showModal();
+    else purchaseDialog.current?.close();
+  }, [purchase]);
+  const price = purchase ? ECONOMY.cardPrices[purchase.rarity - 1] : 0;
   const [search, setSearch] = useState(''),
     [universe, setUniverse] = useState('all'),
     [ownership, setOwnership] = useState('all'),
@@ -116,8 +129,8 @@ export default function CardsPage() {
       </div>
       {finish === 'holo' && (
         <p className="finish-note">
-          Holo is a cosmetic finish with identical values. Booster packs will introduce its rare
-          acquisition.
+          Holo is a cosmetic finish with identical values. Holo copies are rare drops and cannot be
+          bought directly.
         </p>
       )}
       <p className="catalog-count" role="status">
@@ -125,8 +138,11 @@ export default function CardsPage() {
         {profile ? `${owned}/${CARDS.length} collected` : 'Connecting to your collection…'} · Page{' '}
         {current + 1}/{pages}
       </p>
-      <p className="error-message" role="alert">
-        {error}
+      <p
+        className={purchased && !error ? 'card-purchase-notice' : 'error-message'}
+        role={purchased && !error ? 'status' : 'alert'}
+      >
+        {message || error}
       </p>
       <div className="catalog-grid">
         {visible.map((card) => {
@@ -140,12 +156,42 @@ export default function CardsPage() {
               >
                 <Card card={card} showElement />
               </button>
-              <h2>{card.name}</h2>
-              <p>{universeName(card.universeId)}</p>
-              <small>
-                {card.rarity}★ ·{' '}
-                {profile ? (quantity ? `${quantity} owned` : 'Not owned') : 'Loading ownership…'}
-              </small>
+              <div className="album-card-footer">
+                <div className="album-card-info">
+                  <h2 title={card.name}>{card.name}</h2>
+                  <p title={universeName(card.universeId)}>{universeName(card.universeId)}</p>
+                  <small>
+                    {card.rarity}★ ·{' '}
+                    {profile
+                      ? quantity
+                        ? `${quantity} owned`
+                        : 'Not owned'
+                      : 'Loading ownership…'}
+                  </small>
+                </div>
+                {card.finish !== 'holo' && (
+                  <button
+                    className="outline-button card-buy-button"
+                    disabled={
+                      !profile || buying || profile.prisms < ECONOMY.cardPrices[card.rarity - 1]
+                    }
+                    title={
+                      profile && profile.prisms < ECONOMY.cardPrices[card.rarity - 1]
+                        ? 'Not enough Stellar Prisms'
+                        : 'Buy one Standard copy'
+                    }
+                    aria-label={`Buy ${card.name} for ${ECONOMY.cardPrices[card.rarity - 1]} Stellar Prisms`}
+                    onClick={() => {
+                      purchaseId.current = crypto.randomUUID();
+                      setPurchased(false);
+                      setMessage('');
+                      setPurchase(card);
+                    }}
+                  >
+                    Buy · ◇ {ECONOMY.cardPrices[card.rarity - 1]}
+                  </button>
+                )}
+              </div>
             </article>
           );
         })}
@@ -171,6 +217,55 @@ export default function CardsPage() {
         </button>
       </div>
       <CardDetail card={detail} onClose={() => setDetail(null)} />
+      <dialog
+        ref={purchaseDialog}
+        className="game-dialog menu-window card-purchase-dialog"
+        aria-labelledby="card-purchase-title"
+        onCancel={(e) => (buying ? e.preventDefault() : setPurchase(null))}
+      >
+        {purchase && (
+          <>
+            <h2 id="card-purchase-title">Buy {purchase.name}</h2>
+            <p>One Standard copy · {purchase.rarity}★</p>
+            <p>
+              Spend <strong>{price} Stellar Prisms</strong>. Balance: {profile?.prisms ?? 0} →{' '}
+              {(profile?.prisms ?? 0) - price}.
+            </p>
+            <div className="result-actions">
+              <button
+                className="primary-button"
+                disabled={buying || !profile || profile.prisms < price}
+                onClick={async () => {
+                  if (buying) return;
+                  setBuying(true);
+                  try {
+                    await api('/cards/buy', { cardId: purchase.id, requestId: purchaseId.current });
+                    await refresh();
+                    setPurchased(true);
+                    setMessage(`${purchase.name} added to your collection.`);
+                    setPurchase(null);
+                  } catch (e) {
+                    setPurchased(false);
+                    setMessage((e as Error).message);
+                  } finally {
+                    setBuying(false);
+                  }
+                }}
+              >
+                {buying ? 'Buying…' : 'Confirm card purchase'}
+              </button>
+              <button
+                className="outline-button"
+                disabled={buying}
+                onClick={() => setPurchase(null)}
+              >
+                Cancel
+              </button>
+            </div>
+            <p role="alert">{message}</p>
+          </>
+        )}
+      </dialog>
     </div>
   );
 }

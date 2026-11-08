@@ -284,16 +284,16 @@ export default function Boosters() {
       <details className="menu-window booster-odds">
         <summary>Card odds &amp; pack contents</summary>
         <p>
-          Standard boosters: each of the first four slots rolls 1★ 55%, 2★ 25%, 3★ 15%, 4★ 4%, 5★
-          1%. The guaranteed slot rolls 3★ 85%, 4★ 13%, 5★ 2%. Characters of the rolled rarity have
+          Standard boosters: each of the first four slots rolls 1★ 50%, 2★ 27%, 3★ 17%, 4★ 5%, 5★
+          1%. The guaranteed slot rolls 3★ 80%, 4★ 17%, 5★ 3%. Characters of the rolled rarity have
           equal chances.
         </p>
         <p>
-          Each card independently has a 0.1% chance to be Holographic. Holo changes appearance only.
+          Each card independently has a 0.5% chance to be Holographic. Holo changes appearance only.
           Each pack contains five different characters; duplicates across packs add copies.
         </p>
         <p>
-          Your three free starter boosters use 1–3★ cards for their first four slots (55:25:15
+          Your three free starter boosters use 1–3★ cards for their first four slots (50:27:17
           weights), favoring characters you do not already own, plus the same guaranteed 3–5★ slot.
           This ensures a playable first deck. Existing collections stay intact.
         </p>

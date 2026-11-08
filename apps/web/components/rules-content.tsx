@@ -125,8 +125,10 @@ export function RulesContent() {
         <article>
           <h3>Draft</h3>
           <p>
-            A separate rated queue. Choose five cards from eight temporary random offers in three
-            minutes. Up to one 5★ and one 4★, or two 4★ without a 5★. Three Open, Same, Plus and
+            A separate rated queue. Three temporary five-card boosters open automatically, one at a
+            time. Each contains three random cards, one guaranteed 3★+ and one guaranteed 4★+, with
+            a 5% Holo chance per card. Choose five of the 15 cards before the three-minute draft
+            deadline. Up to one 5★ and one 4★, or two 4★ without a 5★. Three Open, Same, Plus and
             Combo; no trade. Unlocked picks are completed automatically at timeout. These cards
             never enter your collection.
           </p>

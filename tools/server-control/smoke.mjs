@@ -131,7 +131,7 @@ try {
       if (pack === 0) {
         await mkdir('docs/screenshots', { recursive: true });
         await page.screenshot({
-          path: `docs/screenshots/v09-booster-${i ? 'mobile' : 'desktop'}.png`,
+          path: `docs/screenshots/v10-booster-${i ? 'mobile' : 'desktop'}.png`,
           fullPage: true,
         });
       }
@@ -317,17 +317,17 @@ try {
   await expect
     .poll(() => foil.evaluate((el) => getComputedStyle(el).backgroundPosition))
     .not.toBe(foilBefore);
-  await pages[0].screenshot({ path: 'docs/screenshots/v09-holo-detail.png', fullPage: true });
+  await pages[0].screenshot({ path: 'docs/screenshots/v10-holo-detail.png', fullPage: true });
   await pages[0].keyboard.press('Escape');
-  await admin.screenshot({ path: 'docs/screenshots/v09-moderation.png', fullPage: true });
+  await admin.screenshot({ path: 'docs/screenshots/v10-moderation.png', fullPage: true });
   assert.equal(result.status, 'complete');
   // Cookie-free refresh proves the GitHub Pages path does not depend on third-party cookies.
   await contexts[0].clearCookies();
   await pages[0].goto(origin + `/gachatriad/?match=${joined.matchId}`);
   await pages[0].locator('.result-overlay').waitFor();
   await mkdir('docs/screenshots', { recursive: true });
-  await pages[0].screenshot({ path: 'docs/screenshots/v09-result-overlay.png', fullPage: true });
-  await pages[1].screenshot({ path: 'docs/screenshots/v09-result-mobile.png', fullPage: true });
+  await pages[0].screenshot({ path: 'docs/screenshots/v10-result-overlay.png', fullPage: true });
+  await pages[1].screenshot({ path: 'docs/screenshots/v10-result-mobile.png', fullPage: true });
   const before = await api(clients[0], '/profile');
   const packsBefore = await api(clients[0], '/boosters');
   const active = await api(clients[0], '/solo', { difficulty: 'easy', rules: { threeOpen: true } });
@@ -361,7 +361,7 @@ try {
     'Player connections did not recover after restart.',
   );
   await api(clients[0], `/matches/${active.matchId}/resign`, {});
-  await admin.screenshot({ path: 'docs/screenshots/v09-control-panel.png', fullPage: true });
+  await admin.screenshot({ path: 'docs/screenshots/v10-control-panel.png', fullPage: true });
   await contexts[0].close();
   await contexts[1].close();
   await admin.getByRole('button', { name: 'Shut down server', exact: true }).click();

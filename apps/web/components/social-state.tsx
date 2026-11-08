@@ -1,8 +1,9 @@
 'use client';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { CHAT_CHANNELS, type ChatChannel, type SocialView } from '@gacha-triad/shared/social';
+import { type ChatChannel, type SocialView } from '@gacha-triad/shared/social';
 import { useSession } from './session';
 import { api } from '../lib/platform';
+import { usePathname } from 'next/navigation';
 const empty: SocialView = {
   friends: [],
   invitations: [],
@@ -20,19 +21,20 @@ const Context = createContext({
 export const useSocial = () => useContext(Context);
 export function SocialProvider({ children }: { children: React.ReactNode }) {
   const { profile, revision } = useSession();
+  const pathname = usePathname();
   const [state, setState] = useState({ data: empty, error: '', ready: false });
   const [channel, setChannelState] = useState<ChatChannel>('general');
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('triad-chat-channel') as ChatChannel;
-      if (CHAT_CHANNELS.includes(saved)) setChannelState(saved);
-    } catch {}
-  }, []);
+    setChannelState(
+      pathname.startsWith('/lobbies')
+        ? 'lobbies'
+        : pathname.startsWith('/market')
+          ? 'trade'
+          : 'general',
+    );
+  }, [pathname]);
   function setChannel(next: ChatChannel) {
     setChannelState(next);
-    try {
-      localStorage.setItem('triad-chat-channel', next);
-    } catch {}
   }
   useEffect(() => setState({ data: empty, error: '', ready: false }), [profile?.id]);
   useEffect(() => {

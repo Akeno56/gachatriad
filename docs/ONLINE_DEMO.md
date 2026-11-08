@@ -102,7 +102,7 @@ The GitHub Pages client and your PC server update separately. From Git Bash or P
 
 ```sh
 git add .
-git commit -m "Add shared chat channels, compact menus and card capture flips"
+git commit -m "Add Draft boosters, direct card purchases and rematches"
 git push
 ```
 

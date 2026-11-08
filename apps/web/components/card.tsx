@@ -82,9 +82,7 @@ export function Card({
       {card.finish === 'holo' && (
         <>
           <span className="holo-foil" aria-hidden="true" />
-          <span className="card-finish" aria-label="Holographic finish">
-            HOLO
-          </span>
+          <span className="sr-only">Holographic finish</span>
         </>
       )}
       {card.rarity === 5 && (

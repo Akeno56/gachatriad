@@ -90,7 +90,7 @@ export default function Lobbies() {
             {
               mode: 'draft',
               name: 'Draft',
-              text: 'Choose 5 from 8 · Same · Plus · Combo · No trade',
+              text: '3 boosters · Choose 5 of 15 · Same · Plus · Combo',
             },
             { mode: 'roulette', name: 'Roulette', text: 'Random rules at match start · No trade' },
           ] as const
@@ -102,6 +102,7 @@ export default function Lobbies() {
               busy ||
               !profile ||
               !!profile.waitingLobbyId ||
+              !!profile.pendingTrade ||
               ((q.mode === 'ranked' || q.mode === 'draft') && !profile.registered)
             }
             onClick={() => enter('/lobbies', { mode: q.mode as Mode, allowBots })}
@@ -195,7 +196,7 @@ export default function Lobbies() {
         </div>
         <button
           className="primary-button"
-          disabled={!profile || !!profile.waitingLobbyId}
+          disabled={!profile || !!profile.waitingLobbyId || !!profile.pendingTrade}
           onClick={() => setCreate((v) => !v)}
         >
           {create ? 'Close setup' : 'Create custom lobby'}
@@ -330,6 +331,7 @@ export default function Lobbies() {
                       row.status !== 'waiting' ||
                       row.inviteOnly ||
                       !!profile?.waitingLobbyId ||
+                      !!profile?.pendingTrade ||
                       row.id === profile?.waitingLobbyId ||
                       ((row.mode === 'ranked' || row.mode === 'draft' || row.tradeRule === 'one') &&
                         !profile?.registered)

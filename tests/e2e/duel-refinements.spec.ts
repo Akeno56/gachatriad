@@ -42,6 +42,7 @@ test('Holo and CRT visibly animate without hover in both OS motion settings and 
     const foil = page.locator('.card-detail .holo-foil'),
       card = page.locator('.card-detail .playing-card');
     await expect(foil).toHaveCSS('animation-name', 'holo-drift');
+    await expect(card.locator('.card-finish')).toHaveCount(0);
     await expect(foil).toHaveCSS('animation-play-state', 'running');
     await expect
       .poll(() =>

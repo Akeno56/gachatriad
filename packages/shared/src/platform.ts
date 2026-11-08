@@ -26,6 +26,8 @@ export interface MatchView {
   endReason: string | null;
   draftPool: Card[];
   draftLocked: boolean;
+  draftRevealed: number;
+  rematch: { requestedBy: string | null; matchId: string | null; expiresAt: number | null };
   trade: {
     rule: 'none' | 'one';
     pending: boolean;
@@ -70,6 +72,7 @@ export interface ProfileView {
   inventory: Record<string, { quantity: number; available: number }>;
   deck: string[];
   activeMatchId: string | null;
+  pendingTrade: { matchId: string; canClaim: boolean } | null;
   waitingLobbyId: string | null;
   profiles: { id: string; name: string }[];
 }
@@ -79,10 +82,13 @@ export const ECONOMY = {
   winReward: 50,
   drawReward: 25,
   lossReward: 10,
-  standardWeights: [55, 25, 15, 4, 1],
-  starterWeights: [55, 25, 15, 0, 0],
-  guaranteedWeights: [0, 0, 85, 13, 2],
-  holoPer10000: 10,
+  standardWeights: [50, 27, 17, 5, 1],
+  starterWeights: [50, 27, 17, 0, 0],
+  guaranteedWeights: [0, 0, 80, 17, 3],
+  draftGuaranteedWeights: [0, 0, 0, 85, 15],
+  holoPer10000: 50,
+  draftHoloPer10000: 500,
+  cardPrices: [50, 125, 200, 300, 500],
   recyclePrisms: [5, 10, 20, 40, 75],
 } as const;
 export interface BoosterView {

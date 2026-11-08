@@ -415,6 +415,12 @@ export async function createPlatform(
     return status;
   });
   app.get('/api/boosters', async (req) => store.economy.list((await profile(req)).id));
+  app.post('/api/cards/buy', async (req) => {
+    const p = await profile(req);
+    const result = await store.economy.purchaseCard(p.id, body(req).cardId, body(req).requestId);
+    notify();
+    return result;
+  });
   app.get('/api/boosters/daily', async (req) => {
     const p = await profile(req);
     return store.economy.daily(p.id, p.registered);
@@ -544,6 +550,18 @@ export async function createPlatform(
   app.post('/api/matches/:id/draft', async (req) => {
     const p = await profile(req);
     await store.lockDraft(p.id, id(req), body(req).cards as string[]);
+    notify();
+    return store.view(p.id, id(req));
+  });
+  app.post('/api/matches/:id/draft/reveal', async (req) => {
+    const p = await profile(req);
+    await store.revealDraft(p.id, id(req), body(req).step);
+    notify();
+    return store.view(p.id, id(req));
+  });
+  app.post('/api/matches/:id/rematch', async (req) => {
+    const p = await profile(req);
+    await store.rematch(p.id, id(req), body(req).cancel === true);
     notify();
     return store.view(p.id, id(req));
   });

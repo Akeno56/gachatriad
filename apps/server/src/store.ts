@@ -38,6 +38,7 @@ import { Database, type Sql } from './database';
 import { GameError } from './errors';
 export { GameError } from './errors';
 import { Economy } from './economy';
+import { draftPool } from './draft-packs';
 import { pruneDeck } from './inventory';
 import { titleName, titlesFor, awardRankTitles } from './titles';
 export interface Actor {
@@ -78,6 +79,10 @@ interface MatchRow {
   claimed_card: string | null;
   settlement_done: boolean;
   end_reason: string | null;
+  draft_revealed: [number, number];
+  rematch_requested_by: string | null;
+  rematch_requested_at: Date | null;
+  rematch_match_id: string | null;
 }
 interface LobbyRow {
   allow_bots: boolean;
@@ -162,6 +167,7 @@ export class GameStore {
       '009_duplicate_cards_daily.sql',
       '010_ranked_titles.sql',
       '011_chat_channels.sql',
+      '012_draft_shop_rematches.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -221,6 +227,10 @@ export class GameStore {
         "SELECT id FROM matches WHERE (player0=$1 OR player1=$1) AND status IN('playing','drafting') ORDER BY created_at DESC LIMIT 1",
         [p.id],
       );
+      const [pendingTrade] = await sql<{ id: string; winner: number; player0: string }>(
+        "SELECT id,winner,player0 FROM matches WHERE (player0=$1 OR player1=$1) AND status='complete' AND settlement_done=false ORDER BY completed_at LIMIT 1",
+        [p.id],
+      );
       const waiting = await sql<{ id: string }>(
         "SELECT id FROM lobbies WHERE host_id=$1 AND status='waiting'",
         [p.id],
@@ -261,6 +271,15 @@ export class GameStore {
         ),
         deck: p.default_deck,
         activeMatchId: active[0]?.id ?? null,
+        pendingTrade: pendingTrade
+          ? {
+              matchId: pendingTrade.id,
+              canClaim:
+                pendingTrade.winner === 0
+                  ? pendingTrade.player0 === p.id
+                  : pendingTrade.player0 !== p.id,
+            }
+          : null,
         waitingLobbyId: waiting[0]?.id ?? null,
         profiles,
       };
@@ -275,6 +294,7 @@ export class GameStore {
     return cards(rows.map((r) => r.card_id));
   }
   private async busy(sql: Sql, id: string) {
+    await this.requireSettlement(sql, id);
     const [p] = await sql<{ played: number; tutorial_completed: boolean; is_bot: boolean }>(
       'SELECT played,tutorial_completed,is_bot FROM profiles WHERE id=$1',
       [id],
@@ -291,6 +311,20 @@ export class GameStore {
     const waiting = await sql("SELECT id FROM lobbies WHERE host_id=$1 AND status='waiting'", [id]);
     if (rows.length || waiting.length)
       throw new GameError('Finish your active match or leave your waiting lobby first.', 409);
+  }
+  private async requireSettlement(sql: Sql, id: string) {
+    if (
+      (
+        await sql(
+          "SELECT id FROM matches WHERE (player0=$1 OR player1=$1) AND status='complete' AND settlement_done=false",
+          [id],
+        )
+      ).length
+    )
+      throw new GameError(
+        'Resolve the pending Trade One card selection before starting another game.',
+        409,
+      );
   }
   private async deck(sql: Sql, id: string, random = false) {
     const pool = await this.available(sql, id);
@@ -371,28 +405,12 @@ export class GameStore {
     difficulty: 'easy' | 'normal' | null = null,
   ) {
     const id = randomUUID();
+    await this.requireSettlement(sql, a);
+    if (b) await this.requireSettlement(sql, b);
     let state: GameState | null = null;
     let pools: [Card[], Card[]] | null = null;
     if (mode === 'draft') {
-      const make = () =>
-        shuffle(
-          [
-            ...shuffle(
-              CARDS.filter((c) => c.rarity === 5),
-              rng(),
-            ).slice(0, 1),
-            ...shuffle(
-              CARDS.filter((c) => c.rarity === 4),
-              rng(),
-            ).slice(0, 1),
-            ...shuffle(
-              CARDS.filter((c) => c.rarity < 4),
-              rng(),
-            ).slice(0, 6),
-          ],
-          rng(),
-        );
-      pools = [make(), make()];
+      pools = [draftPool(), draftPool()];
       decks = [[], []];
     } else {
       state = createGame(decks, rules, rng());
@@ -680,6 +698,18 @@ export class GameStore {
         endReason: m.end_reason,
         draftPool: m.status === 'drafting' && m.pools ? cards(m.pools[seat]) : [],
         draftLocked: m.decks[seat].length === 5,
+        draftRevealed: m.draft_revealed?.[seat] ?? 0,
+        rematch: {
+          requestedBy:
+            m.rematch_requested_at &&
+            Date.now() - new Date(m.rematch_requested_at).getTime() < 300000
+              ? m.rematch_requested_by
+              : null,
+          matchId: m.rematch_match_id,
+          expiresAt: m.rematch_requested_at
+            ? new Date(m.rematch_requested_at).getTime() + 300000
+            : null,
+        },
         trade: {
           rule: m.trade_rule,
           pending: !m.settlement_done && m.status === 'complete',
@@ -698,6 +728,8 @@ export class GameStore {
       if (m.status !== 'drafting' || !m.pools) throw new GameError('This match is not drafting.');
       const seat = m.player0 === profileId ? 0 : 1;
       if (m.decks[seat].length) throw new GameError('Your draft is already locked.');
+      if ((m.draft_revealed?.[seat] ?? 0) < m.pools[seat].length)
+        throw new GameError('Finish opening your three temporary Draft boosters first.', 409);
       if (!Array.isArray(ids) || ids.some((c) => !m.pools![seat].includes(c)))
         throw new GameError('Choose only cards in your draft pool.');
       const selected = cards(ids);
@@ -715,6 +747,116 @@ export class GameStore {
           JSON.stringify(m.decks),
           id,
         ]);
+    });
+  }
+  async revealDraft(profileId: string, id: string, step: unknown) {
+    await this.db.tx(async (sql) => {
+      const m = await this.load(sql, id, profileId),
+        seat = m.player0 === profileId ? 0 : 1;
+      if (m.status !== 'drafting' || !m.pools)
+        throw new GameError('This match is not drafting.', 409);
+      const revealed = m.draft_revealed ?? [0, 0];
+      if (typeof step !== 'number' || !Number.isInteger(step) || step < 0 || step > revealed[seat])
+        throw new GameError('Reveal Draft cards in order.', 409);
+      if (step < revealed[seat] || revealed[seat] >= m.pools[seat].length) return;
+      revealed[seat]++;
+      await sql('UPDATE matches SET draft_revealed=$1::jsonb,version=version+1 WHERE id=$2', [
+        JSON.stringify(revealed),
+        id,
+      ]);
+    });
+  }
+  async rematch(profileId: string, id: string, cancel = false) {
+    await this.db.tx(async (sql) => {
+      const m = await this.load(sql, id, profileId);
+      if (m.status !== 'complete')
+        throw new GameError('Finish this duel before requesting a rematch.', 409);
+      if (m.rematch_match_id) return;
+      if (cancel) {
+        if (m.rematch_requested_by !== profileId)
+          throw new GameError('Only the requester can cancel this rematch.', 403);
+        await sql(
+          'UPDATE matches SET rematch_requested_by=NULL,rematch_requested_at=NULL,version=version+1 WHERE id=$1',
+          [id],
+        );
+        return;
+      }
+      await this.busy(sql, profileId);
+      const opponent = m.player0 === profileId ? m.player1 : m.player0;
+      if (!opponent) throw new GameError('Use Play again for solo practice.');
+      const [other] = await sql<{ is_bot: boolean }>(
+        `SELECT p.is_bot FROM profiles p WHERE p.id=$1 AND (p.is_bot OR EXISTS(SELECT 1 FROM profile_accounts a JOIN "user" u ON u.id=a.auth_user_id LEFT JOIN server_suspensions s ON s.auth_user_id=u.id WHERE a.profile_id=p.id AND s.auth_user_id IS NULL))`,
+        [opponent],
+      );
+      if (!other) throw new GameError('This opponent is no longer available.', 409);
+      if (other.is_bot)
+        await sql("UPDATE lobbies SET status='closed' WHERE host_id=$1 AND status='waiting'", [
+          opponent,
+        ]);
+      try {
+        await this.busy(sql, opponent);
+      } catch {
+        throw new GameError('Your opponent is busy with another game or lobby.', 409);
+      }
+      const active =
+        m.rematch_requested_at && Date.now() - new Date(m.rematch_requested_at).getTime() < 300000;
+      if (
+        !other.is_bot &&
+        (!active || !m.rematch_requested_by || m.rematch_requested_by === profileId)
+      ) {
+        if (!active || !m.rematch_requested_by)
+          await sql(
+            'UPDATE matches SET rematch_requested_by=$1,rematch_requested_at=now(),version=version+1 WHERE id=$2',
+            [profileId, id],
+          );
+        return;
+      }
+      if (m.mode === 'ranked') {
+        await this.rankedEligible(sql, m.player0);
+        await this.rankedEligible(sql, m.player1!);
+      }
+      if (other.is_bot && m.mode !== 'draft') {
+        const deck = buildBestDeck(await this.available(sql, opponent), rng());
+        await sql('UPDATE profiles SET default_deck=$1::jsonb WHERE id=$2', [
+          JSON.stringify(deck.map((c) => c.id)),
+          opponent,
+        ]);
+      }
+      const decks: [Card[], Card[]] =
+        m.mode === 'draft'
+          ? [[], []]
+          : [
+              await this.deck(sql, m.player0, !!m.rules.random),
+              await this.deck(sql, m.player1!, !!m.rules.random),
+            ];
+      const next = await this.newMatch(
+        sql,
+        m.mode,
+        m.player0,
+        m.player1,
+        m.rules,
+        m.trade_rule,
+        decks,
+        m.difficulty,
+      );
+      const [host] = await sql<{ name: string }>('SELECT name FROM profiles WHERE id=$1', [
+        m.player0,
+      ]);
+      await sql(
+        "INSERT INTO lobbies(id,host_id,guest_id,name,mode,rules,trade_rule,status,match_id,allow_bots) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7,'playing',$8,$9)",
+        [
+          randomUUID(),
+          m.player0,
+          m.player1,
+          `${host.name}'s rematch`.slice(0, 60),
+          m.mode,
+          JSON.stringify(m.rules),
+          m.trade_rule,
+          next,
+          other.is_bot,
+        ],
+      );
+      await sql('UPDATE matches SET rematch_match_id=$1,version=version+1 WHERE id=$2', [next, id]);
     });
   }
   async move(profileId: string, id: string, cardId: string, cell: number, version: number) {

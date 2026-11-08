@@ -156,7 +156,7 @@ export function ChannelChat({ compact = false }: { compact?: boolean }) {
       {!profile?.registered && (
         <p className="chat-registration">
           <button className="text-button" onClick={openAccount}>
-            Register or sign in
+            Sign in to chat
           </button>{' '}
           to send messages.
         </p>

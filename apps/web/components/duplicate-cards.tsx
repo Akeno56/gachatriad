@@ -172,7 +172,7 @@ export function DuplicateCards() {
       <p>
         {kind === 'recycle'
           ? `${ECONOMY.recyclePrisms[rarity - 1]} Stellar Prisms per ${rarity}★ copy.`
-          : `Choose five ${rarity}★ spare copies for one random ${rarity + 1}★ card. Mixed characters allowed · 0.1% Holo chance.`}
+          : `Choose five ${rarity}★ spare copies for one random ${rarity + 1}★ card. Mixed characters allowed · 0.5% Holo chance.`}
       </p>
       {!duplicates.length && <p>No available duplicates of this rarity.</p>}
       <div className="duplicate-list">

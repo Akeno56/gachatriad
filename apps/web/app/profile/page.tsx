@@ -132,7 +132,12 @@ export default function PlayerProfile() {
                       </button>
                       <button
                         className="outline-button"
-                        disabled={busy || !!profile.activeMatchId || !!profile.waitingLobbyId}
+                        disabled={
+                          busy ||
+                          !!profile.activeMatchId ||
+                          !!profile.waitingLobbyId ||
+                          !!profile.pendingTrade
+                        }
                         onClick={async () => {
                           setBusy(true);
                           setError('');

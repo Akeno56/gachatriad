@@ -16,7 +16,9 @@ export function ChatMessageContent({
       <div className="message-content">
         <header className="message-heading">
           {person.id ? (
-            <a href={appPath(`/profile?id=${person.id}`)}>{person.name}</a>
+            <a href={appPath(`/profile?id=${person.id}`)} title={person.name}>
+              {person.name}
+            </a>
           ) : (
             <strong>{person.name}</strong>
           )}

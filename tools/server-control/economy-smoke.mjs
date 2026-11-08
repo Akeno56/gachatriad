@@ -10,6 +10,28 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
   await expect
     .poll(async () => (await api(client, '/profile')).prisms)
     .toBeGreaterThanOrEqual(15000);
+  await page.goto(origin + '/gachatriad/cards');
+  await page.getByLabel('Find a card').fill('Amber');
+  const target = catalog.find((c) => c.name === 'Amber'),
+    cardCost = [50, 125, 200, 300, 500][target.rarity - 1];
+  const shopBefore = await api(client, '/profile');
+  await page
+    .getByRole('button', { name: `Buy Amber for ${cardCost} Stellar Prisms`, exact: true })
+    .click();
+  await expect(page.getByRole('dialog', { name: 'Buy Amber', exact: true })).toContainText(
+    `${cardCost} Stellar Prisms`,
+  );
+  await page.getByRole('button', { name: 'Confirm card purchase', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Buy Amber', exact: true })).not.toBeVisible();
+  const shopAfter = await api(client, '/profile');
+  assert.equal(shopAfter.prisms, shopBefore.prisms - cardCost);
+  assert.equal(
+    shopAfter.inventory[target.id].quantity,
+    (shopBefore.inventory[target.id]?.quantity ?? 0) + 1,
+  );
+  await page.screenshot({ path: 'docs/screenshots/v10-card-shop.png', fullPage: true });
+  await page.getByLabel('Finish', { exact: true }).selectOption('holo');
+  await expect(page.locator('.card-buy-button')).toHaveCount(0);
   await page.goto(origin + '/gachatriad/boosters');
   await page.getByRole('button', { name: 'Claim daily booster', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Claimed today', exact: true })).toBeDisabled();
@@ -25,7 +47,7 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
   ).toBeVisible();
   await expect(page.locator('.booster-count').filter({ hasText: '×10' })).toBeVisible();
   assert.equal((await api(client, '/profile')).prisms, before.prisms - 1500);
-  await page.screenshot({ path: 'docs/screenshots/v09-booster-stacks.png', fullPage: true });
+  await page.screenshot({ path: 'docs/screenshots/v10-booster-stacks.png', fullPage: true });
   await page.getByRole('button', { name: 'Open ×10', exact: true }).click();
   await page.getByRole('button', { name: 'Open 10 boosters', exact: true }).click();
   const batch = page.locator('.batch-opening');
@@ -43,7 +65,7 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
         .map((a) => a.finished.catch(() => {})),
     );
   });
-  await page.screenshot({ path: 'docs/screenshots/v09-open-ten.png' });
+  await page.screenshot({ path: 'docs/screenshots/v10-open-ten.png' });
   await batch.getByRole('button', { name: 'Keep cards', exact: true }).click();
   const purchased = await api(client, '/boosters/buy', {
     quantity: 50,
@@ -91,7 +113,7 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
   await page.getByRole('button', { name: 'Confirm', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Trade Up complete', exact: true })).toBeVisible();
   await expect(page.locator('.duplicate-reward .playing-card')).toHaveClass(/rarity-2/);
-  await page.screenshot({ path: 'docs/screenshots/v09-trade-up.png' });
+  await page.screenshot({ path: 'docs/screenshots/v10-trade-up.png' });
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
   const after = await api(client, '/profile');
   assert.equal(after.prisms, p.prisms + 5);

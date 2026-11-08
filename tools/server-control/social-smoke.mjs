@@ -94,11 +94,11 @@ export async function checkSocial({ browser, api, apiURL, origin, controller, ad
     await b.goto(origin + '/gachatriad/lobbies');
     await b.locator('.main-chat').getByRole('tab', { name: 'Trade', exact: true }).click();
     await expect(b.getByText('Trading in the Trade channel', { exact: true })).toBeVisible();
-    await b.screenshot({ path: 'docs/screenshots/v09-lobby-chat-mobile.png', fullPage: true });
+    await b.screenshot({ path: 'docs/screenshots/v10-lobby-chat-mobile.png', fullPage: true });
     await a.locator('.main-chat').getByRole('tab', { name: 'General', exact: true }).click();
     await b.locator('.main-chat').getByRole('tab', { name: 'General', exact: true }).click();
     await b.goto(origin + '/gachatriad/');
-    await a.screenshot({ path: 'docs/screenshots/v09-main-chat.png', fullPage: true });
+    await a.screenshot({ path: 'docs/screenshots/v10-main-chat.png', fullPage: true });
     await a.goto(origin + '/gachatriad/profile?id=' + clients[1].profile.id);
     await expect(a.getByRole('button', { name: 'Message', exact: true })).toBeVisible();
     await expect(a.getByRole('button', { name: 'Add friend', exact: true })).toHaveCount(0);
@@ -122,8 +122,8 @@ export async function checkSocial({ browser, api, apiURL, origin, controller, ad
     await expect(b.getByRole('button', { name: /Friends and private chat/ })).toHaveAccessibleName(
       'Friends and private chat',
     );
-    await b.screenshot({ path: 'docs/screenshots/v09-friend-chat-mobile.png', fullPage: true });
-    await a.screenshot({ path: 'docs/screenshots/v09-friend-chat-desktop.png', fullPage: true });
+    await b.screenshot({ path: 'docs/screenshots/v10-friend-chat-mobile.png', fullPage: true });
+    await a.screenshot({ path: 'docs/screenshots/v10-friend-chat-desktop.png', fullPage: true });
     await a.getByRole('tab', { name: 'Friends', exact: true }).click();
     await a
       .locator('.social-dialog')
@@ -140,7 +140,7 @@ export async function checkSocial({ browser, api, apiURL, origin, controller, ad
     const active = (await api(clients[0], '/profile')).activeMatchId;
     assert.ok(active);
     assert.equal((await api(clients[1], '/profile')).activeMatchId, active);
-    await a.screenshot({ path: 'docs/screenshots/v09-friend-duel.png', fullPage: true });
+    await a.screenshot({ path: 'docs/screenshots/v10-friend-duel.png', fullPage: true });
     await api(clients[1], `/matches/${active}/resign`, {});
     for (const c of clients) await api(c, '/profile/title', { titleId: 'card-player' });
     for (const page of pages) await page.goto(origin + '/gachatriad/');
@@ -169,13 +169,35 @@ export async function checkSocial({ browser, api, apiURL, origin, controller, ad
           ),
       )
       .toBe(true);
-    await a.screenshot({ path: 'docs/screenshots/v09-main-chat.png' });
+    await a.screenshot({ path: 'docs/screenshots/v10-main-chat.png' });
     await a.getByRole('button', { name: /Friends and private chat/ }).click();
     await a.getByRole('tab', { name: 'Friend chat', exact: true }).click();
     await a.locator('.conversation-choice').first().click();
     await expect(a.locator('.private-message .player-avatar img').first()).toBeVisible();
     await expect(a.locator('.private-message .message-title').first()).toHaveText('Card Player');
-    await a.screenshot({ path: 'docs/screenshots/v09-friend-chat.png' });
+    await api(clients[0], `/friends/${clients[1].profile.id}/messages`, {
+      message: 'Second private message',
+      requestId: crypto.randomUUID(),
+    });
+    await api(clients[1], `/friends/${clients[0].profile.id}/messages`, {
+      message: 'Third private message',
+      requestId: crypto.randomUUID(),
+    });
+    await b.getByRole('button', { name: /Friends and private chat/ }).click();
+    await b.getByRole('tab', { name: 'Friend chat', exact: true }).click();
+    await b.locator('.conversation-choice').first().click();
+    await expect(b.locator('.private-message')).toHaveCount(3);
+    const privateBox = await b.locator('.friend-chat .chat-messages').boundingBox();
+    for (const row of await b.locator('.private-message').all()) {
+      const box = await row.boundingBox();
+      assert.ok(
+        box.y >= privateBox.y && box.y + box.height <= privateBox.y + privateBox.height,
+        'Three private messages should fit without scrolling.',
+      );
+    }
+    await b.screenshot({ path: 'docs/screenshots/v10-three-private-messages.png', fullPage: true });
+    await b.locator('.social-dialog').getByRole('button', { name: 'Close', exact: true }).click();
+    await a.screenshot({ path: 'docs/screenshots/v10-friend-chat.png' });
     await a.locator('.social-dialog').getByRole('button', { name: 'Close', exact: true }).click();
     await a.getByRole('button', { name: 'Play ranked', exact: true }).click();
     await expect(a.locator('.ranked-warning')).toContainText('opponent takes one card');
@@ -203,10 +225,28 @@ export async function checkSocial({ browser, api, apiURL, origin, controller, ad
     await b.getByRole('link', { name: 'Collection', exact: true }).click();
     await b.getByRole('button', { name: 'Auto build', exact: true }).click();
     await expect(b.locator('.saved-deck')).toContainText('Ready for battle.');
+    await a.getByRole('button', { name: 'Rematch', exact: true }).click();
+    await expect(a.getByRole('button', { name: 'Rematch requested', exact: true })).toBeDisabled();
+    await b.goto(origin + '/gachatriad/?match=' + ranked);
+    await b.getByRole('button', { name: 'Accept rematch', exact: true }).click();
+    for (const page of pages) await expect(page.locator('.board-cell')).toHaveCount(9);
+    const rematch = (await api(clients[0], '/profile')).activeMatchId;
+    assert.ok(rematch && rematch !== ranked);
+    assert.ok(
+      (await api(clients[0], '/lobbies')).some(
+        (l) => l.matchId === rematch && l.players === 2 && l.status === 'playing',
+      ),
+    );
+    await a.screenshot({ path: 'docs/screenshots/v10-public-rematch.png', fullPage: true });
+    await api(clients[1], `/matches/${rematch}/resign`, {});
+    const rematchResult = await api(clients[0], `/matches/${rematch}`);
+    await api(clients[0], `/matches/${rematch}/claim`, {
+      cardId: rematchResult.trade.choices[0].id,
+    });
     await a.goto(origin + '/gachatriad/ladder');
     await expect(a.locator('.ladder-table')).toContainText('Friend Alpha');
     await expect(a.locator('.ladder-table')).toContainText('Card Player');
-    await a.screenshot({ path: 'docs/screenshots/v09-ladder.png', fullPage: true });
+    await a.screenshot({ path: 'docs/screenshots/v10-ladder.png', fullPage: true });
     const before = (await api(clients[1], '/profile')).prisms;
     await admin.getByLabel('Selected user', { exact: true }).selectOption(clients[1].profile.id);
     await admin.getByLabel('Grant', { exact: true }).selectOption('prisms');
@@ -267,7 +307,7 @@ export async function checkSocial({ browser, api, apiURL, origin, controller, ad
       async () => (await controller.state()).online.population.difficulty === 'hard',
       'Bot difficulty was not saved.',
     );
-    await admin.screenshot({ path: 'docs/screenshots/v09-user-tools.png', fullPage: true });
+    await admin.screenshot({ path: 'docs/screenshots/v10-user-tools.png', fullPage: true });
     await checkEconomy({ page: a, client: clients[0], api, admin, origin });
     console.log(
       'Social browser checks passed: friends, safe chat, invitations, ranked consent and Trade One, titles, avatars, ladder, stable admin panel, grants, deletion, bot difficulty.',

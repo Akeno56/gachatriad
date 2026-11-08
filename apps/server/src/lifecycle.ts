@@ -17,6 +17,11 @@ async function purge(sql: Sql, ids: string[]) {
     [ids],
   );
   await sql('DELETE FROM chat_messages WHERE profile_id=ANY($1::text[])', [ids]);
+  await sql('DELETE FROM card_purchases WHERE profile_id=ANY($1::text[])', [ids]);
+  await sql(
+    'UPDATE matches SET rematch_requested_by=NULL,rematch_requested_at=NULL WHERE rematch_requested_by=ANY($1::text[])',
+    [ids],
+  );
   await sql(
     "UPDATE lobbies SET host_id=CASE WHEN host_id=ANY($1::text[]) THEN 'former-guest' ELSE host_id END,guest_id=CASE WHEN guest_id=ANY($1::text[]) THEN 'former-guest' ELSE guest_id END,invited_profile=CASE WHEN invited_profile=ANY($1::text[]) THEN NULL ELSE invited_profile END,status='closed' WHERE host_id=ANY($1::text[]) OR guest_id=ANY($1::text[]) OR invited_profile=ANY($1::text[])",
     [ids],

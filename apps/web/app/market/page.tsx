@@ -7,6 +7,7 @@ import { useSession } from '../../components/session';
 import { LocalBots } from '../../components/local-bots';
 import { Card } from '../../components/card';
 import { api } from '../../lib/platform';
+import { MainChat } from '../../components/main-chat';
 export default function Market() {
   const { profile, revision, refresh, error: connectionError, openAccount } = useSession();
   const [offers, setOffers] = useState<TradeOfferView[]>([]),
@@ -99,6 +100,7 @@ export default function Market() {
         cancelled. Exchanges are permanent and require an account.
       </p>
       <LocalBots />
+      <MainChat compact />
       {profile && !profile.registered && (
         <aside className="guest-market-notice menu-window" role="note">
           <div>

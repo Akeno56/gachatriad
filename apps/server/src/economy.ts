@@ -10,6 +10,7 @@ import {
 } from '@gacha-triad/shared/platform';
 import { Database, type Sql } from './database';
 import { GameError } from './errors';
+import { rollRarity as rarity, rollFinish } from './draft-packs';
 
 interface PackRow {
   new_cards: string[];
@@ -32,16 +33,57 @@ function view(pack: PackRow): BoosterView {
     cards: pack.opened_at ? (pack.cards ?? []).map((id) => definitions.get(id)!) : [],
   };
 }
-function rarity(weights: readonly number[]) {
-  let roll = randomInt(weights.reduce((a, b) => a + b, 0));
-  for (let i = 0; i < weights.length; i++) {
-    roll -= weights[i];
-    if (roll < 0) return i + 1;
-  }
-  throw Error('Invalid rarity weights.');
-}
 export class Economy {
   constructor(readonly db: Database) {}
+  async purchaseCard(profileId: string, cardId: unknown, requestId: unknown) {
+    const card = typeof cardId === 'string' ? definitions.get(cardId) : undefined;
+    if (
+      !card ||
+      !card.enabled ||
+      card.finish === 'holo' ||
+      typeof requestId !== 'string' ||
+      !/^[a-zA-Z0-9-]{8,80}$/.test(requestId)
+    )
+      throw new GameError('Choose a Standard card and a valid purchase request.');
+    const cost = ECONOMY.cardPrices[card.rarity - 1];
+    return this.db.tx(async (sql) => {
+      const [previous] = await sql<{ card_id: string; cost: number }>(
+        'SELECT card_id,cost FROM card_purchases WHERE profile_id=$1 AND request_id=$2',
+        [profileId, requestId],
+      );
+      if (previous) {
+        if (previous.card_id !== card.id)
+          throw new GameError('This purchase request belongs to another card.', 409);
+        return { card, cost: previous.cost };
+      }
+      if (
+        !(
+          await sql(
+            'UPDATE profiles SET prisms=prisms-$1 WHERE id=$2 AND prisms>=$1 RETURNING id',
+            [cost, profileId],
+          )
+        ).length
+      )
+        throw new GameError(`You need ${cost} Stellar Prisms for this card.`, 409);
+      await sql(
+        'INSERT INTO card_purchases(profile_id,request_id,card_id,cost) VALUES($1,$2,$3,$4)',
+        [profileId, requestId, card.id, cost],
+      );
+      await sql(
+        'INSERT INTO inventory(profile_id,card_id,quantity) VALUES($1,$2,1) ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=inventory.quantity+1',
+        [profileId, card.id],
+      );
+      await sql(
+        "INSERT INTO inventory_ledger(id,profile_id,card_id,delta,kind) VALUES($1,$2,$3,1,'card-purchase')",
+        [randomUUID(), profileId, card.id],
+      );
+      await sql(
+        "INSERT INTO prism_ledger(id,profile_id,delta,kind,reference) VALUES($1,$2,$3,'card-purchase',$4)",
+        [randomUUID(), profileId, -cost, `card:${requestId}`],
+      );
+      return { card, cost };
+    });
+  }
   async daily(profileId: string, registered: boolean): Promise<DailyBooster> {
     const day = Math.floor(Date.now() / 86400000);
     const [pack] = await this.db.read((sql) =>
@@ -176,7 +218,7 @@ export class Economy {
       } else {
         const pool = CARDS.filter((c) => c.enabled && c.rarity === rank + 1);
         const base = pool[randomInt(pool.length)];
-        const id = randomInt(10000) < ECONOMY.holoPer10000 ? `${base.id}::holo` : base.id;
+        const id = rollFinish(base.id, ECONOMY.holoPer10000);
         result.card = definitions.get(id)!;
         await sql(
           'INSERT INTO inventory(profile_id,card_id,quantity) VALUES($1,$2,1) ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=inventory.quantity+1',
@@ -317,7 +359,7 @@ export class Economy {
       if (!pool.length) throw Error('Booster pool exhausted.');
       const base = pool[randomInt(pool.length)];
       selectedBases.add(base.id);
-      const cardId = randomInt(10000) < ECONOMY.holoPer10000 ? `${base.id}::holo` : base.id;
+      const cardId = rollFinish(base.id, ECONOMY.holoPer10000);
       selected.push(cardId);
       if (!owned.some((c) => c.card_id === cardId)) newCardIds.push(cardId);
       await sql(

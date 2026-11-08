@@ -9,12 +9,18 @@ export function ResultOverlay({
   onClose,
   onClaim,
   onPlayAgain,
+  onRematch,
+  onCancelRematch,
+  error,
 }: {
   match: MatchView;
   busy: boolean;
   onClose: () => void;
   onClaim: (id: string) => void;
   onPlayAgain: () => void;
+  onRematch: () => void;
+  onCancelRematch: () => void;
+  error?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null),
     heading = useRef<HTMLHeadingElement>(null),
@@ -82,6 +88,23 @@ export function ResultOverlay({
             Play again ▶
           </button>
         )}
+        {match.mode !== 'solo' && (
+          <button
+            className="primary-button"
+            disabled={
+              busy ||
+              match.trade.pending ||
+              match.rematch?.requestedBy === match.players[match.seat].id
+            }
+            onClick={onRematch}
+          >
+            {match.rematch?.requestedBy === match.players[match.seat].id
+              ? 'Rematch requested'
+              : match.rematch?.requestedBy
+                ? 'Accept rematch'
+                : 'Rematch'}
+          </button>
+        )}
         <Link className="outline-button" href="/lobbies">
           Lobby list
         </Link>
@@ -89,6 +112,25 @@ export function ResultOverlay({
           Review board
         </button>
       </div>
+      {match.rematch?.requestedBy && (
+        <p className="rematch-status" role="status">
+          {match.rematch.requestedBy === match.players[match.seat].id ? (
+            <>
+              Waiting for your opponent · expires after five minutes.{' '}
+              <button className="text-button" onClick={onCancelRematch} disabled={busy}>
+                Cancel rematch
+              </button>
+            </>
+          ) : (
+            'Your opponent requested a rematch with the same rules.'
+          )}
+        </p>
+      )}
+      {error && (
+        <p className="error-message" role="alert">
+          {error}
+        </p>
+      )}
     </dialog>
   );
 }

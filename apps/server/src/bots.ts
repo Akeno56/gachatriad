@@ -133,13 +133,15 @@ export class BotPopulation {
         let p = await this.store.profile(actor);
         if (p.activeMatchId) {
           const m = await this.store.view(p.id, p.activeMatchId);
-          if (m.status === 'drafting' && !m.draftLocked)
+          if (m.status === 'drafting' && !m.draftLocked) {
+            for (let step = m.draftRevealed; step < m.draftPool.length; step++)
+              await this.store.revealDraft(p.id, m.id, step);
             await this.store.lockDraft(
               p.id,
               m.id,
               randomDeck(m.draftPool, seededRandom(randomInt(2 ** 32))).map((c) => c.id),
             );
-          else if (m.game?.turn === m.seat && m.status === 'playing') {
+          } else if (m.game?.turn === m.seat && m.status === 'playing') {
             // Only the bot's hand and public board are passed to the same CPU policy as solo.
             const { hands, ...publicView } = m.game;
             const move = chooseCpuMove(
