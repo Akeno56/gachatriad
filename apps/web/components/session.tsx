@@ -15,6 +15,7 @@ const Context = createContext<{
   error: string;
   revision: number;
   refresh: () => Promise<void>;
+  changeAccount: (work: () => Promise<unknown>) => Promise<void>;
   accountOpen: boolean;
   openAccount: () => void;
   closeAccount: () => void;
@@ -23,6 +24,7 @@ const Context = createContext<{
   error: '',
   revision: 0,
   refresh: async () => {},
+  changeAccount: async () => {},
   accountOpen: false,
   openAccount: () => {},
   closeAccount: () => {},
@@ -36,8 +38,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const openAccount = useCallback(() => setAccountOpen(true), []),
     closeAccount = useCallback(() => setAccountOpen(false), []);
   const pending = useRef<Promise<void> | null>(null);
+  const changingAccount = useRef(false);
   const refresh = useCallback(async () => {
-    if (!serverConfigured()) return;
+    if (!serverConfigured() || changingAccount.current) return;
     if (pending.current) return pending.current;
     pending.current = (async () => {
       try {
@@ -68,6 +71,22 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     })();
     return pending.current;
   }, []);
+  const changeAccount = useCallback(
+    async (work: () => Promise<unknown>) => {
+      if (changingAccount.current) return;
+      changingAccount.current = true;
+      try {
+        // Drain the old guest/account refresh before replacing its session cookie or token.
+        await pending.current;
+        await work();
+        resetSession();
+      } finally {
+        changingAccount.current = false;
+      }
+      await refresh();
+    },
+    [refresh],
+  );
   useEffect(() => {
     void refresh();
     const timer = setInterval(() => void refresh(), 5000);
@@ -84,17 +103,33 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     return () => {
       socket.disconnect();
     };
-  }, [profile?.id, refresh]);
+  }, [profile?.id, profile?.registered, refresh]);
   return (
     <Context.Provider
-      value={{ profile, error, revision, refresh, accountOpen, openAccount, closeAccount }}
+      value={{
+        profile,
+        error,
+        revision,
+        refresh,
+        changeAccount,
+        accountOpen,
+        openAccount,
+        closeAccount,
+      }}
     >
       {children}
     </Context.Provider>
   );
 }
 export function AccountMenu() {
-  const { profile, error, refresh, accountOpen: open, openAccount, closeAccount } = useSession();
+  const {
+    profile,
+    error,
+    changeAccount,
+    accountOpen: open,
+    openAccount,
+    closeAccount,
+  } = useSession();
   const setOpen = (value: boolean) => (value ? openAccount() : closeAccount());
   const [register, setRegister] = useState(true),
     [message, setMessage] = useState(''),
@@ -113,9 +148,9 @@ export function AccountMenu() {
       fields[key] = String(value);
     });
     try {
-      await api(register ? '/auth/sign-up/email' : '/auth/sign-in/email', { ...fields });
-      resetSession();
-      await refresh();
+      await changeAccount(() =>
+        api(register ? '/auth/sign-up/email' : '/auth/sign-in/email', { ...fields }),
+      );
       setOpen(false);
     } catch (e) {
       setMessage((e as Error).message);
@@ -144,10 +179,10 @@ export function AccountMenu() {
             <button
               className="outline-button"
               onClick={async () => {
-                await api('/auth/sign-out', {});
-                localStorage.removeItem(profileKey());
-                resetSession();
-                await refresh();
+                await changeAccount(async () => {
+                  await api('/auth/sign-out', {});
+                  localStorage.removeItem(profileKey());
+                });
                 setOpen(false);
               }}
             >

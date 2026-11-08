@@ -97,7 +97,8 @@ try {
     });
     await page.goto(origin + '/gachatriad/');
     await page.getByRole('link', { name: 'Open boosters (3)', exact: true }).click();
-    await expect(page.getByRole('button', { name: /^Open starter booster/ })).toHaveCount(3);
+    await expect(page.getByRole('button', { name: /^Open starter booster/ })).toHaveCount(1);
+    await expect(page.locator('.booster-count')).toContainText('×3');
     await expect(page.getByRole('button', { name: 'Buy booster', exact: true })).toBeDisabled();
     for (let pack = 0; pack < 3; pack++) {
       await page
@@ -121,13 +122,13 @@ try {
       if (pack === 0) {
         await mkdir('docs/screenshots', { recursive: true });
         await page.screenshot({
-          path: `docs/screenshots/v06-booster-${i ? 'mobile' : 'desktop'}.png`,
+          path: `docs/screenshots/v07-booster-${i ? 'mobile' : 'desktop'}.png`,
           fullPage: true,
         });
       }
       await reveal.getByRole('button', { name: 'Continue', exact: true }).click();
       await expect(page.getByRole('button', { name: /^Open starter booster/ })).toHaveCount(
-        2 - pack,
+        pack === 2 ? 0 : 1,
       );
     }
     clients[i].profile = await api(clients[i], '/profile');
@@ -307,17 +308,17 @@ try {
   await expect
     .poll(() => foil.evaluate((el) => getComputedStyle(el).backgroundPosition))
     .not.toBe(foilBefore);
-  await pages[0].screenshot({ path: 'docs/screenshots/v06-holo-detail.png', fullPage: true });
+  await pages[0].screenshot({ path: 'docs/screenshots/v07-holo-detail.png', fullPage: true });
   await pages[0].keyboard.press('Escape');
-  await admin.screenshot({ path: 'docs/screenshots/v06-moderation.png', fullPage: true });
+  await admin.screenshot({ path: 'docs/screenshots/v07-moderation.png', fullPage: true });
   assert.equal(result.status, 'complete');
   // Cookie-free refresh proves the GitHub Pages path does not depend on third-party cookies.
   await contexts[0].clearCookies();
   await pages[0].goto(origin + `/gachatriad/?match=${joined.matchId}`);
   await pages[0].locator('.result-overlay').waitFor();
   await mkdir('docs/screenshots', { recursive: true });
-  await pages[0].screenshot({ path: 'docs/screenshots/v06-result-overlay.png', fullPage: true });
-  await pages[1].screenshot({ path: 'docs/screenshots/v06-result-mobile.png', fullPage: true });
+  await pages[0].screenshot({ path: 'docs/screenshots/v07-result-overlay.png', fullPage: true });
+  await pages[1].screenshot({ path: 'docs/screenshots/v07-result-mobile.png', fullPage: true });
   const before = await api(clients[0], '/profile');
   const packsBefore = await api(clients[0], '/boosters');
   const active = await api(clients[0], '/solo', { difficulty: 'easy', rules: { threeOpen: true } });
@@ -351,7 +352,7 @@ try {
     'Player connections did not recover after restart.',
   );
   await api(clients[0], `/matches/${active.matchId}/resign`, {});
-  await admin.screenshot({ path: 'docs/screenshots/v06-control-panel.png', fullPage: true });
+  await admin.screenshot({ path: 'docs/screenshots/v07-control-panel.png', fullPage: true });
   await contexts[0].close();
   await contexts[1].close();
   await admin.getByRole('button', { name: 'Shut down server', exact: true }).click();

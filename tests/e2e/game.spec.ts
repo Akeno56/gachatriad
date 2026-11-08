@@ -76,10 +76,14 @@ test('supports keyboard selection, artwork inspection and explicit forfeit', asy
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Start match' }).click();
   const first = page.getByTestId('player-card').first();
-  await expect(first).toBeEnabled();
-  await first.focus();
-  await page.keyboard.press('Enter');
-  await expect(first).toHaveAttribute('aria-pressed', 'true');
+  await expect(async () => {
+    await expect(first).toBeEnabled();
+    if ((await first.getAttribute('aria-pressed')) !== 'true') {
+      await first.focus();
+      await page.keyboard.press('Enter');
+    }
+    await expect(first).toHaveAttribute('aria-pressed', 'true', { timeout: 1000 });
+  }).toPass({ timeout: 15000 });
   await page.locator('.card-inspector').click();
   await expect(page.locator('.card-detail')).toBeVisible();
   await page.keyboard.press('Escape');

@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS duel_invitations(
 );
 CREATE UNIQUE INDEX IF NOT EXISTS one_lobby_invite ON duel_invitations(lobby_id) WHERE status='pending';
 ALTER TABLE booster_packs DROP CONSTRAINT IF EXISTS booster_packs_source_check;
-ALTER TABLE booster_packs ADD CONSTRAINT booster_packs_source_check CHECK(source IN('starter','purchase','admin'));
+ALTER TABLE booster_packs ADD CONSTRAINT booster_packs_source_check CHECK(source IN('starter','purchase','admin','daily'));
 ALTER TABLE booster_packs ADD COLUMN IF NOT EXISTS new_cards JSONB NOT NULL DEFAULT '[]';
 CREATE TABLE IF NOT EXISTS admin_grants(
  id TEXT PRIMARY KEY,profile_id TEXT NOT NULL REFERENCES profiles(id),kind TEXT NOT NULL CHECK(kind IN('prisms','boosters')),

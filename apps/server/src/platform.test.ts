@@ -72,6 +72,344 @@ async function ok<T>(c: Client, path: string, body?: unknown, method?: string): 
   expect(r.statusCode, r.body).toBe(200);
   return r.json();
 }
+it('keeps friend messages private, retry-safe, read-tracked and tied to accepted friendships', async () => {
+  const a = await user(true),
+    b = await user(true),
+    other = await user(true),
+    guest = await user();
+  const url = `/friends/${b.profile.id}/messages`;
+  expect(
+    (await request(a, url, { message: 'not friends', requestId: 'dm-not-friends' })).statusCode,
+  ).toBe(403);
+  await ok(a, '/friends/request', { playerId: b.profile.id });
+  expect((await request(a, url)).statusCode).toBe(403);
+  await ok(b, `/friends/${a.profile.id}/accept`, {});
+  const sent = await ok<{ id: string }>(a, url, {
+    message: 'Private <b>hello</b>',
+    requestId: 'dm-first-message',
+  });
+  expect(
+    await ok(a, url, { message: 'Private <b>hello</b>', requestId: 'dm-first-message' }),
+  ).toEqual(sent);
+  expect(
+    (await request(a, url, { message: 'too fast', requestId: 'dm-too-fast-msg' })).statusCode,
+  ).toBe(429);
+  expect((await request(guest, url)).statusCode).toBe(403);
+  expect((await request(other, url)).statusCode).toBe(403);
+  expect(
+    (await request(other, `/friends/${a.profile.id}/read`, { through: sent.id })).statusCode,
+  ).toBe(403);
+  const thread = await ok<import('@gacha-triad/shared/social').FriendMessage[]>(
+    b,
+    `/friends/${a.profile.id}/messages`,
+  );
+  expect(thread.map((m) => m.body)).toEqual(['Private <b>hello</b>']);
+  const social = () => ok<import('@gacha-triad/shared/social').SocialView>(b, '/social');
+  expect((await social()).conversations[0].unread).toBe(1);
+  expect(
+    (await ok<import('@gacha-triad/shared/social').SocialView>(a, '/social')).conversations[0]
+      .unread,
+  ).toBe(0);
+  expect(
+    (await ok<import('@gacha-triad/shared/social').SocialView>(other, '/social')).conversations,
+  ).toEqual([]);
+  expect((await social()).chat.some((m) => m.id === sent.id)).toBe(false);
+  await ok(b, `/friends/${a.profile.id}/read`, { through: 'someone-elses-message' });
+  expect((await social()).conversations[0].unread).toBe(1);
+  await ok(b, `/friends/${a.profile.id}/read`, { through: sent.id });
+  expect((await social()).conversations[0].unread).toBe(0);
+  await ok(a, `/friends/${b.profile.id}`, undefined, 'DELETE');
+  expect((await request(a, url)).statusCode).toBe(403);
+  expect(
+    (await request(a, url, { message: 'removed', requestId: 'dm-first-message' })).statusCode,
+  ).toBe(403);
+  expect((await social()).conversations).toEqual([]);
+  await platform.guests.deleteAccount(b.profile.id, b.profile.name);
+  expect(
+    await platform.db.read((sql) => sql('SELECT id FROM friend_messages WHERE id=$1', [sent.id])),
+  ).toEqual([]);
+});
+it('auto-builds only from available owned copies with the highest legal total rarity', async () => {
+  const c = await user();
+  const { CARDS, ALL_CARDS } = await import('@gacha-triad/shared');
+  const { buildBestDeck } = await import('@gacha-triad/engine');
+  const owned = [
+    ...CARDS.filter((c) => c.rarity === 5).slice(0, 2),
+    ...CARDS.filter((c) => c.rarity === 4).slice(0, 3),
+    ...CARDS.filter((c) => c.rarity === 3).slice(0, 5),
+    ...CARDS.filter((c) => c.rarity === 1).slice(0, 2),
+  ];
+  const holo = ALL_CARDS.find((c) => c.baseCardId === owned[0].id)!;
+  owned.push(holo);
+  await platform.db.tx(async (sql) => {
+    await sql('DELETE FROM inventory WHERE profile_id=$1', [c.profile.id]);
+    for (const card of owned)
+      await sql('INSERT INTO inventory(profile_id,card_id,quantity,reserved) VALUES($1,$2,1,$3)', [
+        c.profile.id,
+        card.id,
+        card.id === owned[1].id ? 1 : 0,
+      ]);
+  });
+  const expected = buildBestDeck(owned.filter((card) => card.id !== owned[1].id)).map((c) => c.id);
+  await ok(c, '/deck/auto', {});
+  expect((await ok<ProfileView>(c, '/profile')).deck).toEqual(expected);
+});
+it('purchases booster batches atomically, lists all unopened packs, and bulk opening is replay-safe', async () => {
+  const c = await user(false, false);
+  await platform.db.read((sql) =>
+    sql('UPDATE profiles SET prisms=1500 WHERE id=$1', [c.profile.id]),
+  );
+  const purchase = { requestId: 'batch-buy-ten', quantity: 10 };
+  const responses = await Promise.all([
+    request(c, '/boosters/buy', purchase),
+    request(c, '/boosters/buy', purchase),
+  ]);
+  for (const r of responses) expect(r.statusCode, r.body).toBe(200);
+  const bought = responses[0].json() as {
+    packs: import('@gacha-triad/shared/platform').BoosterView[];
+    quantity: number;
+    totalCost: number;
+  };
+  expect(bought.packs).toHaveLength(10);
+  expect(bought.totalCost).toBe(1500);
+  expect(responses[1].json().packs.map((p: { id: string }) => p.id)).toEqual(
+    bought.packs.map((p) => p.id),
+  );
+  expect((await ok<ProfileView>(c, '/profile')).prisms).toBe(0);
+  expect((await request(c, '/boosters/buy', { ...purchase, quantity: 5 })).statusCode).toBe(409);
+  for (const quantity of [0, -1, 1.5, 101, '5', null])
+    expect(
+      (await request(c, '/boosters/buy', { requestId: 'bad-batch-quantity', quantity })).statusCode,
+    ).toBe(400);
+  expect(
+    (await request(c, '/boosters/buy', { requestId: 'batch-insufficient', quantity: 5 }))
+      .statusCode,
+  ).toBe(409);
+  const ids = bought.packs.map((p) => p.id);
+  const opened = await ok<import('@gacha-triad/shared/platform').BoosterView[]>(
+    c,
+    '/boosters/open-batch',
+    { packIds: ids },
+  );
+  expect(opened).toHaveLength(10);
+  for (const p of opened) {
+    expect(p.cards).toHaveLength(5);
+    expect(p.cards.some((c) => c.rarity >= 3)).toBe(true);
+  }
+  const profile = await ok<ProfileView>(c, '/profile');
+  expect(Object.values(profile.inventory).reduce((s, c) => s + c.quantity, 0)).toBe(50);
+  expect(await ok(c, '/boosters/open-batch', { packIds: ids })).toEqual(opened);
+  expect((await ok<ProfileView>(c, '/profile')).inventory).toEqual(profile.inventory);
+  const starter = (await ok<{ id: string; openedAt: string | null }[]>(c, '/boosters')).find(
+    (p) => !p.openedAt,
+  )!;
+  expect(
+    (await request(c, '/boosters/open-batch', { packIds: [starter.id, 'unknown-pack'] }))
+      .statusCode,
+  ).toBe(404);
+  expect(
+    (await ok<{ id: string; openedAt: string | null }[]>(c, '/boosters')).find(
+      (p) => p.id === starter.id,
+    )?.openedAt,
+  ).toBeNull();
+  expect(
+    (await request(c, '/boosters/open-batch', { packIds: [starter.id, starter.id] })).statusCode,
+  ).toBe(400);
+  await platform.store.economy.grant(
+    c.profile.id,
+    'boosters',
+    100,
+    'list-all-unopened',
+    'host-test',
+  );
+  expect(
+    (await ok<{ openedAt: string | null }[]>(c, '/boosters')).filter((p) => !p.openedAt),
+  ).toHaveLength(103);
+});
+it('grants one free booster per registered account per UTC day, including concurrent retries', async () => {
+  const c = await user(true),
+    guest = await user();
+  expect((await request(guest, '/boosters/daily', {})).statusCode).toBe(403);
+  expect(
+    (await ok<import('@gacha-triad/shared/platform').DailyBooster>(guest, '/boosters/daily'))
+      .available,
+  ).toBe(false);
+  expect(
+    (await ok<import('@gacha-triad/shared/platform').DailyBooster>(c, '/boosters/daily')).available,
+  ).toBe(true);
+  const results = await Promise.all([
+    ok<{ id: string; source: string }>(c, '/boosters/daily', {}),
+    ok<{ id: string; source: string }>(c, '/boosters/daily', {}),
+  ]);
+  expect(results[0].id).toBe(results[1].id);
+  expect(results[0].source).toBe('daily');
+  expect((await ok<ProfileView>(c, '/profile')).unopenedBoosters).toBe(1);
+  expect((await ok<ProfileView>(c, '/profile')).prisms).toBe(c.profile.prisms);
+  expect(
+    (await ok<import('@gacha-triad/shared/platform').DailyBooster>(c, '/boosters/daily')).available,
+  ).toBe(false);
+  const nextDay = (Math.floor(Date.now() / 86400000) + 1) * 86400000;
+  const now = vi.spyOn(Date, 'now').mockReturnValue(nextDay);
+  try {
+    expect((await platform.store.economy.daily(c.profile.id, true)).available).toBe(true);
+    const next = await platform.store.economy.claimDaily(c.profile.id, true);
+    expect(next.id).not.toBe(results[0].id);
+    expect((await platform.store.economy.daily(c.profile.id, true)).available).toBe(false);
+    await platform.store.migrate(resolve('.'));
+    expect((await platform.store.economy.claimDaily(c.profile.id, true)).id).toBe(next.id);
+  } finally {
+    now.mockRestore();
+  }
+});
+it('recycles and trades up spare copies without consuming kept or reserved cards, with durable receipts', async () => {
+  const c = await user(),
+    other = await user();
+  const { CARDS, ALL_CARDS } = await import('@gacha-triad/shared');
+  const [a, b] = CARDS.filter((c) => c.rarity === 1),
+    five = CARDS.find((c) => c.rarity === 5)!,
+    holo = ALL_CARDS.find((c) => c.baseCardId === a.id)!;
+  await platform.db.tx(async (sql) => {
+    for (const [id, quantity, reserved] of [
+      [a.id, 7, 1],
+      [b.id, 3, 0],
+      [five.id, 2, 0],
+      [holo.id, 2, 0],
+    ])
+      await sql(
+        'INSERT INTO inventory(profile_id,card_id,quantity,reserved) VALUES($1,$2,$3,$4) ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=excluded.quantity,reserved=excluded.reserved',
+        [c.profile.id, id, quantity, reserved],
+      );
+  });
+  const recycle = {
+    kind: 'recycle',
+    cards: [{ cardId: a.id, count: 2 }],
+    requestId: 'recycle-two-copies',
+  };
+  const receipt = await ok<import('@gacha-triad/shared/platform').DuplicateResult>(
+    c,
+    '/collection/duplicates',
+    recycle,
+  );
+  expect(receipt.prisms).toBe(10);
+  expect(await ok(c, '/collection/duplicates', recycle)).toEqual(receipt);
+  expect(
+    (
+      await request(c, '/collection/duplicates', {
+        ...recycle,
+        cards: [{ cardId: a.id, count: 3 }],
+      })
+    ).statusCode,
+  ).toBe(409);
+  expect((await request(other, '/collection/duplicates', recycle)).statusCode).toBe(409);
+  const trade = {
+    kind: 'trade-up',
+    cards: [
+      { cardId: a.id, count: 3 },
+      { cardId: b.id, count: 2 },
+    ],
+    requestId: 'trade-up-five-copies',
+  };
+  const upgraded = await ok<import('@gacha-triad/shared/platform').DuplicateResult>(
+    c,
+    '/collection/duplicates',
+    trade,
+  );
+  expect(upgraded.card?.rarity).toBe(2);
+  expect(upgraded.prisms).toBe(0);
+  expect(
+    await ok(c, '/collection/duplicates', { ...trade, cards: [...trade.cards].reverse() }),
+  ).toEqual(upgraded);
+  const profile = await ok<ProfileView>(c, '/profile');
+  expect(profile.inventory[a.id].quantity).toBe(2);
+  expect(profile.inventory[b.id].quantity).toBe(1);
+  expect(profile.inventory[holo.id].quantity).toBe(2);
+  expect(profile.inventory[upgraded.card!.id].quantity).toBeGreaterThanOrEqual(1);
+  expect(profile.prisms).toBe(c.profile.prisms + 10);
+  expect(
+    (
+      await request(c, '/collection/duplicates', {
+        ...recycle,
+        requestId: 'last-copy-reject',
+        cards: [{ cardId: b.id, count: 1 }],
+      })
+    ).statusCode,
+  ).toBe(409);
+  expect(
+    (
+      await request(c, '/collection/duplicates', {
+        ...trade,
+        requestId: 'wrong-rank-count',
+        cards: [{ cardId: five.id, count: 5 }],
+      })
+    ).statusCode,
+  ).toBe(400);
+  expect(
+    (
+      await request(c, '/collection/duplicates', {
+        ...trade,
+        requestId: 'mixed-rank-count',
+        cards: [
+          { cardId: a.id, count: 4 },
+          { cardId: five.id, count: 1 },
+        ],
+      })
+    ).statusCode,
+  ).toBe(400);
+  expect(
+    (
+      await request(c, '/collection/duplicates', {
+        ...recycle,
+        requestId: 'rollback-duplicates',
+        cards: [
+          { cardId: a.id, count: 1 },
+          { cardId: b.id, count: 1 },
+        ],
+      })
+    ).statusCode,
+  ).toBe(409);
+  expect((await ok<ProfileView>(c, '/profile')).inventory).toEqual(profile.inventory);
+  const fiveReceipt = await ok<import('@gacha-triad/shared/platform').DuplicateResult>(
+    c,
+    '/collection/duplicates',
+    { ...recycle, requestId: 'recycle-five-star', cards: [{ cardId: five.id, count: 1 }] },
+  );
+  expect(fiveReceipt.prisms).toBe(75);
+  const four = CARDS.find((c) => c.rarity === 4)!;
+  await platform.db.read((sql) =>
+    sql(
+      'INSERT INTO inventory(profile_id,card_id,quantity) VALUES($1,$2,6) ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=6',
+      [c.profile.id, four.id],
+    ),
+  );
+  const highest = await ok<import('@gacha-triad/shared/platform').DuplicateResult>(
+    c,
+    '/collection/duplicates',
+    { kind: 'trade-up', cards: [{ cardId: four.id, count: 5 }], requestId: 'four-to-five-stars' },
+  );
+  expect(highest.card?.rarity).toBe(5);
+  await platform.db.read((sql) =>
+    sql('UPDATE inventory SET reserved=quantity WHERE profile_id=$1 AND card_id=$2', [
+      c.profile.id,
+      a.id,
+    ]),
+  );
+  expect(
+    (
+      await request(c, '/collection/duplicates', {
+        ...recycle,
+        requestId: 'reserved-copy-reject',
+        cards: [{ cardId: a.id, count: 1 }],
+      })
+    ).statusCode,
+  ).toBe(409);
+  const foil = await ok<import('@gacha-triad/shared/platform').DuplicateResult>(
+    c,
+    '/collection/duplicates',
+    { ...recycle, requestId: 'holo-duplicate-recycle', cards: [{ cardId: holo.id, count: 1 }] },
+  );
+  expect(foil.prisms).toBe(5);
+  expect((await ok<ProfileView>(c, '/profile')).inventory[holo.id].quantity).toBe(1);
+});
 beforeAll(async () => {
   platform = await createPlatform(resolve('.'), { memory: true, timers: false });
 });

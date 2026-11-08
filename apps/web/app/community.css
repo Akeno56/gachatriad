@@ -215,6 +215,115 @@
   flex: 1;
   min-width: 0;
 }
+.main-chat {
+  padding: 22px;
+  margin-top: 28px;
+}
+.main-chat .chat-messages {
+  height: 270px;
+}
+.main-chat .window-label {
+  font-size: 23px;
+  margin: 0;
+}
+.main-chat .error-message:empty,
+.friend-chat .error-message:empty {
+  display: none;
+}
+.chat-registration {
+  margin: 10px 0 0;
+  color: var(--muted);
+}
+.friend-status {
+  color: var(--gold);
+}
+.friend-chat {
+  display: grid;
+  grid-template-columns: minmax(170px, 240px) minmax(0, 1fr);
+  gap: 20px;
+  margin-top: 18px;
+}
+.conversation-list {
+  max-height: 460px;
+  overflow-y: auto;
+  border-right: 1px solid #526789;
+  padding-right: 12px;
+}
+.conversation-choice {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 8px;
+  border: 1px solid transparent;
+  border-bottom-color: #526789;
+}
+.conversation-choice.is-selected {
+  border-color: #c9b67b;
+  background: #40577766;
+}
+.conversation-choice > span:not(.player-avatar) {
+  flex: 1;
+  min-width: 0;
+}
+.conversation-choice strong {
+  font: 23px var(--pixel);
+  color: var(--gold);
+}
+.conversation-choice small {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #b7c8df;
+}
+.conversation-choice > b {
+  padding: 2px 7px;
+  background: var(--gold);
+  color: #111b32;
+  border-radius: 50%;
+}
+.conversation-body h3 {
+  font: 28px var(--pixel);
+  margin: 0;
+}
+.conversation-body h3 small {
+  display: block;
+  font: 14px var(--sans);
+  color: #b7c8df;
+  margin-top: 5px;
+}
+.conversation-body > small {
+  display: block;
+  margin-top: 12px;
+  color: var(--muted);
+}
+.private-message {
+  padding: 12px 14px;
+  margin: 0 20px 12px 0;
+  border: 1px solid #657e9b;
+  background: #263e5b;
+  overflow-wrap: anywhere;
+}
+.private-message.is-own {
+  margin: 0 0 12px 20px;
+  background: #344260;
+  border-color: #b3a275;
+}
+.private-message strong {
+  font: 22px var(--pixel);
+  color: var(--gold);
+}
+.private-message time {
+  font-size: 12px;
+  margin-left: 12px;
+  color: #b6c3db;
+}
+.private-message p {
+  white-space: pre-wrap;
+  margin: 5px 0 0;
+}
 .friend-search {
   display: flex;
   align-items: end;
@@ -282,6 +391,22 @@
   margin-left: 18px;
 }
 @media (max-width: 680px) {
+  .main-chat {
+    padding: 16px 12px;
+  }
+  .friend-chat {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .conversation-list {
+    max-height: 150px;
+    border-right: 0;
+    border-bottom: 1px solid #526789;
+    padding: 0 0 10px;
+  }
+  .conversation-body .chat-messages {
+    height: 250px;
+  }
   .scoreboard .player-avatar {
     width: 34px;
     height: 34px;

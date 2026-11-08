@@ -110,9 +110,11 @@ export function BoosterOpening({
               ? 'Your booster'
               : pack.source === 'starter'
                 ? 'Starter booster'
-                : pack.source === 'admin'
-                  ? 'Gift booster'
-                  : 'Standard booster'}
+                : pack.source === 'daily'
+                  ? 'Daily booster'
+                  : pack.source === 'admin'
+                    ? 'Gift booster'
+                    : 'Standard booster'}
           </h2>
           <span>
             {stage === 'reveal'

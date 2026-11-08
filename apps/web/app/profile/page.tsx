@@ -7,8 +7,10 @@ import { useSession } from '../../components/session';
 import { Card } from '../../components/card';
 import { api } from '../../lib/platform';
 import { AdminGrant } from '../../components/admin-grant';
+import { useSocial, openFriendChat } from '../../components/social-state';
 export default function PlayerProfile() {
   const { profile, revision, refresh, openAccount } = useSession();
+  const { data: social, ready: socialReady } = useSocial();
   const [player, setPlayer] = useState<PlayerProfileView | null>(null),
     [error, setError] = useState(''),
     [avatar, setAvatar] = useState(''),
@@ -34,6 +36,7 @@ export default function PlayerProfile() {
   useEffect(() => setAvatar(profile?.avatarCardId ?? ''), [profile?.avatarCardId]);
   useEffect(() => setTitle(profile?.titleId ?? ''), [profile?.titleId]);
   const self = player?.id === profile?.id;
+  const friendship = social.friends.find((f) => f.id === player?.id);
   return (
     <div className="content-page profile-page">
       <div className="eyebrow">PLAYER RECORD</div>
@@ -78,36 +81,76 @@ export default function PlayerProfile() {
               )}
               {!self && !player.isBot && profile?.registered && (
                 <div className="result-actions">
-                  <button
-                    className="outline-button"
-                    disabled={busy}
-                    onClick={async () => {
-                      try {
-                        await api('/friends/request', { playerId: player.id });
-                        await refresh();
-                        setNotice('Friend request sent.');
-                      } catch (e) {
-                        setError((e as Error).message);
-                      }
-                    }}
-                  >
-                    Add friend
-                  </button>
-                  <button
-                    className="outline-button"
-                    disabled={busy}
-                    onClick={async () => {
-                      try {
-                        await api('/invites', { playerId: player.id });
-                        await refresh();
-                        setNotice('Invitation sent. Open Chat & friends to manage it.');
-                      } catch (e) {
-                        setError((e as Error).message);
-                      }
-                    }}
-                  >
-                    Invite to duel
-                  </button>
+                  {socialReady && !friendship && (
+                    <button
+                      className="outline-button"
+                      disabled={busy}
+                      onClick={async () => {
+                        setBusy(true);
+                        setError('');
+                        try {
+                          await api('/friends/request', { playerId: player.id });
+                          await refresh();
+                          setNotice('Friend request sent.');
+                        } catch (e) {
+                          setError((e as Error).message);
+                        } finally {
+                          setBusy(false);
+                        }
+                      }}
+                    >
+                      Add friend
+                    </button>
+                  )}
+                  {friendship?.status === 'outgoing' && <span>Friend request sent</span>}
+                  {friendship?.status === 'incoming' && (
+                    <button
+                      className="outline-button"
+                      disabled={busy}
+                      onClick={async () => {
+                        setBusy(true);
+                        setError('');
+                        try {
+                          await api(`/friends/${player.id}/accept`, {});
+                          await refresh();
+                          setNotice('Friend request accepted.');
+                        } catch (e) {
+                          setError((e as Error).message);
+                        } finally {
+                          setBusy(false);
+                        }
+                      }}
+                    >
+                      Accept friend
+                    </button>
+                  )}
+                  {friendship?.status === 'friend' && (
+                    <>
+                      <span className="friend-status">✓ Friends</span>
+                      <button className="outline-button" onClick={() => openFriendChat(player.id)}>
+                        Message
+                      </button>
+                      <button
+                        className="outline-button"
+                        disabled={busy || !!profile.activeMatchId || !!profile.waitingLobbyId}
+                        onClick={async () => {
+                          setBusy(true);
+                          setError('');
+                          try {
+                            await api('/invites', { playerId: player.id });
+                            await refresh();
+                            setNotice('Invitation sent. Open Friends & messages to manage it.');
+                          } catch (e) {
+                            setError((e as Error).message);
+                          } finally {
+                            setBusy(false);
+                          }
+                        }}
+                      >
+                        Invite to duel
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
               {notice && <p role="status">{notice}</p>}

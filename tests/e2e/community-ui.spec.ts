@@ -1,0 +1,141 @@
+import { expect, test } from '@playwright/test';
+import { openStarterPacks } from './helpers';
+test('shows public chat in Play, compact lobby checkboxes, and unselectable inspected artwork', async ({
+  page,
+}, info) => {
+  await page.goto('/cards');
+  await openStarterPacks(page);
+  await page.request.post('/api/tutorial/complete', { data: {} });
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Main chat', exact: true })).toBeVisible();
+  await expect(page.getByLabel('Main chat message', { exact: true })).toBeDisabled();
+  await expect(page.locator('.party-caption')).toHaveCount(0);
+  await page.locator('.title-card').first().click();
+  const card = page.locator('.card-detail .playing-card');
+  await expect(card).toBeVisible();
+  const bounds = (await card.boundingBox())!;
+  await page.mouse.move(bounds.x + 15, bounds.y + 15);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + bounds.width - 10, bounds.y + bounds.height - 10, { steps: 10 });
+  await page.mouse.up();
+  await card.locator('.card-values span').first().dblclick();
+  expect(await page.evaluate(() => getSelection()?.toString())).toBe('');
+  await page.getByRole('button', { name: 'Close card detail' }).click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const overlay = page.locator('.crt-overlay');
+  await expect(overlay).toHaveCSS('animation-name', 'crt-scroll');
+  const position = await overlay.evaluate((el) => getComputedStyle(el).backgroundPosition);
+  await expect
+    .poll(() => overlay.evaluate((el) => getComputedStyle(el).backgroundPosition))
+    .not.toBe(position);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(overlay).toHaveCSS('animation-name', 'none');
+  await page.goto('/lobbies');
+  const check = page.getByLabel('Allow bots to join my lobby / queue', { exact: true });
+  const size = (await check.boundingBox())!;
+  expect(size.width).toBeLessThanOrEqual(22);
+  expect(size.height).toBeLessThanOrEqual(22);
+  await page.getByText('Allow bots to join my lobby / queue', { exact: true }).click();
+  await expect(check).toBeChecked();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: info.outputPath('compact-checkbox.png'), fullPage: true });
+});
+test('animates Same, Plus and Combo and supports manual steps with reduced motion', async ({
+  page,
+}, info) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/rules');
+  await expect(page.locator('.rule-animation')).toHaveCount(3);
+  for (const rule of ['same', 'plus', 'combo']) {
+    const demo = page.locator(`.demo-${rule}`);
+    await demo.scrollIntoViewIfNeeded();
+    await expect(
+      demo.getByRole('button', { name: `Play ${rule} example`, exact: true }),
+    ).toBeVisible();
+    for (let i = 0; i < (rule === 'combo' ? 4 : 3); i++)
+      await demo.getByRole('button', { name: 'Next step', exact: true }).click();
+    expect(await demo.locator('.demo-cell[data-owner="0"]').count()).toBe(rule === 'combo' ? 7 : 5);
+    await expect(demo.locator('.demo-caption')).toContainText(rule.toUpperCase());
+  }
+  await page.screenshot({ path: info.outputPath('rule-animations.png'), fullPage: true });
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  const demo = page.locator('.demo-combo');
+  await demo.getByRole('button', { name: 'Replay combo example' }).click();
+  await expect(demo).toHaveAttribute('data-step', '0');
+  await expect(demo).not.toHaveAttribute('data-step', '0', { timeout: 5000 });
+});
+test('registration waits for an in-flight guest refresh and keeps its profile', async ({
+  page,
+}) => {
+  await page.goto('/cards');
+  await openStarterPacks(page);
+  const before = await (await page.request.get('/api/profile')).json();
+  let release!: () => void,
+    entered!: () => void,
+    hold = true,
+    signups = 0;
+  const blocked = new Promise<void>((resolve) => {
+      entered = resolve;
+    }),
+    gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+  page.on('request', (r) => {
+    if (r.url().includes('/auth/sign-up/email')) signups++;
+  });
+  await page.route('**/api/profile', async (route) => {
+    if (hold) {
+      hold = false;
+      entered();
+      await gate;
+    }
+    await route.continue();
+  });
+  await blocked;
+  await page.locator('.account-control').click();
+  await page.getByLabel('Player name').fill('Refresh safe player');
+  await page
+    .getByLabel('Email', { exact: true })
+    .fill(`refresh-${crypto.randomUUID()}@test.invalid`);
+  await page.getByLabel('Password', { exact: true }).fill('refresh-safe-password-123');
+  const response = page.waitForResponse((r) => r.url().includes('/auth/sign-up/email'));
+  let signupBeforeRelease = -1;
+  try {
+    await page.getByRole('button', { name: 'Create account', exact: true }).click();
+    await expect(page.locator('.account-dialog button.primary-button')).toHaveText('Connecting…');
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+    signupBeforeRelease = signups;
+  } finally {
+    release();
+  }
+  expect((await response).status()).toBe(200);
+  expect(signupBeforeRelease).toBe(0);
+  await expect(page.locator('.account-control')).toHaveText('Refresh safe player');
+  const after = await (await page.request.get('/api/profile')).json();
+  expect(after.id).toBe(before.id);
+  expect(after.inventory).toEqual(before.inventory);
+  expect(after.registered).toBe(true);
+});
+test('repeated pack reveal clicks cannot select card text or artwork', async ({ page }) => {
+  await page.goto('/boosters');
+  await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
+  await page
+    .getByRole('button', { name: /^Open starter booster/ })
+    .first()
+    .click();
+  const pack = page.locator('.pack-opening');
+  await pack.getByRole('button', { name: 'Open booster', exact: true }).click();
+  await pack.getByRole('button', { name: 'Reveal card 1', exact: true }).click();
+  await expect(pack.locator('.opening-card .playing-card')).toBeVisible();
+  await pack.locator('.opening-card-caption h3').dblclick();
+  expect(await page.evaluate(() => getSelection()?.toString())).toBe('');
+  await pack.getByRole('button', { name: 'Reveal all', exact: true }).click();
+  await expect(pack.locator('.opening-fan .playing-card')).toHaveCount(5);
+  await pack.locator('.opening-fan .card-values span').first().dblclick();
+  expect(await page.evaluate(() => getSelection()?.toString())).toBe('');
+});

@@ -5,6 +5,8 @@ import type {
   ChatMessage,
   DuelInvitation,
   FriendView,
+  FriendMessage,
+  FriendConversation,
   LadderEntry,
   SocialView,
 } from '@gacha-triad/shared/social';
@@ -34,6 +36,94 @@ function registered(p: ProfileView) {
 }
 export class Social {
   constructor(readonly store: GameStore) {}
+  private async requireFriend(sql: Sql, p: ProfileView, target: string) {
+    registered(p);
+    await this.eligible(sql, target);
+    if (
+      !(
+        await sql(
+          "SELECT 1 FROM friendships WHERE profile_a=$1 AND profile_b=$2 AND status='accepted'",
+          [p.id, target].sort(),
+        )
+      ).length
+    )
+      throw new GameError('Private chat is available between accepted friends.', 403);
+  }
+  async messages(p: ProfileView, target: string): Promise<FriendMessage[]> {
+    return this.store.db.read(async (sql) => {
+      await this.requireFriend(sql, p, target);
+      const rows = await sql<{
+        id: string;
+        sender_id: string;
+        recipient_id: string;
+        body: string;
+        created_at: Date;
+      }>(
+        `SELECT * FROM friend_messages WHERE (sender_id=$1 AND recipient_id=$2) OR (sender_id=$2 AND recipient_id=$1) ORDER BY created_at DESC,id DESC LIMIT 80`,
+        [p.id, target],
+      );
+      return rows.reverse().map((m) => ({
+        id: m.id,
+        senderId: m.sender_id,
+        recipientId: m.recipient_id,
+        body: m.body,
+        createdAt: m.created_at.toISOString(),
+      }));
+    });
+  }
+  async readMessages(p: ProfileView, target: string, through: unknown) {
+    if (typeof through !== 'string')
+      throw new GameError('Choose the last message to mark as read.');
+    await this.store.db.tx(async (sql) => {
+      await this.requireFriend(sql, p, target);
+      await sql(
+        `UPDATE friend_messages SET read_at=now() WHERE recipient_id=$1 AND sender_id=$2 AND read_at IS NULL AND created_at <= (SELECT created_at FROM friend_messages WHERE id=$3 AND recipient_id=$1 AND sender_id=$2)`,
+        [p.id, target, through],
+      );
+    });
+  }
+  async postFriend(p: ProfileView, target: string, message: unknown, requestId: unknown) {
+    const text = this.messageText(message, requestId);
+    return this.store.db.tx(async (sql) => {
+      await this.requireFriend(sql, p, target);
+      const [previous] = await sql<{ id: string; recipient_id: string }>(
+        'SELECT id,recipient_id FROM friend_messages WHERE sender_id=$1 AND request_id=$2',
+        [p.id, requestId],
+      );
+      if (previous) {
+        if (previous.recipient_id !== target)
+          throw new GameError('This request ID belongs to another conversation.', 409);
+        return { id: previous.id };
+      }
+      if (
+        (
+          await sql(
+            "SELECT 1 FROM friend_messages WHERE sender_id=$1 AND created_at>now()-interval '3 seconds'",
+            [p.id],
+          )
+        ).length
+      )
+        throw new GameError('Wait three seconds between messages.', 429);
+      const id = randomUUID();
+      await sql(
+        'INSERT INTO friend_messages(id,sender_id,recipient_id,body,request_id) VALUES($1,$2,$3,$4,$5)',
+        [id, p.id, target, text, requestId],
+      );
+      return { id };
+    });
+  }
+  private messageText(message: unknown, requestId: unknown) {
+    if (
+      typeof message !== 'string' ||
+      typeof requestId !== 'string' ||
+      !/^[a-zA-Z0-9-]{8,80}$/.test(requestId)
+    )
+      throw new GameError('Enter a message and a valid request ID.');
+    const text = message.trim();
+    if (!text.length || text.length > 300 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(text))
+      throw new GameError('Messages must contain 1–300 printable characters.');
+    return text;
+  }
   private async eligible(sql: Sql, id: string) {
     const [p] = await sql<Person>(
       `SELECT p.* FROM profiles p JOIN profile_accounts a ON a.profile_id=p.id AND a.is_primary
@@ -97,15 +187,7 @@ export class Social {
   }
   async post(p: ProfileView, message: unknown, requestId: unknown) {
     registered(p);
-    if (
-      typeof message !== 'string' ||
-      typeof requestId !== 'string' ||
-      !/^[a-zA-Z0-9-]{8,80}$/.test(requestId)
-    )
-      throw new GameError('Enter a message and a valid request ID.');
-    const text = message.trim();
-    if (!text.length || text.length > 300 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(text))
-      throw new GameError('Messages must contain 1–300 printable characters.');
+    const text = this.messageText(message, requestId);
     return this.store.db.tx(async (sql) => {
       const [previous] = await sql<{ id: string }>(
         'SELECT id FROM chat_messages WHERE profile_id=$1 AND request_id=$2',
@@ -162,6 +244,17 @@ export class Social {
       const chat = await sql<Person & { message_id: string; body: string; created_at: Date }>(
         `SELECT p.id,p.name,p.avatar_card,p.selected_title,m.id AS message_id,m.body,m.created_at FROM chat_messages m JOIN profiles p ON p.id=m.profile_id WHERE NOT m.deleted ORDER BY m.created_at DESC,m.id LIMIT 80`,
       );
+      const conversations = p.registered
+        ? await sql<{ player_id: string; body: string; created_at: Date; unread: number }>(
+            `SELECT DISTINCT ON (thread.player_id) thread.* FROM (
+          SELECT CASE WHEN m.sender_id=$1 THEN m.recipient_id ELSE m.sender_id END AS player_id,m.body,m.created_at,m.id,
+          count(*) FILTER(WHERE m.recipient_id=$1 AND m.read_at IS NULL) OVER(PARTITION BY least(m.sender_id,m.recipient_id),greatest(m.sender_id,m.recipient_id))::int AS unread
+          FROM friend_messages m JOIN friendships f ON f.profile_a=least(m.sender_id,m.recipient_id) AND f.profile_b=greatest(m.sender_id,m.recipient_id) AND f.status='accepted'
+          WHERE m.sender_id=$1 OR m.recipient_id=$1
+        ) thread ORDER BY thread.player_id,thread.created_at DESC,thread.id DESC`,
+            [p.id],
+          )
+        : [];
       const pending = await sql<{
         id: string;
         sender_id: string;
@@ -187,6 +280,12 @@ export class Social {
         });
       }
       return {
+        conversations: conversations.map((c) => ({
+          playerId: c.player_id,
+          lastMessage: c.body,
+          lastAt: c.created_at.toISOString(),
+          unread: c.unread,
+        })) as FriendConversation[],
         friends: friends.map((f) => ({
           ...identity(f),
           id: f.id,

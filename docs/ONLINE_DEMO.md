@@ -100,7 +100,7 @@ The GitHub Pages client and your PC server update separately. From Git Bash or P
 
 ```sh
 git add .
-git commit -m "Add community features and refine duels, packs and host tools"
+git commit -m "Refine chat and card UI, add booster batches and duplicate crafting"
 git push
 ```
 

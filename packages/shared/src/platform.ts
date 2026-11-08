@@ -83,15 +83,31 @@ export const ECONOMY = {
   starterWeights: [55, 25, 15, 0, 0],
   guaranteedWeights: [0, 0, 85, 13, 2],
   holoPer10000: 10,
+  recyclePrisms: [5, 10, 20, 40, 75],
 } as const;
 export interface BoosterView {
   newCardIds: string[];
   id: string;
-  source: 'starter' | 'purchase' | 'admin';
+  source: 'starter' | 'purchase' | 'admin' | 'daily';
   cost: number;
   createdAt: string;
   openedAt: string | null;
   cards: Card[];
+}
+export interface DuplicateInput {
+  cardId: string;
+  count: number;
+}
+export interface DuplicateResult {
+  kind: 'recycle' | 'trade-up';
+  consumed: number;
+  prisms: number;
+  card: Card | null;
+}
+export interface DailyBooster {
+  available: boolean;
+  resetAt: string;
+  packId: string | null;
 }
 export const ACHIEVEMENTS = [
   {

@@ -89,6 +89,20 @@ export interface SocialView {
   friends: FriendView[];
   invitations: DuelInvitation[];
   chat: ChatMessage[];
+  conversations: FriendConversation[];
+}
+export interface FriendMessage {
+  id: string;
+  senderId: string;
+  recipientId: string;
+  body: string;
+  createdAt: string;
+}
+export interface FriendConversation {
+  playerId: string;
+  lastMessage: string;
+  lastAt: string;
+  unread: number;
 }
 export interface LadderEntry extends BattleIdentity {
   id: string;

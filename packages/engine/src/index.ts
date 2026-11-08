@@ -269,6 +269,42 @@ export function randomDeck(pool: readonly Card[], random: () => number): Card[] 
   }
   throw new Error('The available collection cannot form a legal deck.');
 }
+/** Maximize total rarity, then total printed side values, within the normal deck limits. */
+export function buildBestDeck(pool: readonly Card[]): Card[] {
+  const value = (c: Card) => c.stats.reduce((sum, n) => sum + n, 0);
+  const sorted = pool
+    .filter((c) => c.enabled)
+    .sort((a, b) => b.rarity - a.rarity || value(b) - value(a) || a.id.localeCompare(b.id));
+  const unique = sorted.filter(
+    (c, i) =>
+      sorted.findIndex((other) => (other.baseCardId ?? other.id) === (c.baseCardId ?? c.id)) === i,
+  );
+  const fives = unique.filter((c) => c.rarity === 5),
+    fours = unique.filter((c) => c.rarity === 4),
+    lower = unique.filter((c) => c.rarity < 4);
+  let best: Card[] | null = null;
+  for (let five = 0; five <= 1; five++)
+    for (let four = 0; four <= (five ? 1 : 2); four++) {
+      if (fives.length < five || fours.length < four) continue;
+      const deck = [
+        ...fives.slice(0, five),
+        ...fours.slice(0, four),
+        ...lower.slice(0, 5 - five - four),
+      ];
+      if (validateDeck(deck).length) continue;
+      const rarity = deck.reduce((s, c) => s + c.rarity, 0),
+        stats = deck.reduce((s, c) => s + value(c), 0);
+      if (
+        !best ||
+        rarity > best.reduce((s, c) => s + c.rarity, 0) ||
+        (rarity === best.reduce((s, c) => s + c.rarity, 0) &&
+          stats > best.reduce((s, c) => s + value(c), 0))
+      )
+        best = deck;
+    }
+  if (!best) throw new Error('The available collection cannot form a legal deck.');
+  return best;
+}
 export function validateMove(state: GameState, move: Move): string | null {
   if (state.status !== 'playing') return 'This match has ended.';
   if (move.player !== state.turn) return 'It is not your turn.';

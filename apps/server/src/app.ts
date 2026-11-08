@@ -202,6 +202,23 @@ export async function createPlatform(
     notify();
     return result;
   });
+  app.get('/api/friends/:id/messages', async (req) => social.messages(await profile(req), id(req)));
+  app.post('/api/friends/:id/messages', async (req) => {
+    const p = await profile(req),
+      target = id(req);
+    const result = await social.postFriend(p, target, body(req).message, body(req).requestId);
+    for (const socket of io.sockets.sockets.values())
+      if (socket.data.profileId === p.id || socket.data.profileId === target)
+        socket.emit('platform:changed');
+    return result;
+  });
+  app.post('/api/friends/:id/read', async (req) => {
+    const p = await profile(req);
+    await social.readMessages(p, id(req), body(req).through);
+    for (const socket of io.sockets.sockets.values())
+      if (socket.data.profileId === p.id) socket.emit('platform:changed');
+    return { ok: true };
+  });
   app.delete('/api/chat/:id', async (req) => {
     await social.deleteMessage(await profile(req), id(req));
     notify();
@@ -349,8 +366,38 @@ export async function createPlatform(
     return status;
   });
   app.get('/api/boosters', async (req) => store.economy.list((await profile(req)).id));
+  app.get('/api/boosters/daily', async (req) => {
+    const p = await profile(req);
+    return store.economy.daily(p.id, p.registered);
+  });
+  app.post('/api/boosters/daily', async (req) => {
+    const p = await profile(req);
+    const result = await store.economy.claimDaily(p.id, p.registered);
+    notify();
+    return result;
+  });
+  app.post('/api/boosters/open-batch', async (req) => {
+    const result = await store.economy.openBatch((await profile(req)).id, body(req).packIds);
+    notify();
+    return result;
+  });
+  app.post('/api/collection/duplicates', async (req) => {
+    const b = body(req);
+    const result = await store.economy.duplicates(
+      (await profile(req)).id,
+      b.kind,
+      b.cards,
+      b.requestId,
+    );
+    notify();
+    return result;
+  });
   app.post('/api/boosters/buy', async (req) => {
-    const pack = await store.economy.purchase((await profile(req)).id, body(req).requestId);
+    const pack = await store.economy.purchase(
+      (await profile(req)).id,
+      body(req).requestId,
+      body(req).quantity,
+    );
     notify();
     return pack;
   });

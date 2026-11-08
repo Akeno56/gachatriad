@@ -1,57 +1,47 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { BattleIdentity, SocialView } from '@gacha-triad/shared/social';
+import type { BattleIdentity } from '@gacha-triad/shared/social';
 import { useSession } from './session';
 import { Avatar } from './avatar';
 import { api } from '../lib/platform';
 import { appPath } from '../lib/connection';
-const empty: SocialView = { friends: [], invitations: [], chat: [] };
+import { useSocial } from './social-state';
+import { FriendChat } from './friend-chat';
 export function SocialPanel() {
-  const { profile, revision, refresh, openAccount } = useSession(),
+  const { profile, refresh, openAccount } = useSession(),
     router = useRouter();
-  const [data, setData] = useState<SocialView>(empty),
-    [open, setOpen] = useState(false),
-    [tab, setTab] = useState('chat');
+  const { data, error: loadError } = useSocial();
+  const [open, setOpen] = useState(false),
+    [tab, setTab] = useState('chat'),
+    [conversation, setConversation] = useState('');
   const [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
-    [message, setMessage] = useState(''),
     [query, setQuery] = useState(''),
     [results, setResults] = useState<BattleIdentity[]>([]);
-  const dialog = useRef<HTMLDialogElement>(null),
-    list = useRef<HTMLDivElement>(null),
-    sticky = useRef(true),
-    pendingMessage = useRef<{ message: string; id: string } | null>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
-    setData(empty);
     setResults([]);
     setError('');
+    setConversation('');
   }, [profile?.id]);
   useEffect(() => {
-    if (!profile) return;
-    let active = true;
-    void api<SocialView>('/social')
-      .then((next) => {
-        if (active) setData(next);
-      })
-      .catch((e) => {
-        if (active) setError(e.message);
-      });
-    return () => {
-      active = false;
+    const show = (event: Event) => {
+      setConversation((event as CustomEvent<string>).detail);
+      setTab('chat');
+      setOpen(true);
     };
-  }, [profile?.id, revision]);
+    window.addEventListener('triad:friend-chat', show);
+    return () => window.removeEventListener('triad:friend-chat', show);
+  }, []);
   useEffect(() => {
     if (open) dialog.current?.showModal();
     else dialog.current?.close();
   }, [open]);
-  useEffect(() => {
-    if (open && tab === 'chat' && sticky.current && list.current)
-      list.current.scrollTop = list.current.scrollHeight;
-  }, [open, tab, data.chat.at(-1)?.id]);
   const notifications =
     data.friends.filter((f) => f.status === 'incoming').length +
-    data.invitations.filter((i) => i.recipient.id === profile?.id).length;
+    data.invitations.filter((i) => i.recipient.id === profile?.id).length +
+    data.conversations.reduce((n, c) => n + c.unread, 0);
   async function action(path: string, body?: unknown, method?: string) {
     setBusy(true);
     setError('');
@@ -75,9 +65,9 @@ export function SocialPanel() {
       <button
         className="social-launcher outline-button"
         onClick={() => setOpen(true)}
-        aria-label={`Friends and chat${notifications ? ` (${notifications} notifications)` : ''}`}
+        aria-label={`Friends and private chat${notifications ? ` (${notifications} notifications)` : ''}`}
       >
-        Chat &amp; friends {notifications > 0 && <b>{notifications}</b>}
+        Friends &amp; messages {notifications > 0 && <b>{notifications}</b>}
       </button>
       {open && (
         <dialog
@@ -87,7 +77,7 @@ export function SocialPanel() {
           onCancel={() => setOpen(false)}
         >
           <div className="social-heading">
-            <h2 id="social-title">Community</h2>
+            <h2 id="social-title">Friends &amp; messages</h2>
             <button className="outline-button" onClick={() => setOpen(false)}>
               Close
             </button>
@@ -103,12 +93,12 @@ export function SocialPanel() {
                   setError('');
                 }}
               >
-                {t === 'chat' ? 'Main chat' : t === 'friends' ? 'Friends' : 'Duel invitations'}
+                {t === 'chat' ? 'Friend chat' : t === 'friends' ? 'Friends' : 'Duel invitations'}
               </button>
             ))}
           </div>
           <p className="error-message" role="alert">
-            {error}
+            {error || loadError}
           </p>
           {!profile?.registered && (
             <p>
@@ -124,84 +114,7 @@ export function SocialPanel() {
               </button>
             </p>
           )}
-          {tab === 'chat' && (
-            <section aria-label="Main chat">
-              <div
-                className="chat-messages"
-                ref={list}
-                role="log"
-                aria-live="polite"
-                onScroll={() => {
-                  const el = list.current;
-                  if (el) sticky.current = el.scrollHeight - el.scrollTop - el.clientHeight < 70;
-                }}
-              >
-                {!data.chat.length && <p>No messages yet.</p>}
-                {data.chat.map((m) => (
-                  <article key={m.id} className="chat-message">
-                    <Avatar key={m.avatar?.id ?? m.playerId} card={m.avatar} name={m.name} />
-                    <div>
-                      <a href={appPath(`/profile?id=${m.playerId}`)}>{m.name}</a>
-                      {m.title && <small>{m.title}</small>}
-                      <time dateTime={m.createdAt}>
-                        {new Date(m.createdAt).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </time>
-                      <p>{m.body}</p>
-                    </div>
-                    {profile?.isAdmin && (
-                      <button
-                        className="text-button"
-                        disabled={busy}
-                        aria-label={`Remove message from ${m.name}`}
-                        onClick={() => void action(`/chat/${m.id}`, undefined, 'DELETE')}
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </article>
-                ))}
-              </div>
-              <form
-                className="chat-compose"
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  if (!message.trim()) return;
-                  const text = message.trim();
-                  if (pendingMessage.current?.message !== text)
-                    pendingMessage.current = { message: text, id: crypto.randomUUID() };
-                  if (
-                    await action('/chat', { message: text, requestId: pendingMessage.current.id })
-                  ) {
-                    setMessage('');
-                    pendingMessage.current = null;
-                    sticky.current = true;
-                  }
-                }}
-              >
-                <label className="sr-only" htmlFor="chat-message">
-                  Message
-                </label>
-                <input
-                  id="chat-message"
-                  placeholder="Message the card hall…"
-                  maxLength={300}
-                  value={message}
-                  disabled={!profile?.registered}
-                  onChange={(e) => setMessage(e.target.value)}
-                />
-                <button
-                  className="primary-button"
-                  disabled={busy || !profile?.registered || !message.trim()}
-                >
-                  Send
-                </button>
-              </form>
-              <small>300 characters maximum · one message every 3 seconds</small>
-            </section>
-          )}
+          {tab === 'chat' && <FriendChat playerId={conversation} select={setConversation} />}
           {tab === 'friends' && (
             <section aria-label="Friends">
               <form
@@ -241,13 +154,15 @@ export function SocialPanel() {
                 <div className="friend-row" key={p.id}>
                   <Avatar key={p.avatar?.id ?? p.id} card={p.avatar} name={p.name} />
                   <a href={appPath(`/profile?id=${p.id}`)}>{p.name}</a>
-                  <button
-                    className="outline-button"
-                    disabled={busy || data.friends.some((f) => f.id === p.id)}
-                    onClick={() => void action('/friends/request', { playerId: p.id })}
-                  >
-                    Add friend
-                  </button>
+                  {!data.friends.some((f) => f.id === p.id) && (
+                    <button
+                      className="outline-button"
+                      disabled={busy}
+                      onClick={() => void action('/friends/request', { playerId: p.id })}
+                    >
+                      Add friend
+                    </button>
+                  )}
                 </div>
               ))}
               <h3>Your friends &amp; requests</h3>
@@ -276,6 +191,17 @@ export function SocialPanel() {
                         onClick={() => void action(`/friends/${f.id}/accept`, {})}
                       >
                         Accept friend
+                      </button>
+                    )}
+                    {f.status === 'friend' && (
+                      <button
+                        className="outline-button"
+                        onClick={() => {
+                          setConversation(f.id);
+                          setTab('chat');
+                        }}
+                      >
+                        Message
                       </button>
                     )}
                     {f.status === 'friend' && (

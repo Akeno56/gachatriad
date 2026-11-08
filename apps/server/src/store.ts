@@ -9,6 +9,7 @@ import {
   isRevealed,
   legalMoves,
   randomDeck,
+  buildBestDeck,
   scores,
   seededRandom,
   shuffle,
@@ -150,6 +151,9 @@ export class GameStore {
       '004_tutorial.sql',
       '005_economy_admin.sql',
       '006_social_lifecycle.sql',
+      '007_friend_messages.sql',
+      '008_booster_batches.sql',
+      '009_duplicate_cards_daily.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -313,7 +317,7 @@ export class GameStore {
     return this.db.tx(async (sql) => {
       let next: string[];
       try {
-        next = randomDeck(await this.available(sql, id), rng()).map((c) => c.id);
+        next = buildBestDeck(await this.available(sql, id)).map((c) => c.id);
       } catch {
         throw new GameError(
           'Your available collection cannot form a legal five-card deck. Open a booster or cancel reserved trade offers.',

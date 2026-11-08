@@ -123,6 +123,11 @@
   color: var(--gold);
   font: 30px var(--pixel);
   z-index: 10;
+  width: 32px;
+  height: 32px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
 }
 .game-dialog {
   position: fixed;
@@ -686,11 +691,16 @@
     grid-template-columns: 1fr;
   }
   .title-roster {
-    height: 300px;
+    display: flex;
+    overflow-x: auto;
+    gap: 12px;
+    padding: 10px 4px 18px;
+    height: auto;
   }
   .title-card {
     width: 142px;
     height: 215px;
+    flex: 0 0 142px;
   }
   .title-card-0 {
     left: 0;

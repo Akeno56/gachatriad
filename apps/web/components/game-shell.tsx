@@ -10,6 +10,7 @@ import { StarterBoosters } from './starter-boosters';
 import { useSession } from './session';
 import { RankedWarning } from './ranked-warning';
 import { SocialPanel } from './social-panel';
+import { SocialProvider } from './social-state';
 const AudioContext = createContext<(sound: Sound) => void>(() => {});
 const MusicSceneContext = createContext<(scene: MusicScene) => void>(() => {});
 export const useGameAudio = () => useContext(AudioContext);
@@ -256,11 +257,13 @@ export function GameShell({ children }: { children: React.ReactNode }) {
             </header>
             <main id="main">
               <ServerConnection>
-                <StarterBoosters />
-                {children}
-                <FirstDuelTutorial />
-                <RankedWarning />
-                <SocialPanel />
+                <SocialProvider>
+                  <StarterBoosters />
+                  {children}
+                  <FirstDuelTutorial />
+                  <RankedWarning />
+                  <SocialPanel />
+                </SocialProvider>
               </ServerConnection>
             </main>
             <div className="system-message" role="status">

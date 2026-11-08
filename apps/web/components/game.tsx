@@ -23,6 +23,7 @@ import { ElementIcon } from './element-icon';
 import { ResultOverlay } from './result-overlay';
 import { Avatar } from './avatar';
 import { confirmRanked } from './ranked-warning';
+import { MainChat } from './main-chat';
 export function ruleNames(r: Rules) {
   return [
     r.allOpen ? 'All Open' : r.threeOpen ? 'Three Open' : 'Closed',
@@ -304,27 +305,11 @@ export function Game() {
                   </button>
                 ))}
               </div>
-              <div className="party-caption">
-                <span>01—05</span>
-                <p>
-                  Mixed universe deck
-                  <br />
-                  <Link href="/collection">Arrange your cards</Link>
-                </p>
-                <span className="deck-emblem">V</span>
-              </div>
             </section>
           </div>
-          <div className="command-window menu-window">
-            <span className="window-label">MESSAGE</span>
-            <span className="message-cursor">▶</span>
-            <p>
-              Select a rival and a rule set to begin.
-              <small>Solo practice has no turn timer or card trade.</small>
-            </p>
-          </div>
+          <MainChat />
           <div className="build-label">
-            400 CARDS · v0.6{' '}
+            400 CARDS · v0.7{' '}
             <Link href="/credits" className="credits-button">
               Credits
             </Link>

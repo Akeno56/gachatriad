@@ -1,5 +1,29 @@
 # Boosters and Stellar Prisms
 
+## Batch purchases, stacks and daily rewards (v0.7)
+
+Unopened packs form counted stacks by source: Starter, Daily, Standard and Gift. The server returns every unopened pack plus the latest 20 opened receipts. Open one pack, or use **Open ×5 / ×10** for a combined 25/50-card reveal. Bulk opening is atomic: unknown/foreign IDs roll back the whole batch. Retrying the same IDs returns saved cards.
+
+The purchase dialog accepts **1–100 boosters**, shows the total cost and remaining balance, and provides 1/5/10/Max shortcuts. Each pack costs 150 Prisms. A batch buys in full or charges nothing. Durable request receipts return the same pack IDs on retries; changing a receipt's quantity is rejected. Legacy single purchases keep their retry protection.
+
+Registered accounts can claim **one free standard booster per UTC calendar day**. Guests must register. Claims are enforced on the server, tolerate concurrent retries and do not auto-open the pack. The next midnight UTC reset is displayed in the viewer's local time. Daily boosters use standard rarity/Holo odds.
+
+## Duplicate cards
+
+Collection has **Duplicate cards · Recycle & Trade Up** tools. Select spare copies of one rarity. Each action keeps at least one exact Standard/Holo copy of every selected card and preserves all reserved copies. Holo duplicates are excluded by default; enabling them and selecting them adds a warning before confirmation.
+
+| Rarity | Recycling value per copy |
+| ------ | ------------------------ |
+| 1★     | 5 Stellar Prisms         |
+| 2★     | 10 Stellar Prisms        |
+| 3★     | 20 Stellar Prisms        |
+| 4★     | 40 Stellar Prisms        |
+| 5★     | 75 Stellar Prisms        |
+
+**Trade Up** consumes exactly five spare copies of one rarity (mixed characters allowed), from 1★ through 4★, for one uniformly random enabled character of the next rarity. Each result has an independent **0.1% Holo chance**. 5★ cards cannot be traded up. Recycle and Trade Up recheck ownership/reservations on confirmation, write inventory/currency ledgers and preserve durable retry receipts. Guests can use these tools too. Confirmation is required before consuming copies.
+
+## Individual boosters and duel rewards
+
 New guest and registered profiles receive **three unopened starter boosters** instead of the old random starter collection. Each contains five cards, including one guaranteed 3★ or higher. Existing collections, decks, saves and accounts are preserved. Registering a guest preserves inventory, currency and unopened packs without granting another welcome bundle.
 
 The first starter booster automatically builds a legal five-card deck. Its first four slots roll 1–3★ cards with weights 55:25:15, favoring unowned characters. Its fifth slot rolls 3★ 85%, 4★ 13%, 5★ 2%. Every pack has five distinct characters, ensuring that the first starter pack can form a legal deck. Duplicates between packs add inventory copies.

@@ -1,3 +1,4 @@
+import { RuleAnimation } from './rule-animation';
 export function RulesContent() {
   return (
     <div className="rules-content">
@@ -60,6 +61,7 @@ export function RulesContent() {
             cards. Friendly cards can help make the match.
           </p>
           <small>Example: 4 meets 4, and 7 meets 7.</small>
+          <RuleAnimation rule="same" />
         </article>
         <article>
           <span className="rule-icon">＋</span>
@@ -69,6 +71,7 @@ export function RulesContent() {
             enemy cards. Friendly cards count here, too.
           </p>
           <small>Example: 3 + 6 = 5 + 4.</small>
+          <RuleAnimation rule="plus" />
         </article>
         <article>
           <span className="rule-icon">⤳</span>
@@ -78,6 +81,7 @@ export function RulesContent() {
             rule. Each new combo capture can continue the chain. Ordinary captures do not start
             combos.
           </p>
+          <RuleAnimation rule="combo" />
         </article>
       </div>
       <p className="rule-note">

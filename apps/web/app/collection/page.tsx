@@ -5,6 +5,7 @@ import { validateDeck } from '@gacha-triad/engine';
 import { Card } from '../../components/card';
 import { useSession } from '../../components/session';
 import { api } from '../../lib/platform';
+import { DuplicateCards } from '../../components/duplicate-cards';
 export default function Collection() {
   const { profile, refresh, error: connectionError } = useSession();
   const [deck, setDeck] = useState<string[]>([]),
@@ -33,7 +34,7 @@ export default function Collection() {
     try {
       await api(auto ? '/deck/auto' : '/deck', auto ? {} : { cards: deck });
       await refresh();
-      setMessage(auto ? 'A legal deck is ready.' : 'Deck saved.');
+      setMessage(auto ? 'Your highest total rarity deck is ready.' : 'Deck saved.');
     } catch (e) {
       setMessage((e as Error).message);
     } finally {
@@ -70,11 +71,17 @@ export default function Collection() {
           >
             Save deck
           </button>
-          <button className="outline-button" disabled={busy || !profile} onClick={() => save(true)}>
+          <button
+            className="outline-button"
+            title="Maximize total rarity from available owned cards, then total side values."
+            disabled={busy || !profile}
+            onClick={() => save(true)}
+          >
             Auto build
           </button>
         </div>
       </section>
+      <DuplicateCards />
       <div className="catalog-filters">
         <label>
           Find a card

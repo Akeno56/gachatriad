@@ -104,6 +104,141 @@
 .booster-pack-button strong {
   font: 25px var(--pixel);
 }
+.booster-stack-art {
+  position: relative;
+  display: inline-block;
+  margin: 10px 12px 0 0;
+  isolation: isolate;
+}
+.booster-stack-art.has-multiple:before,
+.booster-stack-art.has-multiple:after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid #c5b57b;
+  background: #172d51;
+  z-index: -1;
+}
+.booster-stack-art.has-multiple:before {
+  transform: translate(9px, -9px) rotate(3deg);
+}
+.booster-stack-art.has-multiple:after {
+  transform: translate(4px, -4px) rotate(1deg);
+}
+.booster-count {
+  position: absolute;
+  right: -12px;
+  top: -12px;
+  padding: 4px 10px;
+  color: #111a2d;
+  background: #efda9c;
+  border: 2px solid #fff1bd;
+  box-shadow: 2px 3px 0 #080d24;
+  font: 26px var(--pixel);
+  z-index: 2;
+}
+.booster-quantity {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.booster-quantity input {
+  width: 100px;
+}
+.quantity-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+.quantity-shortcuts .outline-button {
+  min-width: 45px;
+  padding: 6px 10px;
+}
+.booster-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.batch-open-actions {
+  display: flex;
+  gap: 8px;
+}
+.batch-open-actions button {
+  flex: 1;
+  padding: 8px;
+  font-size: 21px;
+}
+.daily-booster {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 22px;
+  margin: 20px 0;
+}
+.daily-booster h2 {
+  font: 28px var(--pixel);
+  color: var(--gold);
+  margin: 0;
+}
+.daily-booster p {
+  margin: 8px 0;
+}
+.daily-booster small {
+  color: var(--muted);
+}
+.batch-pack-emblem {
+  position: relative;
+  margin: 60px 0;
+}
+.batch-pack-emblem .booster-pack-art {
+  width: 215px;
+  height: 300px;
+}
+.batch-pack-emblem > strong {
+  position: absolute;
+  right: -30px;
+  bottom: -15px;
+  font: 60px var(--pixel);
+  color: var(--gold);
+  text-shadow: 3px 3px #000;
+}
+.batch-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 18px;
+  margin: 22px 0;
+}
+.batch-card-grid article {
+  min-width: 0;
+  animation: booster-flip 0.4s ease-out both;
+}
+.batch-card-grid .playing-card {
+  height: auto;
+  aspect-ratio: 2/3;
+}
+.batch-card-grid p {
+  text-align: center;
+  font-size: 16px;
+  margin: 5px 0;
+}
+.batch-card-grid b {
+  color: var(--gold);
+}
+@media (max-width: 680px) {
+  .batch-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .batch-card-grid .card-caption strong {
+    font-size: 21px;
+  }
+  .daily-booster {
+    padding: 18px;
+  }
+}
 .booster-odds {
   padding: 20px 24px;
   margin: 32px 0;

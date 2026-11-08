@@ -1,0 +1,86 @@
+.duplicate-tools {
+  margin: 24px 0;
+  padding: 22px;
+}
+.duplicate-tools > summary {
+  font: 28px var(--pixel);
+  color: var(--gold);
+  cursor: pointer;
+}
+.duplicate-tools > p {
+  color: #bac9df;
+}
+.duplicate-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 18px;
+  margin: 22px 0;
+}
+.duplicate-toolbar > label:not(.check-label) {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.duplicate-list {
+  max-height: 390px;
+  overflow-y: auto;
+  padding-right: 12px;
+  margin-bottom: 20px;
+}
+.duplicate-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid #526789;
+}
+.duplicate-row > div {
+  flex: 1;
+  min-width: 0;
+}
+.duplicate-row strong {
+  font: 24px var(--pixel);
+}
+.duplicate-row small {
+  display: block;
+  color: #b7c8df;
+}
+.duplicate-row input {
+  width: 84px;
+  flex: 0 0 84px;
+}
+.duplicate-dialog {
+  max-width: 650px;
+}
+.duplicate-dialog h2 {
+  font: 36px var(--pixel);
+  color: var(--gold);
+}
+.duplicate-reward {
+  max-width: 230px;
+  margin: auto;
+  text-align: center;
+}
+.duplicate-reward .playing-card {
+  aspect-ratio: 2/3;
+  height: auto;
+}
+@media (max-width: 680px) {
+  .duplicate-tools {
+    padding: 16px 12px;
+  }
+  .duplicate-toolbar {
+    gap: 12px;
+  }
+  .duplicate-row {
+    gap: 9px;
+  }
+  .duplicate-row strong {
+    font-size: 21px;
+  }
+  .duplicate-row input {
+    width: 64px;
+    flex-basis: 64px;
+  }
+}
