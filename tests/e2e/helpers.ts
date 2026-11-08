@@ -1,4 +1,13 @@
 import { expect, type Page } from '@playwright/test';
+import { PRESETS } from '../../packages/engine/src/index';
+export async function startPractice(page: Page, preset = 'classic') {
+  const response = await page.request.post('/api/solo', {
+    data: { difficulty: 'easy', rules: PRESETS.find((p) => p.id === preset)!.rules },
+  });
+  expect(response.status(), await response.text()).toBe(200);
+  const match = await response.json();
+  await page.goto(`/?match=${match.matchId}`);
+}
 export async function openSettings(page: Page) {
   if (!(await page.locator('.settings-panel').isVisible()))
     await page.getByRole('button', { name: 'Game settings', exact: true }).click();

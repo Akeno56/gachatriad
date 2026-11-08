@@ -1,8 +1,18 @@
-# Community, ranked and account lifecycle — v0.10
+# Community, ranked and account lifecycle — v0.11
 
 **Main chat** is always visible in the Play menu. Guests can read it; posting requires registration. **Friends & messages** opens a centered panel from any game screen, containing private friend conversations, requests and duel invitations. Accepted friends can exchange private messages, including while offline. Only the two participants can fetch a conversation, and only while their friendship is accepted. The panel shows unread counts and marks incoming messages read when that conversation is viewed. Private notifications go only to participants' sockets; private text never appears in public chat. Removing a friendship disables the conversation. Account deletion deletes both sides' private messages.
 
 Play, Lobbies and Trades share the same **General / Trade / Lobbies** public channels and online-player list. Entering Play defaults to General, Lobbies to Lobbies, and Trades to Trade; players can change tabs within each page. Public chat panels show at least three ordinary messages, with additional room for wrapping on mobile. Each public channel shows its latest 80 messages. The public send cooldown is shared across all three tabs, so switching tabs cannot bypass it. The top-right account action reads **Login/Register** for guests/disconnected users and **Logout** for registered users; Logout ends the authenticated session directly.
+
+## Matchmaking, training and invitations
+
+Play presents **Start match (Unranked)** and **Start match (Ranked)**. Each opens a centered rules dialog before entering its queue. Waiting state and creation time come from the server, so refreshing restores the timer. The red X closes the waiting lobby; joining/cancelling remain serialized by the server. Ranked requires an account and keeps its original Trade One acknowledgement. Available populated bots may join, with only Medium/Hard bots eligible for Ranked. **Browse lobbies** opens the existing list; custom lobbies remember Allow bots locally in the browser.
+
+The first-duel tutorial is a 15-step scripted training game. It runs capture demonstrations through the real engine using clearly marked teaching values and original local artwork. Players place highlighted cards, compare visibility modes, select a practice Trade One card and try Random. It grants no cards, currency, records or rating. The rulebook remains an alternative; How to play reopens training later.
+
+Incoming friend invitations show a count on **Duel invitations** and a five-second popup. Viewing/dismissing the popup does not remove the pending invite; accept/decline/expiry does. Seen IDs are scoped to the profile in session storage to avoid repeated popups on refresh. Invitations use Three Open + Same/Plus/Combo and no card trade.
+
+Public and private chat use subtle alternating row backgrounds. Desktop rows align identity, title, text and timestamp; narrow screens wrap text beneath the identity. Draft offers sort by total stats then rarity by default, with an alternate rarity-first order; selection never changes the temporary pool.
 
 ## Pending stakes and rematches
 
@@ -12,7 +22,7 @@ Multiplayer results have a **Rematch** action beside the lobby link. A human opp
 
 Messages are plain text (1–300 characters), limited to one every three seconds per sender for public messages, with a separate private-message cooldown. Request IDs make send retries idempotent; public retries must retain their original channel and text. The latest 80 messages are shown per private conversation. Administrators can remove public messages; admin status does not grant access to private conversations. Suspension blocks HTTP actions and socket reconnection. Player profiles reflect friendship status: existing friends have Message and Invite actions, outgoing requests show their status, and incoming requests can be accepted.
 
-Players can search registered human accounts by public name/profile ID, request/accept/decline/remove friendships, see friends' socket presence, and invite accepted friends. An invitation creates a human-only, recipient-reserved Three Open table with no card trade. It lasts five minutes. Only the recipient can accept; either participant can cancel/decline. The server checks friendship, ownership, expiry, tutorial completion, deck legality and existing games. Accept retries return the same match. Public lobby join requests cannot bypass recipient or expiry checks.
+Players can search registered human accounts by public name/profile ID, request/accept/decline/remove friendships, see friends' socket presence, and invite accepted friends. An invitation creates a human-only, recipient-reserved Unranked table (Three Open, Same, Plus and Combo) with no card trade. It lasts five minutes. Only the recipient can accept; either participant can cancel/decline. The server checks friendship, ownership, expiry, tutorial completion, deck legality and existing games. Accept retries return the same match. Public lobby join requests cannot bypass recipient or expiry checks.
 
 The Ladder page has constructed ranked and Draft leaderboards. Only registered, unsuspended human players with a completed match in that mode are included. Lists show rating, games, wins and provisional status for fewer than five games. Bots remain real duel opponents but do not occupy leaderboard places.
 

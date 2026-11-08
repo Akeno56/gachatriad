@@ -14,7 +14,9 @@ test('requires the first-duel tutorial, accepts the rulebook, and remembers comp
   await page.getByRole('button', { name: 'I’ve read the rules · Unlock duels' }).click();
   await expect(page.locator('.rulebook-onboarding')).toHaveCount(0);
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Start match' })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Start match (Unranked)', exact: true }),
+  ).toBeEnabled();
   await expect(tutorial).toHaveCount(0);
   await expect(
     page.getByRole('navigation').getByRole('link', { name: 'Credits', exact: true }),

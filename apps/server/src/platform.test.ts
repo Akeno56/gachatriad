@@ -1361,6 +1361,11 @@ it('supports private friend requests, global chat with rate limits, and recipien
   const invite = await ok<{ id: string; lobbyId: string }>(a, '/invites', {
     playerId: b.profile.id,
   });
+  expect((await ok<ProfileView>(a, '/profile')).waitingLobby).toMatchObject({
+    id: invite.lobbyId,
+    mode: 'custom',
+    invited: true,
+  });
   expect((await request(stranger, `/lobbies/${invite.lobbyId}/join`, {})).statusCode).toBe(403);
   expect(
     (await request(stranger, `/invites/${invite.id}/respond`, { accept: true })).statusCode,
@@ -1368,6 +1373,13 @@ it('supports private friend requests, global chat with rate limits, and recipien
   const joined = await ok<{ matchId: string }>(b, `/invites/${invite.id}/respond`, {
     accept: true,
   });
+  expect((await ok<MatchView>(a, `/matches/${joined.matchId}`)).rules).toMatchObject({
+    threeOpen: true,
+    same: true,
+    plus: true,
+    combo: true,
+  });
+  expect((await ok<ProfileView>(a, '/profile')).waitingLobby).toBeNull();
   expect(
     (await ok<{ matchId: string }>(b, `/invites/${invite.id}/respond`, { accept: true })).matchId,
   ).toBe(joined.matchId);

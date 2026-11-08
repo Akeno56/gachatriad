@@ -16,10 +16,11 @@ import './duplicate-cards.css';
 import './duel-refinements.css';
 import './community-layout.css';
 import './draft-shop.css';
+import './queues-training.css';
 
 export const metadata: Metadata = {
   title: 'Gacha Triad · Cross-world card battle',
-  description: 'Five cards. Nine spaces. Play a strategic Triple Triad match against the CPU.',
+  description: 'Collect cards and play Triple Triad against friends, players and bots.',
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

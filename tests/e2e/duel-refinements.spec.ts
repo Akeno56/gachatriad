@@ -109,8 +109,12 @@ test('separates matchmaking from practice and hides Join on the host’s table',
   await prepared(page);
   const p = await (await page.request.get('/api/profile')).json();
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Play unranked', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Play ranked', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Start match (Unranked)', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Start match (Ranked)', exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByLabel('Rule preset').locator('option[value="unranked"],option[value="ranked"]'),
   ).toHaveCount(0);

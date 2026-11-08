@@ -22,7 +22,7 @@ import { useGameAudio, useMusicScene } from './game-shell';
 import { ElementIcon } from './element-icon';
 import { ResultOverlay } from './result-overlay';
 import { Avatar } from './avatar';
-import { confirmRanked } from './ranked-warning';
+import { MatchmakingPanel } from './matchmaking-panel';
 import { MainChat } from './main-chat';
 import { CaptureCard } from './capture-card';
 import { DraftOpening } from './draft-opening';
@@ -42,8 +42,6 @@ export function Game() {
   const { profile, error: connectionError, revision, refresh } = useSession();
   const [match, setMatch] = useState<MatchView | null>(null),
     [matchId, setMatchId] = useState<string | null>(null),
-    [difficulty, setDifficulty] = useState<'easy' | 'normal'>('easy'),
-    [presetId, setPresetId] = useState('classic'),
     [selected, setSelected] = useState<string | null>(null),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
@@ -56,6 +54,7 @@ export function Game() {
     [clock, setClock] = useState(Date.now());
   const [resultOpen, setResultOpen] = useState(true);
   const [draftCeremonyDone, setDraftCeremonyDone] = useState(false);
+  const [draftSort, setDraftSort] = useState<'stats' | 'rarity'>('stats');
   const completeDraftOpening = useCallback(() => setDraftCeremonyDone(true), []);
   const updateDraft = useCallback(
     (next: MatchView) =>
@@ -75,9 +74,6 @@ export function Game() {
     seen = useRef(''),
     resultSeen = useRef('');
   const sound = useGameAudio();
-  const preset =
-    PRESETS.find((p) => p.id === presetId && p.id !== 'ranked' && p.id !== 'unranked') ??
-    PRESETS[0];
   function inspect(card: CardData, modifier = 0) {
     setDetail(card);
     setDetailModifier(modifier);
@@ -173,7 +169,10 @@ export function Game() {
     setBusy(true);
     setError('');
     try {
-      const result = await api<{ matchId: string }>('/solo', { difficulty, rules: preset.rules });
+      const result = await api<{ matchId: string }>('/solo', {
+        difficulty: match?.names[1] === 'The Strategist' ? 'normal' : 'easy',
+        rules: match?.rules ?? PRESETS[0].rules,
+      });
       setMatchId(result.matchId);
       sound('select');
       await refresh();
@@ -201,6 +200,16 @@ export function Game() {
   }
   const canPlay = match?.status === 'playing' && game?.turn === seat && !busy && !resolving;
   const selectedCard = own.find((c) => c.card?.id === selected)?.card;
+  const orderedDraft = [...(match?.draftPool ?? [])].sort((a, b) => {
+    const stats = (card: CardData) => card.stats.reduce((sum, n) => sum + n, 0);
+    return (
+      (draftSort === 'stats'
+        ? stats(b) - stats(a) || b.rarity - a.rarity
+        : b.rarity - a.rarity || stats(b) - stats(a)) ||
+      a.name.localeCompare(b.name) ||
+      a.id.localeCompare(b.id)
+    );
+  });
   const draftErrors = validateDeck(match?.draftPool.filter((c) => draft.includes(c.id)) ?? []);
   return (
     <div className={`play-page ${match ? 'battle-screen' : 'title-screen'}`}>
@@ -212,129 +221,12 @@ export function Game() {
             </h1>
           </div>
           <div className="title-layout">
-            <section className="setup-panel menu-window" aria-label="Match setup">
-              <h2 className="window-label">DUEL SETUP</h2>
-              <div className="section-kicker">CHOOSE YOUR RIVAL</div>
-              <div className="opponent-options" role="group" aria-label="CPU difficulty">
-                {(['easy', 'normal'] as const).map((level) => (
-                  <button
-                    key={level}
-                    className={`opponent-option ${difficulty === level ? 'is-active' : ''}`}
-                    aria-pressed={difficulty === level}
-                    onClick={() => {
-                      setDifficulty(level);
-                      sound('menu');
-                    }}
-                  >
-                    <span className="menu-pointer">▶</span>
-                    <span>
-                      <strong>{level === 'easy' ? 'The Wanderer' : 'The Strategist'}</strong>
-                      <small>{level.toUpperCase()}</small>
-                    </span>
-                  </button>
-                ))}
-              </div>
-              <p className="opponent-description">
-                {difficulty === 'easy'
-                  ? 'A relaxed rival. Find your footing.'
-                  : 'Looks for captures. Guards weak sides.'}
-              </p>
-              <label className="section-kicker" htmlFor="preset">
-                BATTLE RULES
-              </label>
-              <select
-                id="preset"
-                aria-label="Rule preset"
-                value={presetId}
-                onChange={(e) => setPresetId(e.target.value)}
-              >
-                {PRESETS.filter((p) => p.id !== 'ranked' && p.id !== 'unranked').map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-              <p className="preset-description">{preset.description}</p>
-              <button
-                className="primary-button start-button"
-                disabled={busy || !profile || profile.deck.length !== 5}
-                onClick={start}
-              >
-                {busy ? 'Preparing…' : 'Start match'} ▶
-              </button>
-              <Link className="outline-button lobby-shortcut" href="/lobbies">
-                Play online
-              </Link>
-              <button
-                className="outline-button unranked-play-button"
-                disabled={busy || !profile}
-                onClick={async () => {
-                  setBusy(true);
-                  setError('');
-                  try {
-                    const result = await api<{ matchId: string | null }>('/lobbies', {
-                      mode: 'casual',
-                      allowBots: true,
-                    });
-                    await refresh();
-                    location.href = appPath(
-                      result.matchId ? `/?match=${result.matchId}` : '/lobbies',
-                    );
-                  } catch (e) {
-                    setError((e as Error).message);
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-              >
-                Play unranked
-              </button>
-              <p className="unranked-rules-note">
-                Three Open · Same · Plus · Combo · No card trade
-              </p>
-              <button
-                className="outline-button ranked-play-button"
-                disabled={busy || !profile?.registered}
-                onClick={async () => {
-                  if (!(await confirmRanked(profile))) return;
-                  setBusy(true);
-                  try {
-                    const result = await api<{ matchId: string | null }>('/lobbies', {
-                      mode: 'ranked',
-                      allowBots: true,
-                    });
-                    await refresh();
-                    location.href = appPath(
-                      result.matchId ? `/?match=${result.matchId}` : '/lobbies',
-                    );
-                  } catch (e) {
-                    setError((e as Error).message);
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-              >
-                Play ranked
-              </button>
-              <p className="ranked-stakes-note">
-                Players and Medium/Hard bots · Trade One: a loss can cost one card. Account
-                required.
-              </p>
-              {profile && profile.deck.length !== 5 && (
-                <p className="deck-warning" role="status">
-                  Your active deck has {profile.deck.length}/5 cards.{' '}
-                  <Link href="/collection">Complete your deck in Collection</Link> before playing.
-                </p>
-              )}
-              <div className="setup-secondary">
-                <button className="text-button" onClick={() => setDialog('rules')}>
-                  How to play
-                </button>
-                <button className="text-button" onClick={() => setDialog('combo')}>
-                  Combo lesson
-                </button>
-              </div>
-            </section>
+            <MatchmakingPanel
+              onMatch={setMatchId}
+              onRules={() => setDialog('rules')}
+              onTutorial={() => window.dispatchEvent(new Event('triad:show-tutorial'))}
+              onCombo={() => setDialog('combo')}
+            />
             <section className="title-party" aria-label="Your saved deck">
               <div className="party-heading">
                 <span>YOUR DECK</span>
@@ -358,7 +250,7 @@ export function Game() {
             </section>
           </div>
           <div className="build-label">
-            400 CARDS · v0.10{' '}
+            400 CARDS · v0.11{' '}
             <Link href="/credits" className="credits-button">
               Credits
             </Link>
@@ -417,10 +309,23 @@ export function Game() {
                   · {Math.max(0, Math.ceil(((match.deadline ?? clock) - clock) / 1000))}s remaining
                 </p>
               </div>
-              <div className="catalog-grid">
-                {match.draftPool.map((card) => (
+              <label className="draft-sort">
+                Order cards{' '}
+                <select
+                  aria-label="Order draft cards"
+                  value={draftSort}
+                  onChange={(e) => setDraftSort(e.target.value as 'stats' | 'rarity')}
+                >
+                  <option value="stats">Total stats ↓ · Rarity ↓</option>
+                  <option value="rarity">Rarity ↓ · Total stats ↓</option>
+                </select>
+              </label>
+              <div className="draft-grid">
+                {orderedDraft.map((card) => (
                   <button
                     key={card.id}
+                    data-total={card.stats.reduce((sum, n) => sum + n, 0)}
+                    data-rarity={card.rarity}
                     className={`draft-card ${draft.includes(card.id) ? 'is-selected' : ''}`}
                     aria-pressed={draft.includes(card.id)}
                     disabled={match.draftLocked || busy}
@@ -434,8 +339,12 @@ export function Game() {
                       )
                     }
                     aria-label={`Draft ${card.name}`}
+                    title={`${card.name} · ${card.rarity}★ · Total ${card.stats.reduce((sum, n) => sum + n, 0)}`}
                   >
                     <Card card={card} />
+                    <span className="draft-summary">
+                      {card.rarity}★ · {card.stats.reduce((sum, n) => sum + n, 0)} total
+                    </span>
                   </button>
                 ))}
               </div>

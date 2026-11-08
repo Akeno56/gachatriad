@@ -1,0 +1,572 @@
+.mode-rules-dialog {
+  width: min(650px, calc(100vw - 28px));
+  padding: 28px;
+}
+.mode-rules-dialog h2 {
+  font: 36px/1.1 var(--pixel);
+  color: var(--gold);
+  margin: 0 0 20px;
+}
+.mode-rules-dialog p {
+  line-height: 1.6;
+}
+.matchmaking-panel {
+  align-self: start;
+}
+.matchmaking-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  margin: 12px 0;
+}
+.matchmaking-row > .primary-button,
+.matchmaking-row > .outline-button {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  width: auto;
+}
+.matchmaking-panel .lobby-shortcut {
+  margin-top: 14px;
+}
+.queue-cancel {
+  flex: none;
+  width: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: 1px solid #da8c85;
+  background: #452438;
+  color: #ffd6cd;
+  font: 30px/1 var(--pixel);
+}
+.queue-cancel:hover {
+  background: #703b4a;
+}
+.is-queued > button:first-child {
+  opacity: 1;
+  color: #eedca7;
+  border-color: #c8b774;
+}
+.waiting-other-lobby {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 14px;
+}
+.queue-account-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 12px 0;
+}
+.matchmaking-panel > .error-message:empty {
+  display: none;
+}
+.matchmaking-panel .setup-secondary {
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.notification-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 3px;
+  background: #e0bd74;
+  color: #17233b;
+  font: 18px/1 var(--pixel);
+}
+.duel-invite-toast {
+  position: fixed;
+  left: 16px;
+  bottom: 82px;
+  z-index: 40;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: min(460px, calc(100vw - 32px));
+  padding: 14px 16px;
+  border-color: #e2c77c;
+  box-shadow: 0 5px 25px #0009;
+}
+.duel-invite-toast > span {
+  flex: 1;
+  font-size: 16px;
+}
+.duel-invite-toast .text-button {
+  font-size: 19px;
+  white-space: nowrap;
+}
+/* Each sender column, message and time share a row; long messages may wrap. */
+.chat-message,
+.friend-chat .private-message,
+.friend-chat .private-message.is-own {
+  align-items: center;
+  margin: 0;
+  min-height: 52px;
+  padding: 7px 8px;
+  border: 0;
+  border-bottom: 1px solid #8199bd1a;
+}
+.chat-message:nth-of-type(odd),
+.friend-chat .private-message:nth-of-type(odd) {
+  background: #a0bce20d;
+}
+.chat-message:nth-of-type(even),
+.friend-chat .private-message:nth-of-type(even) {
+  background: #040b1a1a;
+}
+.chat-message .message-content,
+.private-message .message-content {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+.chat-message .message-heading,
+.private-message .message-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.chat-message .message-heading > a,
+.private-message .message-heading > a,
+.private-message .message-heading > strong {
+  min-width: 0;
+  font: 20px/1.2 var(--pixel);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chat-message .message-heading > .message-title,
+.private-message .message-heading > .message-title {
+  grid-row: auto;
+  grid-column: auto;
+  margin: 0;
+  max-width: 90px;
+  font: 11px/1.3 var(--sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chat-message .message-content > p,
+.private-message .message-content > p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.35;
+  min-width: 0;
+}
+.chat-message .message-time,
+.private-message .message-time {
+  margin: 0;
+  white-space: nowrap;
+  color: #a8bad5;
+  font: 10px/1.4 var(--sans);
+}
+.chat-message > button {
+  flex: none;
+  font-size: 17px;
+}
+.draft-selection {
+  position: relative;
+}
+.draft-grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 10px;
+}
+.draft-grid .draft-card {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 18px;
+  height: min(240px, calc((100dvh - 400px) / 2));
+  padding: 0;
+  border: 2px solid #647b9a;
+  min-width: 0;
+  background: #14213c;
+}
+.draft-grid .draft-card .playing-card {
+  height: 100%;
+  width: 100%;
+}
+.draft-grid .draft-card .card-values {
+  transform: scale(0.8);
+  transform-origin: top left;
+}
+.draft-grid .draft-card .card-caption strong {
+  font-size: 21px;
+}
+.draft-grid .draft-card .card-set {
+  font-size: 6px;
+}
+.draft-grid .draft-card .card-stars {
+  font-size: 7px;
+}
+.draft-grid .draft-card.is-selected {
+  border-color: #ffe6a1;
+  box-shadow:
+    0 0 0 2px #d8b668,
+    0 0 15px #d8b66855;
+}
+.draft-summary {
+  display: block;
+  color: #b8c9e3;
+  font-size: 11px;
+  line-height: 16px;
+}
+.draft-sort {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+}
+.draft-sort select {
+  width: 235px;
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 19px;
+}
+.draft-selection .draft-heading {
+  margin: 8px 0 12px;
+  padding: 12px;
+}
+.draft-selection .draft-heading h1 {
+  margin: 0 0 5px;
+  font-size: 32px;
+  line-height: 1;
+}
+.draft-selection .draft-heading p {
+  font-size: 13px;
+  line-height: 1.35;
+  margin: 5px 0;
+}
+.draft-selection .draft-heading p:first-of-type {
+  max-width: calc(100% - 330px);
+}
+.draft-selection > p {
+  font-size: 14px;
+  margin: 10px 0;
+  text-align: center;
+}
+.draft-selection > .primary-button {
+  display: block;
+  margin: 0 auto;
+}
+.battle-screen:has(.draft-selection) {
+  padding-top: 12px;
+  padding-bottom: 18px;
+}
+.battle-screen:has(.draft-selection) > .error-message:empty {
+  display: none;
+}
+.guided-tutorial {
+  width: min(1060px, calc(100vw - 24px));
+  max-width: min(1060px, calc(100vw - 24px));
+  padding: 24px;
+}
+.guided-tutorial h2 {
+  margin: 12px 0;
+  font-size: 34px;
+}
+.training-explanation {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #c6d4e8;
+  margin: 12px 0 18px;
+}
+.training-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+.training-score {
+  text-align: center;
+  font: 23px var(--pixel);
+  margin: 0 0 10px;
+}
+.training-score strong {
+  color: var(--gold);
+  font-weight: 400;
+}
+.training-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+.training-cell {
+  aspect-ratio: 1;
+  padding: 0;
+  min-width: 0;
+  border: 1px solid #60799b;
+  background: #09152c;
+  position: relative;
+}
+.training-cell:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.training-cell .playing-card {
+  width: 100%;
+  height: 100%;
+}
+.training-cell .card-values {
+  transform: scale(0.7);
+  transform-origin: top left;
+  top: 6px;
+  left: 6px;
+}
+.training-cell .card-caption strong {
+  font-size: 16px;
+}
+.training-cell .card-stars,
+.training-cell .card-set {
+  font-size: 5px;
+}
+.training-cell .ownership-mark {
+  font-size: 6px;
+}
+.training-cell .card-caption {
+  padding: 5px;
+}
+.training-cell > svg {
+  width: 24px;
+  height: 24px;
+}
+.training-cell > span {
+  display: block;
+  font: 19px var(--pixel);
+  color: #bcceea;
+}
+.training-cell.training-target {
+  border: 2px solid #e4d09a;
+  background: #424331;
+}
+.training-cell.training-legal {
+  border-color: #b6e9b5;
+  box-shadow: inset 0 0 18px #7ad29144;
+}
+.training-captures {
+  min-height: 24px;
+  font: 22px var(--pixel);
+  color: var(--gold);
+  text-align: center;
+  margin: 8px 0;
+}
+.training-hand-panel h3 {
+  font: 24px var(--pixel);
+  margin: 12px 0 8px;
+  color: #c5d7ed;
+}
+.training-hand {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+  min-height: 165px;
+}
+.training-hand-card {
+  height: 165px;
+  padding: 0;
+  border: 0;
+  background: none;
+  min-width: 0;
+}
+.training-hand-card .card-values {
+  transform: scale(0.5);
+  transform-origin: top left;
+  top: 4px;
+  left: 4px;
+}
+.training-hand-card .card-caption strong {
+  font-size: 14px;
+}
+.training-hand-card .card-caption {
+  padding: 4px;
+}
+.training-hand-card .card-set,
+.training-hand-card .card-stars,
+.training-hand-card .ownership-mark {
+  font-size: 5px;
+}
+.training-hand-card:disabled {
+  opacity: 0.75;
+}
+.training-choice,
+.training-hand-card.is-selected {
+  outline: 2px solid #f7dc93;
+  outline-offset: 2px;
+  opacity: 1;
+}
+.training-action-hint {
+  font-size: 15px;
+  color: #ecd69f;
+  line-height: 1.5;
+  margin: 16px 0 0;
+}
+.training-element-note {
+  font-size: 14px;
+  color: #bedacb;
+}
+.training-element-note p {
+  margin: 5px 0;
+}
+.training-visibility {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.training-visibility button {
+  font-size: 21px;
+  padding: 6px 12px;
+  min-height: 34px;
+}
+.training-visibility [aria-pressed='true'] {
+  background: #ceb77c;
+  color: #17243b;
+}
+.training-trade > div,
+.training-random > div {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.training-trade button,
+.training-random > div > div {
+  width: 120px;
+  height: 175px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.training-trade button.is-selected {
+  outline: 3px solid var(--gold);
+}
+.guided-tutorial:has(.training-trade) .training-layout,
+.guided-tutorial:has(.training-random) .training-layout {
+  display: none;
+}
+.training-random .outline-button {
+  font-size: 23px;
+}
+.guided-tutorial .result-actions {
+  margin-top: 16px;
+}
+@media (max-width: 1100px) {
+  .chat-message .message-content,
+  .private-message .message-content {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 3px 8px;
+  }
+  .chat-message .message-heading,
+  .private-message .message-heading {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .chat-message .message-content > p,
+  .private-message .message-content > p {
+    grid-column: 1/-1;
+    grid-row: 2;
+  }
+  .chat-message .message-time,
+  .private-message .message-time {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+@media (max-width: 999px) {
+  .draft-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .draft-grid .draft-card {
+    height: 220px;
+  }
+  .draft-sort {
+    position: static;
+    justify-content: flex-end;
+    margin: 10px 0;
+  }
+  .draft-selection .draft-heading p:first-of-type {
+    max-width: none;
+  }
+}
+@media (max-width: 680px) {
+  .battle-screen:has(.draft-selection) {
+    padding-bottom: 90px;
+  }
+  .mode-rules-dialog {
+    padding: 20px;
+  }
+  .duel-invite-toast {
+    left: 12px;
+    bottom: 74px;
+    padding: 12px;
+    gap: 8px;
+    width: calc(100vw - 24px);
+  }
+  .duel-invite-toast > span {
+    font-size: 14px;
+  }
+  .chat-message .message-heading > .message-title,
+  .private-message .message-heading > .message-title {
+    max-width: 76px;
+    font-size: 10px;
+  }
+  .chat-message .message-heading > a,
+  .private-message .message-heading > a {
+    font-size: 19px;
+  }
+  .draft-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .draft-grid .draft-card {
+    height: 270px;
+  }
+  .draft-grid .draft-card .card-values {
+    transform: scale(0.95);
+  }
+  .guided-tutorial {
+    padding: 18px 12px;
+  }
+  .guided-tutorial h2 {
+    font-size: 29px;
+  }
+  .training-explanation {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .training-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .training-arena {
+    width: min(350px, 100%);
+    margin: auto;
+  }
+  .training-hand,
+  .training-hand-card {
+    min-height: 95px;
+    height: 95px;
+  }
+  .training-hand-card .card-values {
+    transform: scale(0.4);
+  }
+  .training-hand-card .card-caption strong {
+    font-size: 12px;
+  }
+  .training-trade button,
+  .training-random > div > div {
+    width: 88px;
+    height: 130px;
+  }
+}

@@ -8,7 +8,8 @@
     "./combo-lesson": "./src/combo-lesson.ts",
     "./platform": "./src/platform.ts",
     "./social": "./src/social.ts",
-    "./rule-examples": "./src/rule-examples.ts"
+    "./rule-examples": "./src/rule-examples.ts",
+    "./training-duel": "./src/training-duel.ts"
   },
   "dependencies": {
     "@gacha-triad/engine": "workspace:*"

@@ -231,8 +231,13 @@ export class GameStore {
         "SELECT id,winner,player0 FROM matches WHERE (player0=$1 OR player1=$1) AND status='complete' AND settlement_done=false ORDER BY completed_at LIMIT 1",
         [p.id],
       );
-      const waiting = await sql<{ id: string }>(
-        "SELECT id FROM lobbies WHERE host_id=$1 AND status='waiting'",
+      const waiting = await sql<{
+        id: string;
+        mode: Mode;
+        created_at: Date;
+        invited_profile: string | null;
+      }>(
+        "SELECT id,mode,created_at,invited_profile FROM lobbies WHERE host_id=$1 AND status='waiting'",
         [p.id],
       );
       const profiles = await sql<{ id: string; name: string }>(
@@ -281,6 +286,14 @@ export class GameStore {
             }
           : null,
         waitingLobbyId: waiting[0]?.id ?? null,
+        waitingLobby: waiting[0]
+          ? {
+              id: waiting[0].id,
+              mode: waiting[0].mode,
+              createdAt: new Date(waiting[0].created_at).toISOString(),
+              invited: !!waiting[0].invited_profile,
+            }
+          : null,
         profiles,
       };
     });

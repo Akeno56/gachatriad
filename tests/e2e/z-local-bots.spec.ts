@@ -10,11 +10,8 @@ test('populates labeled bots, joins a real bot duel, preserves guest progress an
   await page.goto('/lobbies');
   await openStarterPacks(page);
   await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
-  if (await page.locator('.tutorial-dialog').isVisible()) {
-    await page.getByRole('button', { name: /Continue tutorial/ }).click();
-    await page.getByRole('button', { name: /Continue tutorial/ }).click();
-    await page.getByRole('button', { name: 'I’m ready to play' }).click();
-  }
+  await page.request.post('/api/tutorial/complete', { data: {} });
+  await page.reload();
   await expect(page.locator('.local-bots')).toHaveCount(0);
   expect((await page.request.post('/api/local-bots', { data: { enabled: false } })).status()).toBe(
     403,

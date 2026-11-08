@@ -7,6 +7,7 @@ export function StarterBoosters() {
     pathname = usePathname();
   if (
     !profile ||
+    !!profile.activeMatchId ||
     profile.deck.length === 5 ||
     !profile.unopenedBoosters ||
     pathname.startsWith('/boosters')

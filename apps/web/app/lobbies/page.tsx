@@ -8,7 +8,8 @@ import { api } from '../../lib/platform';
 import { useSession } from '../../components/session';
 import { ruleNames } from '../../components/game';
 import { LocalBots } from '../../components/local-bots';
-import { confirmRanked } from '../../components/ranked-warning';
+import { confirmRanked, confirmUnranked } from '../../components/ranked-warning';
+import { useAllowBots } from '../../lib/lobby-preferences';
 import { MainChat } from '../../components/main-chat';
 export default function Lobbies() {
   const { profile, revision, refresh, error: connectionError } = useSession(),
@@ -27,8 +28,8 @@ export default function Lobbies() {
     [combo, setCombo] = useState(false),
     [elemental, setElemental] = useState(false),
     [random, setRandom] = useState(false),
-    [trade, setTrade] = useState(false),
-    [allowBots, setAllowBots] = useState(false);
+    [trade, setTrade] = useState(false);
+  const [allowBots, setAllowBots] = useAllowBots();
   const tradeEligible = visibility === 'closed' && same && plus && combo;
   useEffect(() => {
     if (!same && !plus) setCombo(false);
@@ -49,6 +50,7 @@ export default function Lobbies() {
     const requestedMode =
       (body as { mode?: string }).mode ?? rows.find((r) => path === `/lobbies/${r.id}/join`)?.mode;
     if (requestedMode === 'ranked' && !(await confirmRanked(profile))) return;
+    if (requestedMode === 'casual' && !(await confirmUnranked(profile))) return;
     setBusy(true);
     setError('');
     try {

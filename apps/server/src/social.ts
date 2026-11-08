@@ -13,6 +13,7 @@ import type {
 } from '@gacha-triad/shared/social';
 import type { ProfileView } from '@gacha-triad/shared/platform';
 import type { GameStore } from './store';
+import { UNRANKED } from './store';
 import type { Sql } from './database';
 import { GameError } from './errors';
 import { titleName } from './titles';
@@ -339,6 +340,7 @@ export class Social {
     });
     const lobby = await this.store.createLobby(p, {
       mode: 'custom',
+      rules: UNRANKED,
       name: `${p.name} · Friend invitation`,
       allowBots: false,
       invitedProfile: target,

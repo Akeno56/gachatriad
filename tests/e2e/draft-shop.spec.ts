@@ -109,6 +109,20 @@ test('shows three titled messages and defaults each public chat to its page chan
       }
     }
     await visibleThree();
+    if (info.project.name === 'desktop') {
+      const rows = page.locator('.main-chat .chat-message').filter({ hasText: marker });
+      const colors = await rows.evaluateAll((items) =>
+        items.map((item) => getComputedStyle(item).backgroundColor),
+      );
+      expect(colors[0]).not.toBe(colors[1]);
+      for (const row of await rows.all()) {
+        const header = (await row.locator('.message-heading').boundingBox())!;
+        const body = (await row.locator('.message-content > p').boundingBox())!;
+        const time = (await row.locator('time').boundingBox())!;
+        expect(Math.abs(header.y + header.height / 2 - body.y - body.height / 2)).toBeLessThan(4);
+        expect(Math.abs(time.y + time.height / 2 - body.y - body.height / 2)).toBeLessThan(4);
+      }
+    }
     await page.getByRole('link', { name: 'Lobbies', exact: true }).click();
     await expect(page.getByRole('tab', { name: 'Lobbies', exact: true })).toHaveAttribute(
       'aria-selected',
@@ -178,6 +192,34 @@ test('automatically opens three temporary Draft boosters, resumes on reload and 
     await expect(opening).toContainText('Booster 2/3', { timeout: 15000 });
     await expect(opening).toContainText('Booster 3/3', { timeout: 15000 });
     await expect(page.locator('.draft-card')).toHaveCount(15, { timeout: 15000 });
+    const totals = await page
+      .locator('.draft-card')
+      .evaluateAll((cards) => cards.map((c) => Number(c.getAttribute('data-total'))));
+    expect(totals).toEqual([...totals].sort((a, b) => b - a));
+    await page.getByLabel('Order draft cards').selectOption('rarity');
+    const rarities = await page
+      .locator('.draft-card')
+      .evaluateAll((cards) => cards.map((c) => Number(c.getAttribute('data-rarity'))));
+    expect(rarities).toEqual([...rarities].sort((a, b) => b - a));
+    if (info.project.name === 'desktop') {
+      for (const viewport of [
+        { width: 1366, height: 768 },
+        { width: 1440, height: 900 },
+      ]) {
+        await page.setViewportSize(viewport);
+        const grid = (await page.locator('.draft-grid').boundingBox())!;
+        expect(grid.y + grid.height).toBeLessThanOrEqual(viewport.height - 100);
+        await expect(page.getByRole('button', { name: 'Lock hand', exact: true })).toBeInViewport();
+        const lock = (await page
+          .getByRole('button', { name: 'Lock hand', exact: true })
+          .boundingBox())!;
+        const cog = (await page.locator('.settings-cog').boundingBox())!;
+        expect(lock.x).toBeGreaterThan(cog.x + cog.width);
+        expect(
+          await page.evaluate(() => document.documentElement.scrollHeight),
+        ).toBeLessThanOrEqual(viewport.height);
+      }
+    }
     const final: MatchView = await (await page.request.get(`/api/matches/${m.id}`)).json();
     expect(final.draftPool).toEqual(saved.draftPool);
     expect(final.draftRevealed).toBe(15);

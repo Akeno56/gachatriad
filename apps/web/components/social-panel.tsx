@@ -11,7 +11,7 @@ import { FriendChat } from './friend-chat';
 export function SocialPanel() {
   const { profile, refresh, openAccount } = useSession(),
     router = useRouter();
-  const { data, error: loadError } = useSocial();
+  const { data, error: loadError, ready } = useSocial();
   const [open, setOpen] = useState(false),
     [tab, setTab] = useState('chat'),
     [conversation, setConversation] = useState('');
@@ -20,6 +20,81 @@ export function SocialPanel() {
     [query, setQuery] = useState(''),
     [results, setResults] = useState<BattleIdentity[]>([]);
   const dialog = useRef<HTMLDialogElement>(null);
+  const seen = useRef(new Set<string>()),
+    seenOwner = useRef('');
+  const [inviteToast, setInviteToast] = useState<{
+    id: string;
+    name: string;
+    count: number;
+  } | null>(null);
+  const incomingInvitations = data.invitations.filter((inv) => inv.recipient.id === profile?.id);
+  useEffect(() => {
+    if (!profile?.registered) {
+      seenOwner.current = '';
+      seen.current.clear();
+      setInviteToast(null);
+      return;
+    }
+    if (!ready) return;
+    if (seenOwner.current !== profile.id) {
+      seenOwner.current = profile.id;
+      setInviteToast(null);
+      try {
+        seen.current = new Set(
+          JSON.parse(sessionStorage.getItem(`triad-invites-seen:${profile.id}`) ?? '[]'),
+        );
+      } catch {
+        seen.current = new Set();
+      }
+    }
+    const incoming = data.invitations.filter((inv) => inv.recipient.id === profile.id),
+      fresh = incoming.filter((inv) => !seen.current.has(inv.id));
+    if (fresh.length) {
+      for (const inv of fresh) seen.current.add(inv.id);
+      try {
+        sessionStorage.setItem(
+          `triad-invites-seen:${profile.id}`,
+          JSON.stringify([...seen.current].slice(-100)),
+        );
+      } catch {}
+      const last = fresh.at(-1)!;
+      setInviteToast({ id: last.id, name: last.sender.name, count: fresh.length });
+    }
+    setInviteToast((current) =>
+      current && incoming.some((inv) => inv.id === current.id) ? current : null,
+    );
+  }, [data.invitations, profile?.id, profile?.registered, ready]);
+  useEffect(() => {
+    if (!inviteToast) return;
+    const timer = setTimeout(() => setInviteToast(null), 5000);
+    return () => clearTimeout(timer);
+  }, [inviteToast]);
+  const toast = inviteToast && (
+    <aside className="duel-invite-toast menu-window" role="status" aria-live="polite">
+      <span>
+        {inviteToast.count > 1
+          ? `${inviteToast.count} duel invitations received`
+          : `${inviteToast.name} sent you a duel invitation`}
+      </span>
+      <button
+        className="text-button"
+        onClick={() => {
+          setTab('invitations');
+          setOpen(true);
+          setInviteToast(null);
+        }}
+      >
+        View invitation
+      </button>
+      <button
+        className="text-button"
+        aria-label="Dismiss invite notification"
+        onClick={() => setInviteToast(null)}
+      >
+        ×
+      </button>
+    </aside>
+  );
   useEffect(() => {
     setResults([]);
     setError('');
@@ -69,6 +144,7 @@ export function SocialPanel() {
       >
         Friends &amp; messages {notifications > 0 && <b>{notifications}</b>}
       </button>
+      {!open && toast}
       {open && (
         <dialog
           ref={dialog}
@@ -93,7 +169,23 @@ export function SocialPanel() {
                   setError('');
                 }}
               >
-                {t === 'chat' ? 'Friend chat' : t === 'friends' ? 'Friends' : 'Duel invitations'}
+                {t === 'chat' ? (
+                  'Friend chat'
+                ) : t === 'friends' ? (
+                  'Friends'
+                ) : (
+                  <>
+                    Duel invitations{' '}
+                    {incomingInvitations.length > 0 && (
+                      <b
+                        className="notification-count"
+                        aria-label={`${incomingInvitations.length} incoming invitations`}
+                      >
+                        {incomingInvitations.length}
+                      </b>
+                    )}
+                  </>
+                )}
               </button>
             ))}
           </div>
@@ -237,8 +329,9 @@ export function SocialPanel() {
           {tab === 'invitations' && (
             <section aria-label="Duel invitations">
               <p>
-                Invitations create a five-minute, human-only Three Open table with no card trade.
-                Complete the tutorial and prepare a legal deck before accepting.
+                Invitations create a five-minute, human-only Unranked table: Three Open, Same, Plus
+                and Combo, with no card trade. Complete the tutorial and prepare a legal deck before
+                accepting.
               </p>
               {!data.invitations.length && <p>No pending invitations.</p>}
               {data.invitations.map((inv) => {
@@ -284,6 +377,7 @@ export function SocialPanel() {
               })}
             </section>
           )}
+          {toast}
         </dialog>
       )}
     </>

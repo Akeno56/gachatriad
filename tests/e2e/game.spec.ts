@@ -1,16 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openStarterPacks, openSettings } from './helpers';
+import { openStarterPacks, openSettings, startPractice } from './helpers';
 async function ready(page: Page) {
   await page.goto('/');
   await page.locator('.account-control').filter({ hasNotText: 'Connecting…' }).waitFor();
   await openStarterPacks(page);
-  await expect(page.locator('.tutorial-dialog')).toBeVisible();
-  {
-    await page.getByRole('button', { name: /Continue tutorial/ }).click();
-    await page.getByRole('button', { name: /Continue tutorial/ }).click();
-    await page.getByRole('button', { name: 'I’m ready to play' }).click();
-  }
-  await expect(page.getByRole('button', { name: 'Start match' })).toBeEnabled();
+  await page.request.post('/api/tutorial/complete', { data: {} });
+  await page.reload();
+  await expect(
+    page.getByRole('button', { name: 'Start match (Unranked)', exact: true }),
+  ).toBeEnabled();
 }
 async function playToEnd(page: Page) {
   for (let i = 0; i < 5; i++) {
@@ -56,8 +54,7 @@ for (const preset of ['classic', 'standard', 'combo'])
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await ready(page);
-    await page.getByLabel('Rule preset').selectOption(preset);
-    await page.getByRole('button', { name: 'Start match' }).click();
+    await startPractice(page, preset);
     await expect(page.locator('.board-cell')).toHaveCount(9);
     if (preset === 'standard') await expect(page.locator('.cpu-hand .card-values')).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
@@ -75,10 +72,10 @@ for (const preset of ['classic', 'standard', 'combo'])
   });
 test('supports keyboard selection, artwork inspection and explicit forfeit', async ({ page }) => {
   await ready(page);
-  await page.getByRole('button', { name: 'How to play' }).click();
+  await page.getByRole('button', { name: 'Rulebook', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'How to play' })).toBeVisible();
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Start match' }).click();
+  await startPractice(page);
   const first = page.getByTestId('player-card').first();
   await expect(async () => {
     await expect(first).toBeEnabled();

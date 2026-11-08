@@ -82,9 +82,9 @@ Click **Start server**. Then click **Install tunnel helper** once. It downloads 
 
 Do not double-click `cloudflared.exe`. The panel runs it in the background when you click **Start public link**.
 
-Click **Start public link**, then **Copy invitation link**. Send that full invitation link to your friend. It points at your GitHub Pages game and includes the temporary HTTPS backend address. Each player clicks **Connect to server**, then plays as a separate guest or signs into a separate account. New players complete the short tutorial or acknowledge the rulebook before their first duel.
+Click **Start public link**, then **Copy invitation link**. Send that full invitation link to your friend. It points at your GitHub Pages game and includes the temporary HTTPS backend address. Each player clicks **Connect to server**, then plays as a separate guest or signs into a separate account. New players complete the interactive training duel or acknowledge the rulebook before their first duel.
 
-In Lobbies, create a custom table or use Unranked. The other player joins the same 1/2 waiting table. Both clients then use one server-owned match. Hidden cards are redacted; moves, timers, outcomes and trades are validated by the PC server. Ranked, Draft and card exchanges require registered accounts; unranked/custom/Roulette support guests.
+In Play, choose **Start match (Unranked)** and confirm its rules to enter matchmaking; the red X cancels the queue. Or use **Browse lobbies** to create/join a custom table. The other player joins the same 1/2 waiting table. Both clients then use one server-owned match. Hidden cards are redacted; moves, timers, outcomes and trades are validated by the PC server. Ranked, Draft and card exchanges require registered accounts; unranked/custom/Roulette support guests.
 
 The controller forwards only port 3001 through the tunnel. You do not need to forward router ports. **Close public link** removes internet access while leaving the local game server running. **Shut down server** also closes its tunnel. Restarting just the game server keeps the current public URL; clients reconnect and refetch their stored match. Game deadlines continue to use wall-clock time, so stop long-running online matches before lengthy maintenance.
 
@@ -102,7 +102,7 @@ The GitHub Pages client and your PC server update separately. From Git Bash or P
 
 ```sh
 git add .
-git commit -m "Add Draft boosters, direct card purchases and rematches"
+git commit -m "Add matchmaking queues, invite alerts and guided tutorial"
 git push
 ```
 

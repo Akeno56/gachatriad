@@ -22,14 +22,14 @@ export function ChatMessageContent({
           ) : (
             <strong>{person.name}</strong>
           )}
-          {createdAt && (
-            <time dateTime={createdAt}>
-              {new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </time>
-          )}
           {person.title && <small className="message-title">{person.title}</small>}
         </header>
         {body !== undefined && <p>{body}</p>}
+        {createdAt && (
+          <time className="message-time" dateTime={createdAt}>
+            {new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </time>
+        )}
       </div>
     </>
   );
