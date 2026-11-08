@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openStarterPacks } from './helpers';
+import { openStarterPacks, openSettings } from './helpers';
 test('requires the first-duel tutorial, accepts the rulebook, and remembers completion', async ({
   page,
 }) => {
@@ -27,7 +27,9 @@ test('requires the first-duel tutorial, accepts the rulebook, and remembers comp
 test('restores music-on status after reload and resumes on the next gesture', async ({ page }) => {
   await page.goto('/cards');
   await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
+  await openSettings(page);
   await page.getByRole('button', { name: 'Music on', exact: true }).click();
+  await openSettings(page);
   await page.getByRole('button', { name: 'Music off', exact: true }).click();
   await expect
     .poll(() =>
@@ -37,6 +39,7 @@ test('restores music-on status after reload and resumes on the next gesture', as
     )
     .toBeGreaterThan(0.1);
   await page.reload();
+  await openSettings(page);
   await expect(page.getByRole('button', { name: 'Music on', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
@@ -49,8 +52,10 @@ test('restores music-on status after reload and resumes on the next gesture', as
         .evaluate((audio: HTMLAudioElement) => audio.currentTime),
     )
     .toBeGreaterThan(0.1);
+  await openSettings(page);
   await page.getByRole('button', { name: 'Music on', exact: true }).click();
   await page.reload();
+  await openSettings(page);
   await expect(page.getByRole('button', { name: 'Music off', exact: true })).toHaveAttribute(
     'aria-pressed',
     'false',

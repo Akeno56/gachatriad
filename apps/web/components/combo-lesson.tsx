@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { applyMove } from '@gacha-triad/engine';
 import { COMBO_SOLUTION, createComboLesson } from '@gacha-triad/shared/combo-lesson';
 import { Card } from './card';
+import { CaptureCard } from './capture-card';
 import { useGameAudio } from './game-shell';
 export function ComboLesson() {
   const [game, setGame] = useState(createComboLesson);
@@ -53,11 +54,11 @@ export function ComboLesson() {
                 }
               >
                 {item ? (
-                  <Card
-                    key={`${item.card.id}-${item.owner}`}
+                  <CaptureCard
+                    stamp={`${game.history.length}:${cell}`}
                     card={item.card}
                     owner={item.owner}
-                    captured={!!capture}
+                    fromOwner={capture?.from}
                     captureReason={capture?.reason}
                     captureOrder={captures.findIndex((c) => c.cell === cell)}
                   />

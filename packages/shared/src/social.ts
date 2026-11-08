@@ -91,6 +91,7 @@ export interface FriendView extends BattleIdentity {
   online: boolean;
 }
 export interface ChatMessage extends BattleIdentity {
+  channel: ChatChannel;
   id: string;
   playerId: string;
   body: string;
@@ -104,11 +105,14 @@ export interface DuelInvitation {
   expiresAt: string;
 }
 export interface SocialView {
+  onlinePlayers: BattleIdentity[];
   friends: FriendView[];
   invitations: DuelInvitation[];
   chat: ChatMessage[];
   conversations: FriendConversation[];
 }
+export const CHAT_CHANNELS = ['general', 'trade', 'lobbies'] as const;
+export type ChatChannel = (typeof CHAT_CHANNELS)[number];
 export interface FriendMessage {
   id: string;
   senderId: string;

@@ -24,6 +24,7 @@ import { ResultOverlay } from './result-overlay';
 import { Avatar } from './avatar';
 import { confirmRanked } from './ranked-warning';
 import { MainChat } from './main-chat';
+import { CaptureCard } from './capture-card';
 export function ruleNames(r: Rules) {
   return [
     r.allOpen ? 'All Open' : r.threeOpen ? 'Three Open' : 'Closed',
@@ -189,7 +190,6 @@ export function Game() {
       {!match ? (
         <>
           <div className="game-title">
-            <span className="title-overline">A CROSS-WORLD CARD BATTLE</span>
             <h1>
               <span>GACHA</span>TRIAD
             </h1>
@@ -337,11 +337,11 @@ export function Game() {
                   </button>
                 ))}
               </div>
+              <MainChat />
             </section>
           </div>
-          <MainChat />
           <div className="build-label">
-            400 CARDS · v0.8{' '}
+            400 CARDS · v0.9{' '}
             <Link href="/credits" className="credits-button">
               Credits
             </Link>
@@ -580,13 +580,13 @@ export function Game() {
                               />
                             )}
                             {item ? (
-                              <Card
-                                key={`${item.card.id}-${item.owner}`}
+                              <CaptureCard
+                                stamp={`${match.id}:${game.history.length}:${cell}`}
                                 card={item.card}
                                 showElement={!!match.rules.elemental}
                                 modifier={elementalModifier(game, item.card, cell)}
                                 owner={item.owner === seat ? 0 : 1}
-                                captured={!!capture}
+                                fromOwner={capture ? (capture.from === seat ? 0 : 1) : undefined}
                                 captureReason={capture?.reason}
                                 captureOrder={Math.max(
                                   0,

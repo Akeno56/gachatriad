@@ -161,6 +161,7 @@ export class GameStore {
       '008_booster_batches.sql',
       '009_duplicate_cards_daily.sql',
       '010_ranked_titles.sql',
+      '011_chat_channels.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>

@@ -158,11 +158,35 @@ export function AccountMenu() {
       setPending(false);
     }
   }
+  async function logout() {
+    if (pending) return;
+    setPending(true);
+    setMessage('');
+    try {
+      await changeAccount(async () => {
+        await api('/auth/sign-out', {});
+        localStorage.removeItem(profileKey());
+      });
+      setOpen(false);
+    } catch (e) {
+      setMessage((e as Error).message);
+      setOpen(true);
+    } finally {
+      setPending(false);
+    }
+  }
   return (
     <>
-      <button className="account-control" onClick={() => setOpen(true)}>
-        {profile ? profile.name : 'Connecting…'}
-        {profile && !profile.registered ? ' · Guest' : ''}
+      <button
+        className="account-control"
+        disabled={pending}
+        onClick={() => (profile?.registered ? void logout() : setOpen(true))}
+      >
+        {profile?.registered
+          ? 'Logout'
+          : !profile && serverConfigured() && !error
+            ? 'Connecting…'
+            : 'Login/Register'}
       </button>
       <dialog ref={ref} className="game-dialog account-dialog" onCancel={() => setOpen(false)}>
         <button className="dialog-close" onClick={() => setOpen(false)} aria-label="Close account">
@@ -176,17 +200,8 @@ export function AccountMenu() {
             <p>
               {profile.name} · Rating {profile.rating} · Draft {profile.draftRating}
             </p>
-            <button
-              className="outline-button"
-              onClick={async () => {
-                await changeAccount(async () => {
-                  await api('/auth/sign-out', {});
-                  localStorage.removeItem(profileKey());
-                });
-                setOpen(false);
-              }}
-            >
-              Sign out
+            <button className="outline-button" disabled={pending} onClick={() => void logout()}>
+              Logout
             </button>
           </>
         ) : (

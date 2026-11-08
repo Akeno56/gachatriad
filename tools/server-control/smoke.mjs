@@ -26,6 +26,15 @@ try {
   browser = await chromium.launch({ headless: true });
   const admin = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
   await admin.goto(controller.url);
+  const controllerHeaders = await fetch(controller.url);
+  assert.equal(controllerHeaders.headers.get('x-frame-options'), 'DENY');
+  assert.equal(controllerHeaders.headers.get('cache-control'), 'no-store');
+  for (const path of [
+    '/gachatriad/.env',
+    '/gachatriad/.data/auth-secret',
+    '/%2e%2e%2f.data%2fauth-secret',
+  ])
+    assert.equal((await fetch(origin + path)).status, 404);
   const denied = await fetch(controller.url + '/start', {
     method: 'POST',
     headers: { origin: 'https://untrusted.invalid' },
@@ -122,7 +131,7 @@ try {
       if (pack === 0) {
         await mkdir('docs/screenshots', { recursive: true });
         await page.screenshot({
-          path: `docs/screenshots/v08-booster-${i ? 'mobile' : 'desktop'}.png`,
+          path: `docs/screenshots/v09-booster-${i ? 'mobile' : 'desktop'}.png`,
           fullPage: true,
         });
       }
@@ -144,7 +153,7 @@ try {
       headers: { origin, authorization: `Bearer ${clients[i].token}` },
     });
     assert.equal(forbidden.status, 403);
-    await page.locator('.volume-controls summary').click();
+    await page.getByRole('button', { name: 'Game settings', exact: true }).click();
     await expect(page.getByRole('slider', { name: 'Music volume', exact: true })).toHaveValue('50');
     await expect(
       page.getByRole('slider', { name: 'Sound effects volume', exact: true }),
@@ -157,12 +166,12 @@ try {
     await page.getByRole('slider', { name: 'Music volume', exact: true }).press('ArrowRight');
     await page.getByRole('slider', { name: 'Sound effects volume', exact: true }).press('End');
     await page.reload();
-    await page.locator('.volume-controls summary').click();
+    await page.getByRole('button', { name: 'Game settings', exact: true }).click();
     await expect(page.getByRole('slider', { name: 'Music volume', exact: true })).toHaveValue('1');
     await expect(
       page.getByRole('slider', { name: 'Sound effects volume', exact: true }),
     ).toHaveValue('100');
-    await page.locator('.volume-controls summary').click();
+    await page.getByRole('button', { name: 'Game settings', exact: true }).click();
     assert.equal(
       await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       true,
@@ -308,17 +317,17 @@ try {
   await expect
     .poll(() => foil.evaluate((el) => getComputedStyle(el).backgroundPosition))
     .not.toBe(foilBefore);
-  await pages[0].screenshot({ path: 'docs/screenshots/v08-holo-detail.png', fullPage: true });
+  await pages[0].screenshot({ path: 'docs/screenshots/v09-holo-detail.png', fullPage: true });
   await pages[0].keyboard.press('Escape');
-  await admin.screenshot({ path: 'docs/screenshots/v08-moderation.png', fullPage: true });
+  await admin.screenshot({ path: 'docs/screenshots/v09-moderation.png', fullPage: true });
   assert.equal(result.status, 'complete');
   // Cookie-free refresh proves the GitHub Pages path does not depend on third-party cookies.
   await contexts[0].clearCookies();
   await pages[0].goto(origin + `/gachatriad/?match=${joined.matchId}`);
   await pages[0].locator('.result-overlay').waitFor();
   await mkdir('docs/screenshots', { recursive: true });
-  await pages[0].screenshot({ path: 'docs/screenshots/v08-result-overlay.png', fullPage: true });
-  await pages[1].screenshot({ path: 'docs/screenshots/v08-result-mobile.png', fullPage: true });
+  await pages[0].screenshot({ path: 'docs/screenshots/v09-result-overlay.png', fullPage: true });
+  await pages[1].screenshot({ path: 'docs/screenshots/v09-result-mobile.png', fullPage: true });
   const before = await api(clients[0], '/profile');
   const packsBefore = await api(clients[0], '/boosters');
   const active = await api(clients[0], '/solo', { difficulty: 'easy', rules: { threeOpen: true } });
@@ -352,7 +361,7 @@ try {
     'Player connections did not recover after restart.',
   );
   await api(clients[0], `/matches/${active.matchId}/resign`, {});
-  await admin.screenshot({ path: 'docs/screenshots/v08-control-panel.png', fullPage: true });
+  await admin.screenshot({ path: 'docs/screenshots/v09-control-panel.png', fullPage: true });
   await contexts[0].close();
   await contexts[1].close();
   await admin.getByRole('button', { name: 'Shut down server', exact: true }).click();

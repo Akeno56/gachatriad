@@ -74,9 +74,7 @@ export function ResultOverlay({
           <p>{match.trade.claimedCard.name} transferred to the winner.</p>
         ) : match.trade.rule === 'one' && match.winner === 'draw' ? (
           <p>A draw trades no cards.</p>
-        ) : (
-          <p>Your collection stays with you.</p>
-        )}
+        ) : null}
       </section>
       <div className="result-actions">
         {match.mode === 'solo' && (

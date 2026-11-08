@@ -63,6 +63,8 @@ pnpm.cmd install
 
 The `.cmd` suffix avoids PowerShell script execution-policy errors. After installation, use the double-click launcher. Developers can also build the optional local frontend preview and run the panel from a terminal:
 
+Use current Node LTS, including its security patches. This PC also has a verified project-local Node 24.22.2 copy that **Start Server Control.cmd** uses automatically. On another Windows x64 PC, `node tools/server-control/install-runtime.mjs` downloads the official binary into ignored `.tools` and verifies its published SHA-256. It does not change your system installation; manual `pnpm` commands continue to use your system PATH.
+
 ```powershell
 pnpm build:pages
 pnpm control
@@ -100,7 +102,7 @@ The GitHub Pages client and your PC server update separately. From Git Bash or P
 
 ```sh
 git add .
-git commit -m "Refine duels, motion, chat, matchmaking and ranked titles"
+git commit -m "Add shared chat channels, compact menus and card capture flips"
 git push
 ```
 

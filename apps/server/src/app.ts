@@ -74,10 +74,38 @@ export async function createPlatform(
     )
       throw new GameError('Origin is not allowed.', 403);
   });
+  app.addHook('onSend', async (_req, reply, payload) => {
+    reply.header('x-content-type-options', 'nosniff');
+    reply.header('cache-control', 'no-store');
+    reply.header('referrer-policy', 'no-referrer');
+    return payload;
+  });
+  const authBucket = (url: string) =>
+    url.includes('/sign-up')
+      ? 'signup'
+      : url.includes('/sign-in/anonymous')
+        ? 'guest'
+        : url.includes('/sign-in')
+          ? 'login'
+          : 'session';
   app.route({
     method: ['GET', 'POST'],
     url: '/api/auth/*',
+    config: {
+      rateLimit: {
+        max: (req: FastifyRequest) =>
+          ({ signup: 5, guest: 20, login: 10, session: 60 })[authBucket(req.url)],
+        timeWindow: '1 minute',
+        keyGenerator: (req: FastifyRequest) => `${req.ip}:auth:${authBucket(req.url)}`,
+      },
+    },
     handler: async (req, reply) => {
+      if (req.url.split('?')[0].replace(/\/+$/, '') === '/api/auth/sign-up/email') {
+        const b = req.body as { name?: unknown } | null;
+        if (typeof b?.name !== 'string' || !b.name.trim().length || b.name.trim().length > 32)
+          throw new GameError('Player names must contain 1–32 characters.');
+        b.name = b.name.trim();
+      }
       const headers = fromNodeHeaders(req.headers);
       headers.set('x-gacha-client-ip', req.ip);
       const response = await auth.handler(
@@ -104,15 +132,23 @@ export async function createPlatform(
     return store.profile(session.user, typeof requested === 'string' ? requested : undefined);
   }
   let shuttingDown = false;
+  const transports = new Set<string>();
   const upgradedSockets = new Set<import('node:stream').Duplex>();
   const io = new Server(app.server, {
     cors: { origin: origins, credentials: true },
     maxHttpBufferSize: 8192,
+    connectTimeout: 10000,
     allowRequest: (req, callback) =>
       callback(
         null,
-        !shuttingDown && (!req.headers.origin || origins.includes(req.headers.origin)),
+        !shuttingDown &&
+          transports.size < 200 &&
+          (!req.headers.origin || origins.includes(req.headers.origin)),
       ),
+  });
+  io.engine.on('connection', (socket) => {
+    transports.add(socket.id);
+    socket.once('close', () => transports.delete(socket.id));
   });
   // Track upgrades even before Engine.IO/Socket.IO authentication has finished.
   // http.Server.close() does not close upgraded TCP connections itself.
@@ -136,6 +172,10 @@ export async function createPlatform(
           ? socket.handshake.auth.profileId
           : undefined,
       );
+      if (
+        Array.from(io.sockets.sockets.values()).filter((s) => s.data.profileId === p.id).length >= 5
+      )
+        throw new Error('Too many active connections for this account.');
       socket.data.profileId = p.id;
       socket.data.name = p.name;
       socket.data.registered = p.registered;
@@ -145,6 +185,10 @@ export async function createPlatform(
     }
   });
   const notify = () => io.emit('platform:changed');
+  io.on('connection', (socket) => {
+    notify();
+    socket.on('disconnect', notify);
+  });
   const body = (req: FastifyRequest) =>
     req.body && typeof req.body === 'object' ? (req.body as Record<string, unknown>) : {};
   const id = (req: FastifyRequest) => (req.params as { id: string }).id;
@@ -198,7 +242,12 @@ export async function createPlatform(
     return { ok: true };
   });
   app.post('/api/chat', async (req) => {
-    const result = await social.post(await profile(req), body(req).message, body(req).requestId);
+    const result = await social.post(
+      await profile(req),
+      body(req).message,
+      body(req).requestId,
+      body(req).channel,
+    );
     notify();
     return result;
   });
@@ -440,30 +489,38 @@ export async function createPlatform(
     notify();
     return { cards: result };
   });
-  app.post('/api/solo', async (req) => {
-    const p = await profile(req);
-    const b = body(req);
-    const matchId = await store.solo(
-      p.id,
-      b.difficulty === 'normal' ? 'normal' : 'easy',
-      cleanRules(b.rules),
-    );
-    notify();
-    return { matchId };
-  });
-  app.post('/api/lobbies', async (req) => {
-    const p = await profile(req);
-    const b = body(req);
-    const result = await store.createLobby(p, {
-      mode: b.mode as Mode,
-      name: typeof b.name === 'string' ? b.name : undefined,
-      rules: b.rules,
-      tradeRule: typeof b.tradeRule === 'string' ? b.tradeRule : undefined,
-      allowBots: typeof b.allowBots === 'boolean' ? b.allowBots : undefined,
-    });
-    notify();
-    return result;
-  });
+  app.post(
+    '/api/solo',
+    { config: { rateLimit: { max: 20, timeWindow: '1 minute' } } },
+    async (req) => {
+      const p = await profile(req);
+      const b = body(req);
+      const matchId = await store.solo(
+        p.id,
+        b.difficulty === 'normal' ? 'normal' : 'easy',
+        cleanRules(b.rules),
+      );
+      notify();
+      return { matchId };
+    },
+  );
+  app.post(
+    '/api/lobbies',
+    { config: { rateLimit: { max: 20, timeWindow: '1 minute' } } },
+    async (req) => {
+      const p = await profile(req);
+      const b = body(req);
+      const result = await store.createLobby(p, {
+        mode: b.mode as Mode,
+        name: typeof b.name === 'string' ? b.name : undefined,
+        rules: b.rules,
+        tradeRule: typeof b.tradeRule === 'string' ? b.tradeRule : undefined,
+        allowBots: typeof b.allowBots === 'boolean' ? b.allowBots : undefined,
+      });
+      notify();
+      return result;
+    },
+  );
   app.post('/api/lobbies/:id/join', async (req) => {
     const result = await store.joinLobby(await profile(req), id(req));
     notify();

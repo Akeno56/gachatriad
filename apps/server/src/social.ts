@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { ALL_CARDS } from '@gacha-triad/shared';
+import { CHAT_CHANNELS, type ChatChannel } from '@gacha-triad/shared/social';
 import type {
   BattleIdentity,
   ChatMessage,
@@ -185,15 +186,21 @@ export class Social {
       );
     });
   }
-  async post(p: ProfileView, message: unknown, requestId: unknown) {
+  async post(p: ProfileView, message: unknown, requestId: unknown, channel: unknown = 'general') {
     registered(p);
+    if (!CHAT_CHANNELS.includes(channel as ChatChannel))
+      throw new GameError('Choose General, Trade or Lobbies chat.');
     const text = this.messageText(message, requestId);
     return this.store.db.tx(async (sql) => {
-      const [previous] = await sql<{ id: string }>(
-        'SELECT id FROM chat_messages WHERE profile_id=$1 AND request_id=$2',
+      const [previous] = await sql<{ id: string; channel: string; body: string }>(
+        'SELECT id,channel,body FROM chat_messages WHERE profile_id=$1 AND request_id=$2',
         [p.id, requestId],
       );
-      if (previous) return previous;
+      if (previous) {
+        if (previous.channel !== channel || previous.body !== text)
+          throw new GameError('This send request belongs to another message.', 409);
+        return { id: previous.id };
+      }
       if (
         (
           await sql(
@@ -204,12 +211,10 @@ export class Social {
       )
         throw new GameError('Wait three seconds between messages.', 429);
       const id = randomUUID();
-      await sql('INSERT INTO chat_messages(id,profile_id,body,request_id) VALUES($1,$2,$3,$4)', [
-        id,
-        p.id,
-        text,
-        requestId,
-      ]);
+      await sql(
+        'INSERT INTO chat_messages(id,profile_id,body,request_id,channel) VALUES($1,$2,$3,$4,$5)',
+        [id, p.id, text, requestId, channel],
+      );
       return { id };
     });
   }
@@ -241,8 +246,18 @@ export class Social {
         `SELECT p.*,f.status,f.requested_by FROM friendships f JOIN profiles p ON p.id=CASE WHEN f.profile_a=$1 THEN f.profile_b ELSE f.profile_a END WHERE f.profile_a=$1 OR f.profile_b=$1 ORDER BY f.created_at DESC`,
         [p.id],
       );
-      const chat = await sql<Person & { message_id: string; body: string; created_at: Date }>(
-        `SELECT p.id,p.name,p.avatar_card,p.selected_title,m.id AS message_id,m.body,m.created_at FROM chat_messages m JOIN profiles p ON p.id=m.profile_id WHERE NOT m.deleted ORDER BY m.created_at DESC,m.id LIMIT 80`,
+      const onlinePlayers = (
+        await sql<Person>(
+          'SELECT id,name,avatar_card,selected_title FROM profiles WHERE id=ANY($1::text[]) ORDER BY name,id LIMIT 200',
+          [[...online]],
+        )
+      ).map(identity);
+      const chat = await sql<
+        Person & { message_id: string; body: string; created_at: Date; channel: ChatChannel }
+      >(
+        `SELECT p.id,p.name,p.avatar_card,p.selected_title,m.id AS message_id,m.body,m.created_at,m.channel
+         FROM (SELECT *,row_number() OVER(PARTITION BY channel ORDER BY created_at DESC,id DESC) AS position FROM chat_messages WHERE NOT deleted) m
+         JOIN profiles p ON p.id=m.profile_id WHERE m.position<=80 ORDER BY m.created_at DESC,m.id`,
       );
       const conversations = p.registered
         ? await sql<{ player_id: string; body: string; created_at: Date; unread: number }>(
@@ -280,6 +295,7 @@ export class Social {
         });
       }
       return {
+        onlinePlayers,
         conversations: conversations.map((c) => ({
           playerId: c.player_id,
           lastMessage: c.body,
@@ -298,6 +314,7 @@ export class Social {
           id: m.message_id,
           playerId: m.id,
           body: m.body,
+          channel: m.channel,
           createdAt: m.created_at.toISOString(),
         })) as ChatMessage[],
         invitations,

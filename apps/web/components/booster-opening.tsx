@@ -6,6 +6,7 @@ import { Card, CardArt } from './card';
 import { useGameAudio } from './game-shell';
 import { useSession } from './session';
 import { api } from '../lib/platform';
+import { preloadArtwork } from '../lib/artwork';
 const colors = ['', '#b7c1d7', '#88c9ae', '#85b9ff', '#c5a1ff', '#f6d383'];
 export function BoosterOpening({
   pack,
@@ -24,7 +25,10 @@ export function BoosterOpening({
     [index, setIndex] = useState(0),
     [revealed, setRevealed] = useState<number[]>([]),
     [busy, setBusy] = useState(false),
+    [cardReady, setCardReady] = useState(false),
+    [advanceReady, setAdvanceReady] = useState(false),
     [error, setError] = useState('');
+  const advanceLock = useRef(false);
   useEffect(() => {
     dialog.current?.showModal();
   }, []);
@@ -53,6 +57,38 @@ export function BoosterOpening({
           : best,
       receipt.cards[0],
     );
+  useEffect(() => {
+    if (receipt) for (const card of receipt.cards) void preloadArtwork(card);
+  }, [receipt?.id]);
+  useEffect(() => {
+    let active = true;
+    setCardReady(false);
+    setAdvanceReady(false);
+    advanceLock.current = true;
+    if (current)
+      void preloadArtwork(current).then(() => {
+        if (active) {
+          setCardReady(true);
+          advanceLock.current = false;
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [pack.id, index, current?.id]);
+  useEffect(() => {
+    if (!faceUp || !cardReady) {
+      setAdvanceReady(false);
+      return;
+    }
+    advanceLock.current = true;
+    setAdvanceReady(false);
+    const timer = setTimeout(() => {
+      advanceLock.current = false;
+      setAdvanceReady(true);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [faceUp, cardReady, pack.id, index]);
   async function open() {
     if (busy) return;
     setBusy(true);
@@ -70,7 +106,15 @@ export function BoosterOpening({
     }
   }
   function advance() {
-    if (stage !== 'reveal' || !current) return;
+    if (
+      stage !== 'reveal' ||
+      !current ||
+      !cardReady ||
+      advanceLock.current ||
+      (faceUp && !advanceReady)
+    )
+      return;
+    advanceLock.current = true;
     if (!faceUp) {
       setRevealed([...revealed, index]);
       play(current.rarity >= 4 || current.finish === 'holo' ? 'victory' : 'capture');
@@ -173,6 +217,7 @@ export function BoosterOpening({
             <button
               key={`${pack.id}:${index}`}
               className={`opening-card ${faceUp ? 'is-face-up' : ''}`}
+              disabled={!cardReady || (faceUp && !advanceReady)}
               aria-label={
                 faceUp
                   ? index === 4
@@ -210,7 +255,7 @@ export function BoosterOpening({
             ) : (
               <>
                 <h3>Card {index + 1}</h3>
-                <p>Tap the card or press Space to reveal.</p>
+                <p>{cardReady ? 'Tap the card or press Space to reveal.' : 'Loading artwork…'}</p>
               </>
             )}
           </div>
@@ -219,7 +264,7 @@ export function BoosterOpening({
               <button
                 key={c.id}
                 className={i === index ? 'is-current' : ''}
-                disabled={!revealed.includes(i)}
+                disabled={!revealed.includes(i) || !advanceReady}
                 aria-label={`View revealed card ${i + 1}`}
                 onClick={() => setIndex(i)}
               >
@@ -228,7 +273,11 @@ export function BoosterOpening({
             ))}
           </div>
           <div className="result-actions">
-            <button className="outline-button" onClick={advance}>
+            <button
+              className="outline-button"
+              disabled={!cardReady || (faceUp && !advanceReady)}
+              onClick={advance}
+            >
               {faceUp ? (index === 4 ? 'See all cards' : 'Next card') : 'Reveal card'}
             </button>
             <button className="text-button" onClick={all}>

@@ -477,6 +477,58 @@ it('recycles and trades up spare copies without consuming kept or reserved cards
   expect(foil.prisms).toBe(5);
   expect((await ok<ProfileView>(c, '/profile')).inventory[holo.id].quantity).toBe(1);
 });
+it('separates public chat channels, keeps retries in their original channel and shares the send cooldown', async () => {
+  const a = await user(true);
+  const first = await ok<{ id: string }>(a, '/chat', {
+    message: 'General message',
+    requestId: 'channel-general-message',
+    channel: 'general',
+  });
+  expect(
+    (
+      await request(a, '/chat', {
+        message: 'Trade message',
+        requestId: 'channel-trade-message',
+        channel: 'trade',
+      })
+    ).statusCode,
+  ).toBe(429);
+  expect(
+    (
+      await request(a, '/chat', {
+        message: 'General message',
+        requestId: 'channel-general-message',
+        channel: 'trade',
+      })
+    ).statusCode,
+  ).toBe(409);
+  expect(
+    (
+      await request(a, '/chat', {
+        message: 'Wrong channel',
+        requestId: 'channel-unknown-message',
+        channel: 'admin',
+      })
+    ).statusCode,
+  ).toBe(400);
+  for (const channel of ['trade', 'lobbies']) {
+    await platform.db.read((sql) =>
+      sql("UPDATE chat_messages SET created_at=now()-interval '4 seconds' WHERE profile_id=$1", [
+        a.profile.id,
+      ]),
+    );
+    await ok(a, '/chat', {
+      message: `${channel} message`,
+      requestId: `channel-${channel}-valid`,
+      channel,
+    });
+  }
+  const data = await ok<import('@gacha-triad/shared/social').SocialView>(a, '/social');
+  const mine = data.chat.filter((m) => m.playerId === a.profile.id);
+  expect(mine.map((m) => m.channel).sort()).toEqual(['general', 'lobbies', 'trade']);
+  expect(mine.find((m) => m.id === first.id)?.body).toBe('General message');
+  expect(data.onlinePlayers).toEqual([]);
+});
 beforeAll(async () => {
   platform = await createPlatform(resolve('.'), { memory: true, timers: false });
 });
@@ -719,7 +771,7 @@ it('enforces the full Trade One prerequisite matrix and accepts added Elemental/
             elemental: true,
             random: true,
           };
-          const response = await request(a, '/lobbies', {
+          const response = await request({ ...a, ip: testIp() }, '/lobbies', {
             mode: 'custom',
             rules,
             tradeRule: 'one',

@@ -1,8 +1,8 @@
 # Boosters and Stellar Prisms
 
-## Batch purchases, stacks and daily rewards (v0.7)
+## Batch purchases, stacks and daily rewards
 
-Unopened packs form counted stacks by source: Starter, Daily, Standard and Gift. The server returns every unopened pack plus the latest 20 opened receipts. Open one pack, or use **Open ×5 / ×10** for a combined 25/50-card reveal. Bulk opening is atomic: unknown/foreign IDs roll back the whole batch. Retrying the same IDs returns saved cards.
+Unopened packs form counted stacks by source: Starter, Daily, Standard and Gift. The server returns every unopened pack plus the latest 20 opened receipts. Open one pack, a stack quantity up to ten, or **Open all (N)** for the current amount when you own 2–10 packs across sources. With more than ten, **Open next 10** opens the first ten and leaves the rest. Each pack keeps its own source's odds. Bulk opening is atomic: unknown/foreign IDs roll back the whole batch. Retrying the same IDs returns saved cards.
 
 The purchase dialog accepts **1–100 boosters**, shows the total cost and remaining balance, and provides 1/5/10/Max shortcuts. Each pack costs 150 Prisms. A batch buys in full or charges nothing. Durable request receipts return the same pack IDs on retries; changing a receipt's quantity is rejected. Legacy single purchases keep their retry protection.
 
@@ -38,4 +38,4 @@ Migration `005_economy_admin.sql` adds receipts, Prism balances/ledger and admin
 
 Migration 006 adds admin gift packs, grant receipts and saved new/duplicate indicators. Host operators can select any account in **Selected user tools** and grant Prisms or unopened standard boosters. In-game admins can use the testing grant form on player profiles. Both APIs validate roles/targets/counts, record an audit entry and deduplicate retries. Gift packs use standard odds, not the special starter collation. Opening remains persisted even if the available collection cannot yet form a legal deck.
 
-The opening ceremony shows a sealed pack, one card at a time with rarity lighting and keyboard/touch controls, a five-card progress strip, and a final fan marking the best draw and saved new/extra copies. Reveal all skips to the results. Closing an opening preserves its receipt; reduced-motion mode removes the non-essential animations. No pity system or duplicate-to-currency conversion is implied.
+The opening ceremony shows a sealed pack, one card at a time with rarity lighting and keyboard/touch controls, a five-card progress strip, and a final fan marking the best draw and saved new/extra copies. Individual reveals preload artwork before enabling the reveal, then wait 0.8 seconds before advancement; repeated Space/click events cannot skip the delay. Reveal all skips to the results. Closing an opening preserves its receipt; reduced-motion mode removes the non-essential pack animations. No pity system is implemented; duplicate recycling is a separate, confirmed action in Collection.

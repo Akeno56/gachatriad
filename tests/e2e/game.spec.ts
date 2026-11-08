@@ -1,10 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openStarterPacks } from './helpers';
+import { openStarterPacks, openSettings } from './helpers';
 async function ready(page: Page) {
   await page.goto('/');
   await page.locator('.account-control').filter({ hasNotText: 'Connecting…' }).waitFor();
   await openStarterPacks(page);
-  if (await page.locator('.tutorial-dialog').isVisible()) {
+  await expect(page.locator('.tutorial-dialog')).toBeVisible();
+  {
     await page.getByRole('button', { name: /Continue tutorial/ }).click();
     await page.getByRole('button', { name: /Continue tutorial/ }).click();
     await page.getByRole('button', { name: 'I’m ready to play' }).click();
@@ -24,7 +25,10 @@ async function playToEnd(page: Page) {
     await page.locator('.board-cell.legal-cell').first().click();
   }
   await expect(page.locator('.result-panel')).toBeVisible();
-  await expect(page.locator('.board .playing-card')).toHaveCount(9);
+  await expect(page.getByText('Your collection stays with you.', { exact: true })).toHaveCount(0);
+  await expect(
+    page.locator('.board .playing-card:not(.capture-flip-old .playing-card)'),
+  ).toHaveCount(9);
   expect(
     Number(await page.locator('.your-score').innerText()) +
       Number(await page.locator('.cpu-score').innerText()),
@@ -159,7 +163,9 @@ test('plays the supplied MP3 through an end-to-start crossfade and preserves pre
   page,
 }) => {
   await ready(page);
+  await openSettings(page);
   await page.getByRole('button', { name: 'Music on', exact: true }).click();
+  await openSettings(page);
   await page.getByRole('button', { name: 'Music off', exact: true }).click();
   await expect
     .poll(() =>
@@ -179,10 +185,14 @@ test('plays the supplied MP3 through an end-to-start crossfade and preserves pre
       page.locator('audio[data-bgm-track="0"]').evaluate((a: HTMLAudioElement) => a.paused),
     )
     .toBe(true);
+  await openSettings(page);
   await page.getByRole('button', { name: 'Music on', exact: true }).click();
+  await openSettings(page);
   await page.getByRole('button', { name: 'Sound effects on', exact: true }).click();
+  await openSettings(page);
   await page.getByRole('button', { name: 'CRT filter on', exact: true }).click();
   await page.reload();
+  await openSettings(page);
   await expect(page.getByRole('button', { name: 'CRT filter off', exact: true })).toHaveAttribute(
     'aria-pressed',
     'false',

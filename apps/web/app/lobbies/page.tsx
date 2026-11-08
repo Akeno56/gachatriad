@@ -9,6 +9,7 @@ import { useSession } from '../../components/session';
 import { ruleNames } from '../../components/game';
 import { LocalBots } from '../../components/local-bots';
 import { confirmRanked } from '../../components/ranked-warning';
+import { MainChat } from '../../components/main-chat';
 export default function Lobbies() {
   const { profile, revision, refresh, error: connectionError } = useSession(),
     router = useRouter();
@@ -149,6 +150,7 @@ export default function Lobbies() {
           </button>
         </div>
       )}
+      <MainChat compact />
       <div className="lobby-tools">
         <div className="lobby-filters">
           <label>

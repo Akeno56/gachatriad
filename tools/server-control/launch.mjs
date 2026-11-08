@@ -8,9 +8,15 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
 async function main() {
-  const [major, minor] = process.versions.node.split('.').map(Number);
-  if (major < 22 || (major === 22 && minor < 12))
-    throw Error('Install Node.js 24 LTS, then reopen Start Server Control.cmd.');
+  const [major, minor, patch] = process.versions.node.split('.').map(Number);
+  const minimum = major === 22 ? [23, 4] : major === 24 ? [22, 1] : major === 26 ? [12, 1] : null;
+  if (
+    (minimum && (minor < minimum[0] || (minor === minimum[0] && patch < minimum[1]))) ||
+    (!minimum && (major < 28 || major % 2 !== 0))
+  )
+    throw Error(
+      'Update to current Node.js LTS (24.22.2 or newer), or run node tools/server-control/install-runtime.mjs for the project-local Windows copy. Then reopen Start Server Control.cmd.',
+    );
 
   // Match the controller's environment, including a custom control port/save path.
   try {

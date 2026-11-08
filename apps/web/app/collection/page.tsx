@@ -11,6 +11,7 @@ export default function Collection() {
   const [deck, setDeck] = useState<string[]>([]),
     [search, setSearch] = useState(''),
     [universe, setUniverse] = useState('all'),
+    [sort, setSort] = useState('rarity-desc'),
     [message, setMessage] = useState(''),
     [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -28,7 +29,26 @@ export default function Collection() {
         (profile?.inventory[c.id]?.quantity ?? 0) > 0 &&
         c.name.toLowerCase().includes(search.toLowerCase()) &&
         (universe === 'all' || c.universeId === universe),
-    );
+    ).sort((a, b) => {
+      const stats = (card: typeof a) => card.stats.reduce((n, v) => n + v, 0);
+      const universeName = (card: typeof a) =>
+        UNIVERSES.find((u) => u.id === card.universeId)?.name ?? card.universeId;
+      const result =
+        sort === 'stats-desc'
+          ? stats(b) - stats(a)
+          : sort === 'stats-asc'
+            ? stats(a) - stats(b)
+            : sort === 'rarity-desc'
+              ? b.rarity - a.rarity
+              : sort === 'rarity-asc'
+                ? a.rarity - b.rarity
+                : sort === 'universe'
+                  ? universeName(a).localeCompare(universeName(b))
+                  : sort === 'name-desc'
+                    ? b.name.localeCompare(a.name)
+                    : a.name.localeCompare(b.name);
+      return result || a.name.localeCompare(b.name) || a.id.localeCompare(b.id);
+    });
   async function save(auto = false) {
     setBusy(true);
     try {
@@ -100,6 +120,24 @@ export default function Collection() {
                 {u.name}
               </option>
             ))}
+          </select>
+        </label>
+      </div>
+      <div className="collection-sort">
+        <label>
+          Sort by
+          <select
+            aria-label="Sort collection"
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+          >
+            <option value="rarity-desc">Rarity · highest first</option>
+            <option value="rarity-asc">Rarity · lowest first</option>
+            <option value="stats-desc">Total stats · highest first</option>
+            <option value="stats-asc">Total stats · lowest first</option>
+            <option value="universe">Universe · A–Z</option>
+            <option value="name-asc">Name · A–Z</option>
+            <option value="name-desc">Name · Z–A</option>
           </select>
         </label>
       </div>

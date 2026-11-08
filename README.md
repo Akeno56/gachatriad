@@ -2,6 +2,10 @@
 
 A local Triple Triad fan game with FF-style menus, CRT presentation, 400 playable cross-game cards and persistent multiplayer services.
 
+**v0.9:** Play places the shared General/Trade/Lobbies chat and online-player list below your hand, beside duel setup; Lobbies uses the same compact chat. Settings live in a bottom-left cog. Collection sorting is independent of filters. Open any available booster count up to ten across stack sources; individual reveals preload artwork and wait 0.8 seconds between cards. Captures turn from the old owner's face/color to the new owner's face/color, including Same/Plus/Combo chains. The rulebook demonstrates All Open, Three Open and Closed hands. See the [sharing/security review](docs/SECURITY_REVIEW.md).
+
+The top-right account button now reads **Login/Register** for guests and **Logout** for signed-in players. Logout signs out directly.
+
 **v0.8:** chat messages align avatars, names, titles and timestamps consistently. Rulebook examples autoplay at half speed and loop without playback buttons. Holo/CRT motion defaults on independently of OS reduced-motion, with a saved switch under Volume. Elemental board values include modifiers, and selected cards preview green/red elemental cells. Play unranked and Play ranked are separate from practice presets; Unranked and Draft use Three Open + Same/Plus/Combo with no trade. Other pages remind players about active battles. Auto build varies same-rarity choices while preserving the highest legal total rarity. Permanent human Ranked top-10/top-3/champion titles require five Ranked games.
 
 **v0.7:** public chat lives in Play; accepted friends have private conversations and unread badges. The rulebook replays Same, Plus and Combo through the real engine. CRT scanlines scroll, Holo sheen runs without hover, cards resist accidental text/art selection, and checkboxes use consistent styling. Auto build maximizes total owned, available rarity within legal deck limits, then printed side values. Boosters stack by source, support quantity purchases and opening ×5/×10, and registered accounts can claim one free standard booster per UTC day. Collection supports duplicate recycling and five-for-one rarity upgrades; see [economy details](docs/BOOSTER_PACKS.md).
@@ -21,6 +25,8 @@ Player profiles expose records, ratings, achievement unlocks and a chosen owned 
 See the complete [GitHub Pages + PC server guide](docs/ONLINE_DEMO.md). The project address is `https://akeno56.github.io/gachatriad/`. Local changes publish through the repository's Pages workflow after you commit and push them.
 
 On this Windows development PC, double-click **Start Server Control.cmd** to open the panel without terminal commands.
+
+The launcher prefers the verified project-local Node 24.22.2 LTS in `.tools` when present. A fresh Windows checkout can install this copy with `node tools/server-control/install-runtime.mjs`; otherwise install current Node LTS system-wide. Older runtimes must be updated before public hosting; manual developer commands still use your system PATH.
 
 ```sh
 pnpm build:pages

@@ -1,4 +1,5 @@
 import { RuleAnimation } from './rule-animation';
+import { VisibilityExample } from './visibility-example';
 export function RulesContent() {
   return (
     <div className="rules-content">
@@ -52,6 +53,7 @@ export function RulesContent() {
             Both five-card hands are visible. Closed hands hide unplayed cards; Three Open reveals
             three randomly chosen cards in each hand at the start and keeps the other two hidden.
           </p>
+          <VisibilityExample />
         </article>
         <article>
           <span className="rule-icon">＝</span>

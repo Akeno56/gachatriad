@@ -219,6 +219,17 @@ export default function Boosters() {
         <h2>
           Your unopened boosters <span>({unopened.length})</span>
         </h2>
+        {unopened.length > 1 && (
+          <div className="booster-inventory-actions">
+            <button
+              className="outline-button"
+              disabled={busy}
+              onClick={() => setBatch(unopened.slice(0, 10))}
+            >
+              {unopened.length <= 10 ? `Open all (${unopened.length})` : 'Open next 10'}
+            </button>
+          </div>
+        )}
         <div className="booster-pack-list">
           {stacks.map(({ source, packs: stack }) => (
             <div className="booster-stack" key={source}>
@@ -249,18 +260,20 @@ export default function Boosters() {
                 </strong>
                 <span>Open · 5 cards</span>
               </button>
-              {stack.length >= 5 && (
+              {stack.length >= 2 && (
                 <div className="batch-open-actions">
-                  {[5, 10].map((n) => (
-                    <button
-                      key={n}
-                      className="outline-button"
-                      disabled={busy || stack.length < n}
-                      onClick={() => setBatch(stack.slice(0, n))}
-                    >
-                      Open ×{n}
-                    </button>
-                  ))}
+                  {[...new Set([Math.min(10, stack.length), ...(stack.length > 5 ? [5] : [])])]
+                    .sort((a, b) => a - b)
+                    .map((n) => (
+                      <button
+                        key={n}
+                        className="outline-button"
+                        disabled={busy || stack.length < n}
+                        onClick={() => setBatch(stack.slice(0, n))}
+                      >
+                        Open ×{n}
+                      </button>
+                    ))}
                 </div>
               )}
             </div>

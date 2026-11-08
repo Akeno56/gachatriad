@@ -44,21 +44,28 @@ test('automatically loops Same, Plus and Combo at half speed without playback co
   page,
 }, info) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.clock.install({ time: new Date('2026-11-08T10:00:00Z') });
+  await page.clock.pauseAt(new Date('2026-11-08T10:00:01Z'));
   await page.goto('/rules');
-  await page.clock.install();
-  await expect(page.locator('.rule-animation')).toHaveCount(3);
+  await expect(page.locator('.rule-animation:not(.visibility-example)')).toHaveCount(3);
   await expect(page.locator('.rule-animation button')).toHaveCount(0);
   await page.clock.runFor(3900);
-  for (const demo of await page.locator('.rule-animation').all())
+  await expect(page.locator('.visibility-example')).toHaveAttribute('data-visibility', '0');
+  await expect(page.locator('.visibility-mini.is-revealed')).toHaveCount(10);
+  for (const demo of await page.locator('.rule-animation:not(.visibility-example)').all())
     await expect(demo).toHaveAttribute('data-step', '0');
   await page.clock.runFor(200);
-  for (const demo of await page.locator('.rule-animation').all())
+  await expect(page.locator('.visibility-example')).toHaveAttribute('data-visibility', '1');
+  await expect(page.locator('.visibility-mini.is-revealed')).toHaveCount(8);
+  for (const demo of await page.locator('.rule-animation:not(.visibility-example)').all())
     await expect(demo).toHaveAttribute('data-step', '1');
   await page.clock.runFor(3000);
-  for (const demo of await page.locator('.rule-animation').all())
+  for (const demo of await page.locator('.rule-animation:not(.visibility-example)').all())
     await expect(demo).toHaveAttribute('data-step', '2');
   await page.clock.runFor(4000);
-  for (const demo of await page.locator('.rule-animation').all())
+  await expect(page.locator('.visibility-example')).toHaveAttribute('data-visibility', '2');
+  await expect(page.locator('.visibility-mini.is-revealed')).toHaveCount(5);
+  for (const demo of await page.locator('.rule-animation:not(.visibility-example)').all())
     await expect(demo).toHaveAttribute('data-step', '3');
   await page.clock.runFor(4000);
   await expect(page.locator('.demo-same')).toHaveAttribute('data-step', '0');
@@ -120,11 +127,16 @@ test('registration waits for an in-flight guest refresh and keeps its profile', 
   }
   expect((await response).status()).toBe(200);
   expect(signupBeforeRelease).toBe(0);
-  await expect(page.locator('.account-control')).toHaveText('Refresh safe player');
+  await expect(page.locator('.account-control')).toHaveText('Logout');
   const after = await (await page.request.get('/api/profile')).json();
   expect(after.id).toBe(before.id);
   expect(after.inventory).toEqual(before.inventory);
   expect(after.registered).toBe(true);
+  await page.getByRole('button', { name: 'Logout', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Login/Register', exact: true })).toBeVisible();
+  const signedOut = await (await page.request.get('/api/profile')).json();
+  expect(signedOut.registered).toBe(false);
+  expect(signedOut.id).not.toBe(after.id);
 });
 test('repeated pack reveal clicks cannot select card text or artwork', async ({ page }) => {
   await page.goto('/boosters');

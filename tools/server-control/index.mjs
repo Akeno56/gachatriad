@@ -341,6 +341,10 @@ export async function createController(options = {}) {
     }
   }
   const server = createServer(async (req, res) => {
+    res.setHeader('x-frame-options', 'DENY');
+    res.setHeader('x-content-type-options', 'nosniff');
+    res.setHeader('referrer-policy', 'no-referrer');
+    res.setHeader('cache-control', 'no-store');
     const expected = `http://127.0.0.1:${port}`;
     if (
       req.headers.host !== `127.0.0.1:${port}` ||

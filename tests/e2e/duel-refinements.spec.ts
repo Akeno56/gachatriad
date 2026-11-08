@@ -9,7 +9,7 @@ import {
   type Card,
 } from '../../packages/engine/src/index';
 import type { MatchView } from '../../packages/shared/src/platform';
-import { openStarterPacks } from './helpers';
+import { openStarterPacks, openSettings } from './helpers';
 const CARDS = JSON.parse(
   readFileSync(new URL('../../data/cards/catalog.json', import.meta.url), 'utf8'),
 ) as Card[];
@@ -34,7 +34,9 @@ test('Holo and CRT visibly animate without hover in both OS motion settings and 
     await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
     await page.getByLabel('Find a card').fill('Amber');
     await page.getByLabel('Finish', { exact: true }).selectOption('holo');
+    await openSettings(page);
     await page.getByRole('button', { name: 'CRT filter on', exact: true }).click();
+    await page.getByRole('button', { name: 'Game settings', exact: true }).click();
     await page.getByRole('button', { name: /Inspect Amber/ }).click();
     await page.mouse.move(0, 0);
     const foil = page.locator('.card-detail .holo-foil'),
@@ -57,13 +59,14 @@ test('Holo and CRT visibly animate without hover in both OS motion settings and 
     expect(await fractionChanged(second, await card.screenshot())).toBeGreaterThan(0.08);
     await page.screenshot({ path: info.outputPath(`holo-${reducedMotion}.png`) });
     await page.getByRole('button', { name: 'Close card detail' }).click();
+    await openSettings(page);
     await page.getByRole('button', { name: 'CRT filter off', exact: true }).click();
     const clip = { x: 1, y: 220, width: 8, height: 150 };
     const lineA = await page.screenshot({ clip });
     await page.waitForTimeout(350);
     const lineB = await page.screenshot({ clip });
     expect(await fractionChanged(lineA, lineB)).toBeGreaterThan(0.1);
-    await page.locator('.volume-controls summary').click();
+    await openSettings(page);
     await page.getByLabel('Animate Holo & CRT', { exact: true }).uncheck();
     await expect(page.locator('.crt-overlay')).toHaveCSS('animation-name', 'none');
     const stillA = await page.screenshot({ clip });
@@ -91,7 +94,7 @@ test('Holo and CRT visibly animate without hover in both OS motion settings and 
     await page.waitForTimeout(350);
     expect(await fractionChanged(stoppedA, await stoppedCard.screenshot())).toBe(0);
     await page.getByRole('button', { name: 'Close card detail' }).click();
-    await page.locator('.volume-controls summary').click();
+    await openSettings(page);
     await page.getByLabel('Animate Holo & CRT', { exact: true }).check();
     await expect(page.locator('.crt-overlay')).toHaveCSS('animation-name', 'crt-scroll');
   }

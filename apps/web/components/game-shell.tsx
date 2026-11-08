@@ -28,6 +28,23 @@ export function GameShell({ children }: { children: React.ReactNode }) {
   const [effects, setEffects] = useState(true);
   const [fullScreen, setFullScreen] = useState(false);
   const [notice, setNotice] = useState('');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const settingsRoot = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const outside = (e: PointerEvent) => {
+      if (!settingsRoot.current?.contains(e.target as Node)) setSettingsOpen(false);
+    };
+    const escape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSettingsOpen(false);
+    };
+    document.addEventListener('pointerdown', outside);
+    document.addEventListener('keydown', escape);
+    return () => {
+      document.removeEventListener('pointerdown', outside);
+      document.removeEventListener('keydown', escape);
+    };
+  }, [settingsOpen]);
   const getAudio = useCallback(() => {
     if (!audio.current) audio.current = new RetroAudio();
     return audio.current;
@@ -183,96 +200,148 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                 </nav>
                 <Wallet />
                 <AccountMenu />
-                <button
-                  className="server-control"
-                  onClick={() => window.dispatchEvent(new Event('triad:connection-settings'))}
-                >
-                  Server
-                </button>
-                <button
-                  aria-label={`Music ${music ? 'on' : 'off'}`}
-                  aria-pressed={music}
-                  onClick={toggleMusic}
-                >
-                  ♫ <span>MUSIC</span> {music ? 'ON' : 'OFF'}
-                </button>
-                <button
-                  aria-label={`Sound effects ${sfx ? 'on' : 'off'}`}
-                  aria-pressed={sfx}
-                  onClick={toggleSfx}
-                >
-                  ♪ <span>SFX</span> {sfx ? 'ON' : 'OFF'}
-                </button>
-                <button
-                  aria-label={`CRT filter ${crt ? 'on' : 'off'}`}
-                  aria-pressed={crt}
-                  onClick={toggleCrt}
-                >
-                  <span>CRT</span> {crt ? 'ON' : 'OFF'}
-                </button>
-                <details className="volume-controls">
-                  <summary>Volume</summary>
-                  <div className="menu-window volume-panel">
-                    <label className="effects-setting">
-                      <input
-                        type="checkbox"
-                        checked={effects}
-                        onChange={(e) => {
-                          setEffects(e.target.checked);
-                          try {
-                            localStorage.setItem('triad-effects', e.target.checked ? 'on' : 'off');
-                          } catch {}
-                        }}
-                      />
-                      Animate Holo &amp; CRT
-                    </label>
-                    <label>
-                      Music volume <output>{musicVolume}%</output>
-                      <input
-                        aria-label="Music volume"
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={musicVolume}
-                        onChange={(e) => {
-                          const value = Number(e.target.value);
-                          setMusicVolume(value);
-                          getAudio().setMusicVolume(value / 100);
-                          try {
-                            localStorage.setItem('triad-music-volume', String(value));
-                          } catch {}
-                        }}
-                      />
-                    </label>
-                    <label>
-                      Sound effects volume <output>{sfxVolume}%</output>
-                      <input
-                        aria-label="Sound effects volume"
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={sfxVolume}
-                        onChange={(e) => {
-                          const value = Number(e.target.value);
-                          setSfxVolume(value);
-                          getAudio().setSfxVolume(value / 100);
-                          try {
-                            localStorage.setItem('triad-sfx-volume', String(value));
-                          } catch {}
-                        }}
-                      />
-                    </label>
-                  </div>
-                </details>
-                <button
-                  className="fullscreen-control"
-                  aria-label={fullScreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-                  onClick={toggleFullscreen}
-                >
-                  ⛶
-                </button>
               </div>
             </header>
+            <div ref={settingsRoot} className="settings-dock">
+              <button
+                className="outline-button settings-cog"
+                aria-label="Game settings"
+                aria-expanded={settingsOpen}
+                onClick={() => setSettingsOpen(!settingsOpen)}
+              >
+                <svg viewBox="0 0 24 24" width="25" height="25" aria-hidden="true">
+                  <path
+                    d="m9 2-.6 2.4-2 .9-2.3-.7-2 3.5L4 9.7v2.6l-1.9 1.6 2 3.5 2.3-.7 2 .9L9 20h4l.6-2.4 2-.9 2.3.7 2-3.5-1.9-1.6V9.7l1.9-1.6-2-3.5-2.3.7-2-.9L13 2Z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                  <circle
+                    cx="11"
+                    cy="11"
+                    r="3.2"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                </svg>
+              </button>
+              {settingsOpen && (
+                <aside
+                  className="menu-window settings-panel"
+                  role="dialog"
+                  aria-label="Game settings"
+                >
+                  <div className="settings-heading">
+                    <h2>Settings</h2>
+                    <button
+                      className="text-button"
+                      onClick={() => setSettingsOpen(false)}
+                      aria-label="Close settings"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="settings-buttons">
+                    {' '}
+                    <button
+                      className="server-control"
+                      onClick={() => {
+                        setSettingsOpen(false);
+                        window.dispatchEvent(new Event('triad:connection-settings'));
+                      }}
+                    >
+                      Server
+                    </button>
+                    <button
+                      aria-label={`Music ${music ? 'on' : 'off'}`}
+                      aria-pressed={music}
+                      onClick={toggleMusic}
+                    >
+                      ♫ <span>MUSIC</span> {music ? 'ON' : 'OFF'}
+                    </button>
+                    <button
+                      aria-label={`Sound effects ${sfx ? 'on' : 'off'}`}
+                      aria-pressed={sfx}
+                      onClick={toggleSfx}
+                    >
+                      ♪ <span>SFX</span> {sfx ? 'ON' : 'OFF'}
+                    </button>
+                    <button
+                      aria-label={`CRT filter ${crt ? 'on' : 'off'}`}
+                      aria-pressed={crt}
+                      onClick={toggleCrt}
+                    >
+                      <span>CRT</span> {crt ? 'ON' : 'OFF'}
+                    </button>
+                    <div className="volume-controls">
+                      <h3>Volume &amp; effects</h3>
+                      <div className="menu-window volume-panel">
+                        <label className="effects-setting">
+                          <input
+                            type="checkbox"
+                            checked={effects}
+                            onChange={(e) => {
+                              setEffects(e.target.checked);
+                              try {
+                                localStorage.setItem(
+                                  'triad-effects',
+                                  e.target.checked ? 'on' : 'off',
+                                );
+                              } catch {}
+                            }}
+                          />
+                          Animate Holo &amp; CRT
+                        </label>
+                        <label>
+                          Music volume <output>{musicVolume}%</output>
+                          <input
+                            aria-label="Music volume"
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={musicVolume}
+                            onChange={(e) => {
+                              const value = Number(e.target.value);
+                              setMusicVolume(value);
+                              getAudio().setMusicVolume(value / 100);
+                              try {
+                                localStorage.setItem('triad-music-volume', String(value));
+                              } catch {}
+                            }}
+                          />
+                        </label>
+                        <label>
+                          Sound effects volume <output>{sfxVolume}%</output>
+                          <input
+                            aria-label="Sound effects volume"
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={sfxVolume}
+                            onChange={(e) => {
+                              const value = Number(e.target.value);
+                              setSfxVolume(value);
+                              getAudio().setSfxVolume(value / 100);
+                              try {
+                                localStorage.setItem('triad-sfx-volume', String(value));
+                              } catch {}
+                            }}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    <button
+                      className="fullscreen-control"
+                      aria-label={fullScreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                      onClick={toggleFullscreen}
+                    >
+                      ⛶
+                    </button>
+                  </div>
+                </aside>
+              )}
+            </div>
             <main id="main">
               <ServerConnection>
                 <SocialProvider>

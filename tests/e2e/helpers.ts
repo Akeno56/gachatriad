@@ -1,4 +1,8 @@
 import { expect, type Page } from '@playwright/test';
+export async function openSettings(page: Page) {
+  if (!(await page.locator('.settings-panel').isVisible()))
+    await page.getByRole('button', { name: 'Game settings', exact: true }).click();
+}
 export async function openStarterPacks(page: Page) {
   await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
   const response = await page.request.get('/api/boosters');
