@@ -95,8 +95,9 @@ export function RulesContent() {
         <p>
           Marked cells match one of eight elements. A matching card gains +1 on every side; a
           different element or no affinity loses 1. Neutral cells do nothing. Same and Plus compare
-          the printed values; ordinary and Combo comparisons use adjusted values. Cell and card
-          icons show each element, with a +1 or −1 badge for the active modifier.
+          the printed values; ordinary and Combo comparisons use adjusted values. Board cards
+          display their adjusted values. Cell and card icons show each element, with a +1 or −1
+          badge for the active modifier.
         </p>
       </article>
       <p className="rule-note">
@@ -106,7 +107,10 @@ export function RulesContent() {
       <div className="rule-grid">
         <article>
           <h3>Unranked</h3>
-          <p>Three Open. No card trade. Join its queue or a waiting table in the lobby list.</p>
+          <p>
+            Three Open, Same, Plus and Combo. No card trade. Use Play unranked or join its queue in
+            the lobby list.
+          </p>
         </article>
         <article>
           <h3>Ranked</h3>
@@ -120,8 +124,9 @@ export function RulesContent() {
           <h3>Draft</h3>
           <p>
             A separate rated queue. Choose five cards from eight temporary random offers in three
-            minutes. Up to one 5★ and one 4★, or two 4★ without a 5★. Three Open; no trade. Unlocked
-            picks are completed automatically at timeout. These cards never enter your collection.
+            minutes. Up to one 5★ and one 4★, or two 4★ without a 5★. Three Open, Same, Plus and
+            Combo; no trade. Unlocked picks are completed automatically at timeout. These cards
+            never enter your collection.
           </p>
         </article>
         <article>

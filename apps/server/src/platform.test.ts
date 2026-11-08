@@ -151,8 +151,75 @@ it('auto-builds only from available owned copies with the highest legal total ra
       ]);
   });
   const expected = buildBestDeck(owned.filter((card) => card.id !== owned[1].id)).map((c) => c.id);
-  await ok(c, '/deck/auto', {});
-  expect((await ok<ProfileView>(c, '/profile')).deck).toEqual(expected);
+  const decks = new Set<string>();
+  for (let i = 0; i < 8; i++) {
+    await ok(c, '/deck/auto', {});
+    const deck = (await ok<ProfileView>(c, '/profile')).deck;
+    expect(deck.every((id) => owned.some((c) => c.id === id) && id !== owned[1].id)).toBe(true);
+    expect(deck.reduce((s, id) => s + ALL_CARDS.find((c) => c.id === id)!.rarity, 0)).toBe(
+      expected.reduce((s, id) => s + ALL_CARDS.find((c) => c.id === id)!.rarity, 0),
+    );
+    decks.add([...deck].sort().join('|'));
+  }
+  expect(decks.size).toBeGreaterThan(1);
+});
+it('enables Same, Plus and Combo in new unranked and Draft games without Trade One', async () => {
+  for (const mode of ['casual', 'draft']) {
+    const a = await user(true),
+      b = await user(true);
+    const lobby = await ok<{ lobbyId: string }>(a, '/lobbies', { mode, allowBots: false });
+    const joined = await ok<{ matchId: string }>(b, `/lobbies/${lobby.lobbyId}/join`, {});
+    const match = await ok<MatchView>(a, `/matches/${joined.matchId}`);
+    expect(match.rules).toMatchObject({ threeOpen: true, same: true, plus: true, combo: true });
+    expect(match.trade.rule).toBe('none');
+    await ok(a, `/matches/${joined.matchId}/resign`, {});
+  }
+});
+it('awards permanent human Ranked top-10, top-3 and champion titles after five games', async () => {
+  const a = await user(true),
+    b = await user(true);
+  expect((await request(a, '/profile/title', { titleId: 'ranked-champion' })).statusCode).toBe(400);
+  const { awardRankTitles } = await import('./titles');
+  await platform.db.tx(async (sql) => {
+    await sql('UPDATE profiles SET rating=5000 WHERE id=$1', [a.profile.id]);
+    await sql('UPDATE profiles SET rating=4900 WHERE id=$1', [b.profile.id]);
+    for (let i = 0; i < 4; i++)
+      await sql(
+        "INSERT INTO matches(id,mode,player0,player1,decks,rules,status,is_draw,settlement_done) VALUES($1,'ranked',$2,$3,'[[],[]]','{}','complete',true,true)",
+        [crypto.randomUUID(), a.profile.id, b.profile.id],
+      );
+    await awardRankTitles(sql);
+  });
+  expect(
+    (await platform.store.playerProfile(a.profile.id)).titles.find((t) => t.id === 'ranked-top-ten')
+      ?.unlocked,
+  ).toBe(false);
+  await platform.db.tx(async (sql) => {
+    await sql(
+      "INSERT INTO matches(id,mode,player0,player1,decks,rules,status,is_draw,settlement_done) VALUES($1,'ranked',$2,$3,'[[],[]]','{}','complete',true,true)",
+      [crypto.randomUUID(), a.profile.id, b.profile.id],
+    );
+    await awardRankTitles(sql);
+  });
+  for (const id of ['ranked-top-ten', 'ranked-podium', 'ranked-champion'])
+    expect(
+      (await platform.store.playerProfile(a.profile.id)).titles.find((t) => t.id === id)?.unlocked,
+    ).toBe(true);
+  expect(
+    (await platform.store.playerProfile(b.profile.id)).titles.find(
+      (t) => t.id === 'ranked-champion',
+    )?.unlocked,
+  ).toBe(false);
+  await ok(a, '/profile/title', { titleId: 'ranked-champion' });
+  await platform.db.tx(async (sql) => {
+    await sql('UPDATE profiles SET rating=1 WHERE id=$1', [a.profile.id]);
+    await awardRankTitles(sql);
+  });
+  expect(
+    (await platform.store.playerProfile(a.profile.id)).titles.find(
+      (t) => t.id === 'ranked-champion',
+    )?.unlocked,
+  ).toBe(true);
 });
 it('purchases booster batches atomically, lists all unopened packs, and bulk opening is replay-safe', async () => {
   const c = await user(false, false);

@@ -25,7 +25,7 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
   ).toBeVisible();
   await expect(page.locator('.booster-count').filter({ hasText: '×10' })).toBeVisible();
   assert.equal((await api(client, '/profile')).prisms, before.prisms - 1500);
-  await page.screenshot({ path: 'docs/screenshots/v07-booster-stacks.png', fullPage: true });
+  await page.screenshot({ path: 'docs/screenshots/v08-booster-stacks.png', fullPage: true });
   await page.getByRole('button', { name: 'Open ×10', exact: true }).click();
   await page.getByRole('button', { name: 'Open 10 boosters', exact: true }).click();
   const batch = page.locator('.batch-opening');
@@ -43,7 +43,7 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
         .map((a) => a.finished.catch(() => {})),
     );
   });
-  await page.screenshot({ path: 'docs/screenshots/v07-open-ten.png' });
+  await page.screenshot({ path: 'docs/screenshots/v08-open-ten.png' });
   await batch.getByRole('button', { name: 'Keep cards', exact: true }).click();
   const purchased = await api(client, '/boosters/buy', {
     quantity: 50,
@@ -91,7 +91,7 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
   await page.getByRole('button', { name: 'Confirm', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Trade Up complete', exact: true })).toBeVisible();
   await expect(page.locator('.duplicate-reward .playing-card')).toHaveClass(/rarity-2/);
-  await page.screenshot({ path: 'docs/screenshots/v07-trade-up.png' });
+  await page.screenshot({ path: 'docs/screenshots/v08-trade-up.png' });
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
   const after = await api(client, '/profile');
   assert.equal(after.prisms, p.prisms + 5);

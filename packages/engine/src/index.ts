@@ -105,8 +105,8 @@ export const PRESETS = [
   {
     id: 'unranked',
     name: 'Unranked · Three Open',
-    description: 'Three cards are revealed in each hand.',
-    rules: { ...STANDARD, threeOpen: true },
+    description: 'Three Open, Same, Plus and Combo. No card trade.',
+    rules: { ...STANDARD, threeOpen: true, same: true, plus: true, combo: true },
   },
   {
     id: 'ranked',
@@ -269,12 +269,15 @@ export function randomDeck(pool: readonly Card[], random: () => number): Card[] 
   }
   throw new Error('The available collection cannot form a legal deck.');
 }
-/** Maximize total rarity, then total printed side values, within the normal deck limits. */
-export function buildBestDeck(pool: readonly Card[]): Card[] {
+/** Maximize total rarity; a supplied RNG varies peers, otherwise printed values break ties. */
+export function buildBestDeck(pool: readonly Card[], random?: () => number): Card[] {
   const value = (c: Card) => c.stats.reduce((sum, n) => sum + n, 0);
-  const sorted = pool
-    .filter((c) => c.enabled)
-    .sort((a, b) => b.rarity - a.rarity || value(b) - value(a) || a.id.localeCompare(b.id));
+  const enabled = pool.filter((c) => c.enabled);
+  const sorted = random
+    ? shuffle(enabled, random).sort((a, b) => b.rarity - a.rarity)
+    : enabled.sort(
+        (a, b) => b.rarity - a.rarity || value(b) - value(a) || a.id.localeCompare(b.id),
+      );
   const unique = sorted.filter(
     (c, i) =>
       sorted.findIndex((other) => (other.baseCardId ?? other.id) === (c.baseCardId ?? c.id)) === i,

@@ -47,7 +47,7 @@ test.afterEach(async ({ page }) => {
     })
     .catch(() => {});
 });
-for (const preset of ['unranked', 'standard', 'combo'])
+for (const preset of ['classic', 'standard', 'combo'])
   test(`plays a full ${preset} duel and reconnects`, async ({ page }, info) => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));

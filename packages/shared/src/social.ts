@@ -7,6 +7,24 @@ export interface TitleView {
 }
 export const TITLES = [
   {
+    id: 'ranked-top-ten',
+    name: 'Ranked Top 10',
+    rank: 10,
+    requirement: 'Reach the human Ranked top 10 after at least 5 ranked duels.',
+  },
+  {
+    id: 'ranked-podium',
+    name: 'Ranked Top 3',
+    rank: 3,
+    requirement: 'Reach the human Ranked top 3 after at least 5 ranked duels.',
+  },
+  {
+    id: 'ranked-champion',
+    name: 'Ranked Champion',
+    rank: 1,
+    requirement: 'Reach first place on the human Ranked ladder after at least 5 ranked duels.',
+  },
+  {
     id: 'card-player',
     name: 'Card Player',
     achievement: 'first-duel',

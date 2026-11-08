@@ -2,9 +2,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSocial } from './social-state';
 import { useSession } from './session';
-import { Avatar } from './avatar';
+import { ChatMessageContent } from './chat-message-content';
 import { api } from '../lib/platform';
-import { appPath } from '../lib/connection';
 export function MainChat() {
   const { data, error: loadError } = useSocial();
   const { profile, refresh, openAccount } = useSession();
@@ -41,18 +40,11 @@ export function MainChat() {
         {!data.chat.length && <p>No messages yet.</p>}
         {data.chat.map((m) => (
           <article key={m.id} className="chat-message">
-            <Avatar card={m.avatar} name={m.name} />
-            <div>
-              <a href={appPath(`/profile?id=${m.playerId}`)}>{m.name}</a>
-              {m.title && <small>{m.title}</small>}
-              <time dateTime={m.createdAt}>
-                {new Date(m.createdAt).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </time>
-              <p>{m.body}</p>
-            </div>
+            <ChatMessageContent
+              person={{ ...m, id: m.playerId }}
+              createdAt={m.createdAt}
+              body={m.body}
+            />
             {profile?.isAdmin && (
               <button
                 className="text-button"

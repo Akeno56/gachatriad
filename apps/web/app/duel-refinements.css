@@ -1,0 +1,134 @@
+.message-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: 14px;
+  row-gap: 2px;
+}
+.message-heading > a,
+.message-heading > strong {
+  font: 24px/1.1 var(--pixel);
+  color: var(--gold);
+  overflow-wrap: anywhere;
+}
+.message-heading > time {
+  grid-column: 2;
+  grid-row: 1;
+  font: 12px/1.4 var(--sans);
+  color: #acbcda;
+  margin: 0;
+  white-space: nowrap;
+}
+.message-heading > .message-title {
+  grid-column: 1/-1;
+  font: 15px/1.3 var(--sans);
+  color: #c0cbe1;
+  margin: 0;
+}
+.message-content {
+  flex: 1;
+  min-width: 0;
+}
+.message-content > p {
+  margin: 9px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.private-message,
+.friend-conversation-heading {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.private-message .message-content {
+  min-width: 0;
+}
+.friend-conversation-heading {
+  margin: 0 0 8px;
+  align-items: center;
+}
+.conversation-presence {
+  display: block;
+  margin: 8px 0 0;
+  color: #b7c8df;
+}
+.conversation-choice .friend-chat-title {
+  color: #dfc784;
+}
+.unranked-play-button {
+  width: 100%;
+  margin-top: 14px;
+}
+.unranked-rules-note {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 6px 0 0;
+}
+.active-battle-reminder {
+  max-width: 650px;
+}
+.active-battle-reminder h2 {
+  font: 34px var(--pixel);
+  color: var(--gold);
+}
+.elemental-board .board-cell.elemental-preview-buff {
+  border: 3px solid #86e3a3;
+  box-shadow:
+    inset 0 0 0 2px #173f31,
+    inset 0 0 25px #7df6b035;
+}
+.elemental-board .board-cell.elemental-preview-penalty {
+  border: 3px solid #f99799;
+  box-shadow:
+    inset 0 0 0 2px #4c2432,
+    inset 0 0 25px #fa789935;
+}
+.effects-animated.crt-enabled .crt-overlay {
+  animation: crt-scroll 1.2s linear infinite !important;
+}
+.effects-animated .holo-foil {
+  animation: holo-drift 3.5s linear infinite !important;
+}
+.effects-animated .holo-card:before {
+  animation: holo-sweep 3.5s linear infinite !important;
+}
+.game-shell:not(.effects-animated) .crt-overlay,
+.game-shell:not(.effects-animated) .holo-foil,
+.game-shell:not(.effects-animated) .holo-card:before {
+  animation: none !important;
+}
+.volume-panel .effects-setting {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 14px;
+  font-size: 16px;
+}
+.volume-panel .effects-setting input {
+  width: 18px;
+  min-height: 0;
+  margin-top: 0;
+}
+@media (max-width: 680px) {
+  .private-message .player-avatar {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+  .message-heading {
+    column-gap: 8px;
+  }
+  .message-heading > a,
+  .message-heading > strong {
+    font-size: 22px;
+  }
+  .private-message {
+    padding: 12px 8px;
+    gap: 9px;
+    margin-right: 6px;
+  }
+  .private-message.is-own {
+    margin-left: 6px;
+  }
+}

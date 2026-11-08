@@ -2,6 +2,8 @@
 
 A local Triple Triad fan game with FF-style menus, CRT presentation, 400 playable cross-game cards and persistent multiplayer services.
 
+**v0.8:** chat messages align avatars, names, titles and timestamps consistently. Rulebook examples autoplay at half speed and loop without playback buttons. Holo/CRT motion defaults on independently of OS reduced-motion, with a saved switch under Volume. Elemental board values include modifiers, and selected cards preview green/red elemental cells. Play unranked and Play ranked are separate from practice presets; Unranked and Draft use Three Open + Same/Plus/Combo with no trade. Other pages remind players about active battles. Auto build varies same-rarity choices while preserving the highest legal total rarity. Permanent human Ranked top-10/top-3/champion titles require five Ranked games.
+
 **v0.7:** public chat lives in Play; accepted friends have private conversations and unread badges. The rulebook replays Same, Plus and Combo through the real engine. CRT scanlines scroll, Holo sheen runs without hover, cards resist accidental text/art selection, and checkboxes use consistent styling. Auto build maximizes total owned, available rarity within legal deck limits, then printed side values. Boosters stack by source, support quantity purchases and opening ×5/×10, and registered accounts can claim one free standard booster per UTC day. Collection supports duplicate recycling and five-for-one rarity upgrades; see [economy details](docs/BOOSTER_PACKS.md).
 
 **v0.6:** friends, main chat, human ranked/Draft ladders and friend duel invitations; earned titles and square match avatars; separate ranked entry with first-time Trade One consent. Hosts can control bot difficulty, grant currency/boosters to a selected user and delete confirmed accounts. Guest accounts expire after seven inactive days; temporary guest profiles are discarded on existing-account sign-in. Lost last copies are removed from active decks. Booster opening now uses a centered pack, individual reveals and a final fan. Menu and battle music are separate, with fades, default ON and 50% volume. See [community/account rules](docs/SOCIAL_AND_ACCOUNTS.md).
@@ -43,10 +45,10 @@ Guests can practice, build their starter deck, play unranked/custom/Roulette and
 ## Current game
 
 - **Solo:** server-authoritative CPU play; no player turn timer or stakes. Saved games resume after navigation or reload.
-- **Unranked:** Three Open, no trade.
+- **Unranked:** Three Open, Same, Plus, Combo; no trade.
 - **Ranked:** closed hands, Same, Plus, Combo and **Trade One**. The winner chooses one card from the losing original five-card deck. Draws trade nothing; forfeits retain the stakes. The loser’s five reserved copies remain locked until selection. After two minutes, the server selects a card automatically.
 - **Custom:** visible public tables combining Closed/Three Open/All Open, Same, Plus, Random and optional Trade One. All custom rules share the lobby browser.
-- **Draft:** separate rated queue; choose five legal cards from eight temporary offers, one duel per draft. This replaces the former Arena run plan. Draft cards do not enter permanent inventory.
+- **Draft:** separate rated queue; choose five legal cards from eight temporary offers, then play Three Open + Same/Plus/Combo with no trade. Draft cards do not enter permanent inventory.
 - **Roulette:** separate queue; compatible advanced rules are drawn when the match begins.
 - **Online turns:** 60 seconds. A missed turn plays automatically; three missed turns forfeit. Waiting rooms expire after 15 minutes.
 - **Collection:** five distinct owned available characters per deck; at most one 5★ and one 4★, or two 4★ without a 5★. Auto build repairs a deck after losing or trading a card. Cosmetic finishes do not add a second character slot.

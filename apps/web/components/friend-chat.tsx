@@ -4,6 +4,9 @@ import type { FriendMessage } from '@gacha-triad/shared/social';
 import { useSession } from './session';
 import { useSocial } from './social-state';
 import { Avatar } from './avatar';
+import { ALL_CARDS } from '@gacha-triad/shared';
+import { TITLES } from '@gacha-triad/shared/social';
+import { ChatMessageContent } from './chat-message-content';
 import { api } from '../lib/platform';
 export function FriendChat({
   playerId,
@@ -80,6 +83,7 @@ export function FriendChat({
                 <Avatar card={f.avatar} name={f.name} />
                 <span>
                   <strong>{f.name}</strong>
+                  {f.title && <small className="friend-chat-title">{f.title}</small>}
                   <small>{thread?.lastMessage || (f.online ? 'Online' : 'Offline')}</small>
                 </span>
                 {!!thread?.unread && <b>{thread.unread}</b>}
@@ -90,10 +94,12 @@ export function FriendChat({
       <div className="conversation-body">
         {friend ? (
           <>
-            <h3>
-              {friend.name}
-              <small>{friend.online ? 'Online' : 'Offline'} · Private conversation</small>
-            </h3>
+            <div className="friend-conversation-heading">
+              <ChatMessageContent person={friend} />
+            </div>
+            <small className="conversation-presence">
+              {friend.online ? 'Online' : 'Offline'} · Private conversation
+            </small>
             <div
               ref={list}
               className="chat-messages"
@@ -111,14 +117,20 @@ export function FriendChat({
                   key={m.id}
                   className={`private-message ${m.senderId === profile?.id ? 'is-own' : ''}`}
                 >
-                  <strong>{m.senderId === profile?.id ? 'You' : friend.name}</strong>
-                  <time dateTime={m.createdAt}>
-                    {new Date(m.createdAt).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </time>
-                  <p>{m.body}</p>
+                  <ChatMessageContent
+                    person={
+                      m.senderId === profile?.id
+                        ? {
+                            id: profile.id,
+                            name: profile.name,
+                            title: TITLES.find((t) => t.id === profile.titleId)?.name ?? null,
+                            avatar: ALL_CARDS.find((c) => c.id === profile.avatarCardId) ?? null,
+                          }
+                        : friend
+                    }
+                    createdAt={m.createdAt}
+                    body={m.body}
+                  />
                 </article>
               ))}
             </div>

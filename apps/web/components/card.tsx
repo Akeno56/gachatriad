@@ -108,11 +108,16 @@ export function Card({
       )}
       <div
         className="card-values"
-        aria-label={`Top ${displayValue(card.stats[0])}, right ${displayValue(card.stats[1])}, bottom ${displayValue(card.stats[2])}, left ${displayValue(card.stats[3])}`}
+        aria-label={`Top ${displayValue(card.stats[0] + modifier)}, right ${displayValue(card.stats[1] + modifier)}, bottom ${displayValue(card.stats[2] + modifier)}, left ${displayValue(card.stats[3] + modifier)}`}
+        title={
+          modifier
+            ? `Printed values: ${card.stats.map(displayValue).join(' / ')}. Same and Plus use printed values.`
+            : undefined
+        }
       >
         {card.stats.map((v, i) => (
           <span className={`value value-${i}`} key={i}>
-            {displayValue(v)}
+            {displayValue(v + modifier)}
           </span>
         ))}
       </div>

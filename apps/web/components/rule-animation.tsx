@@ -1,33 +1,24 @@
 'use client';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ruleExample, type ExampleRule } from '@gacha-triad/shared/rule-examples';
 export function RuleAnimation({ rule }: { rule: ExampleRule }) {
   const example = useMemo(() => ruleExample(rule), [rule]);
   const [step, setStep] = useState(0),
-    [playing, setPlaying] = useState(true),
     [visible, setVisible] = useState(true);
-  const root = useRef<HTMLDivElement>(null);
   const total = rule === 'combo' ? 5 : 4;
   useEffect(() => {
-    const motion = matchMedia('(prefers-reduced-motion: reduce)');
-    const change = () => {
-      if (motion.matches) setPlaying(false);
-    };
-    change();
-    motion.addEventListener('change', change);
     const visibility = () => setVisible(!document.hidden);
     visibility();
     document.addEventListener('visibilitychange', visibility);
     return () => {
-      motion.removeEventListener('change', change);
       document.removeEventListener('visibilitychange', visibility);
     };
   }, []);
   useEffect(() => {
-    if (!playing || !visible) return;
-    const timer = setTimeout(() => setStep((s) => (s + 1) % total), step === 1 ? 1500 : 2000);
+    if (!visible) return;
+    const timer = setTimeout(() => setStep((s) => (s + 1) % total), step === 1 ? 3000 : 4000);
     return () => clearTimeout(timer);
-  }, [playing, visible, step, total]);
+  }, [visible, step, total]);
   const caption = [
     'Blue to play. Place your card in the center.',
     'Your card touches the two red cards.',
@@ -42,7 +33,6 @@ export function RuleAnimation({ rule }: { rule: ExampleRule }) {
   return (
     <div
       className={`rule-animation demo-${rule}`}
-      ref={root}
       data-step={step}
       aria-label={`${rule} animated gameplay example`}
     >
@@ -100,35 +90,6 @@ export function RuleAnimation({ rule }: { rule: ExampleRule }) {
       <p className="demo-caption" aria-live="off">
         {caption}
       </p>
-      <div className="demo-controls">
-        <button
-          className="text-button"
-          onClick={() => setPlaying(!playing)}
-          aria-label={`${playing ? 'Pause' : 'Play'} ${rule} example`}
-        >
-          {playing ? 'Ⅱ Pause' : '▶ Play'}
-        </button>
-        <button
-          className="text-button"
-          onClick={() => {
-            setPlaying(false);
-            setStep((s) => (s + 1) % total);
-          }}
-        >
-          Next step
-        </button>
-        <button
-          className="text-button"
-          onClick={() => {
-            root.current?.scrollIntoView({ block: 'center', behavior: 'instant' });
-            setStep(0);
-            setPlaying(true);
-          }}
-          aria-label={`Replay ${rule} example`}
-        >
-          ↻ Replay
-        </button>
-      </div>
     </div>
   );
 }

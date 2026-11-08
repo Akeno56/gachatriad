@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { buildBestDeck, validateDeck, type Card } from './index';
+import { buildBestDeck, validateDeck, seededRandom, type Card } from './index';
 function card(id: string, rarity: number, value = 1): Card {
   return {
     id,
@@ -47,6 +47,24 @@ it('treats Holo and Standard as the same character and handles sparse legal pool
   expect(buildBestDeck(pool)).toHaveLength(5);
   expect(validateDeck(buildBestDeck(pool))).toEqual([]);
   expect(() => buildBestDeck(pool.slice(0, 5))).toThrow('legal deck');
+});
+it('varies equivalent-rarity choices while preserving the maximal rarity budget', () => {
+  const pool = Array.from({ length: 25 }, (_, i) =>
+    card(`variety-${i}`, 1 + (i % 5), 1 + (i % 10)),
+  );
+  const variants = new Set<string>();
+  for (let i = 0; i < 20; i++) {
+    const next = buildBestDeck(pool, seededRandom(i));
+    expect(validateDeck(next)).toEqual([]);
+    expect(next.reduce((sum, c) => sum + c.rarity, 0)).toBe(18);
+    variants.add(
+      next
+        .map((c) => c.id)
+        .sort()
+        .join('|'),
+    );
+  }
+  expect(variants.size).toBeGreaterThan(10);
 });
 it('matches exhaustive legal choices for mixed pools', () => {
   for (let seed = 0; seed < 12; seed++) {

@@ -34,18 +34,19 @@ export function ruleNames(r: Rules) {
     ...(r.elemental ? ['Elemental'] : []),
   ];
 }
-const describe = (c: CardData) =>
-  `${c.name}. Top ${displayValue(c.stats[0])}, right ${displayValue(c.stats[1])}, bottom ${displayValue(c.stats[2])}, left ${displayValue(c.stats[3])}. ${c.rarity} stars`;
+const describe = (c: CardData, modifier = 0) =>
+  `${c.name}. Top ${displayValue(c.stats[0] + modifier)}, right ${displayValue(c.stats[1] + modifier)}, bottom ${displayValue(c.stats[2] + modifier)}, left ${displayValue(c.stats[3] + modifier)}. ${c.rarity} stars`;
 export function Game() {
   const { profile, error: connectionError, revision, refresh } = useSession();
   const [match, setMatch] = useState<MatchView | null>(null),
     [matchId, setMatchId] = useState<string | null>(null),
     [difficulty, setDifficulty] = useState<'easy' | 'normal'>('easy'),
-    [presetId, setPresetId] = useState('unranked'),
+    [presetId, setPresetId] = useState('classic'),
     [selected, setSelected] = useState<string | null>(null),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
     [detail, setDetail] = useState<CardData | null>(null),
+    [detailModifier, setDetailModifier] = useState(0),
     [dialog, setDialog] = useState<'rules' | 'combo' | 'exit' | null>(null),
     [callout, setCallout] = useState(''),
     [resolving, setResolving] = useState(false),
@@ -63,8 +64,12 @@ export function Game() {
     resultSeen = useRef('');
   const sound = useGameAudio();
   const preset =
-    PRESETS.find((p) => p.id === presetId && p.id !== 'ranked') ??
-    PRESETS.find((p) => p.id === 'unranked')!;
+    PRESETS.find((p) => p.id === presetId && p.id !== 'ranked' && p.id !== 'unranked') ??
+    PRESETS[0];
+  function inspect(card: CardData, modifier = 0) {
+    setDetail(card);
+    setDetailModifier(modifier);
+  }
   const load = useCallback(async (id: string) => {
     try {
       const next = await api<MatchView>(`/matches/${id}`);
@@ -84,11 +89,11 @@ export function Game() {
     else if (!matchId && query) setMatchId(query);
   }, [profile, matchId]);
   useEffect(() => {
-    if (matchId) {
-      void load(matchId);
-      history.replaceState(null, '', appPath(`/?match=${matchId}`));
-    }
+    if (matchId) void load(matchId);
   }, [matchId, revision, load]);
+  useEffect(() => {
+    if (matchId) history.replaceState(history.state, '', appPath(`/?match=${matchId}`));
+  }, [matchId]);
   useEffect(() => {
     const timer = setInterval(() => setClock(Date.now()), 1000);
     return () => clearInterval(timer);
@@ -166,7 +171,7 @@ export function Game() {
     setMatchId(null);
     setSelected(null);
     setDraft([]);
-    history.replaceState(null, '', appPath('/'));
+    history.replaceState(history.state, '', appPath('/'));
   }
   function place(cell: number) {
     if (!match || !game || game.turn !== seat || busy || resolving) return;
@@ -226,7 +231,7 @@ export function Game() {
                 value={presetId}
                 onChange={(e) => setPresetId(e.target.value)}
               >
-                {PRESETS.filter((p) => p.id !== 'ranked').map((p) => (
+                {PRESETS.filter((p) => p.id !== 'ranked' && p.id !== 'unranked').map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
                   </option>
@@ -243,6 +248,33 @@ export function Game() {
               <Link className="outline-button lobby-shortcut" href="/lobbies">
                 Play online
               </Link>
+              <button
+                className="outline-button unranked-play-button"
+                disabled={busy || !profile}
+                onClick={async () => {
+                  setBusy(true);
+                  setError('');
+                  try {
+                    const result = await api<{ matchId: string | null }>('/lobbies', {
+                      mode: 'casual',
+                      allowBots: true,
+                    });
+                    await refresh();
+                    location.href = appPath(
+                      result.matchId ? `/?match=${result.matchId}` : '/lobbies',
+                    );
+                  } catch (e) {
+                    setError((e as Error).message);
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                Play unranked
+              </button>
+              <p className="unranked-rules-note">
+                Three Open · Same · Plus · Combo · No card trade
+              </p>
               <button
                 className="outline-button ranked-play-button"
                 disabled={busy || !profile?.registered}
@@ -298,7 +330,7 @@ export function Game() {
                   <button
                     className={`title-card title-card-${i}`}
                     key={card.id}
-                    onClick={() => setDetail(card)}
+                    onClick={() => inspect(card)}
                     aria-label={`Inspect ${card.name}`}
                   >
                     <Card card={card} owner={0} />
@@ -309,7 +341,7 @@ export function Game() {
           </div>
           <MainChat />
           <div className="build-label">
-            400 CARDS · v0.7{' '}
+            400 CARDS · v0.8{' '}
             <Link href="/credits" className="credits-button">
               Credits
             </Link>
@@ -482,7 +514,7 @@ export function Game() {
                       )}
                     </div>
                     {selectedCard && (
-                      <button className="card-inspector" onClick={() => setDetail(selectedCard)}>
+                      <button className="card-inspector" onClick={() => inspect(selectedCard)}>
                         <strong>{selectedCard.name}</strong>
                         <span>Inspect artwork ↗</span>
                       </button>
@@ -524,21 +556,23 @@ export function Game() {
                     >
                       {game.board.map((item, cell) => {
                         const capture = latest?.captures.find((c) => c.cell === cell);
+                        const modifier = item ? elementalModifier(game, item.card, cell) : 0;
+                        const preview =
+                          !item && selectedCard && canPlay && game.cellElements?.[cell]
+                            ? elementalModifier(game, selectedCard, cell)
+                            : 0;
                         return (
                           <button
                             key={cell}
                             data-testid={`cell-${cell}`}
                             data-element={game.cellElements?.[cell] ?? undefined}
                             data-owner={item?.owner}
-                            className={`board-cell ${!item && selected && canPlay ? 'legal-cell' : ''}`}
+                            data-modifier={preview || undefined}
+                            className={`board-cell ${!item && selected && canPlay ? 'legal-cell' : ''} ${preview > 0 ? 'elemental-preview-buff' : preview < 0 ? 'elemental-preview-penalty' : ''}`}
                             disabled={!item && !canPlay}
-                            onClick={() => (item ? setDetail(item.card) : place(cell))}
-                            aria-label={`Row ${Math.floor(cell / 3) + 1}, column ${(cell % 3) + 1}${item ? `: ${describe(item.card)}, ${item.owner === seat ? 'your' : 'opponent'} card` : ': empty'}`}
+                            onClick={() => (item ? inspect(item.card, modifier) : place(cell))}
+                            aria-label={`Row ${Math.floor(cell / 3) + 1}, column ${(cell % 3) + 1}${item ? `: ${describe(item.card, modifier)}, ${item.owner === seat ? 'your' : 'opponent'} card` : `: empty${preview ? `, elemental ${preview > 0 ? 'bonus +1' : 'penalty −1'} for selected card` : ''}`}`}
                           >
-                            <span className="cell-coordinate">
-                              {String.fromCharCode(65 + Math.floor(cell / 3))}
-                              {(cell % 3) + 1}
-                            </span>
                             {match.rules.elemental && game.cellElements?.[cell] && (
                               <ElementIcon
                                 element={game.cellElements[cell]!}
@@ -559,9 +593,7 @@ export function Game() {
                                   latest?.captures.findIndex((c) => c.cell === cell) ?? 0,
                                 )}
                               />
-                            ) : (
-                              <span className="cell-cross">+</span>
-                            )}
+                            ) : null}
                           </button>
                         );
                       })}
@@ -592,7 +624,7 @@ export function Game() {
                           className="opponent-card"
                           disabled={!card}
                           aria-label={card ? describe(card) : 'Hidden opponent card'}
-                          onClick={() => card && setDetail(card)}
+                          onClick={() => card && inspect(card)}
                         >
                           <Card
                             card={card ?? undefined}
@@ -692,7 +724,7 @@ export function Game() {
           </>
         ) : null}
       </dialog>
-      <CardDetail card={detail} onClose={() => setDetail(null)} />
+      <CardDetail card={detail} modifier={detailModifier} onClose={() => setDetail(null)} />
       {match?.status === 'complete' && !resolving && resultOpen && (
         <ResultOverlay
           match={match}

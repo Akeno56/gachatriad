@@ -39,7 +39,7 @@ import { GameError } from './errors';
 export { GameError } from './errors';
 import { Economy } from './economy';
 import { pruneDeck } from './inventory';
-import { titleName, titlesFor } from './titles';
+import { titleName, titlesFor, awardRankTitles } from './titles';
 export interface Actor {
   id: string;
   name: string;
@@ -101,7 +101,13 @@ const cards = (ids: readonly string[]) =>
     if (!card) throw new GameError('Unknown card definition.');
     return card;
   });
-export const UNRANKED: Rules = { ...STANDARD, threeOpen: true };
+export const UNRANKED: Rules = {
+  ...STANDARD,
+  threeOpen: true,
+  same: true,
+  plus: true,
+  combo: true,
+};
 export const RANKED: Rules = { ...STANDARD, same: true, plus: true, combo: true };
 export function cleanRules(input: unknown): Rules {
   if (!input || typeof input !== 'object') return UNRANKED;
@@ -154,6 +160,7 @@ export class GameStore {
       '007_friend_messages.sql',
       '008_booster_batches.sql',
       '009_duplicate_cards_daily.sql',
+      '010_ranked_titles.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -167,6 +174,7 @@ export class GameStore {
         "UPDATE lobbies SET status='closed' WHERE status='waiting' AND trade_rule='one' AND (rules->>'allOpen'='true' OR rules->>'threeOpen'='true' OR rules->>'same' IS DISTINCT FROM 'true' OR rules->>'plus' IS DISTINCT FROM 'true' OR rules->>'combo' IS DISTINCT FROM 'true')",
       ),
     );
+    await this.db.read(awardRankTitles);
   }
   async profile(actor: Actor, requested?: string): Promise<ProfileView> {
     const result = await this.db.tx(async (sql) => {
@@ -317,7 +325,7 @@ export class GameStore {
     return this.db.tx(async (sql) => {
       let next: string[];
       try {
-        next = buildBestDeck(await this.available(sql, id)).map((c) => c.id);
+        next = shuffle(buildBestDeck(await this.available(sql, id), rng()), rng()).map((c) => c.id);
       } catch {
         throw new GameError(
           'Your available collection cannot form a legal five-card deck. Open a booster or cancel reserved trade offers.',
@@ -809,6 +817,7 @@ export class GameStore {
       await this.unlock(sql, id);
       await sql('UPDATE profiles SET peak_rating=greatest(peak_rating,rating) WHERE id=$1', [id]);
     }
+    if (m.mode === 'ranked') await awardRankTitles(sql);
     await sql("UPDATE lobbies SET status='closed' WHERE match_id=$1", [m.id]);
   }
   async resign(profileId: string, id: string) {

@@ -73,7 +73,7 @@ export default function Collection() {
           </button>
           <button
             className="outline-button"
-            title="Maximize total rarity from available owned cards, then total side values."
+            title="Maximize total rarity from available owned cards, with variety among cards of the same rarity."
             disabled={busy || !profile}
             onClick={() => save(true)}
           >

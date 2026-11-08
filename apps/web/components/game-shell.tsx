@@ -11,6 +11,7 @@ import { useSession } from './session';
 import { RankedWarning } from './ranked-warning';
 import { SocialPanel } from './social-panel';
 import { SocialProvider } from './social-state';
+import { ActiveBattleReminder } from './active-battle-reminder';
 const AudioContext = createContext<(sound: Sound) => void>(() => {});
 const MusicSceneContext = createContext<(scene: MusicScene) => void>(() => {});
 export const useGameAudio = () => useContext(AudioContext);
@@ -24,6 +25,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
     [sfxVolume, setSfxVolume] = useState(50);
   const [sfx, setSfx] = useState(true);
   const [crt, setCrt] = useState(true);
+  const [effects, setEffects] = useState(true);
   const [fullScreen, setFullScreen] = useState(false);
   const [notice, setNotice] = useState('');
   const getAudio = useCallback(() => {
@@ -49,6 +51,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       setCrt(localStorage.getItem('triad-crt') !== 'off');
+      setEffects(localStorage.getItem('triad-effects') !== 'off');
       const enabled = localStorage.getItem('triad-sfx') !== 'off';
       setSfx(enabled);
       getAudio().setSfx(enabled);
@@ -134,7 +137,9 @@ export function GameShell({ children }: { children: React.ReactNode }) {
     <SessionProvider>
       <AudioContext.Provider value={play}>
         <MusicSceneContext.Provider value={changeMusicScene}>
-          <div className={`game-shell ${crt ? 'crt-enabled' : ''}`}>
+          <div
+            className={`game-shell ${crt ? 'crt-enabled' : ''} ${effects ? 'effects-animated' : ''}`}
+          >
             <div className="screen-grain" aria-hidden="true" />
             <header className="system-bar">
               <Link href="/" className="system-brand" aria-label="Gacha Triad home">
@@ -208,6 +213,19 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                 <details className="volume-controls">
                   <summary>Volume</summary>
                   <div className="menu-window volume-panel">
+                    <label className="effects-setting">
+                      <input
+                        type="checkbox"
+                        checked={effects}
+                        onChange={(e) => {
+                          setEffects(e.target.checked);
+                          try {
+                            localStorage.setItem('triad-effects', e.target.checked ? 'on' : 'off');
+                          } catch {}
+                        }}
+                      />
+                      Animate Holo &amp; CRT
+                    </label>
                     <label>
                       Music volume <output>{musicVolume}%</output>
                       <input
@@ -262,6 +280,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                   {children}
                   <FirstDuelTutorial />
                   <RankedWarning />
+                  <ActiveBattleReminder />
                   <SocialPanel />
                 </SocialProvider>
               </ServerConnection>

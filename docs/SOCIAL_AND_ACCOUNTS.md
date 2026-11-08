@@ -1,4 +1,4 @@
-# Community, ranked and account lifecycle — v0.7
+# Community, ranked and account lifecycle — v0.8
 
 **Main chat** is always visible in the Play menu. Guests can read it; posting requires registration. **Friends & messages** opens a centered panel from any game screen, containing private friend conversations, requests and duel invitations. Accepted friends can exchange private messages, including while offline. Only the two participants can fetch a conversation, and only while their friendship is accepted. The panel shows unread counts and marks incoming messages read when that conversation is viewed. Private notifications go only to participants' sockets; private text never appears in public chat. Removing a friendship disables the conversation. Account deletion deletes both sides' private messages.
 
@@ -9,6 +9,12 @@ Players can search registered human accounts by public name/profile ID, request/
 The Ladder page has constructed ranked and Draft leaderboards. Only registered, unsuspended human players with a completed match in that mode are included. Lists show rating, games, wins and provisional status for fewer than five games. Bots remain real duel opponents but do not occupy leaderboard places.
 
 Titles unlock from existing achievements and constructed rating milestones. Rating titles require five completed ranked matches and use peak rating, so a subsequent loss does not remove the unlock. Equip a title in Profile; the server rejects unearned titles. Names, equipped titles and the chosen avatar appear during duels. Square imported character icons are used for avatars, with portrait/emblem fallbacks.
+
+**Ranked Top 10**, **Ranked Top 3** and **Ranked Champion** unlock on reaching the corresponding position in the registered, unsuspended human Ranked ladder after at least five completed Ranked games. The ordering matches the public ladder (rating, completed game count, name, ID). These are permanent career achievements: a later rating loss does not remove them. Existing qualified players are recognized on startup; new awards are checked after Ranked matches finish. Bot and guest standings never qualify.
+
+Public and private messages show each sender's current avatar and equipped title, with aligned timestamps. Unranked and Draft now use Three Open, Same, Plus and Combo, with no Trade One. Solo practice has its own presets; the Play page has separate unranked/ranked matchmaking buttons. Leaving an active battle for another page opens a centered reminder with Return and Continue browsing choices. Online turns continue normally.
+
+Holo and CRT cosmetic motion defaults **ON**, including when the OS requests reduced motion. Use **Volume → Animate Holo & CRT** to stop both effects; the choice is saved. Other interface transitions still follow OS reduced-motion preferences. Rulebook examples automatically loop at half their original speed, without controls, and pause while the browser tab is hidden. Rendered-frame tests verify moving Holo/CRT pixels without hovering under both OS settings, then verify frozen frames and preference persistence with the switch off.
 
 Ranked is separate from solo practice. Its first entry requires an explicit Trade One acknowledgement saved on the profile; the API also enforces it. Prior ranked players are treated as already informed on migration. Ranked opponents may be players or Medium/Hard population bots. Easy bots cannot open/join ranked tables; an already-running ranked bot retains at least Medium play if population difficulty is lowered. Solo practice never transfers cards or changes rating.
 

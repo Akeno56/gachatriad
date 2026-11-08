@@ -80,9 +80,17 @@ export default function Lobbies() {
       <div className="queue-options">
         {(
           [
-            { mode: 'casual', name: 'Unranked', text: 'Three Open · No trade' },
+            {
+              mode: 'casual',
+              name: 'Unranked',
+              text: 'Three Open · Same · Plus · Combo · No trade',
+            },
             { mode: 'ranked', name: 'Ranked', text: 'Same · Plus · Combo · Trade One' },
-            { mode: 'draft', name: 'Draft', text: 'Choose 5 from 8 · Separate rating · No trade' },
+            {
+              mode: 'draft',
+              name: 'Draft',
+              text: 'Choose 5 from 8 · Same · Plus · Combo · No trade',
+            },
             { mode: 'roulette', name: 'Roulette', text: 'Random rules at match start · No trade' },
           ] as const
         ).map((q) => (
@@ -312,21 +320,23 @@ export default function Lobbies() {
                 <strong>
                   {row.players}/2 <span>{row.status === 'waiting' ? 'Waiting' : 'Playing'}</span>
                 </strong>
-                <button
-                  className="outline-button"
-                  disabled={
-                    busy ||
-                    row.status !== 'waiting' ||
-                    row.inviteOnly ||
-                    !!profile?.waitingLobbyId ||
-                    row.id === profile?.waitingLobbyId ||
-                    ((row.mode === 'ranked' || row.mode === 'draft' || row.tradeRule === 'one') &&
-                      !profile?.registered)
-                  }
-                  onClick={() => enter(`/lobbies/${row.id}/join`, {})}
-                >
-                  Join table
-                </button>
+                {row.hostId !== profile?.id && (
+                  <button
+                    className="outline-button"
+                    disabled={
+                      busy ||
+                      row.status !== 'waiting' ||
+                      row.inviteOnly ||
+                      !!profile?.waitingLobbyId ||
+                      row.id === profile?.waitingLobbyId ||
+                      ((row.mode === 'ranked' || row.mode === 'draft' || row.tradeRule === 'one') &&
+                        !profile?.registered)
+                    }
+                    onClick={() => enter(`/lobbies/${row.id}/join`, {})}
+                  >
+                    Join table
+                  </button>
+                )}
               </div>
             </article>
           ))

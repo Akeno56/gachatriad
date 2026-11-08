@@ -29,7 +29,7 @@ test('shows public chat in Play, compact lobby checkboxes, and unselectable insp
     .poll(() => overlay.evaluate((el) => getComputedStyle(el).backgroundPosition))
     .not.toBe(position);
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect(overlay).toHaveCSS('animation-name', 'none');
+  await expect(overlay).toHaveCSS('animation-name', 'crt-scroll');
   await page.goto('/lobbies');
   const check = page.getByLabel('Allow bots to join my lobby / queue', { exact: true });
   const size = (await check.boundingBox())!;
@@ -40,29 +40,34 @@ test('shows public chat in Play, compact lobby checkboxes, and unselectable insp
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: info.outputPath('compact-checkbox.png'), fullPage: true });
 });
-test('animates Same, Plus and Combo and supports manual steps with reduced motion', async ({
+test('automatically loops Same, Plus and Combo at half speed without playback controls', async ({
   page,
 }, info) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/rules');
+  await page.clock.install();
   await expect(page.locator('.rule-animation')).toHaveCount(3);
-  for (const rule of ['same', 'plus', 'combo']) {
-    const demo = page.locator(`.demo-${rule}`);
-    await demo.scrollIntoViewIfNeeded();
-    await expect(
-      demo.getByRole('button', { name: `Play ${rule} example`, exact: true }),
-    ).toBeVisible();
-    for (let i = 0; i < (rule === 'combo' ? 4 : 3); i++)
-      await demo.getByRole('button', { name: 'Next step', exact: true }).click();
-    expect(await demo.locator('.demo-cell[data-owner="0"]').count()).toBe(rule === 'combo' ? 7 : 5);
-    await expect(demo.locator('.demo-caption')).toContainText(rule.toUpperCase());
-  }
+  await expect(page.locator('.rule-animation button')).toHaveCount(0);
+  await page.clock.runFor(3900);
+  for (const demo of await page.locator('.rule-animation').all())
+    await expect(demo).toHaveAttribute('data-step', '0');
+  await page.clock.runFor(200);
+  for (const demo of await page.locator('.rule-animation').all())
+    await expect(demo).toHaveAttribute('data-step', '1');
+  await page.clock.runFor(3000);
+  for (const demo of await page.locator('.rule-animation').all())
+    await expect(demo).toHaveAttribute('data-step', '2');
+  await page.clock.runFor(4000);
+  for (const demo of await page.locator('.rule-animation').all())
+    await expect(demo).toHaveAttribute('data-step', '3');
+  await page.clock.runFor(4000);
+  await expect(page.locator('.demo-same')).toHaveAttribute('data-step', '0');
+  await expect(page.locator('.demo-plus')).toHaveAttribute('data-step', '0');
+  await expect(page.locator('.demo-combo')).toHaveAttribute('data-step', '4');
+  expect(await page.locator('.demo-combo .demo-cell[data-owner="0"]').count()).toBe(7);
   await page.screenshot({ path: info.outputPath('rule-animations.png'), fullPage: true });
-  await page.emulateMedia({ reducedMotion: 'no-preference' });
-  const demo = page.locator('.demo-combo');
-  await demo.getByRole('button', { name: 'Replay combo example' }).click();
-  await expect(demo).toHaveAttribute('data-step', '0');
-  await expect(demo).not.toHaveAttribute('data-step', '0', { timeout: 5000 });
+  await page.clock.runFor(4000);
+  await expect(page.locator('.demo-combo')).toHaveAttribute('data-step', '0');
 });
 test('registration waits for an in-flight guest refresh and keeps its profile', async ({
   page,
