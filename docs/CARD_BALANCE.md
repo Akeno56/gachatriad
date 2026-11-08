@@ -1,6 +1,6 @@
 # Card balance: normalized, versioned draft model
 
-**Publication update:** the user approved the computed cards on 7 November 2026. The 400 scored rows are now the published playable catalog in `data/cards/catalog.json`, with a release receipt. Eleven unscored rows remain artwork-only. Conditional tier and element notes are retained; approval did not remove their assumptions. Future proposal regeneration remains separate from publication. The former twelve test cards have been removed.
+**v0.12 publication:** the catalogue contains 814 cards, including 413 scored Epic Seven/Star Savior additions and the separate Aha override. Forty-one records remain artwork-only. The fixed scoring model below governs normal cards; Aha's approved A/8/A/2 total of 30 is an exception. Holo adds one fixed acquisition-time point. Source mappings, tier context and booster pools are in [release details](RELEASE_V12.md). Future proposal regeneration remains separate from publication.
 
 This follows the user's updated design direction from 7 November 2026: original-game rarity and Prydwen tier placement **do influence** proposed Triad rarity and directional budget. That supersedes the earlier master-spec restriction against tier-derived stats. The original specification is retained as a historical reference; current decisions are recorded here.
 

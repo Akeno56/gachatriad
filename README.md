@@ -1,6 +1,8 @@
 # Gacha Triad
 
-A local Triple Triad fan game with FF-style menus, CRT presentation, 400 playable cross-game cards and persistent multiplayer services.
+A local Triple Triad fan game with FF-style menus, CRT presentation, 814 playable cross-game cards and persistent multiplayer services.
+
+**v0.12:** Gacha Universe I and II split eight games into two four-universe pools, with the supplied booster artwork. Starter packs are exclusive, contain no 5★ cards and have 1% Holo odds. A centered welcome leads directly to automatic, artwork-gated opening; one or up to ten packs reveal card by card before results. Holo copies gain one randomly assigned, persisted +1 side bonus and use slower foil animation. Aha's approved base spread is A/8/A/2. Play adds ranked Draft, rule dialogs remember preferences, lobby filters combine required/excluded rules, rematches detect departed opponents, chat titles sit under names, and Same/Plus/Combo resolve with staged flips and centered splashes. The supplied logo appears in the sticky header, card backs and favicon. This release includes an explicitly requested, backed-up gameplay reset preserving login credentials and admin access. See [release and reset details](docs/RELEASE_V12.md).
 
 **v0.11:** Play now uses Unranked and Ranked matchmaking, with centered rules confirmation, a persistent queue timer and a red cancel button. Browse lobbies replaces the old online shortcut. Fresh players get an interactive, scripted training duel covering ordinary capture, visibility, Same, Plus, Combo, Elemental, scoring, Trade One and mode differences. Invitations use Unranked rules, show a pending count and announce new invites for five seconds. Draft sorts all 15 revealed cards by total stats or rarity in a compact desktop grid. Chat rows align sender, title, message and time with alternating backgrounds. Custom lobbies remember Allow bots.
 
@@ -22,7 +24,7 @@ The top-right account button now reads **Login/Register** for guests and **Logou
 
 Elemental is available in practice, custom tables and Roulette: marked cells apply +1 for matching affinity and −1 for mismatches, including cards with no affinity. Same/Plus use printed ranks; ordinary and Combo captures use adjusted ranks. Card and cell icons expose the rule. Custom Combo is explicit, and Trade One requires Closed + Same + Plus + Combo; additional rules remain allowed. Fresh guests/accounts must complete the interactive training duel or acknowledge the rulebook before their first duel; this is enforced by the server.
 
-Player profiles expose records, ratings, achievement unlocks and a chosen owned profile card. Private decks and inventory are not exposed. Every base card has a separate cosmetic Holo definition with identical stats and an animated foil; 5★ cards have an ornate crown/frame. Ordinary boosters have a published 0.5% Holo chance per card; temporary Draft boosters use 5%. The album can preview the finish, and inventory/decks/matches/trades preserve exact finishes.
+Player profiles expose records, ratings, achievement unlocks and a chosen owned profile card. Private decks and inventory are not exposed. Holo copies have animated foil and one +1 bonus assigned to a side below A when acquired. The exact side persists through inventory, decks, matches and trades. Ordinary boosters have a published 0.5% Holo chance per card; Starter packs use 1% and temporary Draft boosters use 5%. Five-star cards have an ornate crown/frame.
 
 ## Host a showcase from your PC
 
@@ -54,7 +56,7 @@ Guests can train, build their starter deck, play unranked/custom/Roulette and br
 
 ## Current game
 
-- **Play:** Start match (Unranked) and Start match (Ranked) enter separate queues; populated bots or searching players can join. Each queue shows its elapsed time and a red X to leave. Saved games resume after navigation or reload. The legacy Solo API remains available for existing saved practice games.
+- **Play:** Start match (Unranked), Start match (Ranked) and Start Draft (Ranked) enter separate queues; populated bots or searching players can join. Each queue shows its elapsed time and a red X to leave. Saved games resume after navigation or reload. The legacy Solo API remains available for existing saved practice games.
 - **Unranked:** Three Open, Same, Plus, Combo; no trade.
 - **Ranked:** closed hands, Same, Plus, Combo and **Trade One**. The winner chooses one card from the losing original five-card deck. Draws trade nothing; forfeits retain the stakes. The loser’s five reserved copies remain locked until selection. After two minutes, the server selects a card automatically.
 - **Custom:** visible public tables combining Closed/Three Open/All Open, Same, Plus, Random and optional Trade One. All custom rules share the lobby browser.
@@ -69,7 +71,7 @@ Cards and board artwork are about 150% of v0.2 at full desktop width. Smaller sc
 
 ## Cards and artwork
 
-`data/cards/catalog.json` contains the **400 user-approved v1 cards**, promoted from the balance report. The previous twelve test cards are removed. Eleven characters without sufficient scoring data remain artwork-only. Alternate forms remain distinct. All **411 portraits and 400 icons** from six games, including NTE, are local; no AI-generated character or background images are used.
+`data/cards/catalog.json` contains **814 approved v2 cards**. The local asset catalogue contains **855 portraits and 845 icons** across eight games, plus 444 listing images. Forty-one unscored character records remain artwork-only. Alternate forms remain distinct. No AI-generated character or background images are used. Epic Seven and Star Savior import details, approved element mappings, score assumptions and the Aha override are documented in [release details](docs/RELEASE_V12.md).
 
 ```sh
 pnpm assets:inspect

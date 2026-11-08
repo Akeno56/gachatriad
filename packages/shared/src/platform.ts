@@ -27,7 +27,12 @@ export interface MatchView {
   draftPool: Card[];
   draftLocked: boolean;
   draftRevealed: number;
-  rematch: { requestedBy: string | null; matchId: string | null; expiresAt: number | null };
+  rematch: {
+    requestedBy: string | null;
+    matchId: string | null;
+    expiresAt: number | null;
+    unavailableReason?: string | null;
+  };
   trade: {
     rule: 'none' | 'one';
     pending: boolean;
@@ -58,6 +63,7 @@ export interface ProfileView {
   isAdmin: boolean;
   prisms: number;
   unopenedBoosters: number;
+  starterBoosters: number;
   tutorialCompleted: boolean;
   avatarCardId: string | null;
   id: string;
@@ -84,7 +90,9 @@ export const ECONOMY = {
   drawReward: 25,
   lossReward: 10,
   standardWeights: [50, 27, 17, 5, 1],
-  starterWeights: [50, 27, 17, 0, 0],
+  starterWeights: [50, 35, 10, 5, 0],
+  starterGuaranteedWeights: [0, 0, 2, 1, 0],
+  starterHoloPer10000: 100,
   guaranteedWeights: [0, 0, 80, 17, 3],
   draftGuaranteedWeights: [0, 0, 0, 85, 15],
   holoPer10000: 50,
@@ -92,7 +100,32 @@ export const ECONOMY = {
   cardPrices: [50, 125, 200, 300, 500],
   recyclePrisms: [5, 10, 20, 40, 75],
 } as const;
+export const BOOSTER_TYPES = [
+  {
+    id: 'starter',
+    name: 'Starter Booster',
+    artwork: null,
+    universes: ['genshin', 'star-rail', 'zenless', 'wuthering-waves'],
+    color: '#d8bd7e',
+  },
+  {
+    id: 'standard',
+    name: 'Gacha Universe I Booster',
+    artwork: '/assets/ui/gacha-universe-i.webp',
+    universes: ['genshin', 'star-rail', 'zenless', 'wuthering-waves'],
+    color: '#b6bfdc',
+  },
+  {
+    id: 'universe-ii',
+    name: 'Gacha Universe II Booster',
+    artwork: '/assets/ui/gacha-universe-ii.webp',
+    universes: ['epic-seven', 'star-savior', 'nte', 'endfield'],
+    color: '#c7afd6',
+  },
+] as const;
+export type BoosterType = (typeof BOOSTER_TYPES)[number]['id'];
 export interface BoosterView {
+  type: BoosterType;
   newCardIds: string[];
   id: string;
   source: 'starter' | 'purchase' | 'admin' | 'daily';

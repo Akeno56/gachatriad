@@ -1,5 +1,7 @@
 # Character artwork importer
 
+**v0.12:** a separate HideoutGacha adapter now imports the saved Epic Seven/Star Savior pages and their public image URLs. Its 444 records and 1,332 validated images bring the combined asset manifest to 855 characters and 2,144 images. Aha's Prydwen square icon was also added. See [commands and source assumptions](RELEASE_V12.md#imports-and-score-assumptions). The Prydwen importer described below remains offline; `hideout-pages.mjs` likewise parses HTML without executing scripts.
+
 The importer consumes user-saved Prydwen pages and their local `_files` folders. It does **not** make network requests, execute saved JavaScript, follow links, or use private APIs. An initial attempt to discover the full catalog directly returned HTTP 403 / an anti-bot page in ordinary HTTP and an unmodified browser. The user supplied complete browser saves instead; those restrictions were not bypassed.
 
 ## Commands

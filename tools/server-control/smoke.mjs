@@ -105,41 +105,19 @@ try {
       if (m.type() === 'error') errors.push(m.text());
     });
     await page.goto(origin + '/gachatriad/');
-    await page.getByRole('link', { name: 'Open boosters (3)', exact: true }).click();
-    await expect(page.getByRole('button', { name: /^Open starter booster/ })).toHaveCount(1);
-    await expect(page.locator('.booster-count')).toContainText('×3');
-    await expect(page.getByRole('button', { name: 'Buy booster', exact: true })).toBeDisabled();
-    for (let pack = 0; pack < 3; pack++) {
-      await page
-        .getByRole('button', { name: /^Open starter booster/ })
-        .first()
-        .click();
-      const reveal = page.locator('.pack-opening');
-      await expect(reveal).toBeVisible();
-      await reveal.getByRole('button', { name: 'Open booster', exact: true }).click();
-      await expect(reveal.locator('.opening-card-back')).toBeVisible();
-      if (pack === 0) {
-        await reveal.getByRole('button', { name: 'Reveal card 1', exact: true }).click();
-        await expect(reveal.locator('.opening-card .playing-card')).toBeVisible();
-        await reveal.getByRole('button', { name: 'Next card', exact: true }).first().click();
-        await expect(
-          reveal.getByRole('button', { name: 'Reveal card 2', exact: true }),
-        ).toBeVisible();
-      }
-      await reveal.getByRole('button', { name: 'Reveal all', exact: true }).click();
-      await expect(reveal.locator('.opening-fan .playing-card')).toHaveCount(5);
-      if (pack === 0) {
-        await mkdir('docs/screenshots', { recursive: true });
-        await page.screenshot({
-          path: `docs/screenshots/v11-booster-${i ? 'mobile' : 'desktop'}.png`,
-          fullPage: true,
-        });
-      }
-      await reveal.getByRole('button', { name: 'Continue', exact: true }).click();
-      await expect(page.getByRole('button', { name: /^Open starter booster/ })).toHaveCount(
-        pack === 2 ? 0 : 1,
-      );
-    }
+    await page.getByRole('link', { name: 'Open my 3 Starter boosters', exact: true }).click();
+    const reveal = page.locator('.automatic-opening');
+    await expect(reveal).toBeVisible();
+    await expect(reveal.locator('.auto-revealed-card')).toBeVisible();
+    await expect(reveal.getByRole('heading', { name: '15 cards added', exact: true })).toBeVisible({
+      timeout: 45000,
+    });
+    await mkdir('docs/screenshots', { recursive: true });
+    await page.screenshot({
+      path: `docs/screenshots/v12-booster-${i ? 'mobile' : 'desktop'}.png`,
+      fullPage: true,
+    });
+    await reveal.getByRole('button', { name: 'Continue', exact: true }).click();
     clients[i].profile = await api(clients[i], '/profile');
     assert.equal(
       Object.values(clients[i].profile.inventory).reduce((n, c) => n + c.quantity, 0),
@@ -147,7 +125,7 @@ try {
     );
     assert.equal(clients[i].profile.deck.length, 5);
     await page.reload();
-    await expect(page.getByRole('button', { name: /^Open starter booster/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Open Starter Booster/ })).toHaveCount(0);
     await expect(page.locator('.local-bots')).toHaveCount(0);
     const forbidden = await fetch(apiURL + '/api/local-bots', {
       headers: { origin, authorization: `Bearer ${clients[i].token}` },
@@ -317,17 +295,17 @@ try {
   await expect
     .poll(() => foil.evaluate((el) => getComputedStyle(el).backgroundPosition))
     .not.toBe(foilBefore);
-  await pages[0].screenshot({ path: 'docs/screenshots/v11-holo-detail.png', fullPage: true });
+  await pages[0].screenshot({ path: 'docs/screenshots/v12-holo-detail.png', fullPage: true });
   await pages[0].keyboard.press('Escape');
-  await admin.screenshot({ path: 'docs/screenshots/v11-moderation.png', fullPage: true });
+  await admin.screenshot({ path: 'docs/screenshots/v12-moderation.png', fullPage: true });
   assert.equal(result.status, 'complete');
   // Cookie-free refresh proves the GitHub Pages path does not depend on third-party cookies.
   await contexts[0].clearCookies();
   await pages[0].goto(origin + `/gachatriad/?match=${joined.matchId}`);
   await pages[0].locator('.result-overlay').waitFor();
   await mkdir('docs/screenshots', { recursive: true });
-  await pages[0].screenshot({ path: 'docs/screenshots/v11-result-overlay.png', fullPage: true });
-  await pages[1].screenshot({ path: 'docs/screenshots/v11-result-mobile.png', fullPage: true });
+  await pages[0].screenshot({ path: 'docs/screenshots/v12-result-overlay.png', fullPage: true });
+  await pages[1].screenshot({ path: 'docs/screenshots/v12-result-mobile.png', fullPage: true });
   const before = await api(clients[0], '/profile');
   const packsBefore = await api(clients[0], '/boosters');
   const active = await api(clients[0], '/solo', { difficulty: 'easy', rules: { threeOpen: true } });
@@ -361,7 +339,7 @@ try {
     'Player connections did not recover after restart.',
   );
   await api(clients[0], `/matches/${active.matchId}/resign`, {});
-  await admin.screenshot({ path: 'docs/screenshots/v11-control-panel.png', fullPage: true });
+  await admin.screenshot({ path: 'docs/screenshots/v12-control-panel.png', fullPage: true });
   await contexts[0].close();
   await contexts[1].close();
   await admin.getByRole('button', { name: 'Shut down server', exact: true }).click();

@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { assetPath } from '../lib/connection';
 const modes = ['All Open', 'Three Open', 'Closed'] as const;
 export function VisibilityExample() {
   const [step, setStep] = useState(0);
@@ -35,7 +36,7 @@ export function VisibilityExample() {
                       <b>{7 - n}</b>
                     </>
                   ) : (
-                    <strong>GT</strong>
+                    <img src={assetPath('/assets/ui/triad-logo.webp')} alt="Card back" />
                   )}
                 </div>
               );

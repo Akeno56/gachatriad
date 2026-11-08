@@ -1,0 +1,61 @@
+{
+  "sourceSnapshot": "e6e72d34654b85d31846b9ccfe8cb963b4007c4db6c830cbf8e3a81545e1e2b2",
+  "modelDigest": "fa64f7819e0867cb6b2391e904a4e0c96f5da5d03e6c52c56171eb126ab6a81c",
+  "snapshots": [
+    {
+      "file": "Character Tier List _ Star Savior _ Hideout Guides.html",
+      "sha256": "dedd112668c6a0534f2734fa02cb6f066b06fc16094d70aa34c8d6b77a553c15"
+    },
+    {
+      "file": "Characters _ Star Savior _ Hideout Guides.html",
+      "sha256": "dd9fbae171d60328e5394a77cb4453fe3f0174a6ac6c105e5e032c3604d09b19"
+    },
+    {
+      "file": "Epic Seven Character Information _ Hideout Guides.html",
+      "sha256": "08066708aef099514ff6e692ff11b6b213386f7cc1d10e6893373c7c8f9ea2c9"
+    },
+    {
+      "file": "Epic Seven Tier List _ Hideout Guides.html",
+      "sha256": "5a3ad7e9e1cdd1b2f44a2a00ac954115ceb2ac386746c88d7b6d651df6e7fd21"
+    }
+  ],
+  "characters": 444,
+  "scored": 413,
+  "unscored": [
+    "epic-seven:adin",
+    "epic-seven:ains",
+    "epic-seven:arowell",
+    "epic-seven:azalea",
+    "epic-seven:carmainerose",
+    "epic-seven:carrot",
+    "epic-seven:cartuja",
+    "epic-seven:coli",
+    "epic-seven:hazel",
+    "epic-seven:helga",
+    "epic-seven:holy-flame-adin",
+    "epic-seven:januta",
+    "epic-seven:juni",
+    "epic-seven:leah",
+    "epic-seven:lorina",
+    "epic-seven:mistychain",
+    "epic-seven:montmorancy",
+    "epic-seven:mucacha",
+    "epic-seven:muse-rima",
+    "epic-seven:pyllis",
+    "epic-seven:ras",
+    "epic-seven:roozid",
+    "epic-seven:serene-purity-adin",
+    "epic-seven:serila",
+    "epic-seven:support-model-brinus",
+    "epic-seven:talaz",
+    "epic-seven:zerato",
+    "star-savior:amora",
+    "star-savior:gwen",
+    "star-savior:professor-m",
+    "star-savior:roberta"
+  ],
+  "images": 1332,
+  "failures": [],
+  "missingScoredArt": [],
+  "promoted": true
+}

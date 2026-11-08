@@ -17,9 +17,11 @@ import './duel-refinements.css';
 import './community-layout.css';
 import './draft-shop.css';
 import './queues-training.css';
+import './release-twelve.css';
 
 export const metadata: Metadata = {
   title: 'Gacha Triad · Cross-world card battle',
+  icons: { icon: `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/assets/ui/triad-logo.webp` },
   description: 'Collect cards and play Triple Triad against friends, players and bots.',
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

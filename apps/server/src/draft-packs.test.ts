@@ -1,5 +1,6 @@
 import { it, expect } from 'vitest';
 import { draftPool, rollRarity, rollFinish } from './draft-packs';
+import { CARDS, HOLO_VARIANTS } from '@gacha-triad/shared';
 import { ECONOMY } from '@gacha-triad/shared/platform';
 import { buildBestDeck, validateDeck } from '@gacha-triad/engine';
 it('uses exact revised rarity and Holo boundaries for ordinary and Draft slots', () => {
@@ -12,10 +13,16 @@ it('uses exact revised rarity and Holo boundaries for ordinary and Draft slots',
   expect(
     Array.from({ length: 100 }, (_, n) => rollRarity(ECONOMY.draftGuaranteedWeights, () => n)),
   ).toEqual([...Array(85).fill(4), ...Array(15).fill(5)]);
-  expect(rollFinish('test', ECONOMY.holoPer10000, () => 49)).toBe('test::holo');
-  expect(rollFinish('test', ECONOMY.holoPer10000, () => 50)).toBe('test');
-  expect(rollFinish('test', ECONOMY.draftHoloPer10000, () => 499)).toBe('test::holo');
-  expect(rollFinish('test', ECONOMY.draftHoloPer10000, () => 500)).toBe('test');
+  const base = CARDS[0],
+    variants = HOLO_VARIANTS.filter((c) => c.baseCardId === base.id);
+  expect(rollFinish(base.id, ECONOMY.holoPer10000, (n) => (n === 10000 ? 49 : 0))).toBe(
+    variants[0].id,
+  );
+  expect(rollFinish(base.id, ECONOMY.holoPer10000, () => 50)).toBe(base.id);
+  expect(rollFinish(base.id, ECONOMY.draftHoloPer10000, (n) => (n === 10000 ? 499 : 0))).toBe(
+    variants[0].id,
+  );
+  expect(rollFinish(base.id, ECONOMY.draftHoloPer10000, () => 500)).toBe(base.id);
 });
 it('rolls three ordered five-card Draft boosters with both guarantees and a legal deck', () => {
   for (let n = 0; n < 100; n++) {

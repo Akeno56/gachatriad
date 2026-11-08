@@ -185,6 +185,8 @@ export async function createPlatform(
     }
   });
   const notify = () => io.emit('platform:changed');
+  store.isOnline = (profileId) =>
+    Array.from(io.sockets.sockets.values()).some((socket) => socket.data.profileId === profileId);
   io.on('connection', (socket) => {
     notify();
     socket.on('disconnect', notify);
@@ -452,6 +454,7 @@ export async function createPlatform(
       (await profile(req)).id,
       body(req).requestId,
       body(req).quantity,
+      body(req).type,
     );
     notify();
     return pack;
@@ -564,6 +567,11 @@ export async function createPlatform(
     await store.rematch(p.id, id(req), body(req).cancel === true);
     notify();
     return store.view(p.id, id(req));
+  });
+  app.post('/api/matches/:id/leave', async (req) => {
+    await store.leaveResult((await profile(req)).id, id(req));
+    notify();
+    return { ok: true };
   });
   app.post('/api/matches/:id/resign', async (req) => {
     const p = await profile(req);

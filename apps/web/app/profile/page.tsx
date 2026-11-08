@@ -1,10 +1,11 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ALL_CARDS } from '@gacha-triad/shared';
+import { ALL_CARDS, CARDS, SIDE_NAMES } from '@gacha-triad/shared';
 import type { PlayerProfileView } from '@gacha-triad/shared/platform';
 import { useSession } from '../../components/session';
 import { Card } from '../../components/card';
+import { assetPath } from '../../lib/connection';
 import { api } from '../../lib/platform';
 import { AdminGrant } from '../../components/admin-grant';
 import { useSocial, openFriendChat } from '../../components/social-state';
@@ -51,7 +52,11 @@ export default function PlayerProfile() {
               {player.avatar ? (
                 <Card card={player.avatar} showElement />
               ) : (
-                <span className="profile-emblem">GT</span>
+                <img
+                  className="profile-brand-emblem"
+                  src={assetPath('/assets/ui/triad-logo.webp')}
+                  alt="Gacha Triad"
+                />
               )}
             </div>
             <div>
@@ -66,8 +71,8 @@ export default function PlayerProfile() {
               {player.title && <p className="profile-title">{player.title}</p>}
               <p>Joined {new Date(player.joinedAt).toLocaleDateString()}</p>
               <p>
-                {player.collection.unique}/400 cards collected · {player.collection.copies} copies ·{' '}
-                {player.collection.holo} Holo
+                {player.collection.unique}/{CARDS.length} cards collected ·{' '}
+                {player.collection.copies} copies · {player.collection.holo} Holo
               </p>
               {self && !profile?.registered && (
                 <button className="outline-button" onClick={openAccount}>
@@ -206,7 +211,10 @@ export default function PlayerProfile() {
                     (c) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
-                        {c.finish === 'holo' ? ' · Holo' : ''} · {c.rarity}★
+                        {c.finish === 'holo'
+                          ? ` · Holo +1 ${SIDE_NAMES[c.holoBonusSide ?? 0]}`
+                          : ''}{' '}
+                        · {c.rarity}★
                       </option>
                     ),
                   )}

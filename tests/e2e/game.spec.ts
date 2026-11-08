@@ -212,7 +212,7 @@ test('shows real lobbies, rule filters and a visible custom waiting room', async
   await page.getByLabel('Random deck', { exact: true }).check();
   await page.getByRole('button', { name: 'Open lobby · 1/2' }).click();
   await expect(page.locator('.waiting-lobby')).toContainText(name);
-  await page.getByLabel('Rule', { exact: true }).selectOption('random');
+  await page.getByRole('button', { name: 'Random: Any', exact: true }).click();
   await expect(page.locator('.lobby-row').filter({ hasText: name })).toContainText('1/2');
   await expect(page.locator('.lobby-row').filter({ hasText: name })).toContainText('All Open');
   await page.getByRole('button', { name: 'Close lobby' }).click();

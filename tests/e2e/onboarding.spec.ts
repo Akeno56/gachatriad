@@ -46,6 +46,7 @@ test('restores music-on status after reload and resumes on the next gesture', as
     'aria-pressed',
     'true',
   );
+  await page.getByRole('button', { name: 'Game settings', exact: true }).click();
   await page.getByLabel('Find a card').click();
   await expect
     .poll(() =>
@@ -108,15 +109,13 @@ test('requires Closed, Same, Plus and Combo for custom Trade One and keeps added
   await page.goto('/cards');
   await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
   await page.request.post('/api/tutorial/complete', { data: {} });
-  const signup = await page.request.post('/api/auth/sign-up/email', {
-    headers: { origin: new URL(page.url()).origin },
-    data: {
-      name: 'Rule tester',
-      email: `rules-${Date.now()}@test.invalid`,
-      password: 'rules-test-password-123',
-    },
-  });
-  expect(signup.status()).toBe(200);
+  await page.locator('.account-control').click();
+  await page.getByLabel('Player name').fill('Rule tester');
+  await page.getByLabel('Email', { exact: true }).fill(`rules-${crypto.randomUUID()}@test.invalid`);
+  await page.getByLabel('Password', { exact: true }).fill('rules-test-password-123');
+  await page.getByRole('button', { name: 'Create account', exact: true }).click();
+  await expect(page.locator('.account-control')).toHaveText('Logout');
+  await openStarterPacks(page);
   await page.goto('/lobbies');
   await page.getByRole('button', { name: 'Create custom lobby' }).click();
   const trade = page.getByLabel('Trade One', { exact: true });

@@ -1,0 +1,12 @@
+{
+  "star-rail:aha": {
+    "id": "star-rail:aha",
+    "name": "Aha",
+    "rarity": 5,
+    "stats": [10, 8, 10, 2],
+    "statBudget": 30,
+    "designTier": "T0",
+    "reason": "User requested the strongest base-card total +2, then explicitly chose A / 8 / A / 2 to retain a weak side. Not a sourced tier-list placement.",
+    "approvedOn": "2026-11-08"
+  }
+}

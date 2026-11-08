@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { MatchView } from '@gacha-triad/shared/platform';
 import { Card } from './card';
 import { preloadArtwork } from '../lib/artwork';
+import { assetPath } from '../lib/connection';
 import { api } from '../lib/platform';
 import { useGameAudio } from './game-shell';
 export function DraftOpening({
@@ -88,7 +89,7 @@ export function DraftOpening({
         {phase === 'pack' ? (
           <div className="sealed-pack" aria-label={`Opening temporary booster ${pack + 1}`}>
             <span className="pack-medallion">
-              <b>GT</b>
+              <img src={assetPath('/assets/ui/triad-logo.webp')} alt="" />
             </span>
             <strong>DRAFT</strong>
           </div>

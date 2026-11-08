@@ -14,9 +14,19 @@ export default function Credits() {
           pages. Thank you to Prydwen and its contributors.
         </p>
         <p>
+          Epic Seven and Star Savior artwork, original metadata and tier-list research were imported
+          from user-supplied{' '}
+          <a href="https://www.hideoutgacha.com/" target="_blank" rel="noreferrer">
+            Hideout Guides
+          </a>{' '}
+          pages. Thank you to Hideout Guides and its contributors. Epic Seven’s default PvP tiers
+          reflect RTA pick frequency; this is retained as context in our scoring report.
+        </p>
+        <p>
           Genshin Impact, Honkai: Star Rail and Zenless Zone Zero © HoYoverse. Wuthering Waves ©
           Kuro Games. Arknights: Endfield © HYPERGRYPH / GRYPHLINE. Neverness to Everness © Hotta
-          Studio / Perfect World Games. Character artwork belongs to its respective owners.
+          Studio / Perfect World Games. Epic Seven and Star Savior artwork belongs to their
+          respective owners. All character artwork belongs to its respective owners.
         </p>
         <p>
           Gacha Triad is an unofficial fan project. Card values and cross-game element conversions

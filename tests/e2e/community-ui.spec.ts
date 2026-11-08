@@ -138,21 +138,18 @@ test('registration waits for an in-flight guest refresh and keeps its profile', 
   expect(signedOut.registered).toBe(false);
   expect(signedOut.id).not.toBe(after.id);
 });
-test('repeated pack reveal clicks cannot select card text or artwork', async ({ page }) => {
+test('automatic pack reveals prevent selecting card text and artwork', async ({ page }) => {
   await page.goto('/boosters');
   await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
-  await page
-    .getByRole('button', { name: /^Open starter booster/ })
-    .first()
-    .click();
-  const pack = page.locator('.pack-opening');
-  await pack.getByRole('button', { name: 'Open booster', exact: true }).click();
-  await pack.getByRole('button', { name: 'Reveal card 1', exact: true }).click();
-  await expect(pack.locator('.opening-card .playing-card')).toBeVisible();
-  await pack.locator('.opening-card-caption h3').dblclick();
+  await page.getByLabel('Boosters to open').selectOption('1');
+  await page.getByRole('button', { name: /Open Starter Booster/ }).click();
+  const pack = page.locator('.automatic-opening');
+  await expect(pack.locator('.auto-revealed-card')).toBeVisible();
+  await pack.locator('.auto-opening-stage h3').dblclick();
   expect(await page.evaluate(() => getSelection()?.toString())).toBe('');
-  await pack.getByRole('button', { name: 'Reveal all', exact: true }).click();
-  await expect(pack.locator('.opening-fan .playing-card')).toHaveCount(5);
-  await pack.locator('.opening-fan .card-values span').first().dblclick();
+  await expect(pack.getByRole('heading', { name: '5 cards added' })).toBeVisible({
+    timeout: 20000,
+  });
+  await pack.locator('.auto-results-grid .card-values span').first().dblclick();
   expect(await page.evaluate(() => getSelection()?.toString())).toBe('');
 });

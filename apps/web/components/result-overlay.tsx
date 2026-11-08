@@ -94,9 +94,11 @@ export function ResultOverlay({
             disabled={
               busy ||
               match.trade.pending ||
+              !!match.rematch?.unavailableReason ||
               match.rematch?.requestedBy === match.players[match.seat].id
             }
             onClick={onRematch}
+            title={match.rematch?.unavailableReason ?? undefined}
           >
             {match.rematch?.requestedBy === match.players[match.seat].id
               ? 'Rematch requested'
@@ -112,7 +114,12 @@ export function ResultOverlay({
           Review board
         </button>
       </div>
-      {match.rematch?.requestedBy && (
+      {match.rematch?.unavailableReason && (
+        <p className="rematch-status" role="status">
+          {match.rematch.unavailableReason}
+        </p>
+      )}
+      {match.rematch?.requestedBy && !match.rematch?.unavailableReason && (
         <p className="rematch-status" role="status">
           {match.rematch.requestedBy === match.players[match.seat].id ? (
             <>

@@ -27,6 +27,7 @@ export interface Card {
   readonly balanceVersion?: string;
   readonly baseCardId?: string;
   readonly finish?: 'holo';
+  readonly holoBonusSide?: 0 | 1 | 2 | 3;
 }
 export interface Rules {
   readonly allOpen: boolean;

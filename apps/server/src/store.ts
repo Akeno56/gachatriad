@@ -83,6 +83,7 @@ interface MatchRow {
   rematch_requested_by: string | null;
   rematch_requested_at: Date | null;
   rematch_match_id: string | null;
+  departed: string[];
 }
 interface LobbyRow {
   allow_bots: boolean;
@@ -147,6 +148,7 @@ function roulette(): Rules {
   };
 }
 export class GameStore {
+  isOnline: ((profileId: string) => boolean) | null = null;
   readonly economy: Economy;
   constructor(
     readonly db: Database,
@@ -168,6 +170,7 @@ export class GameStore {
       '010_ranked_titles.sql',
       '011_chat_channels.sql',
       '012_draft_shop_rematches.sql',
+      '013_booster_types_departures.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -286,6 +289,12 @@ export class GameStore {
             }
           : null,
         waitingLobbyId: waiting[0]?.id ?? null,
+        starterBoosters: (
+          await sql<{ n: number }>(
+            "SELECT count(*)::int n FROM booster_packs WHERE profile_id=$1 AND pack_type='starter' AND opened_at IS NULL",
+            [p.id],
+          )
+        )[0].n,
         waitingLobby: waiting[0]
           ? {
               id: waiting[0].id,
@@ -642,6 +651,10 @@ export class GameStore {
     return this.db.read(async (sql) => {
       const m = await this.load(sql, id, profileId);
       const seat: Player = m.player0 === profileId ? 0 : 1;
+      const rematchUnavailable =
+        m.status === 'complete' && m.player1
+          ? await this.rematchUnavailable(sql, m, profileId)
+          : null;
       const users = await sql<{
         id: string;
         name: string;
@@ -713,6 +726,7 @@ export class GameStore {
         draftLocked: m.decks[seat].length === 5,
         draftRevealed: m.draft_revealed?.[seat] ?? 0,
         rematch: {
+          unavailableReason: rematchUnavailable,
           requestedBy:
             m.rematch_requested_at &&
             Date.now() - new Date(m.rematch_requested_at).getTime() < 300000
@@ -794,6 +808,8 @@ export class GameStore {
         );
         return;
       }
+      const unavailable = await this.rematchUnavailable(sql, m, profileId);
+      if (unavailable) throw new GameError(unavailable, 409);
       await this.busy(sql, profileId);
       const opponent = m.player0 === profileId ? m.player1 : m.player0;
       if (!opponent) throw new GameError('Use Play again for solo practice.');
@@ -870,6 +886,48 @@ export class GameStore {
         ],
       );
       await sql('UPDATE matches SET rematch_match_id=$1,version=version+1 WHERE id=$2', [next, id]);
+    });
+  }
+  private async rematchUnavailable(
+    sql: Sql,
+    match: MatchRow,
+    viewer: string,
+  ): Promise<string | null> {
+    if (match.departed?.length)
+      return 'A player has left this match. Start a new game to play again.';
+    const opponent = match.player0 === viewer ? match.player1 : match.player0;
+    if (!opponent) return null;
+    const [other] = await sql<{ is_bot: boolean }>('SELECT is_bot FROM profiles WHERE id=$1', [
+      opponent,
+    ]);
+    if (!other) return 'This opponent is no longer available.';
+    if (!other.is_bot && this.isOnline && !this.isOnline(opponent))
+      return 'Your opponent is offline.';
+    if (
+      (
+        await sql(
+          "SELECT 1 FROM matches WHERE id<>$2 AND (player0=$1 OR player1=$1) AND status IN('playing','drafting') UNION ALL SELECT 1 FROM lobbies WHERE host_id=$1 AND status='waiting' AND NOT EXISTS(SELECT 1 FROM profiles WHERE id=$1 AND is_bot) LIMIT 1",
+          [opponent, match.id],
+        )
+      ).length
+    )
+      return 'Your opponent is already in another game or lobby.';
+    return null;
+  }
+  async leaveResult(profileId: string, id: string) {
+    await this.db.tx(async (sql) => {
+      const match = await this.load(sql, id, profileId);
+      if (
+        match.status !== 'complete' ||
+        !match.settlement_done ||
+        match.rematch_match_id ||
+        match.departed?.includes(profileId)
+      )
+        return;
+      await sql(
+        'UPDATE matches SET departed=departed || $1::jsonb,rematch_requested_by=NULL,rematch_requested_at=NULL,version=version+1 WHERE id=$2',
+        [JSON.stringify([profileId]), id],
+      );
     });
   }
   async move(profileId: string, id: string, cardId: string, cell: number, version: number) {

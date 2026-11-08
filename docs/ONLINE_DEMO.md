@@ -102,7 +102,7 @@ The GitHub Pages client and your PC server update separately. From Git Bash or P
 
 ```sh
 git add .
-git commit -m "Add matchmaking queues, invite alerts and guided tutorial"
+git commit -m "Release Gacha Universe II and rework boosters and onboarding"
 git push
 ```
 
@@ -110,7 +110,7 @@ The existing **Publish game to GitHub Pages** workflow runs automatically on a p
 
 For the local host tools, use **Exit control tool**, then double-click **Start Server Control.cmd** again and click **Start server**. This reloads the updated controller and backend. A server-only restart reloads backend code, but does not reload the running controller's own code. **Exit control tool** closes the public tunnel, so click **Start public link** again and share the new invitation. Keep `.data` to preserve accounts, collections, currency and admin assignments; the server applies migrations on startup.
 
-New profiles receive three free boosters. Existing profiles keep their previous cards and can earn Prisms to buy more. The local preview uses `apps/web/out`; this coding session rebuilt it. After future UI edits, developers can run `pnpm build:pages` to refresh that optional preview. GitHub Pages builds independently.
+New profiles receive three exclusive Starter boosters. The authorized v0.12 reset also clears existing gameplay progress while preserving logins and admin assignments, then grants three Starter packs. See [reset details](RELEASE_V12.md#authorized-one-time-gameplay-reset). This reset is a separate offline maintenance step, never a repeat-on-start migration. The local preview uses `apps/web/out`; after UI edits run `pnpm build:pages` to refresh it. GitHub Pages builds independently. Raw `hideoutGachaData` downloads stay ignored alongside Prydwen and Kyara saves.
 
 ## Session behavior
 

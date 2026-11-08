@@ -1,5 +1,5 @@
 import { randomInt } from 'node:crypto';
-import { CARDS, ALL_CARDS } from '@gacha-triad/shared';
+import { CARDS, ALL_CARDS, HOLO_VARIANTS } from '@gacha-triad/shared';
 import { ECONOMY } from '@gacha-triad/shared/platform';
 import { buildBestDeck, type Card } from '@gacha-triad/engine';
 export function rollRarity(weights: readonly number[], draw = randomInt): number {
@@ -12,7 +12,9 @@ export function rollRarity(weights: readonly number[], draw = randomInt): number
 }
 const definitions = new Map(ALL_CARDS.map((card) => [card.id, card]));
 export function rollFinish(baseId: string, per10000: number, draw = randomInt) {
-  return draw(10000) < per10000 ? `${baseId}::holo` : baseId;
+  if (draw(10000) >= per10000) return baseId;
+  const variants = HOLO_VARIANTS.filter((card) => card.baseCardId === baseId);
+  return variants.length ? variants[draw(variants.length)].id : baseId;
 }
 export function draftPool(): Card[] {
   // Three packs, five slots each; keep characters distinct so every offer can be selected.

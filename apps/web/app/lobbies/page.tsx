@@ -8,7 +8,7 @@ import { api } from '../../lib/platform';
 import { useSession } from '../../components/session';
 import { ruleNames } from '../../components/game';
 import { LocalBots } from '../../components/local-bots';
-import { confirmRanked, confirmUnranked } from '../../components/ranked-warning';
+import { confirmRanked, confirmUnranked, confirmDraft } from '../../components/ranked-warning';
 import { useAllowBots } from '../../lib/lobby-preferences';
 import { MainChat } from '../../components/main-chat';
 export default function Lobbies() {
@@ -19,7 +19,7 @@ export default function Lobbies() {
     [busy, setBusy] = useState(false),
     [mode, setMode] = useState('all'),
     [status, setStatus] = useState('all'),
-    [rule, setRule] = useState('all'),
+    [ruleFilters, setRuleFilters] = useState<Record<string, number>>({}),
     [create, setCreate] = useState(false),
     [name, setName] = useState(''),
     [visibility, setVisibility] = useState('threeOpen'),
@@ -50,6 +50,7 @@ export default function Lobbies() {
     const requestedMode =
       (body as { mode?: string }).mode ?? rows.find((r) => path === `/lobbies/${r.id}/join`)?.mode;
     if (requestedMode === 'ranked' && !(await confirmRanked(profile))) return;
+    if (requestedMode === 'draft' && !(await confirmDraft(profile))) return;
     if (requestedMode === 'casual' && !(await confirmUnranked(profile))) return;
     setBusy(true);
     setError('');
@@ -68,9 +69,15 @@ export default function Lobbies() {
     (r) =>
       (mode === 'all' || r.mode === mode) &&
       (status === 'all' || r.status === status) &&
-      (rule === 'all' ||
-        (rule === 'one' && r.tradeRule === 'one') ||
-        Boolean(r.rules[rule as keyof typeof r.rules])),
+      Object.entries(ruleFilters).every(([rule, state]) => {
+        const enabled =
+          rule === 'one'
+            ? r.tradeRule === 'one'
+            : rule === 'closed'
+              ? !r.rules.allOpen && !r.rules.threeOpen
+              : Boolean(r.rules[rule as keyof typeof r.rules]);
+        return state === 0 || (state === 1 ? enabled : !enabled);
+      }),
   );
   const waiting = rows.find((r) => r.id === profile?.waitingLobbyId);
   return (
@@ -175,11 +182,11 @@ export default function Lobbies() {
               <option value="playing">2/2 · Playing</option>
             </select>
           </label>
-          <label>
-            Rule
-            <select aria-label="Rule" value={rule} onChange={(e) => setRule(e.target.value)}>
-              <option value="all">All rules</option>
+          <fieldset className="lobby-rule-filters">
+            <legend>Rules · click to require, again to exclude</legend>
+            <div>
               {Object.entries({
+                closed: 'Closed',
                 allOpen: 'All Open',
                 threeOpen: 'Three Open',
                 same: 'Same',
@@ -188,13 +195,34 @@ export default function Lobbies() {
                 random: 'Random',
                 elemental: 'Elemental',
                 one: 'Trade One',
-              }).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
+              }).map(([key, label]) => {
+                const state = ruleFilters[key] ?? 0;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    data-state={state}
+                    aria-label={
+                      label + ': ' + (state === 1 ? 'Required' : state === -1 ? 'Excluded' : 'Any')
+                    }
+                    aria-pressed={state === -1 ? 'mixed' : state === 1}
+                    onClick={() =>
+                      setRuleFilters((current) => ({
+                        ...current,
+                        [key]: state === 0 ? 1 : state === 1 ? -1 : 0,
+                      }))
+                    }
+                  >
+                    {state === 1 ? '+ ' : state === -1 ? '− ' : ''}
+                    {label}
+                  </button>
+                );
+              })}
+              <button type="button" className="text-button" onClick={() => setRuleFilters({})}>
+                Clear rules
+              </button>
+            </div>
+          </fieldset>
         </div>
         <button
           className="primary-button"

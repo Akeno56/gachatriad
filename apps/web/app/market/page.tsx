@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ALL_CARDS as CARDS, UNIVERSES, universeName } from '@gacha-triad/shared';
+import { ALL_CARDS as CARDS, UNIVERSES, universeName, SIDE_NAMES } from '@gacha-triad/shared';
 import type { TradeOfferView } from '@gacha-triad/shared/platform';
 import { useSession } from '../../components/session';
 import { LocalBots } from '../../components/local-bots';
@@ -136,7 +136,9 @@ export default function Market() {
                 {owned.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
-                    {c.finish === 'holo' ? ' · Holo' : ''} · {c.rarity}★
+                    {c.finish === 'holo'
+                      ? ` · Holo +1 ${SIDE_NAMES[c.holoBonusSide ?? 0]}`
+                      : ''} · {c.rarity}★
                   </option>
                 ))}
               </select>
@@ -153,7 +155,9 @@ export default function Market() {
                 {CARDS.filter((c) => c.id !== offered).map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
-                    {c.finish === 'holo' ? ' · Holo' : ''} · {c.rarity}★
+                    {c.finish === 'holo'
+                      ? ` · Holo +1 ${SIDE_NAMES[c.holoBonusSide ?? 0]}`
+                      : ''} · {c.rarity}★
                   </option>
                 ))}
               </select>

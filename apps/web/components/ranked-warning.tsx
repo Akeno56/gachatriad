@@ -3,10 +3,18 @@ import { useEffect, useRef, useState } from 'react';
 import type { ProfileView } from '@gacha-triad/shared/platform';
 import { useSession } from './session';
 import { api } from '../lib/platform';
-type QueueMode = 'casual' | 'ranked';
+type QueueMode = 'casual' | 'ranked' | 'draft';
+const preferenceKey = (id: string, mode: QueueMode) => `triad-hide-rules:${id}:${mode}:v12`;
 type Request = { mode: QueueMode; resolve: (allow: boolean) => void };
 function confirm(mode: QueueMode, profile: ProfileView | null): Promise<boolean> {
-  if (!profile || (mode === 'ranked' && !profile.registered)) return Promise.resolve(false);
+  if (!profile || (mode !== 'casual' && !profile.registered)) return Promise.resolve(false);
+  try {
+    if (
+      localStorage.getItem(preferenceKey(profile.id, mode)) === 'on' &&
+      (mode !== 'ranked' || profile.rankedAcknowledged)
+    )
+      return Promise.resolve(true);
+  } catch {}
   return new Promise((resolve) =>
     window.dispatchEvent(
       new CustomEvent<Request>('triad:queue-rules', { detail: { mode, resolve } }),
@@ -14,6 +22,7 @@ function confirm(mode: QueueMode, profile: ProfileView | null): Promise<boolean>
   );
 }
 export const confirmRanked = (profile: ProfileView | null) => confirm('ranked', profile);
+export const confirmDraft = (profile: ProfileView | null) => confirm('draft', profile);
 export const confirmUnranked = (profile: ProfileView | null) => confirm('casual', profile);
 export function RankedWarning() {
   const { profile, refresh } = useSession(),
@@ -21,13 +30,15 @@ export function RankedWarning() {
     pending = useRef<Request | null>(null);
   const [mode, setMode] = useState<QueueMode | null>(null),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState('');
+    [error, setError] = useState(''),
+    [hideAgain, setHideAgain] = useState(false);
   useEffect(() => {
     const request = (event: Event) => {
       pending.current?.resolve(false);
       pending.current = (event as CustomEvent<Request>).detail;
       setMode(pending.current.mode);
       setError('');
+      setHideAgain(false);
     };
     window.addEventListener('triad:queue-rules', request);
     return () => {
@@ -45,7 +56,8 @@ export function RankedWarning() {
     setMode(null);
   }
   if (!mode) return null;
-  const ranked = mode === 'ranked';
+  const ranked = mode === 'ranked',
+    draft = mode === 'draft';
   return (
     <dialog
       ref={ref}
@@ -53,7 +65,9 @@ export function RankedWarning() {
       aria-labelledby="queue-rules-title"
       onCancel={() => close(false)}
     >
-      <h2 id="queue-rules-title">{ranked ? 'Ranked rules · Trade One' : 'Unranked rules'}</h2>
+      <h2 id="queue-rules-title">
+        {ranked ? 'Ranked rules · Trade One' : draft ? 'Draft rules · Ranked' : 'Unranked rules'}
+      </h2>
       <p>
         <strong>{ranked ? 'Closed hands' : 'Three Open'}</strong> · Same · Plus · Combo
       </p>
@@ -63,7 +77,13 @@ export function RankedWarning() {
           : 'Three randomly chosen cards from each starting hand are visible to the opponent.'}{' '}
         Same matches touching numbers; Plus matches sums; both can start Combo chains.
       </p>
-      {ranked ? (
+      {draft ? (
+        <p>
+          Three temporary boosters open automatically. Choose five of fifteen cards within the deck
+          rarity limit. Draft rating applies; no card trade. Each booster guarantees a 3★+ and a 4★+
+          card, with 5% Holo. Your temporary cards never enter your collection.
+        </p>
+      ) : ranked ? (
         <>
           <p>
             <strong>If you lose, your opponent takes one card from your played deck.</strong> Trade
@@ -81,6 +101,14 @@ export function RankedWarning() {
       <p className="error-message" role="alert">
         {error}
       </p>
+      <label className="check-label queue-hide-prompt">
+        <input
+          type="checkbox"
+          checked={hideAgain}
+          onChange={(e) => setHideAgain(e.target.checked)}
+        />{' '}
+        Don’t show me again
+      </label>
       <div className="result-actions">
         <button
           className="primary-button"
@@ -92,6 +120,11 @@ export function RankedWarning() {
                 await api('/ranked/acknowledge', { acknowledged: true });
                 await refresh();
               }
+              if (hideAgain && profile) {
+                try {
+                  localStorage.setItem(preferenceKey(profile.id, mode), 'on');
+                } catch {}
+              }
               close(true);
             } catch (e) {
               setError((e as Error).message);
@@ -100,7 +133,7 @@ export function RankedWarning() {
             }
           }}
         >
-          Join {ranked ? 'Ranked' : 'Unranked'} queue
+          Join {ranked ? 'Ranked' : draft ? 'Draft' : 'Unranked'} queue
         </button>
         <button className="outline-button" disabled={busy} onClick={() => close(false)}>
           Cancel

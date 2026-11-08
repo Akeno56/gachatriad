@@ -40,5 +40,19 @@
     "shortName": "NTE",
     "sigil": "◇",
     "color": "#a5c5d8"
+  },
+  {
+    "id": "epic-seven",
+    "name": "Epic Seven",
+    "shortName": "Epic Seven",
+    "sigil": "VII",
+    "color": "#c5a58d"
+  },
+  {
+    "id": "star-savior",
+    "name": "Star Savior",
+    "shortName": "Star Savior",
+    "sigil": "✶",
+    "color": "#d2a8c9"
   }
 ]

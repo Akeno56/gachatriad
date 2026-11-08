@@ -12,7 +12,8 @@ import {
 import { ALL_CARDS as CARDS, STARTER_DECK } from '@gacha-triad/shared';
 import type { MatchView } from '@gacha-triad/shared/platform';
 import { api } from '../lib/platform';
-import { appPath } from '../lib/connection';
+import { useCapturePresentation } from './use-capture-presentation';
+import { appPath, assetPath } from '../lib/connection';
 import { useSession } from './session';
 import { Card } from './card';
 import { CardDetail } from './card-detail';
@@ -40,7 +41,7 @@ const describe = (c: CardData, modifier = 0) =>
   `${c.name}. Top ${displayValue(c.stats[0] + modifier)}, right ${displayValue(c.stats[1] + modifier)}, bottom ${displayValue(c.stats[2] + modifier)}, left ${displayValue(c.stats[3] + modifier)}. ${c.rarity} stars`;
 export function Game() {
   const { profile, error: connectionError, revision, refresh } = useSession();
-  const [match, setMatch] = useState<MatchView | null>(null),
+  const [receivedMatch, setMatch] = useState<MatchView | null>(null),
     [matchId, setMatchId] = useState<string | null>(null),
     [selected, setSelected] = useState<string | null>(null),
     [error, setError] = useState(''),
@@ -48,10 +49,26 @@ export function Game() {
     [detail, setDetail] = useState<CardData | null>(null),
     [detailModifier, setDetailModifier] = useState(0),
     [dialog, setDialog] = useState<'rules' | 'combo' | 'exit' | null>(null),
-    [callout, setCallout] = useState(''),
-    [resolving, setResolving] = useState(false),
     [draft, setDraft] = useState<string[]>([]),
     [clock, setClock] = useState(Date.now());
+  const sound = useGameAudio();
+  const {
+    match,
+    resolving,
+    callout,
+    revealed: revealedCaptures,
+    flipping,
+  } = useCapturePresentation(receivedMatch, sound);
+  const receivedRef = useRef(receivedMatch);
+  receivedRef.current = receivedMatch;
+  useEffect(
+    () => () => {
+      const last = receivedRef.current;
+      if (last?.id === matchId && last.status === 'complete' && !last.trade.pending)
+        void api(`/matches/${last.id}/leave`, {}).catch(() => {});
+    },
+    [matchId],
+  );
   const [resultOpen, setResultOpen] = useState(true);
   const [draftCeremonyDone, setDraftCeremonyDone] = useState(false);
   const [draftSort, setDraftSort] = useState<'stats' | 'rarity'>('stats');
@@ -71,9 +88,7 @@ export function Game() {
   }, [match?.status, changeMusicScene]);
   useEffect(() => setResultOpen(true), [match?.id]);
   const dialogRef = useRef<HTMLDialogElement>(null),
-    seen = useRef(''),
     resultSeen = useRef('');
-  const sound = useGameAudio();
   function inspect(card: CardData, modifier = 0) {
     setDetail(card);
     setDetailModifier(modifier);
@@ -122,30 +137,6 @@ export function Game() {
     latest = game?.history.at(-1),
     own = game?.hands[seat] ?? [],
     opponent = game?.hands[other] ?? [];
-  const latestKey = latest ? `${match?.id}:${game?.history.length}` : '';
-  useEffect(() => {
-    if (!latest || seen.current === latestKey) return;
-    seen.current = latestKey;
-    const combos = latest.captures.filter((c) => c.reason === 'combo').length;
-    const special = [
-      ...new Set(
-        latest.captures
-          .filter((c) => c.reason === 'same' || c.reason === 'plus')
-          .map((c) => c.reason.toUpperCase()),
-      ),
-    ].join(' + ');
-    setCallout(combos ? `${special} → COMBO ×${combos}` : special);
-    sound(combos ? 'combo' : latest.captures.length ? 'capture' : 'place');
-    setResolving(true);
-    const timer = setTimeout(
-      () => {
-        setResolving(false);
-        setCallout('');
-      },
-      latest.captures.length ? 650 + latest.captures.length * 160 : 200,
-    );
-    return () => clearTimeout(timer);
-  }, [latestKey, sound]);
   useEffect(() => {
     if (match?.status !== 'complete' || resolving || resultSeen.current === match.id) return;
     resultSeen.current = match.id;
@@ -199,6 +190,19 @@ export function Game() {
     void action(`/matches/${match.id}/move`, { cardId: selected, cell, version: match.version });
   }
   const canPlay = match?.status === 'playing' && game?.turn === seat && !busy && !resolving;
+  const displayScore = game
+    ? [game.hands[0].length, game.hands[1].length]
+    : [...(match?.score ?? [5, 5])];
+  if (game)
+    game.board.forEach((item, cell) => {
+      if (!item) return;
+      const capture = latest?.captures.find((c) => c.cell === cell);
+      const owner =
+        capture && revealedCaptures !== null && !revealedCaptures.has(cell)
+          ? capture.from
+          : item.owner;
+      displayScore[owner]++;
+    });
   const selectedCard = own.find((c) => c.card?.id === selected)?.card;
   const orderedDraft = [...(match?.draftPool ?? [])].sort((a, b) => {
     const stats = (card: CardData) => card.stats.reduce((sum, n) => sum + n, 0);
@@ -211,8 +215,26 @@ export function Game() {
     );
   });
   const draftErrors = validateDeck(match?.draftPool.filter((c) => draft.includes(c.id)) ?? []);
+  if (!profile || (!profile.activeMatchId && !profile.deck.length && profile.starterBoosters > 0))
+    return (
+      <section className="first-visit-screen">
+        <img src={assetPath('/assets/ui/triad-logo.webp')} alt="Gacha Triad" />
+        <h1>Gacha Triad</h1>
+        <p>{profile ? 'Your first cards are waiting.' : 'Connecting to the card hall…'}</p>
+        {connectionError && <p role="alert">{connectionError}</p>}
+      </section>
+    );
   return (
     <div className={`play-page ${match ? 'battle-screen' : 'title-screen'}`}>
+      {callout && (
+        <div
+          key={callout + ':' + match?.game?.history.length}
+          className={`capture-splash splash-${callout.toLowerCase()}`}
+          role="status"
+        >
+          {callout}
+        </div>
+      )}
       {!match ? (
         <>
           <div className="game-title">
@@ -250,7 +272,7 @@ export function Game() {
             </section>
           </div>
           <div className="build-label">
-            400 CARDS · v0.11{' '}
+            {CARDS.filter((card) => !card.finish).length} CARDS · v0.12{' '}
             <Link href="/credits" className="credits-button">
               Credits
             </Link>
@@ -384,7 +406,7 @@ export function Game() {
                           : 'CHALLENGER'}
                       </small>
                     </div>
-                    <span className="your-score">{match.score[seat]}</span>
+                    <span className="your-score">{displayScore[seat]}</span>
                   </div>
                   <div className="score-divider">
                     VS<small>{game.history.length}/9</small>
@@ -392,7 +414,7 @@ export function Game() {
                   <div
                     className={`player-heading cpu-heading ${game.turn === other && match.status === 'playing' ? 'active-player' : ''}`}
                   >
-                    <span className="cpu-score">{match.score[other]}</span>
+                    <span className="cpu-score">{displayScore[other]}</span>
                     <Avatar
                       key={match.players[other].avatar?.id ?? 'rival'}
                       card={match.players[other].avatar}
@@ -489,6 +511,10 @@ export function Game() {
                     >
                       {game.board.map((item, cell) => {
                         const capture = latest?.captures.find((c) => c.cell === cell);
+                        const waitingCapture =
+                          capture && revealedCaptures !== null && !revealedCaptures.has(cell);
+                        const visibleOwner = waitingCapture ? capture.from : item?.owner;
+                        const animatedCapture = capture && flipping.includes(cell);
                         const modifier = item ? elementalModifier(game, item.card, cell) : 0;
                         const preview =
                           !item && selectedCard && canPlay && game.cellElements?.[cell]
@@ -499,12 +525,12 @@ export function Game() {
                             key={cell}
                             data-testid={`cell-${cell}`}
                             data-element={game.cellElements?.[cell] ?? undefined}
-                            data-owner={item?.owner}
+                            data-owner={visibleOwner}
                             data-modifier={preview || undefined}
                             className={`board-cell ${!item && selected && canPlay ? 'legal-cell' : ''} ${preview > 0 ? 'elemental-preview-buff' : preview < 0 ? 'elemental-preview-penalty' : ''}`}
                             disabled={!item && !canPlay}
                             onClick={() => (item ? inspect(item.card, modifier) : place(cell))}
-                            aria-label={`Row ${Math.floor(cell / 3) + 1}, column ${(cell % 3) + 1}${item ? `: ${describe(item.card, modifier)}, ${item.owner === seat ? 'your' : 'opponent'} card` : `: empty${preview ? `, elemental ${preview > 0 ? 'bonus +1' : 'penalty −1'} for selected card` : ''}`}`}
+                            aria-label={`Row ${Math.floor(cell / 3) + 1}, column ${(cell % 3) + 1}${item ? `: ${describe(item.card, modifier)}, ${visibleOwner === seat ? 'your' : 'opponent'} card` : `: empty${preview ? `, elemental ${preview > 0 ? 'bonus +1' : 'penalty −1'} for selected card` : ''}`}`}
                           >
                             {match.rules.elemental && game.cellElements?.[cell] && (
                               <ElementIcon
@@ -518,23 +544,17 @@ export function Game() {
                                 card={item.card}
                                 showElement={!!match.rules.elemental}
                                 modifier={elementalModifier(game, item.card, cell)}
-                                owner={item.owner === seat ? 0 : 1}
-                                fromOwner={capture ? (capture.from === seat ? 0 : 1) : undefined}
-                                captureReason={capture?.reason}
-                                captureOrder={Math.max(
-                                  0,
-                                  latest?.captures.findIndex((c) => c.cell === cell) ?? 0,
-                                )}
+                                owner={visibleOwner === seat ? 0 : 1}
+                                fromOwner={
+                                  animatedCapture ? (capture.from === seat ? 0 : 1) : undefined
+                                }
+                                captureReason={animatedCapture ? capture.reason : undefined}
+                                captureOrder={Math.max(0, flipping.indexOf(cell))}
                               />
                             ) : null}
                           </button>
                         );
                       })}
-                      {callout && (
-                        <div key={game.history.length} className="battle-callout" role="status">
-                          {callout}
-                        </div>
-                      )}
                     </div>
                     <div className="board-bottom">
                       <span>

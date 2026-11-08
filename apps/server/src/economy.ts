@@ -3,6 +3,8 @@ import { randomDeck, seededRandom } from '@gacha-triad/engine';
 import { ALL_CARDS, CARDS } from '@gacha-triad/shared';
 import {
   ECONOMY,
+  BOOSTER_TYPES,
+  type BoosterType,
   type BoosterView,
   type DuplicateInput,
   type DuplicateResult,
@@ -13,6 +15,7 @@ import { GameError } from './errors';
 import { rollRarity as rarity, rollFinish } from './draft-packs';
 
 interface PackRow {
+  pack_type: BoosterType;
   new_cards: string[];
   id: string;
   source: 'starter' | 'purchase' | 'admin' | 'daily';
@@ -24,6 +27,7 @@ interface PackRow {
 const definitions = new Map(ALL_CARDS.map((c) => [c.id, c]));
 function view(pack: PackRow): BoosterView {
   return {
+    type: pack.pack_type,
     newCardIds: pack.opened_at ? (pack.new_cards ?? []) : [],
     id: pack.id,
     source: pack.source,
@@ -239,7 +243,7 @@ export class Economy {
   async grantStarter(sql: Sql, profileId: string) {
     for (let i = 0; i < 3; i++)
       await sql(
-        "INSERT INTO booster_packs(id,profile_id,source,grant_index) VALUES($1,$2,'starter',$3) ON CONFLICT DO NOTHING",
+        "INSERT INTO booster_packs(id,profile_id,source,grant_index,pack_type) VALUES($1,$2,'starter',$3,'starter') ON CONFLICT DO NOTHING",
         [randomUUID(), profileId, i],
       );
   }
@@ -253,7 +257,15 @@ export class Economy {
       ).map(view),
     );
   }
-  async purchase(profileId: string, requestId: unknown, quantity: unknown = 1) {
+  async purchase(
+    profileId: string,
+    requestId: unknown,
+    quantity: unknown = 1,
+    packType: unknown = 'standard',
+  ) {
+    const type = BOOSTER_TYPES.find((pack) => pack.id === packType && pack.id !== 'starter');
+    if (!type)
+      throw new GameError('Choose an available booster type. Starter boosters cannot be bought.');
     if (typeof requestId !== 'string' || !/^[a-zA-Z0-9-]{8,80}$/.test(requestId))
       throw new GameError('A valid purchase request ID is required.');
     if (
@@ -264,13 +276,21 @@ export class Economy {
     )
       throw new GameError('Choose between 1 and 100 boosters.');
     return this.db.tx(async (sql) => {
-      const [previous] = await sql<{ quantity: number; total_cost: number; pack_ids: string[] }>(
-        'SELECT * FROM booster_purchases WHERE profile_id=$1 AND request_id=$2',
-        [profileId, requestId],
-      );
+      const [previous] = await sql<{
+        quantity: number;
+        total_cost: number;
+        pack_ids: string[];
+        pack_type: BoosterType;
+      }>('SELECT * FROM booster_purchases WHERE profile_id=$1 AND request_id=$2', [
+        profileId,
+        requestId,
+      ]);
       if (previous) {
-        if (previous.quantity !== quantity)
-          throw new GameError('This purchase request already uses another quantity.', 409);
+        if (previous.quantity !== quantity || previous.pack_type !== type.id)
+          throw new GameError(
+            'This purchase request already uses another quantity or booster type.',
+            409,
+          );
         const rows = await sql<PackRow>(
           'SELECT * FROM booster_packs WHERE profile_id=$1 AND id=ANY($2::text[])',
           [profileId, previous.pack_ids],
@@ -292,8 +312,8 @@ export class Economy {
       for (let i = 0; i < quantity; i++) {
         const packId = randomUUID();
         const [pack] = await sql<PackRow>(
-          "INSERT INTO booster_packs(id,profile_id,source,request_id,cost) VALUES($1,$2,'purchase',$3,$4) RETURNING *",
-          [packId, profileId, i === 0 ? requestId : `${requestId}:${i}`, ECONOMY.packCost],
+          "INSERT INTO booster_packs(id,profile_id,source,request_id,cost,pack_type) VALUES($1,$2,'purchase',$3,$4,$5) RETURNING *",
+          [packId, profileId, i === 0 ? requestId : `${requestId}:${i}`, ECONOMY.packCost, type.id],
         );
         await sql(
           "INSERT INTO prism_ledger(id,profile_id,delta,kind,reference) VALUES($1,$2,$3,'booster',$4)",
@@ -302,8 +322,15 @@ export class Economy {
         packs.push(view(pack));
       }
       await sql(
-        'INSERT INTO booster_purchases(profile_id,request_id,quantity,total_cost,pack_ids) VALUES($1,$2,$3,$4,$5::jsonb)',
-        [profileId, requestId, quantity, totalCost, JSON.stringify(packs.map((p) => p.id))],
+        'INSERT INTO booster_purchases(profile_id,request_id,quantity,total_cost,pack_ids,pack_type) VALUES($1,$2,$3,$4,$5::jsonb,$6)',
+        [
+          profileId,
+          requestId,
+          quantity,
+          totalCost,
+          JSON.stringify(packs.map((p) => p.id)),
+          type.id,
+        ],
       );
       return { ...packs[0], packs, quantity, totalCost };
     });
@@ -343,23 +370,37 @@ export class Economy {
     const selected: string[] = [];
     const newCardIds: string[] = [];
     const selectedBases = new Set<string>();
+    const packType = BOOSTER_TYPES.find((type) => type.id === pack.pack_type);
+    if (!packType) throw new GameError('Unknown booster type.', 409);
+    const starter = packType.id === 'starter';
     for (let slot = 0; slot < 5; slot++) {
       const weights =
         slot === 4
-          ? ECONOMY.guaranteedWeights
-          : pack.source === 'starter'
+          ? starter
+            ? ECONOMY.starterGuaranteedWeights
+            : ECONOMY.guaranteedWeights
+          : starter
             ? ECONOMY.starterWeights
             : ECONOMY.standardWeights;
       const rank = rarity(weights);
-      let pool = CARDS.filter((c) => c.rarity === rank && !selectedBases.has(c.id));
-      if (pack.source === 'starter' && slot < 4) {
+      let pool = CARDS.filter(
+        (c) =>
+          c.enabled &&
+          c.rarity === rank &&
+          !selectedBases.has(c.id) &&
+          (packType.universes as readonly string[]).includes(c.universeId),
+      );
+      if (starter && slot < 4) {
         const fresh = pool.filter((c) => !ownedBases.has(c.id));
         if (fresh.length) pool = fresh;
       }
       if (!pool.length) throw Error('Booster pool exhausted.');
       const base = pool[randomInt(pool.length)];
       selectedBases.add(base.id);
-      const cardId = rollFinish(base.id, ECONOMY.holoPer10000);
+      const cardId = rollFinish(
+        base.id,
+        starter ? ECONOMY.starterHoloPer10000 : ECONOMY.holoPer10000,
+      );
       selected.push(cardId);
       if (!owned.some((c) => c.card_id === cardId)) newCardIds.push(cardId);
       await sql(

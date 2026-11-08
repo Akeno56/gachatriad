@@ -45,7 +45,7 @@ export function AdminGrant({ playerId, name }: { playerId: string; name: string 
             }}
           >
             <option value="prisms">Stellar Prisms</option>
-            <option value="boosters">Standard boosters</option>
+            <option value="boosters">Universe I boosters</option>
           </select>
         </label>
         <label>

@@ -30,6 +30,7 @@ export function FirstDuelTutorial() {
     !!profile &&
     profile.played === 0 &&
     profile.deck.length === 5 &&
+    !profile.starterBoosters &&
     !profile.tutorialCompleted &&
     !profile.activeMatchId &&
     ['/', '/lobbies'].includes(pathname.replace(/\/$/, '') || '/');

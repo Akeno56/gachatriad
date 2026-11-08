@@ -170,6 +170,1951 @@
     "localPath": "/assets/characters/endfield/zhuang-fangyi/portrait.webp"
   },
   {
+    "characterId": "abigail",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/abigail/portrait.webp"
+  },
+  {
+    "characterId": "abyssal-yufine",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/abyssal-yufine/portrait.webp"
+  },
+  {
+    "characterId": "achates",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/achates/portrait.webp"
+  },
+  {
+    "characterId": "adin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/adin/portrait.webp"
+  },
+  {
+    "characterId": "adlay",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/adlay/portrait.webp"
+  },
+  {
+    "characterId": "adventurer-ras",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/adventurer-ras/portrait.webp"
+  },
+  {
+    "characterId": "ae-giselle",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ae-giselle/portrait.webp"
+  },
+  {
+    "characterId": "ae-karina",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ae-karina/portrait.webp"
+  },
+  {
+    "characterId": "ae-ningning",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ae-ningning/portrait.webp"
+  },
+  {
+    "characterId": "ae-winter",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ae-winter/portrait.webp"
+  },
+  {
+    "characterId": "afternoon-soak-flan",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/afternoon-soak-flan/portrait.webp"
+  },
+  {
+    "characterId": "ainos",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ainos/portrait.webp"
+  },
+  {
+    "characterId": "ainos-20",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ainos-20/portrait.webp"
+  },
+  {
+    "characterId": "ains",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ains/portrait.webp"
+  },
+  {
+    "characterId": "ainz-ooal-gown",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ainz-ooal-gown/portrait.webp"
+  },
+  {
+    "characterId": "aither",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/aither/portrait.webp"
+  },
+  {
+    "characterId": "aki",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/aki/portrait.webp"
+  },
+  {
+    "characterId": "albedo",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/albedo/portrait.webp"
+  },
+  {
+    "characterId": "alencia",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/alencia/portrait.webp"
+  },
+  {
+    "characterId": "alexa",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/alexa/portrait.webp"
+  },
+  {
+    "characterId": "all-rounder-wanda",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/all-rounder-wanda/portrait.webp"
+  },
+  {
+    "characterId": "ambitious-tywin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ambitious-tywin/portrait.webp"
+  },
+  {
+    "characterId": "amid",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/amid/portrait.webp"
+  },
+  {
+    "characterId": "amiki",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/amiki/portrait.webp"
+  },
+  {
+    "characterId": "angel-of-light-angelica",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/angel-of-light-angelica/portrait.webp"
+  },
+  {
+    "characterId": "angelic-montmorancy",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/angelic-montmorancy/portrait.webp"
+  },
+  {
+    "characterId": "angelica",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/angelica/portrait.webp"
+  },
+  {
+    "characterId": "apocalypse-ravi",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/apocalypse-ravi/portrait.webp"
+  },
+  {
+    "characterId": "aram",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/aram/portrait.webp"
+  },
+  {
+    "characterId": "aramintha",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/aramintha/portrait.webp"
+  },
+  {
+    "characterId": "arbiter-vildred",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/arbiter-vildred/portrait.webp"
+  },
+  {
+    "characterId": "archdemons-shadow",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/archdemons-shadow/portrait.webp"
+  },
+  {
+    "characterId": "architect-laika",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/architect-laika/portrait.webp"
+  },
+  {
+    "characterId": "argent-waves-hwayoung",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/argent-waves-hwayoung/portrait.webp"
+  },
+  {
+    "characterId": "aria",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/aria/portrait.webp"
+  },
+  {
+    "characterId": "armin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/armin/portrait.webp"
+  },
+  {
+    "characterId": "arowell",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/arowell/portrait.webp"
+  },
+  {
+    "characterId": "arunka",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/arunka/portrait.webp"
+  },
+  {
+    "characterId": "assassin-cartuja",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/assassin-cartuja/portrait.webp"
+  },
+  {
+    "characterId": "assassin-cidd",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/assassin-cidd/portrait.webp"
+  },
+  {
+    "characterId": "assassin-coli",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/assassin-coli/portrait.webp"
+  },
+  {
+    "characterId": "astromancer-elena",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/astromancer-elena/portrait.webp"
+  },
+  {
+    "characterId": "aubade-ludwig",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/aubade-ludwig/portrait.webp"
+  },
+  {
+    "characterId": "aube",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/aube/portrait.webp"
+  },
+  {
+    "characterId": "auxiliary-lots",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/auxiliary-lots/portrait.webp"
+  },
+  {
+    "characterId": "azalea",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/azalea/portrait.webp"
+  },
+  {
+    "characterId": "baal-and-sezan",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/baal-and-sezan/portrait.webp"
+  },
+  {
+    "characterId": "bad-cat-armin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/bad-cat-armin/portrait.webp"
+  },
+  {
+    "characterId": "baiken",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/baiken/portrait.webp"
+  },
+  {
+    "characterId": "basar",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/basar/portrait.webp"
+  },
+  {
+    "characterId": "bask",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/bask/portrait.webp"
+  },
+  {
+    "characterId": "batisse",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/batisse/portrait.webp"
+  },
+  {
+    "characterId": "beehoo",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/beehoo/portrait.webp"
+  },
+  {
+    "characterId": "belian",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/belian/portrait.webp"
+  },
+  {
+    "characterId": "bellona",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/bellona/portrait.webp"
+  },
+  {
+    "characterId": "benevolent-romann",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/benevolent-romann/portrait.webp"
+  },
+  {
+    "characterId": "benimaru",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/benimaru/portrait.webp"
+  },
+  {
+    "characterId": "bernard",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/bernard/portrait.webp"
+  },
+  {
+    "characterId": "birgitta",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/birgitta/portrait.webp"
+  },
+  {
+    "characterId": "blaze-dingo",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/blaze-dingo/portrait.webp"
+  },
+  {
+    "characterId": "blood-blade-karin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/blood-blade-karin/portrait.webp"
+  },
+  {
+    "characterId": "blood-moon-haste",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/blood-moon-haste/portrait.webp"
+  },
+  {
+    "characterId": "blooming-lidica",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/blooming-lidica/portrait.webp"
+  },
+  {
+    "characterId": "bomb-model-kanna",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/bomb-model-kanna/portrait.webp"
+  },
+  {
+    "characterId": "boss-arunka",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/boss-arunka/portrait.webp"
+  },
+  {
+    "characterId": "briar-witch-iseria",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/briar-witch-iseria/portrait.webp"
+  },
+  {
+    "characterId": "brieg",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/brieg/portrait.webp"
+  },
+  {
+    "characterId": "butcher-corps-inquisitor",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/butcher-corps-inquisitor/portrait.webp"
+  },
+  {
+    "characterId": "byblis",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/byblis/portrait.webp"
+  },
+  {
+    "characterId": "bystander-hwayoung",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/bystander-hwayoung/portrait.webp"
+  },
+  {
+    "characterId": "camilla",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/camilla/portrait.webp"
+  },
+  {
+    "characterId": "captain-rikoris",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/captain-rikoris/portrait.webp"
+  },
+  {
+    "characterId": "carmainerose",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/carmainerose/portrait.webp"
+  },
+  {
+    "characterId": "carrot",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/carrot/portrait.webp"
+  },
+  {
+    "characterId": "cartuja",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/cartuja/portrait.webp"
+  },
+  {
+    "characterId": "cecilia",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/cecilia/portrait.webp"
+  },
+  {
+    "characterId": "celeste",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/celeste/portrait.webp"
+  },
+  {
+    "characterId": "celestial-mercedes",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/celestial-mercedes/portrait.webp"
+  },
+  {
+    "characterId": "celine",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/celine/portrait.webp"
+  },
+  {
+    "characterId": "cerise",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/cerise/portrait.webp"
+  },
+  {
+    "characterId": "cermia",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/cermia/portrait.webp"
+  },
+  {
+    "characterId": "challenger-dominiel",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/challenger-dominiel/portrait.webp"
+  },
+  {
+    "characterId": "champion-zerato",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/champion-zerato/portrait.webp"
+  },
+  {
+    "characterId": "chaos-inquisitor",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/chaos-inquisitor/portrait.webp"
+  },
+  {
+    "characterId": "chaos-sect-axe",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/chaos-sect-axe/portrait.webp"
+  },
+  {
+    "characterId": "charles",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/charles/portrait.webp"
+  },
+  {
+    "characterId": "charlotte",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/charlotte/portrait.webp"
+  },
+  {
+    "characterId": "chloe",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/chloe/portrait.webp"
+  },
+  {
+    "characterId": "choux",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/choux/portrait.webp"
+  },
+  {
+    "characterId": "christy",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/christy/portrait.webp"
+  },
+  {
+    "characterId": "church-of-ilryos-axe",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/church-of-ilryos-axe/portrait.webp"
+  },
+  {
+    "characterId": "cidd",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/cidd/portrait.webp"
+  },
+  {
+    "characterId": "clarissa",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/clarissa/portrait.webp"
+  },
+  {
+    "characterId": "claudia",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/claudia/portrait.webp"
+  },
+  {
+    "characterId": "closer-charles",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/closer-charles/portrait.webp"
+  },
+  {
+    "characterId": "coli",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/coli/portrait.webp"
+  },
+  {
+    "characterId": "command-model-laika",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/command-model-laika/portrait.webp"
+  },
+  {
+    "characterId": "commander-lorina",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/commander-lorina/portrait.webp"
+  },
+  {
+    "characterId": "commander-pavel",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/commander-pavel/portrait.webp"
+  },
+  {
+    "characterId": "conqueror-lilias",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/conqueror-lilias/portrait.webp"
+  },
+  {
+    "characterId": "corvus",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/corvus/portrait.webp"
+  },
+  {
+    "characterId": "crescent-moon-rin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/crescent-moon-rin/portrait.webp"
+  },
+  {
+    "characterId": "crimson-armin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/crimson-armin/portrait.webp"
+  },
+  {
+    "characterId": "crozet",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/crozet/portrait.webp"
+  },
+  {
+    "characterId": "dark-corvus",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/dark-corvus/portrait.webp"
+  },
+  {
+    "characterId": "death-dealer-ray",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/death-dealer-ray/portrait.webp"
+  },
+  {
+    "characterId": "desert-jewel-basar",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/desert-jewel-basar/portrait.webp"
+  },
+  {
+    "characterId": "designer-lilibet",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/designer-lilibet/portrait.webp"
+  },
+  {
+    "characterId": "destina",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/destina/portrait.webp"
+  },
+  {
+    "characterId": "diene",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/diene/portrait.webp"
+  },
+  {
+    "characterId": "dingo",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/dingo/portrait.webp"
+  },
+  {
+    "characterId": "disciplinary-prefect-aria",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/disciplinary-prefect-aria/portrait.webp"
+  },
+  {
+    "characterId": "dizzy",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/dizzy/portrait.webp"
+  },
+  {
+    "characterId": "doll-maker-pearlhorizon",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/doll-maker-pearlhorizon/portrait.webp"
+  },
+  {
+    "characterId": "dominiel",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/dominiel/portrait.webp"
+  },
+  {
+    "characterId": "doris",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/doris/portrait.webp"
+  },
+  {
+    "characterId": "dragon-bride-senya",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/dragon-bride-senya/portrait.webp"
+  },
+  {
+    "characterId": "dragon-king-sharun",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/dragon-king-sharun/portrait.webp"
+  },
+  {
+    "characterId": "eaton",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/eaton/portrait.webp"
+  },
+  {
+    "characterId": "eda",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/eda/portrait.webp"
+  },
+  {
+    "characterId": "edward-elric",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/edward-elric/portrait.webp"
+  },
+  {
+    "characterId": "elena",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/elena/portrait.webp"
+  },
+  {
+    "characterId": "eligos",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/eligos/portrait.webp"
+  },
+  {
+    "characterId": "elphelt",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/elphelt/portrait.webp"
+  },
+  {
+    "characterId": "elson",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/elson/portrait.webp"
+  },
+  {
+    "characterId": "elvira",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/elvira/portrait.webp"
+  },
+  {
+    "characterId": "emilia",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/emilia/portrait.webp"
+  },
+  {
+    "characterId": "empyrean-ilynav",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/empyrean-ilynav/portrait.webp"
+  },
+  {
+    "characterId": "enott",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/enott/portrait.webp"
+  },
+  {
+    "characterId": "ervalen",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ervalen/portrait.webp"
+  },
+  {
+    "characterId": "estelle",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/estelle/portrait.webp"
+  },
+  {
+    "characterId": "eternal-wanderer-ludwig",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/eternal-wanderer-ludwig/portrait.webp"
+  },
+  {
+    "characterId": "eye-of-the-abyss-fumyr",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/eye-of-the-abyss-fumyr/portrait.webp"
+  },
+  {
+    "characterId": "ezra",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ezra/portrait.webp"
+  },
+  {
+    "characterId": "fairytale-tenebria",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/fairytale-tenebria/portrait.webp"
+  },
+  {
+    "characterId": "faithless-lidica",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/faithless-lidica/portrait.webp"
+  },
+  {
+    "characterId": "falconer-kluri",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/falconer-kluri/portrait.webp"
+  },
+  {
+    "characterId": "fallen-cecilia",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/fallen-cecilia/portrait.webp"
+  },
+  {
+    "characterId": "fenne",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/fenne/portrait.webp"
+  },
+  {
+    "characterId": "fenris",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/fenris/portrait.webp"
+  },
+  {
+    "characterId": "fern",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/fern/portrait.webp"
+  },
+  {
+    "characterId": "festive-eda",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/festive-eda/portrait.webp"
+  },
+  {
+    "characterId": "fighter-maya",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/fighter-maya/portrait.webp"
+  },
+  {
+    "characterId": "flan",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/flan/portrait.webp"
+  },
+  {
+    "characterId": "free-spirit-tieria",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/free-spirit-tieria/portrait.webp"
+  },
+  {
+    "characterId": "frida",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/frida/portrait.webp"
+  },
+  {
+    "characterId": "frieren",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/frieren/portrait.webp"
+  },
+  {
+    "characterId": "fumyr",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/fumyr/portrait.webp"
+  },
+  {
+    "characterId": "furious",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/furious/portrait.webp"
+  },
+  {
+    "characterId": "general-purrgis",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/general-purrgis/portrait.webp"
+  },
+  {
+    "characterId": "genesis-ras",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/genesis-ras/portrait.webp"
+  },
+  {
+    "characterId": "glenn",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/glenn/portrait.webp"
+  },
+  {
+    "characterId": "gloomyrain",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/gloomyrain/portrait.webp"
+  },
+  {
+    "characterId": "godmother",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/godmother/portrait.webp"
+  },
+  {
+    "characterId": "great-chief-khawana",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/great-chief-khawana/portrait.webp"
+  },
+  {
+    "characterId": "guard-captain-krau",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/guard-captain-krau/portrait.webp"
+  },
+  {
+    "characterId": "guider-aither",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/guider-aither/portrait.webp"
+  },
+  {
+    "characterId": "gunther",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/gunther/portrait.webp"
+  },
+  {
+    "characterId": "harsetti",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/harsetti/portrait.webp"
+  },
+  {
+    "characterId": "haru",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/haru/portrait.webp"
+  },
+  {
+    "characterId": "hasol",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/hasol/portrait.webp"
+  },
+  {
+    "characterId": "haste",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/haste/portrait.webp"
+  },
+  {
+    "characterId": "hataan",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/hataan/portrait.webp"
+  },
+  {
+    "characterId": "hazel",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/hazel/portrait.webp"
+  },
+  {
+    "characterId": "hecate",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/hecate/portrait.webp"
+  },
+  {
+    "characterId": "helen",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/helen/portrait.webp"
+  },
+  {
+    "characterId": "helga",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/helga/portrait.webp"
+  },
+  {
+    "characterId": "hellion-lua",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/hellion-lua/portrait.webp"
+  },
+  {
+    "characterId": "holiday-yufine",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/holiday-yufine/portrait.webp"
+  },
+  {
+    "characterId": "holy-flame-adin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/holy-flame-adin/portrait.webp"
+  },
+  {
+    "characterId": "hurado",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/hurado/portrait.webp"
+  },
+  {
+    "characterId": "hwayoung",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/hwayoung/portrait.webp"
+  },
+  {
+    "characterId": "ian",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ian/portrait.webp"
+  },
+  {
+    "characterId": "ilynav",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ilynav/portrait.webp"
+  },
+  {
+    "characterId": "immortal-wukong",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/immortal-wukong/portrait.webp"
+  },
+  {
+    "characterId": "inferno-khawazu",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/inferno-khawazu/portrait.webp"
+  },
+  {
+    "characterId": "infinite-horizon-achates",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/infinite-horizon-achates/portrait.webp"
+  },
+  {
+    "characterId": "inheritor-amiki",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/inheritor-amiki/portrait.webp"
+  },
+  {
+    "characterId": "iseria",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/iseria/portrait.webp"
+  },
+  {
+    "characterId": "ivana",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ivana/portrait.webp"
+  },
+  {
+    "characterId": "jack-o",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/jack-o/portrait.webp"
+  },
+  {
+    "characterId": "januta",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/januta/portrait.webp"
+  },
+  {
+    "characterId": "jecht",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/jecht/portrait.webp"
+  },
+  {
+    "characterId": "jena",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/jena/portrait.webp"
+  },
+  {
+    "characterId": "jenua",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/jenua/portrait.webp"
+  },
+  {
+    "characterId": "judge-kise",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/judge-kise/portrait.webp"
+  },
+  {
+    "characterId": "judith",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/judith/portrait.webp"
+  },
+  {
+    "characterId": "juni",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/juni/portrait.webp"
+  },
+  {
+    "characterId": "kane",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/kane/portrait.webp"
+  },
+  {
+    "characterId": "karin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/karin/portrait.webp"
+  },
+  {
+    "characterId": "kawerik",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/kawerik/portrait.webp"
+  },
+  {
+    "characterId": "kayron",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/kayron/portrait.webp"
+  },
+  {
+    "characterId": "ken",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ken/portrait.webp"
+  },
+  {
+    "characterId": "khawana",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/khawana/portrait.webp"
+  },
+  {
+    "characterId": "khawazu",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/khawazu/portrait.webp"
+  },
+  {
+    "characterId": "kikirat-v2",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/kikirat-v2/portrait.webp"
+  },
+  {
+    "characterId": "kiris",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/kiris/portrait.webp"
+  },
+  {
+    "characterId": "kise",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/kise/portrait.webp"
+  },
+  {
+    "characterId": "kitty-clarissa",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/kitty-clarissa/portrait.webp"
+  },
+  {
+    "characterId": "kizuna-ai",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/kizuna-ai/portrait.webp"
+  },
+  {
+    "characterId": "kluri",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/kluri/portrait.webp"
+  },
+  {
+    "characterId": "krau",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/krau/portrait.webp"
+  },
+  {
+    "characterId": "lady-of-the-scales",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lady-of-the-scales/portrait.webp"
+  },
+  {
+    "characterId": "laia",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/laia/portrait.webp"
+  },
+  {
+    "characterId": "landy",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/landy/portrait.webp"
+  },
+  {
+    "characterId": "last-piece-karin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/last-piece-karin/portrait.webp"
+  },
+  {
+    "characterId": "last-rider-krau",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/last-rider-krau/portrait.webp"
+  },
+  {
+    "characterId": "leah",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/leah/portrait.webp"
+  },
+  {
+    "characterId": "lena",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lena/portrait.webp"
+  },
+  {
+    "characterId": "leo",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/leo/portrait.webp"
+  },
+  {
+    "characterId": "lethe",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lethe/portrait.webp"
+  },
+  {
+    "characterId": "lidica",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lidica/portrait.webp"
+  },
+  {
+    "characterId": "lilias",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lilias/portrait.webp"
+  },
+  {
+    "characterId": "lilibet",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lilibet/portrait.webp"
+  },
+  {
+    "characterId": "lilka",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lilka/portrait.webp"
+  },
+  {
+    "characterId": "lionheart-cermia",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lionheart-cermia/portrait.webp"
+  },
+  {
+    "characterId": "lisette",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lisette/portrait.webp"
+  },
+  {
+    "characterId": "little-queen-charlotte",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/little-queen-charlotte/portrait.webp"
+  },
+  {
+    "characterId": "lone-crescent-bellona",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lone-crescent-bellona/portrait.webp"
+  },
+  {
+    "characterId": "lone-wolf-peira",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lone-wolf-peira/portrait.webp"
+  },
+  {
+    "characterId": "lorina",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lorina/portrait.webp"
+  },
+  {
+    "characterId": "lots",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lots/portrait.webp"
+  },
+  {
+    "characterId": "lua",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lua/portrait.webp"
+  },
+  {
+    "characterId": "lucy",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/lucy/portrait.webp"
+  },
+  {
+    "characterId": "ludwig",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ludwig/portrait.webp"
+  },
+  {
+    "characterId": "luluca",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/luluca/portrait.webp"
+  },
+  {
+    "characterId": "luna",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/luna/portrait.webp"
+  },
+  {
+    "characterId": "magic-scholar-doris",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/magic-scholar-doris/portrait.webp"
+  },
+  {
+    "characterId": "maid-chloe",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/maid-chloe/portrait.webp"
+  },
+  {
+    "characterId": "martial-artist-ken",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/martial-artist-ken/portrait.webp"
+  },
+  {
+    "characterId": "mascot-hazel",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/mascot-hazel/portrait.webp"
+  },
+  {
+    "characterId": "maya",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/maya/portrait.webp"
+  },
+  {
+    "characterId": "mediator-kawerik",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/mediator-kawerik/portrait.webp"
+  },
+  {
+    "characterId": "melany",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/melany/portrait.webp"
+  },
+  {
+    "characterId": "melissa",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/melissa/portrait.webp"
+  },
+  {
+    "characterId": "mercedes",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/mercedes/portrait.webp"
+  },
+  {
+    "characterId": "mercenary-helga",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/mercenary-helga/portrait.webp"
+  },
+  {
+    "characterId": "midnight-gala-lilias",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/midnight-gala-lilias/portrait.webp"
+  },
+  {
+    "characterId": "milim",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/milim/portrait.webp"
+  },
+  {
+    "characterId": "mirsa",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/mirsa/portrait.webp"
+  },
+  {
+    "characterId": "mistychain",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/mistychain/portrait.webp"
+  },
+  {
+    "characterId": "monarch-of-the-sword-iseria",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/monarch-of-the-sword-iseria/portrait.webp"
+  },
+  {
+    "characterId": "montmorancy",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/montmorancy/portrait.webp"
+  },
+  {
+    "characterId": "moon-bunny-dominiel",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/moon-bunny-dominiel/portrait.webp"
+  },
+  {
+    "characterId": "mort",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/mort/portrait.webp"
+  },
+  {
+    "characterId": "mucacha",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/mucacha/portrait.webp"
+  },
+  {
+    "characterId": "mui",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/mui/portrait.webp"
+  },
+  {
+    "characterId": "muse-rima",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/muse-rima/portrait.webp"
+  },
+  {
+    "characterId": "muwi",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/muwi/portrait.webp"
+  },
+  {
+    "characterId": "nahkwol",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/nahkwol/portrait.webp"
+  },
+  {
+    "characterId": "navy-captain-landy",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/navy-captain-landy/portrait.webp"
+  },
+  {
+    "characterId": "nemunas",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/nemunas/portrait.webp"
+  },
+  {
+    "characterId": "new-kid-adin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/new-kid-adin/portrait.webp"
+  },
+  {
+    "characterId": "new-moon-luna",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/new-moon-luna/portrait.webp"
+  },
+  {
+    "characterId": "notos",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/notos/portrait.webp"
+  },
+  {
+    "characterId": "ocean-breeze-luluca",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ocean-breeze-luluca/portrait.webp"
+  },
+  {
+    "characterId": "operator-sigret",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/operator-sigret/portrait.webp"
+  },
+  {
+    "characterId": "orte",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/orte/portrait.webp"
+  },
+  {
+    "characterId": "otillie",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/otillie/portrait.webp"
+  },
+  {
+    "characterId": "pavel",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/pavel/portrait.webp"
+  },
+  {
+    "characterId": "peacemaker-furious",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/peacemaker-furious/portrait.webp"
+  },
+  {
+    "characterId": "pearlhorizon",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/pearlhorizon/portrait.webp"
+  },
+  {
+    "characterId": "peira",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/peira/portrait.webp"
+  },
+  {
+    "characterId": "penelope",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/penelope/portrait.webp"
+  },
+  {
+    "characterId": "perfumer-byblis",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/perfumer-byblis/portrait.webp"
+  },
+  {
+    "characterId": "pernilla",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/pernilla/portrait.webp"
+  },
+  {
+    "characterId": "pirate-captain-flan",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/pirate-captain-flan/portrait.webp"
+  },
+  {
+    "characterId": "politis",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/politis/portrait.webp"
+  },
+  {
+    "characterId": "purrgis",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/purrgis/portrait.webp"
+  },
+  {
+    "characterId": "pyllis",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/pyllis/portrait.webp"
+  },
+  {
+    "characterId": "ragnvald",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ragnvald/portrait.webp"
+  },
+  {
+    "characterId": "ram",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ram/portrait.webp"
+  },
+  {
+    "characterId": "ran",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ran/portrait.webp"
+  },
+  {
+    "characterId": "ras",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ras/portrait.webp"
+  },
+  {
+    "characterId": "ravi",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ravi/portrait.webp"
+  },
+  {
+    "characterId": "ray",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ray/portrait.webp"
+  },
+  {
+    "characterId": "rem",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/rem/portrait.webp"
+  },
+  {
+    "characterId": "remnant-violet",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/remnant-violet/portrait.webp"
+  },
+  {
+    "characterId": "renoa",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/renoa/portrait.webp"
+  },
+  {
+    "characterId": "requiem-roana",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/requiem-roana/portrait.webp"
+  },
+  {
+    "characterId": "requiemroar",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/requiemroar/portrait.webp"
+  },
+  {
+    "characterId": "researcher-carrot",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/researcher-carrot/portrait.webp"
+  },
+  {
+    "characterId": "revna",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/revna/portrait.webp"
+  },
+  {
+    "characterId": "rhianna-and-luciella",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/rhianna-and-luciella/portrait.webp"
+  },
+  {
+    "characterId": "righteous-thief-roozid",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/righteous-thief-roozid/portrait.webp"
+  },
+  {
+    "characterId": "rikoris",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/rikoris/portrait.webp"
+  },
+  {
+    "characterId": "rima",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/rima/portrait.webp"
+  },
+  {
+    "characterId": "rimuru",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/rimuru/portrait.webp"
+  },
+  {
+    "characterId": "rin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/rin/portrait.webp"
+  },
+  {
+    "characterId": "rinak",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/rinak/portrait.webp"
+  },
+  {
+    "characterId": "riza-hawkeye",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/riza-hawkeye/portrait.webp"
+  },
+  {
+    "characterId": "roaming-warrior-leo",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/roaming-warrior-leo/portrait.webp"
+  },
+  {
+    "characterId": "roana",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/roana/portrait.webp"
+  },
+  {
+    "characterId": "robin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/robin/portrait.webp"
+  },
+  {
+    "characterId": "romann",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/romann/portrait.webp"
+  },
+  {
+    "characterId": "roozid",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/roozid/portrait.webp"
+  },
+  {
+    "characterId": "rose",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/rose/portrait.webp"
+  },
+  {
+    "characterId": "roy-mustang",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/roy-mustang/portrait.webp"
+  },
+  {
+    "characterId": "ruele-of-light",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ruele-of-light/portrait.webp"
+  },
+  {
+    "characterId": "ruiza",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/ruiza/portrait.webp"
+  },
+  {
+    "characterId": "sage-baal-and-sezan",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/sage-baal-and-sezan/portrait.webp"
+  },
+  {
+    "characterId": "salome",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/salome/portrait.webp"
+  },
+  {
+    "characterId": "saria",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/saria/portrait.webp"
+  },
+  {
+    "characterId": "savior-adin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/savior-adin/portrait.webp"
+  },
+  {
+    "characterId": "schniel",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/schniel/portrait.webp"
+  },
+  {
+    "characterId": "school-nurse-yulha",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/school-nurse-yulha/portrait.webp"
+  },
+  {
+    "characterId": "schuri",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/schuri/portrait.webp"
+  },
+  {
+    "characterId": "sea-phantom-politis",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/sea-phantom-politis/portrait.webp"
+  },
+  {
+    "characterId": "sealed-eye-surin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/sealed-eye-surin/portrait.webp"
+  },
+  {
+    "characterId": "seaside-bellona",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/seaside-bellona/portrait.webp"
+  },
+  {
+    "characterId": "senya",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/senya/portrait.webp"
+  },
+  {
+    "characterId": "serene-purity-adin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/serene-purity-adin/portrait.webp"
+  },
+  {
+    "characterId": "serila",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/serila/portrait.webp"
+  },
+  {
+    "characterId": "setsuka",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/setsuka/portrait.webp"
+  },
+  {
+    "characterId": "sez",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/sez/portrait.webp"
+  },
+  {
+    "characterId": "shadow-knight-pyllis",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/shadow-knight-pyllis/portrait.webp"
+  },
+  {
+    "characterId": "shadow-rose",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/shadow-rose/portrait.webp"
+  },
+  {
+    "characterId": "shalltear",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/shalltear/portrait.webp"
+  },
+  {
+    "characterId": "sharun",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/sharun/portrait.webp"
+  },
+  {
+    "characterId": "shepherd-jena",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/shepherd-jena/portrait.webp"
+  },
+  {
+    "characterId": "shepherd-of-the-dark-diene",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/shepherd-of-the-dark-diene/portrait.webp"
+  },
+  {
+    "characterId": "shooting-star-achates",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/shooting-star-achates/portrait.webp"
+  },
+  {
+    "characterId": "shuna",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/shuna/portrait.webp"
+  },
+  {
+    "characterId": "sigret",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/sigret/portrait.webp"
+  },
+  {
+    "characterId": "silk",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/silk/portrait.webp"
+  },
+  {
+    "characterId": "silver-blade-aramintha",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/silver-blade-aramintha/portrait.webp"
+  },
+  {
+    "characterId": "silvertide-christy",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/silvertide-christy/portrait.webp"
+  },
+  {
+    "characterId": "sinful-angelica",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/sinful-angelica/portrait.webp"
+  },
+  {
+    "characterId": "sol",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/sol/portrait.webp"
+  },
+  {
+    "characterId": "solitaria-of-the-snow",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/solitaria-of-the-snow/portrait.webp"
+  },
+  {
+    "characterId": "sonia",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/sonia/portrait.webp"
+  },
+  {
+    "characterId": "specimen-sez",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/specimen-sez/portrait.webp"
+  },
+  {
+    "characterId": "specter-tenebria",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/specter-tenebria/portrait.webp"
+  },
+  {
+    "characterId": "spirit-eye-celine",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/spirit-eye-celine/portrait.webp"
+  },
+  {
+    "characterId": "stark",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/stark/portrait.webp"
+  },
+  {
+    "characterId": "straze",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/straze/portrait.webp"
+  },
+  {
+    "characterId": "successor-taeyou",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/successor-taeyou/portrait.webp"
+  },
+  {
+    "characterId": "summer-break-charlotte",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/summer-break-charlotte/portrait.webp"
+  },
+  {
+    "characterId": "summers-disciple-alexa",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/summers-disciple-alexa/portrait.webp"
+  },
+  {
+    "characterId": "summertime-iseria",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/summertime-iseria/portrait.webp"
+  },
+  {
+    "characterId": "support-model-brinus",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/support-model-brinus/portrait.webp"
+  },
+  {
+    "characterId": "surin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/surin/portrait.webp"
+  },
+  {
+    "characterId": "suthan",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/suthan/portrait.webp"
+  },
+  {
+    "characterId": "sven",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/sven/portrait.webp"
+  },
+  {
+    "characterId": "swift-flagbearer-sigret",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/swift-flagbearer-sigret/portrait.webp"
+  },
+  {
+    "characterId": "sylvan-sage-vivian",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/sylvan-sage-vivian/portrait.webp"
+  },
+  {
+    "characterId": "tactical-archetype-coli",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/tactical-archetype-coli/portrait.webp"
+  },
+  {
+    "characterId": "taeyou",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/taeyou/portrait.webp"
+  },
+  {
+    "characterId": "talaz",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/talaz/portrait.webp"
+  },
+  {
+    "characterId": "talia",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/talia/portrait.webp"
+  },
+  {
+    "characterId": "tamarinne",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/tamarinne/portrait.webp"
+  },
+  {
+    "characterId": "taranor-guard",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/taranor-guard/portrait.webp"
+  },
+  {
+    "characterId": "taranor-royal-guard",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/taranor-royal-guard/portrait.webp"
+  },
+  {
+    "characterId": "tempest-surin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/tempest-surin/portrait.webp"
+  },
+  {
+    "characterId": "tenebria",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/tenebria/portrait.webp"
+  },
+  {
+    "characterId": "tidal-rift-elvira",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/tidal-rift-elvira/portrait.webp"
+  },
+  {
+    "characterId": "tieria",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/tieria/portrait.webp"
+  },
+  {
+    "characterId": "top-model-luluca",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/top-model-luluca/portrait.webp"
+  },
+  {
+    "characterId": "tori",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/tori/portrait.webp"
+  },
+  {
+    "characterId": "troublemaker-crozet",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/troublemaker-crozet/portrait.webp"
+  },
+  {
+    "characterId": "twisted-eidolon-kayron",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/twisted-eidolon-kayron/portrait.webp"
+  },
+  {
+    "characterId": "tywin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/tywin/portrait.webp"
+  },
+  {
+    "characterId": "unbound-knight-arowell",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/unbound-knight-arowell/portrait.webp"
+  },
+  {
+    "characterId": "uncharted-pioneer-politis",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/uncharted-pioneer-politis/portrait.webp"
+  },
+  {
+    "characterId": "urban-shadow-choux",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/urban-shadow-choux/portrait.webp"
+  },
+  {
+    "characterId": "verdant-adin",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/verdant-adin/portrait.webp"
+  },
+  {
+    "characterId": "veronica",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/veronica/portrait.webp"
+  },
+  {
+    "characterId": "victorika",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/victorika/portrait.webp"
+  },
+  {
+    "characterId": "vigilante-leader-glenn",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/vigilante-leader-glenn/portrait.webp"
+  },
+  {
+    "characterId": "vildred",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/vildred/portrait.webp"
+  },
+  {
+    "characterId": "violet",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/violet/portrait.webp"
+  },
+  {
+    "characterId": "vivian",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/vivian/portrait.webp"
+  },
+  {
+    "characterId": "wanda",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/wanda/portrait.webp"
+  },
+  {
+    "characterId": "wanderer-silk",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/wanderer-silk/portrait.webp"
+  },
+  {
+    "characterId": "wandering-prince-cidd",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/wandering-prince-cidd/portrait.webp"
+  },
+  {
+    "characterId": "watcher-schuri",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/watcher-schuri/portrait.webp"
+  },
+  {
+    "characterId": "westwind-executioner-schuri",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/westwind-executioner-schuri/portrait.webp"
+  },
+  {
+    "characterId": "witch-of-the-mere-tenebria",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/witch-of-the-mere-tenebria/portrait.webp"
+  },
+  {
+    "characterId": "wretched-rose",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/wretched-rose/portrait.webp"
+  },
+  {
+    "characterId": "yoonryoung",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/yoonryoung/portrait.webp"
+  },
+  {
+    "characterId": "young-senya",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/young-senya/portrait.webp"
+  },
+  {
+    "characterId": "yufine",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/yufine/portrait.webp"
+  },
+  {
+    "characterId": "yulha",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/yulha/portrait.webp"
+  },
+  {
+    "characterId": "yuna",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/yuna/portrait.webp"
+  },
+  {
+    "characterId": "zahhak",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/zahhak/portrait.webp"
+  },
+  {
+    "characterId": "zealot-carmainerose",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/zealot-carmainerose/portrait.webp"
+  },
+  {
+    "characterId": "zeno",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/zeno/portrait.webp"
+  },
+  {
+    "characterId": "zerato",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/zerato/portrait.webp"
+  },
+  {
+    "characterId": "zio",
+    "universeId": "epic-seven",
+    "localPath": "/assets/characters/epic-seven/zio/portrait.webp"
+  },
+  {
     "characterId": "aino",
     "universeId": "genshin",
     "localPath": "/assets/characters/genshin/aino/portrait.webp"
@@ -1418,6 +3363,281 @@
     "characterId": "yunli",
     "universeId": "star-rail",
     "localPath": "/assets/characters/star-rail/yunli/portrait.webp"
+  },
+  {
+    "characterId": "amora",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/amora/portrait.webp"
+  },
+  {
+    "characterId": "annah",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/annah/portrait.webp"
+  },
+  {
+    "characterId": "asherah",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/asherah/portrait.webp"
+  },
+  {
+    "characterId": "asherah-waltz-of-starlight",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/asherah-waltz-of-starlight/portrait.webp"
+  },
+  {
+    "characterId": "bell-rhys",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/bell-rhys/portrait.webp"
+  },
+  {
+    "characterId": "besta",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/besta/portrait.webp"
+  },
+  {
+    "characterId": "bunnygirl-charlotte",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/bunnygirl-charlotte/portrait.webp"
+  },
+  {
+    "characterId": "bunnygirl-claire",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/bunnygirl-claire/portrait.webp"
+  },
+  {
+    "characterId": "bunnygirl-scarlet",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/bunnygirl-scarlet/portrait.webp"
+  },
+  {
+    "characterId": "carmen",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/carmen/portrait.webp"
+  },
+  {
+    "characterId": "carmen-eternal-promise",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/carmen-eternal-promise/portrait.webp"
+  },
+  {
+    "characterId": "carnelia",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/carnelia/portrait.webp"
+  },
+  {
+    "characterId": "ceres",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/ceres/portrait.webp"
+  },
+  {
+    "characterId": "charlotte",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/charlotte/portrait.webp"
+  },
+  {
+    "characterId": "claire",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/claire/portrait.webp"
+  },
+  {
+    "characterId": "clarissa",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/clarissa/portrait.webp"
+  },
+  {
+    "characterId": "cristelle",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/cristelle/portrait.webp"
+  },
+  {
+    "characterId": "dana",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/dana/portrait.webp"
+  },
+  {
+    "characterId": "elisa",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/elisa/portrait.webp"
+  },
+  {
+    "characterId": "emilly",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/emilly/portrait.webp"
+  },
+  {
+    "characterId": "epindel",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/epindel/portrait.webp"
+  },
+  {
+    "characterId": "epindel-sun",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/epindel-sun/portrait.webp"
+  },
+  {
+    "characterId": "fei",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/fei/portrait.webp"
+  },
+  {
+    "characterId": "frey",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/frey/portrait.webp"
+  },
+  {
+    "characterId": "frey-noble-princess",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/frey-noble-princess/portrait.webp"
+  },
+  {
+    "characterId": "gwen",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/gwen/portrait.webp"
+  },
+  {
+    "characterId": "harley",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/harley/portrait.webp"
+  },
+  {
+    "characterId": "haydee",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/haydee/portrait.webp"
+  },
+  {
+    "characterId": "hilde",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/hilde/portrait.webp"
+  },
+  {
+    "characterId": "kyra",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/kyra/portrait.webp"
+  },
+  {
+    "characterId": "lacy",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/lacy/portrait.webp"
+  },
+  {
+    "characterId": "lily",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/lily/portrait.webp"
+  },
+  {
+    "characterId": "lugh",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/lugh/portrait.webp"
+  },
+  {
+    "characterId": "luna",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/luna/portrait.webp"
+  },
+  {
+    "characterId": "luna-white-pearl-trap",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/luna-white-pearl-trap/portrait.webp"
+  },
+  {
+    "characterId": "lydia",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/lydia/portrait.webp"
+  },
+  {
+    "characterId": "lyn",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/lyn/portrait.webp"
+  },
+  {
+    "characterId": "marcille",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/marcille/portrait.webp"
+  },
+  {
+    "characterId": "mina",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/mina/portrait.webp"
+  },
+  {
+    "characterId": "muriel",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/muriel/portrait.webp"
+  },
+  {
+    "characterId": "naru",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/naru/portrait.webp"
+  },
+  {
+    "characterId": "omega",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/omega/portrait.webp"
+  },
+  {
+    "characterId": "petra",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/petra/portrait.webp"
+  },
+  {
+    "characterId": "professor-m",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/professor-m/portrait.webp"
+  },
+  {
+    "characterId": "roberta",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/roberta/portrait.webp"
+  },
+  {
+    "characterId": "rosaria",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/rosaria/portrait.webp"
+  },
+  {
+    "characterId": "scarlet",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/scarlet/portrait.webp"
+  },
+  {
+    "characterId": "seira",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/seira/portrait.webp"
+  },
+  {
+    "characterId": "serpang",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/serpang/portrait.webp"
+  },
+  {
+    "characterId": "smile",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/smile/portrait.webp"
+  },
+  {
+    "characterId": "smile-sunshine-cat",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/smile-sunshine-cat/portrait.webp"
+  },
+  {
+    "characterId": "tanya",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/tanya/portrait.webp"
+  },
+  {
+    "characterId": "trish",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/trish/portrait.webp"
+  },
+  {
+    "characterId": "tyria",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/tyria/portrait.webp"
+  },
+  {
+    "characterId": "vera",
+    "universeId": "star-savior",
+    "localPath": "/assets/characters/star-savior/vera/portrait.webp"
   },
   {
     "characterId": "aalto",

@@ -687,6 +687,102 @@ it('separates public chat channels, keeps retries in their original channel and 
 });
 beforeAll(async () => {
   platform = await createPlatform(resolve('.'), { memory: true, timers: false });
+  platform.store.isOnline = () => true;
+});
+it('keeps Starter, Universe I and Universe II drops in their own pools and rejects type-swapped retries', async () => {
+  const c = await user(false, false);
+  await platform.store.economy.grant(
+    c.profile.id,
+    'prisms',
+    1000,
+    'booster-pool-test-grant',
+    'test',
+  );
+  const one = await ok<import('@gacha-triad/shared/platform').BoosterView>(c, '/boosters/buy', {
+    quantity: 1,
+    type: 'standard',
+    requestId: 'booster-pool-one',
+  });
+  const two = await ok<import('@gacha-triad/shared/platform').BoosterView>(c, '/boosters/buy', {
+    quantity: 1,
+    type: 'universe-ii',
+    requestId: 'booster-pool-two',
+  });
+  expect(
+    (
+      await request(c, '/boosters/buy', {
+        quantity: 1,
+        type: 'universe-ii',
+        requestId: 'booster-pool-one',
+      })
+    ).statusCode,
+  ).toBe(409);
+  expect(
+    (
+      await request(c, '/boosters/buy', {
+        quantity: 1,
+        type: 'starter',
+        requestId: 'no-paid-starters',
+      })
+    ).statusCode,
+  ).toBe(400);
+  const openedOne = await ok<import('@gacha-triad/shared/platform').BoosterView>(
+      c,
+      `/boosters/${one.id}/open`,
+      {},
+    ),
+    openedTwo = await ok<import('@gacha-triad/shared/platform').BoosterView>(
+      c,
+      `/boosters/${two.id}/open`,
+      {},
+    );
+  expect(
+    openedOne.cards.every((card) =>
+      ['genshin', 'star-rail', 'zenless', 'wuthering-waves'].includes(card.universeId),
+    ),
+  ).toBe(true);
+  expect(
+    openedTwo.cards.every((card) =>
+      ['epic-seven', 'star-savior', 'nte', 'endfield'].includes(card.universeId),
+    ),
+  ).toBe(true);
+  for (const pack of (
+    await ok<import('@gacha-triad/shared/platform').BoosterView[]>(c, '/boosters')
+  ).filter((pack) => pack.type === 'starter')) {
+    const opened = await ok<import('@gacha-triad/shared/platform').BoosterView>(
+      c,
+      `/boosters/${pack.id}/open`,
+      {},
+    );
+    expect(
+      opened.cards.every(
+        (card) =>
+          card.rarity <= 4 &&
+          ['genshin', 'star-rail', 'zenless', 'wuthering-waves'].includes(card.universeId),
+      ),
+    ).toBe(true);
+    expect(opened.cards[4].rarity).toBeGreaterThanOrEqual(3);
+  }
+});
+it('disables and rejects rematches after the opponent leaves the result or goes offline', async () => {
+  const a = await user(),
+    b = await user();
+  const lobby = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'custom', allowBots: false });
+  const { matchId } = await ok<{ matchId: string }>(b, `/lobbies/${lobby.lobbyId}/join`, {});
+  await ok(b, `/matches/${matchId}/resign`, {});
+  expect((await ok<MatchView>(a, `/matches/${matchId}`)).rematch.unavailableReason).toBeNull();
+  platform.store.isOnline = (id) => id !== b.profile.id;
+  try {
+    expect((await ok<MatchView>(a, `/matches/${matchId}`)).rematch.unavailableReason).toMatch(
+      /offline/,
+    );
+    expect((await request(a, `/matches/${matchId}/rematch`, {})).statusCode).toBe(409);
+  } finally {
+    platform.store.isOnline = () => true;
+  }
+  await ok(b, `/matches/${matchId}/leave`, {});
+  expect((await ok<MatchView>(a, `/matches/${matchId}`)).rematch.unavailableReason).toMatch(/left/);
+  expect((await request(a, `/matches/${matchId}/rematch`, {})).statusCode).toBe(409);
 });
 afterAll(async () => {
   vi.restoreAllMocks();
@@ -1005,7 +1101,7 @@ it('blocks first duels and lobby joins until onboarding is complete', async () =
 it('keeps Holo ownership separate, accepts it in a deck and trades the exact finish', async () => {
   const a = await user(true),
     b = await user(true),
-    base = a.profile.deck[0].replace(/::holo$/, ''),
+    base = a.profile.deck[0].replace(/::holo(?::[0-3])?$/, ''),
     holo = base + '::holo';
   await platform.db.read((sql) =>
     sql(

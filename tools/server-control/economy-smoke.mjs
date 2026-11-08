@@ -29,35 +29,45 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
     shopAfter.inventory[target.id].quantity,
     (shopBefore.inventory[target.id]?.quantity ?? 0) + 1,
   );
-  await page.screenshot({ path: 'docs/screenshots/v11-card-shop.png', fullPage: true });
+  await page.screenshot({ path: 'docs/screenshots/v12-card-shop.png', fullPage: true });
   await page.getByLabel('Finish', { exact: true }).selectOption('holo');
   await expect(page.locator('.card-buy-button')).toHaveCount(0);
   await page.goto(origin + '/gachatriad/boosters');
   await page.getByRole('button', { name: 'Claim daily booster', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Claimed today', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Daily claimed', exact: true })).toBeDisabled();
   const before = await api(client, '/profile');
-  await page.getByRole('button', { name: 'Buy booster', exact: true }).click();
+  await page.getByRole('button', { name: 'Buy Gacha Universe II Booster', exact: true }).click();
   await page.getByLabel('Booster quantity', { exact: true }).fill('10');
-  await expect(page.getByRole('dialog', { name: 'Buy boosters' })).toContainText(
-    'Spend 1500 Stellar Prisms',
+  await expect(page.getByRole('dialog', { name: 'Buy Gacha Universe II Boosters' })).toContainText(
+    '◇ 1500',
   );
   await page.getByRole('button', { name: 'Confirm purchase', exact: true }).click();
   await expect(
-    page.getByRole('button', { name: 'Open standard booster (10 available)', exact: true }),
+    page.getByRole('button', {
+      name: 'Open Gacha Universe II Booster (10 of 10 available)',
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(page.locator('.booster-count').filter({ hasText: '×10' })).toBeVisible();
   assert.equal((await api(client, '/profile')).prisms, before.prisms - 1500);
-  await page.screenshot({ path: 'docs/screenshots/v11-booster-stacks.png', fullPage: true });
-  await page.getByRole('button', { name: 'Open ×10', exact: true }).click();
-  await page.getByRole('button', { name: 'Open 10 boosters', exact: true }).click();
-  const batch = page.locator('.batch-opening');
-  await expect(batch.getByRole('heading', { name: '50 cards added', exact: true })).toBeVisible();
-  await expect(batch.locator('.batch-card-grid .playing-card').first()).toBeVisible();
+  await page.screenshot({ path: 'docs/screenshots/v12-booster-stacks.png', fullPage: true });
+  await page
+    .getByRole('button', {
+      name: 'Open Gacha Universe II Booster (10 of 10 available)',
+      exact: true,
+    })
+    .click();
+  const batch = page.locator('.automatic-opening');
+  await expect(batch.locator('.auto-revealed-card')).toBeVisible();
+  await expect(batch.getByRole('heading', { name: '50 cards added', exact: true })).toBeVisible({
+    timeout: 120000,
+  });
+  await expect(batch.locator('.auto-results-grid .playing-card').first()).toBeVisible();
   assert.equal(
     Object.values((await api(client, '/profile')).inventory).reduce((s, c) => s + c.quantity, 0),
     Object.values(before.inventory).reduce((s, c) => s + c.quantity, 0) + 50,
   );
-  await batch.locator('.batch-card-grid').evaluate(async (el) => {
+  await batch.locator('.auto-results-grid').evaluate(async (el) => {
     await Promise.all(
       el
         .getAnimations({ subtree: true })
@@ -65,8 +75,8 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
         .map((a) => a.finished.catch(() => {})),
     );
   });
-  await page.screenshot({ path: 'docs/screenshots/v11-open-ten.png' });
-  await batch.getByRole('button', { name: 'Keep cards', exact: true }).click();
+  await page.screenshot({ path: 'docs/screenshots/v12-open-ten.png' });
+  await batch.getByRole('button', { name: 'Continue', exact: true }).click();
   const purchased = await api(client, '/boosters/buy', {
     quantity: 50,
     requestId: 'crafting-browser-fixture',
@@ -80,10 +90,13 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
     requestId: 'open-five-browser-fixture',
   });
   await page.reload();
-  await page.getByRole('button', { name: 'Open all (6)', exact: true }).click();
-  await page.getByRole('button', { name: 'Open 6 boosters', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '30 cards added', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Keep cards', exact: true }).click();
+  await page.getByRole('button', { name: 'Open 6 packs', exact: true }).click();
+  const secondOpening = page.locator('.automatic-opening');
+  await expect(secondOpening.locator('.auto-revealed-card')).toBeVisible();
+  await expect(page.getByRole('heading', { name: '30 cards added', exact: true })).toBeVisible({
+    timeout: 90000,
+  });
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
   const p = await api(client, '/profile');
   const spares = catalog
     .filter((c) => c.rarity === 1)
@@ -113,7 +126,7 @@ export async function checkEconomy({ page, client, api, admin, origin }) {
   await page.getByRole('button', { name: 'Confirm', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Trade Up complete', exact: true })).toBeVisible();
   await expect(page.locator('.duplicate-reward .playing-card')).toHaveClass(/rarity-2/);
-  await page.screenshot({ path: 'docs/screenshots/v11-trade-up.png' });
+  await page.screenshot({ path: 'docs/screenshots/v12-trade-up.png' });
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
   const after = await api(client, '/profile');
   assert.equal(after.prisms, p.prisms + 5);

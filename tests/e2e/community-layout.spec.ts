@@ -90,55 +90,63 @@ test('sorts the filtered collection independently by name, rarity and total stat
     .evaluateAll((cards) => cards.map((el) => el.textContent!.length));
   expect(rarities).toEqual([...rarities].sort((a, b) => b - a));
 });
-test('opens four mixed-source boosters together and guards fast reveals until artwork is loaded', async ({
-  page,
-}) => {
-  test.setTimeout(60000);
+test('opens four mixed-source boosters automatically and keeps every result', async ({ page }) => {
+  test.setTimeout(90000);
   await page.goto('/boosters');
   await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
   await page.locator('.account-control').click();
   await page.getByLabel('Player name').fill('Pack tester');
-  await page.getByLabel('Email', { exact: true }).fill(`packs-${crypto.randomUUID()}@test.invalid`);
+  await page
+    .getByLabel('Email', { exact: true })
+    .fill('packs-' + crypto.randomUUID() + '@test.invalid');
   await page.getByLabel('Password', { exact: true }).fill('booster-test-password-123');
   await page.getByRole('button', { name: 'Create account', exact: true }).click();
   await expect(page.locator('.account-dialog')).not.toBeVisible();
   await page.getByRole('button', { name: 'Claim daily booster', exact: true }).click();
-  await page.getByRole('button', { name: 'Open all (4)', exact: true }).click();
-  await page.getByRole('button', { name: 'Open 4 boosters', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '20 cards added', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Keep cards', exact: true }).click();
+  await page.getByRole('button', { name: 'Open 4 packs', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '20 cards added', exact: true })).toBeVisible({
+    timeout: 60000,
+  });
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  const profile = await (await page.request.get('/api/profile')).json();
+  expect(
+    Object.values(profile.inventory).reduce((sum: number, c: any) => sum + c.quantity, 0),
+  ).toBe(20);
 });
-test('waits for artwork and enforces a reveal cooldown when clicks or Space are spammed', async ({
+
+test('waits for artwork and advances automatically without manual reveal controls', async ({
   page,
 }) => {
   await page.goto('/boosters');
   await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
+  await page.getByLabel('Boosters to open').selectOption('1');
   let release!: () => void;
-  const gate = new Promise<void>((r) => (release = r));
+  const gate = new Promise<void>((resolve) => (release = resolve));
   await page.route('**/assets/characters/**/portrait.webp', async (route) => {
     await gate;
     await route.continue();
   });
   try {
-    await page.getByRole('button', { name: /^Open starter booster/ }).click();
-    const pack = page.locator('.pack-opening');
-    await pack.getByRole('button', { name: 'Open booster', exact: true }).click();
-    await expect(pack.getByRole('button', { name: 'Reveal card 1', exact: true })).toBeDisabled();
-    await expect(pack).toContainText('Loading artwork…');
+    await page.getByRole('button', { name: /Open Starter Booster/ }).click();
+    const pack = page.locator('.automatic-opening');
+    await expect(pack).toHaveAttribute('data-phase', 'pack');
+    await page.waitForTimeout(1000);
+    await expect(pack.locator('.auto-revealed-card')).toHaveCount(0);
     release();
-    await pack.getByRole('button', { name: 'Reveal card 1', exact: true }).click();
-    const next = pack.getByRole('button', { name: 'Next card', exact: true }).first();
-    await expect(next).toBeDisabled();
-    await page.keyboard.press('Space');
-    await page.keyboard.press('Space');
-    await expect(pack.locator('.pack-opening-header')).toContainText('1 / 5');
-    await expect(next).toBeEnabled();
-    await next.click();
-    await expect(pack.locator('.pack-opening-header')).toContainText('2 / 5');
+    await expect(pack.locator('.auto-revealed-card')).toBeVisible();
+    await expect(pack).toHaveAttribute('data-position', '0');
+    await expect(pack.getByRole('button', { name: /Reveal|Next card/ })).toHaveCount(0);
+    await expect(pack).toHaveAttribute('data-position', '1');
+    await pack.getByRole('button', { name: 'Close booster opening' }).click();
+    const profile = await (await page.request.get('/api/profile')).json();
+    expect(
+      Object.values(profile.inventory).reduce((sum: number, c: any) => sum + c.quantity, 0),
+    ).toBe(5);
   } finally {
     release();
   }
 });
+
 test('uses genuine old/new owner faces for Plus and Combo captures', async ({ page }, info) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/cards');

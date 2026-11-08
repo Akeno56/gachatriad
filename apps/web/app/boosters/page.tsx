@@ -1,57 +1,88 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { ECONOMY, type BoosterView, type DailyBooster } from '@gacha-triad/shared/platform';
-import { BoosterOpening } from '../../components/booster-opening';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import {
+  BOOSTER_TYPES,
+  ECONOMY,
+  type BoosterType,
+  type BoosterView,
+  type DailyBooster,
+} from '@gacha-triad/shared/platform';
+import { AutomaticBoosterOpening } from '../../components/automatic-booster-opening';
 import { useSession } from '../../components/session';
 import { useGameAudio } from '../../components/game-shell';
 import { api, ApiError } from '../../lib/platform';
-import { BatchBoosterOpening } from '../../components/batch-booster-opening';
-function savedPurchase(key: string): { id: string; quantity: number } | null {
-  const raw = sessionStorage.getItem(key);
-  if (!raw) return null;
+import { assetPath } from '../../lib/connection';
+type Purchase = { id: string; quantity: number; type: BoosterType };
+function pendingPurchase(key: string): Purchase | null {
   try {
-    const value = JSON.parse(raw);
+    const value = JSON.parse(sessionStorage.getItem(key) ?? 'null');
     if (
+      value &&
       typeof value.id === 'string' &&
       /^[a-zA-Z0-9-]{8,80}$/.test(value.id) &&
       Number.isInteger(value.quantity) &&
       value.quantity >= 1 &&
-      value.quantity <= 100
+      value.quantity <= 100 &&
+      BOOSTER_TYPES.some((t) => t.id === (value.type ?? 'standard') && t.id !== 'starter')
     )
-      return value;
-  } catch {
-    if (/^[a-zA-Z0-9-]{8,80}$/.test(raw)) return { id: raw, quantity: 1 };
-  }
-  sessionStorage.removeItem(key);
+      return { ...value, type: value.type ?? 'standard' };
+  } catch {}
   return null;
 }
-
 export default function Boosters() {
   const { profile, revision, refresh } = useSession(),
     play = useGameAudio();
   const [packs, setPacks] = useState<BoosterView[]>([]),
-    [receipt, setReceipt] = useState<BoosterView | null>(null);
-  const [busy, setBusy] = useState(false),
-    [error, setError] = useState('');
-  const [buyOpen, setBuyOpen] = useState(false);
-  const [quantity, setQuantity] = useState(1);
-  const [daily, setDaily] = useState<DailyBooster | null>(null),
-    [batch, setBatch] = useState<BoosterView[] | null>(null);
-  const pendingPurchase = useRef<{ id: string; quantity: number } | null>(null);
-  const buyDialog = useRef<HTMLDialogElement>(null);
+    [daily, setDaily] = useState<DailyBooster | null>(null),
+    [opening, setOpening] = useState<BoosterView[] | null>(null),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState(''),
+    [selected, setSelected] = useState<BoosterType>('standard'),
+    [quantity, setQuantity] = useState(1),
+    [amount, setAmount] = useState('all'),
+    [modal, setModal] = useState<'buy' | 'odds' | 'history' | null>(null);
+  const dialog = useRef<HTMLDialogElement>(null),
+    purchase = useRef<Purchase | null>(null),
+    resumed = useRef(false);
+  const purchaseKey = `triad-booster-purchase:${profile?.id}`;
+  useEffect(() => {
+    setPacks([]);
+    setOpening(null);
+    setError('');
+    setModal(null);
+    resumed.current = false;
+    purchase.current = profile ? pendingPurchase(purchaseKey) : null;
+    if (purchase.current) {
+      setSelected(purchase.current.type);
+      setQuantity(purchase.current.quantity);
+      setModal('buy');
+    }
+  }, [profile?.id]);
   useEffect(() => {
     if (!profile) return;
     let active = true;
-    void api<BoosterView[]>('/boosters')
-      .then((p) => {
-        if (active) setPacks(p);
-      })
-      .catch((e) => {
-        if (active) setError(e.message);
-      });
-    void api<DailyBooster>('/boosters/daily')
-      .then((next) => {
-        if (active) setDaily(next);
+    void Promise.all([api<BoosterView[]>('/boosters'), api<DailyBooster>('/boosters/daily')])
+      .then(([next, daily]) => {
+        if (!active) return;
+        setPacks(next);
+        setDaily(daily);
+        if (resumed.current) return;
+        resumed.current = true;
+        try {
+          const saved = JSON.parse(sessionStorage.getItem(`triad-opening:${profile.id}`) ?? 'null');
+          if (saved && Array.isArray(saved.ids) && saved.ids.length <= 10) {
+            const selected = saved.ids.map((id: string) => next.find((p) => p.id === id));
+            if (selected.length && selected.every(Boolean)) {
+              setOpening(selected);
+              return;
+            }
+          }
+        } catch {}
+        if (new URLSearchParams(location.search).get('starter') === '1') {
+          const starters = next.filter((p) => p.type === 'starter' && !p.openedAt);
+          if (starters.length) setOpening(starters.slice(0, 10));
+          history.replaceState(history.state, '', location.pathname);
+        }
       })
       .catch((e) => {
         if (active) setError(e.message);
@@ -61,107 +92,90 @@ export default function Boosters() {
     };
   }, [profile?.id, revision]);
   useEffect(() => {
-    setReceipt(null);
-    setPacks([]);
-    setError('');
-    setBuyOpen(false);
-    setQuantity(1);
-    setDaily(null);
-    setBatch(null);
-    pendingPurchase.current = null;
-    if (profile) {
-      const pending = savedPurchase(`triad-booster-purchase:${profile.id}`);
-      if (pending) {
-        pendingPurchase.current = pending;
-        setQuantity(pending.quantity);
-        setBuyOpen(true);
-      }
-    }
-  }, [profile?.id]);
-  useEffect(() => {
-    if (buyOpen) buyDialog.current?.showModal();
-  }, [buyOpen]);
-  function open(pack: BoosterView) {
-    setReceipt(pack);
+    if (modal) dialog.current?.showModal();
+  }, [modal]);
+  const unopened = packs.filter((p) => !p.openedAt),
+    recent = packs.filter((p) => p.openedAt),
+    cost = quantity * ECONOMY.packCost;
+  const selectedType = BOOSTER_TYPES.find((type) => type.id === selected)!;
+  function begin(packs: BoosterView[]) {
+    resumed.current = true;
+    setOpening(packs.slice(0, 10));
   }
   async function buy() {
-    if (!profile || busy) return;
+    if (busy || !profile) return;
     setBusy(true);
     setError('');
     try {
-      const key = `triad-booster-purchase:${profile.id}`;
-      if (!pendingPurchase.current) {
-        pendingPurchase.current = savedPurchase(key);
-        if (!pendingPurchase.current || pendingPurchase.current.quantity !== quantity)
-          pendingPurchase.current = { id: crypto.randomUUID(), quantity };
-      }
-      sessionStorage.setItem(key, JSON.stringify(pendingPurchase.current));
+      purchase.current ??= { id: crypto.randomUUID(), quantity, type: selected };
+      sessionStorage.setItem(purchaseKey, JSON.stringify(purchase.current));
       await api('/boosters/buy', {
-        requestId: pendingPurchase.current.id,
-        quantity: pendingPurchase.current.quantity,
+        requestId: purchase.current.id,
+        quantity: purchase.current.quantity,
+        type: purchase.current.type,
       });
-      sessionStorage.removeItem(key);
-      pendingPurchase.current = null;
-      buyDialog.current?.close();
-      setBuyOpen(false);
+      sessionStorage.removeItem(purchaseKey);
+      purchase.current = null;
+      setModal(null);
       play('menu');
       await refresh();
     } catch (e) {
       if (e instanceof ApiError && e.status >= 400 && e.status < 500) {
-        sessionStorage.removeItem(`triad-booster-purchase:${profile.id}`);
-        pendingPurchase.current = null;
+        sessionStorage.removeItem(purchaseKey);
+        purchase.current = null;
       }
       setError((e as Error).message);
     } finally {
       setBusy(false);
     }
   }
-  const unopened = packs.filter((p) => !p.openedAt),
-    history = packs.filter((p) => p.openedAt);
-  const stacks = (['starter', 'daily', 'purchase', 'admin'] as const)
-    .map((source) => ({ source, packs: unopened.filter((p) => p.source === source) }))
-    .filter((s) => s.packs.length);
-  const maxQuantity = Math.min(100, Math.floor((profile?.prisms ?? 0) / ECONOMY.packCost));
-  const totalCost = quantity * ECONOMY.packCost;
   return (
-    <div className="content-page boosters-page">
-      <div className="booster-heading">
-        <h1>Boosters</h1>
+    <div className="content-page boosters-page booster-hall">
+      <header className="booster-hall-heading">
+        <div>
+          <div className="eyebrow">THE CARD SHOP</div>
+          <h1>Boosters</h1>
+        </div>
         <strong className="prism-balance" aria-label="Stellar Prisms balance">
           ◇ {profile?.prisms ?? 0} <span>Stellar Prisms</span>
         </strong>
-      </div>
-      <p>
-        Five cards per booster. At least one is 3★ or higher. Cards go straight into your collection
-        when opened.
-      </p>
-      <p className="error-message" role="alert">
-        {error}
-      </p>
-      <section className="menu-window daily-booster">
-        <div>
-          <h2>Daily free booster</h2>
-          <p>
-            {!profile?.registered
-              ? 'Register an account to claim one free booster every day.'
-              : daily?.available
-                ? 'One standard booster, on the house.'
-                : 'Today’s booster is claimed.'}
-          </p>
-          {daily && (
-            <small>Resets at {new Date(daily.resetAt).toLocaleString()} · midnight UTC</small>
-          )}
-        </div>
+      </header>
+      <div className="booster-hall-toolbar">
+        <span>
+          Your packs <b>{unopened.length}</b>
+        </span>
+        <label>
+          Open at a time{' '}
+          <select
+            aria-label="Boosters to open"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          >
+            <option value="all">All · up to 10</option>
+            <option value="1">1</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+          </select>
+        </label>
+        {unopened.length > 1 && (
+          <button
+            className="outline-button"
+            disabled={busy}
+            onClick={() => begin(unopened.slice(0, amount === 'all' ? 10 : Number(amount)))}
+          >
+            Open {Math.min(unopened.length, amount === 'all' ? 10 : Number(amount))} packs
+          </button>
+        )}
         <button
-          className="outline-button"
+          className="outline-button daily-claim-button"
           disabled={busy || !daily?.available}
+          title={
+            !profile?.registered ? 'Register to claim a free daily Universe I booster' : undefined
+          }
           onClick={async () => {
-            if (busy) return;
             setBusy(true);
-            setError('');
             try {
               await api('/boosters/daily', {});
-              play('menu');
               await refresh();
             } catch (e) {
               setError((e as Error).message);
@@ -170,248 +184,213 @@ export default function Boosters() {
             }
           }}
         >
-          {daily?.packId ? 'Claimed today' : 'Claim daily booster'}
+          {daily?.packId ? 'Daily claimed' : 'Claim daily booster'}
         </button>
-      </section>
-      <section className="menu-window booster-shop">
-        <div className="booster-pack-art" aria-hidden="true">
-          <span>GT</span>
-          <b>BOOSTER</b>
-          <i>★★★★★</i>
-        </div>
-        <div>
-          <h2>Standard booster</h2>
-          <p>Five cards · one guaranteed 3★ or higher</p>
-          <p>
-            Price: <strong>{ECONOMY.packCost} Stellar Prisms</strong>
-          </p>
-          <button
-            className="primary-button"
-            disabled={
-              busy || !profile || (!pendingPurchase.current && profile.prisms < ECONOMY.packCost)
-            }
-            onClick={() => {
-              const saved = savedPurchase(`triad-booster-purchase:${profile?.id}`);
-              if (saved) {
-                pendingPurchase.current = saved;
-                setQuantity(saved.quantity);
-              } else {
-                pendingPurchase.current = null;
-                setQuantity(1);
-              }
-              setBuyOpen(true);
-            }}
-          >
-            Buy booster
-          </button>
-          {profile && profile.prisms < ECONOMY.packCost && (
-            <p>
-              Complete duels to earn Stellar Prisms: 50 for a win, 25 for a draw, 10 for a loss.
-            </p>
-          )}
-          <small>
-            Forfeits and abandoned drafts do not award currency. Guests can earn and spend; register
-            to keep your progress.
-          </small>
-        </div>
-      </section>
-      <section className="booster-inventory">
-        <h2>
-          Your unopened boosters <span>({unopened.length})</span>
-        </h2>
-        {unopened.length > 1 && (
-          <div className="booster-inventory-actions">
-            <button
-              className="outline-button"
-              disabled={busy}
-              onClick={() => setBatch(unopened.slice(0, 10))}
+      </div>
+      <p className="error-message" role="alert">
+        {error}
+      </p>
+      <section className="booster-type-grid" aria-label="Booster types">
+        {BOOSTER_TYPES.map((type) => {
+          const owned = unopened.filter((p) => p.type === type.id),
+            n = Math.min(owned.length, amount === 'all' ? 10 : Number(amount));
+          return (
+            <article
+              key={type.id}
+              className={`booster-type-tile menu-window ${type.id === 'starter' ? 'starter-type-tile' : ''}`}
+              style={{ '--booster-accent': type.color } as CSSProperties}
             >
-              {unopened.length <= 10 ? `Open all (${unopened.length})` : 'Open next 10'}
-            </button>
-          </div>
-        )}
-        <div className="booster-pack-list">
-          {stacks.map(({ source, packs: stack }) => (
-            <div className="booster-stack" key={source}>
-              <button
-                className="menu-window booster-pack-button"
-                disabled={busy}
-                onClick={() => void open(stack[0])}
-                aria-label={`Open ${source === 'starter' ? 'starter' : source === 'daily' ? 'daily' : source === 'admin' ? 'gift' : 'standard'} booster (${stack.length} available)`}
+              <div
+                className={`booster-tile-art ${type.artwork ? 'has-pack-image' : ''}`}
+                aria-hidden="true"
               >
-                <span className={`booster-stack-art ${stack.length > 1 ? 'has-multiple' : ''}`}>
-                  <span className="booster-pack-art" aria-hidden="true">
-                    <span>GT</span>
-                    <b>BOOSTER</b>
-                    <i>★★★★★</i>
-                  </span>
-                  <b className="booster-count" aria-label={`${stack.length} unopened boosters`}>
-                    ×{stack.length}
-                  </b>
+                <img
+                  src={assetPath(type.artwork ?? '/assets/ui/triad-logo.webp')}
+                  alt=""
+                  draggable={false}
+                />
+                <span>
+                  {type.id === 'starter'
+                    ? 'STARTER'
+                    : type.id === 'standard'
+                      ? 'UNIVERSE I'
+                      : 'UNIVERSE II'}
                 </span>
-                <strong>
-                  {source === 'starter'
-                    ? 'Starter booster'
-                    : source === 'daily'
-                      ? 'Daily booster'
-                      : source === 'admin'
-                        ? 'Gift booster'
-                        : 'Standard booster'}
-                </strong>
-                <span>Open · 5 cards</span>
-              </button>
-              {stack.length >= 2 && (
-                <div className="batch-open-actions">
-                  {[...new Set([Math.min(10, stack.length), ...(stack.length > 5 ? [5] : [])])]
-                    .sort((a, b) => a - b)
-                    .map((n) => (
-                      <button
-                        key={n}
-                        className="outline-button"
-                        disabled={busy || stack.length < n}
-                        onClick={() => setBatch(stack.slice(0, n))}
-                      >
-                        Open ×{n}
-                      </button>
-                    ))}
+                <small>5 CARDS</small>
+                {owned.length > 0 && <b className="booster-count">×{owned.length}</b>}
+              </div>
+              <div className="booster-tile-details">
+                <h2>{type.name}</h2>
+                <p>
+                  {type.id === 'starter'
+                    ? 'First three only · 1–4★'
+                    : type.id === 'standard'
+                      ? 'Genshin · HSR · ZZZ · WuWa'
+                      : 'Epic Seven · Star Savior · NTE · Endfield'}
+                </p>
+                <small>One guaranteed 3★+</small>
+                <div className="booster-tile-actions">
+                  {owned.length > 0 && (
+                    <button
+                      className="primary-button"
+                      disabled={busy}
+                      aria-label={`Open ${type.name} (${n} of ${owned.length} available)`}
+                      onClick={() => begin(owned.slice(0, n))}
+                    >
+                      Open ×{n}
+                    </button>
+                  )}
+                  {type.id !== 'starter' ? (
+                    <button
+                      className="outline-button"
+                      aria-label={`Buy ${type.name}`}
+                      disabled={busy || !profile || profile.prisms < ECONOMY.packCost}
+                      onClick={() => {
+                        setSelected(type.id);
+                        setQuantity(1);
+                        purchase.current = null;
+                        setModal('buy');
+                      }}
+                    >
+                      Buy · ◇ {ECONOMY.packCost}
+                    </button>
+                  ) : (
+                    <span className="starter-exclusive">
+                      {owned.length ? 'Onboarding exclusive' : 'Not for sale'}
+                    </span>
+                  )}
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-        {!unopened.length && <p>No unopened boosters.</p>}
+              </div>
+            </article>
+          );
+        })}
       </section>
-      <details className="menu-window booster-odds">
-        <summary>Card odds &amp; pack contents</summary>
-        <p>
-          Standard boosters: each of the first four slots rolls 1★ 50%, 2★ 27%, 3★ 17%, 4★ 5%, 5★
-          1%. The guaranteed slot rolls 3★ 80%, 4★ 17%, 5★ 3%. Characters of the rolled rarity have
-          equal chances.
-        </p>
-        <p>
-          Each card independently has a 0.5% chance to be Holographic. Holo changes appearance only.
-          Each pack contains five different characters; duplicates across packs add copies.
-        </p>
-        <p>
-          Your three free starter boosters use 1–3★ cards for their first four slots (50:27:17
-          weights), favoring characters you do not already own, plus the same guaranteed 3–5★ slot.
-          This ensures a playable first deck. Existing collections stay intact.
-        </p>
-      </details>
-      {history.length > 0 && (
-        <section>
-          <h2>Recently opened</h2>
-          <div className="booster-history">
-            {history.map((p) => (
-              <button
-                key={p.id}
-                className="outline-button"
-                disabled={busy}
-                onClick={() => void open(p)}
-              >
-                View{' '}
-                {p.source === 'starter'
-                  ? 'starter'
-                  : p.source === 'daily'
-                    ? 'daily'
-                    : p.source === 'admin'
-                      ? 'gift'
-                      : 'standard'}{' '}
-                booster · {new Date(p.openedAt!).toLocaleString()}
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
-      {receipt && (
-        <BoosterOpening
-          pack={receipt}
-          onClose={() => setReceipt(null)}
-          onNext={
-            unopened.some((p) => p.id !== receipt.id)
-              ? () => setReceipt(unopened.find((p) => p.id !== receipt.id)!)
-              : undefined
-          }
+      <footer className="booster-hall-footer">
+        <button className="text-button" onClick={() => setModal('odds')}>
+          Pack odds
+        </button>
+        <button
+          className="text-button"
+          disabled={!recent.length}
+          onClick={() => setModal('history')}
+        >
+          Recent openings
+        </button>
+      </footer>
+      {opening && (
+        <AutomaticBoosterOpening
+          key={opening.map((p) => p.id).join(',')}
+          packs={opening}
+          onClose={() => setOpening(null)}
         />
       )}
-      {batch && <BatchBoosterOpening packs={batch} onClose={() => setBatch(null)} />}
-      {buyOpen && (
+      {modal && (
         <dialog
-          ref={buyDialog}
-          className="game-dialog menu-window"
-          aria-labelledby="booster-buy-title"
-          onCancel={() => setBuyOpen(false)}
+          ref={dialog}
+          className="game-dialog menu-window booster-shop-dialog"
+          aria-labelledby="booster-dialog-title"
+          onCancel={(event) => {
+            if (busy) event.preventDefault();
+            else setModal(null);
+          }}
         >
-          <h2 id="booster-buy-title">Buy boosters</h2>
-          <label className="booster-quantity">
-            Quantity
-            <input
-              type="number"
-              aria-label="Booster quantity"
-              min={1}
-              max={Math.max(1, maxQuantity)}
-              value={quantity}
-              disabled={busy || !!pendingPurchase.current}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-            />
-          </label>
-          {pendingPurchase.current && (
-            <p>Retrying your previous purchase of {pendingPurchase.current.quantity} booster(s).</p>
-          )}
-          {!pendingPurchase.current && (
-            <div className="quantity-shortcuts">
-              {[1, 5, 10].map((n) => (
-                <button
-                  key={n}
-                  className="outline-button"
-                  disabled={busy || n > maxQuantity}
-                  onClick={() => setQuantity(n)}
-                >
-                  {n}
-                </button>
-              ))}
+          <h2 id="booster-dialog-title">
+            {modal === 'buy'
+              ? `Buy ${selectedType.name}s`
+              : modal === 'odds'
+                ? 'Booster odds'
+                : 'Recent openings'}
+          </h2>
+          {modal === 'buy' && (
+            <>
+              <label className="booster-quantity">
+                Quantity
+                <input
+                  type="number"
+                  aria-label="Booster quantity"
+                  value={quantity}
+                  min={1}
+                  max={100}
+                  disabled={busy || !!purchase.current}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
+                />
+              </label>
+              <div className="quantity-shortcuts">
+                {[1, 5, 10].map((n) => (
+                  <button
+                    key={n}
+                    className="outline-button"
+                    disabled={busy || !!purchase.current || n * 150 > (profile?.prisms ?? 0)}
+                    onClick={() => setQuantity(n)}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+              <p>
+                {quantity} packs · {quantity * 5} cards · ◇ {Number.isFinite(cost) ? cost : 0}
+              </p>
+              <p>Balance after purchase: {(profile?.prisms ?? 0) - (cost || 0)} Stellar Prisms.</p>
+              {purchase.current && (
+                <p>
+                  Retrying the saved purchase of {purchase.current.quantity} {selectedType.name}s.
+                </p>
+              )}
               <button
-                className="text-button"
-                disabled={busy || maxQuantity < 1}
-                onClick={() => setQuantity(maxQuantity)}
+                className="primary-button"
+                disabled={
+                  busy ||
+                  !Number.isInteger(quantity) ||
+                  quantity < 1 ||
+                  quantity > 100 ||
+                  (!purchase.current && cost > (profile?.prisms ?? 0))
+                }
+                onClick={() => void buy()}
               >
-                Max ({maxQuantity})
+                {busy ? 'Purchasing…' : 'Confirm purchase'}
               </button>
+            </>
+          )}
+          {modal === 'odds' && (
+            <div className="booster-odds-copy">
+              <p>
+                Universe I and II boosters: 1★ 50%, 2★ 27%, 3★ 17%, 4★ 5%, 5★ 1%. The fifth slot: 3★
+                80%, 4★ 17%, 5★ 3%. Holo: 0.5% per card.
+              </p>
+              <p>
+                Starter: 1★ 50%, 2★ 35%, 3★ 10%, 4★ 5%. The fifth slot guarantees 3★/4★ with 2:1
+                weights. Holo: 1%. No 5★ cards; only the first three free boosters.
+              </p>
+              <p>
+                Five distinct characters per pack. Holo adds +1 to one randomly chosen side below A;
+                that direction stays fixed through trades and decks.
+              </p>
+              <p>
+                Universe I: Genshin, Star Rail, ZZZ and Wuthering Waves. Universe II: Epic Seven,
+                Star Savior, NTE and Endfield. Each pack draws only from its own four universes.
+              </p>
             </div>
           )}
-          <p>
-            Spend {Number.isFinite(totalCost) ? totalCost : 0} Stellar Prisms for {quantity} booster
-            {quantity === 1 ? '' : 's'}. Each contains five cards, with at least one 3★ or higher.
-          </p>
-          <p>
-            {pendingPurchase.current
-              ? `Current balance: ${profile?.prisms ?? 0}`
-              : `Balance after purchase: ${(profile?.prisms ?? 0) - (totalCost || 0)}`}{' '}
-            Stellar Prisms.
-          </p>
+          {modal === 'history' && (
+            <div className="booster-history">
+              {recent.map((pack) => (
+                <button
+                  key={pack.id}
+                  className="outline-button"
+                  onClick={() => {
+                    setModal(null);
+                    begin([pack]);
+                  }}
+                >
+                  View {BOOSTER_TYPES.find((t) => t.id === pack.type)?.name} ·{' '}
+                  {new Date(pack.openedAt!).toLocaleString()}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="result-actions">
-            <button
-              className="primary-button"
-              disabled={
-                busy ||
-                !Number.isInteger(quantity) ||
-                quantity < 1 ||
-                quantity > 100 ||
-                (!pendingPurchase.current && totalCost > (profile?.prisms ?? 0))
-              }
-              onClick={() => void buy()}
-            >
-              {busy ? 'Purchasing…' : 'Confirm purchase'}
-            </button>
-            <button
-              className="outline-button"
-              disabled={busy}
-              onClick={() => {
-                buyDialog.current?.close();
-                setBuyOpen(false);
-              }}
-            >
-              Cancel
+            <button className="outline-button" disabled={busy} onClick={() => setModal(null)}>
+              {modal === 'buy' ? 'Cancel' : 'Close'}
             </button>
           </div>
           {error && <p role="alert">{error}</p>}

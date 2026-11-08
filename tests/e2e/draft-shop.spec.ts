@@ -7,7 +7,7 @@ async function player(page: Page, starters = true) {
   await page.context().setExtraHTTPHeaders({
     'x-forwarded-for': `10.91.${Math.floor(++counter / 200)}.${(counter % 200) + 1}`,
   });
-  await page.goto('/cards');
+  await page.goto('/boosters');
   await expect(page.locator('.account-control')).toHaveText('Login/Register');
   await page.locator('.account-control').click();
   await page.getByLabel('Player name').fill(`New rules ${crypto.randomUUID().slice(0, 6)}`);
@@ -153,6 +153,7 @@ test('shows three titled messages and defaults each public chat to its page chan
       'true',
     );
   } finally {
+    await page.unrouteAll({ behavior: 'wait' });
     await b.context.close();
     await c.context.close();
   }

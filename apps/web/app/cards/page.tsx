@@ -1,6 +1,13 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { CARDS, HOLO_CARDS, UNIVERSES, universeName } from '@gacha-triad/shared';
+import {
+  CARDS,
+  HOLO_CARDS,
+  HOLO_VARIANTS,
+  UNIVERSES,
+  universeName,
+  SIDE_NAMES,
+} from '@gacha-triad/shared';
 import type { Card as CardData } from '@gacha-triad/engine';
 import { Card } from '../../components/card';
 import { CardDetail } from '../../components/card-detail';
@@ -27,7 +34,15 @@ export default function CardsPage() {
     [finish, setFinish] = useState('standard'),
     [page, setPage] = useState(0),
     [detail, setDetail] = useState<CardData | null>(null);
-  const cards = (finish === 'holo' ? HOLO_CARDS : CARDS).filter(
+  const ownedHolos = new Map<string, CardData[]>();
+  for (const card of HOLO_VARIANTS)
+    if ((profile?.inventory[card.id]?.quantity ?? 0) > 0) {
+      const group = ownedHolos.get(card.baseCardId!) ?? [];
+      group.push(card);
+      ownedHolos.set(card.baseCardId!, group);
+    }
+  const holoCards = HOLO_CARDS.flatMap((card) => ownedHolos.get(card.baseCardId!) ?? [card]);
+  const cards = (finish === 'holo' ? holoCards : CARDS).filter(
     (c) =>
       c.name.toLowerCase().includes(search.toLowerCase()) &&
       (universe === 'all' || c.universeId === universe) &&
@@ -45,7 +60,8 @@ export default function CardsPage() {
       <div className="eyebrow">YOUR CARD ALBUM</div>
       <h1>Cards</h1>
       <p className="page-description">
-        {CARDS.length} battle cards across six worlds. Cards you haven’t collected are greyed out.
+        {CARDS.length} battle cards across {UNIVERSES.length} worlds. Cards you haven’t collected
+        are greyed out.
       </p>
       <div className="album-filters">
         <label>
@@ -129,8 +145,8 @@ export default function CardsPage() {
       </div>
       {finish === 'holo' && (
         <p className="finish-note">
-          Holo is a cosmetic finish with identical values. Holo copies are rare drops and cannot be
-          bought directly.
+          Holo adds +1 to one random side when acquired. The highlighted value stays fixed through
+          trades. Holo copies cannot be bought directly.
         </p>
       )}
       <p className="catalog-count" role="status">
@@ -168,6 +184,11 @@ export default function CardsPage() {
                         : 'Not owned'
                       : 'Loading ownership…'}
                   </small>
+                  {card.holoBonusSide !== undefined && (
+                    <small className="holo-bonus-description">
+                      Holo · +1 {SIDE_NAMES[card.holoBonusSide]}
+                    </small>
+                  )}
                 </div>
                 {card.finish !== 'holo' && (
                   <button

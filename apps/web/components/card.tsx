@@ -61,8 +61,7 @@ export function Card({
     return (
       <div className={`playing-card card-back ${compact ? 'compact' : ''}`}>
         <div className="back-emblem" aria-hidden="true">
-          <span>G</span>
-          <span>T</span>
+          <img src={assetPath('/assets/ui/triad-logo.webp')} alt="" draggable={false} />
         </div>
         <small>GACHA TRIAD</small>
       </div>
@@ -82,7 +81,12 @@ export function Card({
       {card.finish === 'holo' && (
         <>
           <span className="holo-foil" aria-hidden="true" />
-          <span className="sr-only">Holographic finish</span>
+          <span className="sr-only">
+            Holographic · +1{' '}
+            {card.holoBonusSide !== undefined
+              ? ['Top', 'Right', 'Bottom', 'Left'][card.holoBonusSide]
+              : 'stat'}
+          </span>
         </>
       )}
       {card.rarity === 5 && (
@@ -114,7 +118,10 @@ export function Card({
         }
       >
         {card.stats.map((v, i) => (
-          <span className={`value value-${i}`} key={i}>
+          <span
+            className={`value value-${i} ${card.holoBonusSide === i ? 'holo-bonus-value' : ''}`}
+            key={i}
+          >
             {displayValue(v + modifier)}
           </span>
         ))}

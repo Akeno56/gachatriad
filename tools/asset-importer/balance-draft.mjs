@@ -24,20 +24,37 @@ const modelDigest = createHash('sha256')
     JSON.stringify(JSON.parse(await readFile(resolve(root, 'data/balance/config.json'), 'utf8'))),
   )
   .digest('hex');
-const proposals = characters.map((c) => ({
-  ...proposeBalance(c),
-  sourceRarity: c.sourceRarity,
-  sourceElement: c.sourceElement,
-  tierPlacements: c.tierPlacements,
-  sourcePage: c.sourcePage,
-  sourceSnapshot,
-  modelDigest,
-}));
+let overrides = {};
+try {
+  overrides = JSON.parse(await readFile(resolve(root, 'data/balance/overrides.json'), 'utf8'));
+} catch {}
+const proposals = process.argv.includes('--report-only')
+  ? JSON.parse(await readFile(resolve(root, 'data/balance/proposals.json'), 'utf8'))
+  : characters.map((c) => ({
+      ...proposeBalance(c),
+      ...(overrides[c.id]
+        ? {
+            triadRarity: overrides[c.id].rarity,
+            stats: overrides[c.id].stats,
+            statBudget: overrides[c.id].statBudget,
+            powerIndex: 100,
+            status: 'approved-override',
+            notes: [overrides[c.id].reason],
+          }
+        : {}),
+      sourceRarity: c.sourceRarity,
+      sourceElement: c.sourceElement,
+      tierPlacements: c.tierPlacements,
+      sourcePage: c.sourcePage,
+      sourceSnapshot,
+      modelDigest,
+    }));
 await mkdir(resolve(root, 'data/balance'), { recursive: true });
-await writeFile(
-  resolve(root, 'data/balance/proposals.json'),
-  JSON.stringify(proposals, null, 2) + '\n',
-);
+if (!process.argv.includes('--report-only'))
+  await writeFile(
+    resolve(root, 'data/balance/proposals.json'),
+    JSON.stringify(proposals, null, 2) + '\n',
+  );
 const columns = [
   'id',
   'name',

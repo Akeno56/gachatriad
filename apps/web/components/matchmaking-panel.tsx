@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from './session';
 import { api } from '../lib/platform';
-import { confirmRanked, confirmUnranked } from './ranked-warning';
+import { confirmRanked, confirmUnranked, confirmDraft } from './ranked-warning';
 export function MatchmakingPanel({
   onMatch,
   onRules,
@@ -25,12 +25,19 @@ export function MatchmakingPanel({
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
-  async function queue(mode: 'casual' | 'ranked') {
+  async function queue(mode: 'casual' | 'ranked' | 'draft') {
     if (lock.current) return;
     lock.current = true;
     setError('');
     try {
-      if (!(await (mode === 'ranked' ? confirmRanked(profile) : confirmUnranked(profile)))) return;
+      if (
+        !(await (mode === 'ranked'
+          ? confirmRanked(profile)
+          : mode === 'draft'
+            ? confirmDraft(profile)
+            : confirmUnranked(profile)))
+      )
+        return;
       setBusy(true);
       const result = await api<{ matchId: string | null }>('/lobbies', { mode, allowBots: true });
       await refresh();
@@ -64,9 +71,11 @@ export function MatchmakingPanel({
   const elapsed = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
   return (
     <section className="setup-panel menu-window matchmaking-panel" aria-label="Match setup">
-      <h2 className="window-label">DUEL SETUP</h2>
-      {(['casual', 'ranked'] as const).map((mode) => {
-        const ranked = mode === 'ranked',
+      <h2 className="window-label">Play a game</h2>
+      {(['casual', 'ranked', 'draft'] as const).map((mode) => {
+        const ranked = mode !== 'casual',
+          label = mode === 'draft' ? 'Draft (Ranked)' : ranked ? 'Ranked' : 'Unranked',
+          action = mode === 'draft' ? 'Start Draft (Ranked)' : `Start match (${label})`,
           own = waiting?.mode === mode;
         return (
           <div className={`matchmaking-row ${own ? 'is-queued' : ''}`} key={mode}>
@@ -80,22 +89,18 @@ export function MatchmakingPanel({
                 !!profile.pendingTrade ||
                 !!profile.activeMatchId ||
                 !!profile.waitingLobbyId ||
-                profile.deck.length !== 5 ||
+                (mode !== 'draft' && profile.deck.length !== 5) ||
                 (ranked && !profile.registered)
               }
               onClick={() => void queue(mode)}
-              aria-label={
-                own
-                  ? `${ranked ? 'Ranked' : 'Unranked'} matchmaking queue`
-                  : `Start match (${ranked ? 'Ranked' : 'Unranked'})`
-              }
+              aria-label={own ? `${label} matchmaking queue` : action}
             >
               {own ? (
                 <span role="timer" aria-live="off">
                   In queue for : {elapsed}
                 </span>
               ) : (
-                `Start match (${ranked ? 'Ranked' : 'Unranked'})`
+                action
               )}
             </button>
             {own && (
@@ -103,7 +108,7 @@ export function MatchmakingPanel({
                 className="queue-cancel"
                 disabled={busy}
                 onClick={() => void leave()}
-                aria-label={`Leave ${ranked ? 'Ranked' : 'Unranked'} queue`}
+                aria-label={`Leave ${label} queue`}
               >
                 ×
               </button>
@@ -114,7 +119,7 @@ export function MatchmakingPanel({
       <Link className="outline-button lobby-shortcut" href="/lobbies">
         Browse lobbies
       </Link>
-      {waiting && !['casual', 'ranked'].includes(waiting.mode) && (
+      {waiting && !['casual', 'ranked', 'draft'].includes(waiting.mode) && (
         <p className="waiting-other-lobby">
           {waiting.invited ? 'Waiting for your invited opponent.' : 'You have a waiting lobby.'}{' '}
           <button

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import type { Card as CardData } from '@gacha-triad/engine';
-import { universeName } from '@gacha-triad/shared';
+import { universeName, SIDE_NAMES } from '@gacha-triad/shared';
 import { Card } from './card';
 export function CardDetail({
   card,
@@ -26,6 +26,9 @@ export function CardDetail({
         <>
           <Card card={card} showElement modifier={modifier} />
           <h2>{card.name}</h2>
+          {card.holoBonusSide !== undefined && (
+            <p>Holo bonus: +1 {SIDE_NAMES[card.holoBonusSide]} · fixed when acquired</p>
+          )}
           <p>
             {universeName(card.universeId)} · {card.rarity} stars
           </p>
