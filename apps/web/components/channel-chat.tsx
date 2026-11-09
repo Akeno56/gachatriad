@@ -148,7 +148,9 @@ export function ChannelChat({ compact = false }: { compact?: boolean }) {
           </label>
           <input
             id="main-chat-message"
-            placeholder={`Message ${labels[channel]}…`}
+            placeholder={
+              profile?.registered ? `Message ${labels[channel]}…` : 'Register or sign in to chat'
+            }
             maxLength={300}
             value={message}
             disabled={!profile?.registered}

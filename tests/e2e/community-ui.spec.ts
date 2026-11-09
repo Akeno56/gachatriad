@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openStarterPacks } from './helpers';
+import { openStarterPacks, openSettings } from './helpers';
 test('shows public chat in Play, compact lobby checkboxes, and unselectable inspected artwork', async ({
   page,
 }, info) => {
@@ -23,6 +23,9 @@ test('shows public chat in Play, compact lobby checkboxes, and unselectable insp
   await page.getByRole('button', { name: 'Close card detail' }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const overlay = page.locator('.crt-overlay');
+  await openSettings(page);
+  await page.getByRole('button', { name: 'CRT filter off', exact: true }).click();
+  await page.getByRole('button', { name: 'Game settings', exact: true }).click();
   await expect(overlay).toHaveCSS('animation-name', 'crt-scroll');
   const position = await overlay.evaluate((el) => getComputedStyle(el).backgroundPosition);
   await expect

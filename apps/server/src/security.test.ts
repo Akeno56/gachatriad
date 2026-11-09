@@ -145,3 +145,72 @@ it('limits repeated match/lobby creation independently from read polling', async
   );
   expect((await send('/profile', '10.83.0.1', undefined, token)).statusCode).toBe(200);
 });
+it('tracks the last authenticated browser disconnect and safely reconnects active matches', async () => {
+  const require = createRequire(resolve('apps/web/package.json'));
+  const { io } = require('socket.io-client') as {
+    io: (
+      url: string,
+      options: unknown,
+    ) => { disconnect: () => void; once: (event: string, callback: () => void) => void };
+  };
+  const clients: {
+    ip: string;
+    token: string;
+    profile: import('@gacha-triad/shared/platform').ProfileView;
+  }[] = [];
+  for (let i = 0; i < 2; i++) {
+    const ip = `10.84.0.${i + 1}`,
+      response = await send('/auth/sign-in/anonymous', ip, {}),
+      token = String(response.headers['set-auth-token']);
+    let profile = (await send('/profile', ip, undefined, token)).json();
+    for (const pack of (await send('/boosters', ip, undefined, token)).json())
+      await send(`/boosters/${pack.id}/open`, ip, {}, token);
+    await send('/tutorial/complete', ip, {}, token);
+    profile = (await send('/profile', ip, undefined, token)).json();
+    clients.push({ ip, token, profile });
+  }
+  const port = (p.app.server.address() as { port: number }).port,
+    sockets: ReturnType<typeof io>[] = [];
+  async function connect(client: (typeof clients)[number]) {
+    const socket = io(`http://127.0.0.1:${port}`, {
+      auth: { token: client.token, profileId: client.profile.id },
+      transports: ['websocket'],
+      reconnection: false,
+      extraHeaders: { origin },
+    });
+    sockets.push(socket);
+    await new Promise<void>((resolve) => socket.once('connect', resolve));
+    return socket;
+  }
+  try {
+    const first = await connect(clients[0]),
+      second = await connect(clients[0]);
+    await connect(clients[1]);
+    const { lobbyId } = (
+      await send('/lobbies', clients[0].ip, { mode: 'custom', allowBots: false }, clients[0].token)
+    ).json();
+    const joined = await send(`/lobbies/${lobbyId}/join`, clients[1].ip, {}, clients[1].token);
+    expect(joined.statusCode, joined.body).toBe(200);
+    const { matchId } = joined.json();
+    async function disconnected() {
+      return (
+        await p.db.read((sql) =>
+          sql<{ disconnected_at: [number | null, number | null] }>(
+            'SELECT disconnected_at FROM matches WHERE id=$1',
+            [matchId],
+          ),
+        )
+      )[0].disconnected_at[0];
+    }
+    first.disconnect();
+    await new Promise((r) => setTimeout(r, 40));
+    expect(await disconnected()).toBeNull();
+    second.disconnect();
+    await expect.poll(disconnected).not.toBeNull();
+    await connect(clients[0]);
+    await expect.poll(disconnected).toBeNull();
+    await p.store.resign(clients[0].profile.id, matchId);
+  } finally {
+    for (const socket of sockets) socket.disconnect();
+  }
+});

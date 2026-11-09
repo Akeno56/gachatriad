@@ -148,7 +148,6 @@ export async function createController(options = {}) {
         LOCAL_CONTROL_SECRET: controlSecret,
         LOCAL_BOTS: 'true',
         POPULATE_BOTS: config.allowBots ? 'true' : 'false',
-        BOT_DIFFICULTY: config.botDifficulty,
       },
     });
     const current = child;

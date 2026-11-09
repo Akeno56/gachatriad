@@ -187,7 +187,8 @@ test('plays the supplied MP3 through an end-to-start crossfade and preserves pre
   await openSettings(page);
   await page.getByRole('button', { name: 'Sound effects on', exact: true }).click();
   await openSettings(page);
-  await page.getByRole('button', { name: 'CRT filter on', exact: true }).click();
+  if (await page.getByRole('button', { name: 'CRT filter on', exact: true }).isVisible())
+    await page.getByRole('button', { name: 'CRT filter on', exact: true }).click();
   await page.reload();
   await openSettings(page);
   await expect(page.getByRole('button', { name: 'CRT filter off', exact: true })).toHaveAttribute(

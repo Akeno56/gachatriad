@@ -9,6 +9,7 @@ export async function awardRankTitles(sql: Sql) {
     FROM profiles p JOIN profile_accounts a ON a.profile_id=p.id AND a.is_primary JOIN "user" u ON u.id=a.auth_user_id
     LEFT JOIN server_suspensions s ON s.auth_user_id=u.id
     JOIN matches m ON (m.player0=p.id OR m.player1=p.id) AND m.mode='ranked' AND m.status='complete'
+    AND NOT EXISTS(SELECT 1 FROM profiles bot WHERE bot.is_bot AND bot.id IN(m.player0,m.player1))
     WHERE NOT p.is_bot AND NOT coalesce(u."isAnonymous",false) AND s.auth_user_id IS NULL GROUP BY p.id
   ) UPDATE profiles p SET best_ranked_position=least(coalesce(p.best_ranked_position,standings.place),standings.place)
     FROM standings WHERE p.id=standings.id AND standings.place<=10 AND standings.games>=5`);
@@ -27,7 +28,7 @@ export async function titlesFor(sql: Sql, id: string): Promise<TitleView[]> {
     ).map((a) => a.achievement_id),
   );
   const [ranked] = await sql<{ n: number }>(
-    "SELECT count(*)::int n FROM matches WHERE mode='ranked' AND status='complete' AND (player0=$1 OR player1=$1)",
+    "SELECT count(*)::int n FROM matches m WHERE mode='ranked' AND status='complete' AND (player0=$1 OR player1=$1) AND NOT EXISTS(SELECT 1 FROM profiles bot WHERE bot.is_bot AND bot.id IN(m.player0,m.player1))",
     [id],
   );
   return TITLES.map((t) => ({

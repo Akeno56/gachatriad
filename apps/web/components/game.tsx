@@ -29,6 +29,7 @@ import { MatchmakingPanel } from './matchmaking-panel';
 import { MainChat } from './main-chat';
 import { CaptureCard } from './capture-card';
 import { DraftOpening } from './draft-opening';
+import { BattleChat } from './battle-chat';
 export function ruleNames(r: Rules) {
   return [
     r.allOpen ? 'All Open' : r.threeOpen ? 'Three Open' : 'Closed',
@@ -277,7 +278,7 @@ export function Game() {
               </section>
             </div>
             <div className="build-label">
-              {CARDS.filter((card) => !card.finish).length} CARDS · v0.13{' '}
+              {CARDS.filter((card) => !card.finish).length} CARDS · v0.14{' '}
               <Link href="/credits" className="credits-button">
                 Credits
               </Link>
@@ -635,6 +636,7 @@ export function Game() {
             )}
           </section>
         )}
+        {match?.chatAvailable && <BattleChat match={match} />}
         <p className="error-message" role="alert">
           {error || connectionError}
         </p>

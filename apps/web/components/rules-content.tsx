@@ -145,11 +145,12 @@ export function RulesContent() {
           </article>
         </div>
         <p className="rule-note">
-          Online turns last 60 seconds. A missed turn plays automatically; three missed turns
-          forfeit. Trade One selection lasts two minutes, then a losing card is chosen
-          automatically. A deck contains five different cards: at most one 5★ and one 4★, or two 4★
-          if it has no 5★. Local bots are clearly labeled [BOT] and use the same rules and inventory
-          transfers.
+          You forfeit after 120 seconds without playing on your turn, or after 120 seconds
+          disconnected. In Draft, 120 seconds without revealing or choosing cards also forfeits.
+          Ranked and Draft games against bots never change Elo. Trade One selection lasts two
+          minutes, then a losing card is chosen automatically. A deck contains five different cards:
+          at most one 5★ and one 4★, or two 4★ if it has no 5★. Local bots are clearly labeled [BOT]
+          and use the same rules and inventory transfers.
         </p>
       </div>
     </LocaleView>

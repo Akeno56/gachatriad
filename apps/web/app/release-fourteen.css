@@ -1,0 +1,60 @@
+.battle-chat {
+  margin: 22px auto;
+  padding: 16px;
+  max-width: 1000px;
+}
+.battle-chat .window-label {
+  margin: 0 0 12px;
+}
+.battle-chat .chat-messages {
+  height: 210px;
+  overflow-y: auto;
+  background: #080f2388;
+  border: 1px solid #4b6085;
+}
+.battle-chat .chat-compose {
+  margin-top: 12px;
+}
+.bot-mix-sliders {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding: 12px 0;
+  border: 0;
+}
+.bot-mix-sliders label {
+  display: grid;
+  gap: 6px;
+}
+.bot-mix-sliders label span {
+  display: flex;
+  justify-content: space-between;
+}
+.bot-mix-sliders input {
+  width: 100%;
+  min-width: 0;
+  accent-color: var(--gold);
+}
+/* Explicitly retain native text editing on touch browsers, independent of card selection rules. */
+input:not([type='checkbox']):not([type='radio']):not([type='range']),
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+  touch-action: manipulation;
+}
+@media (max-width: 600px) {
+  .bot-mix-sliders {
+    grid-template-columns: 1fr;
+  }
+  .battle-chat {
+    padding: 12px;
+  }
+  .battle-chat .chat-messages {
+    height: 220px;
+  }
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  textarea {
+    font-size: max(16px, 1em);
+  }
+}

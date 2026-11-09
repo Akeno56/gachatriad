@@ -1,12 +1,14 @@
-# Always-on hosting and updates
+# Always-on hosting on Netcup and updates
 
 Prepared 8 November 2026. These are installation templates, not an already-provisioned server. Nothing has been purchased or deployed. The existing GitHub Pages + PC setup continues to work.
 
 ## Budget and layout
 
-Choose a **VPS**, not a physical dedicated server. For a small friend/beta release, my recommendation is OVHcloud VPS-1, Ubuntu 24.04 LTS, x86-64, in France or nearby Europe. The current French offer advertises 2 vCores, 4 GB RAM and 40 GB NVMe **from €4.57/month including VAT**. VPS-2 advertises 4 vCores / 8 GB / 75 GB from €8.65 including VAT. Check monthly billing, renewal price and taxes at checkout; “from” prices can depend on terms or promotions. [Official prices](https://www.ovhcloud.com/fr/vps/).
+Use **Netcup VPS Lite 1 G12.5s**, with 2 x86 CPU cores, 4 GB RAM, 80 GB SSD and **IPv4 + IPv6 connectivity**. Install Ubuntu 24.04 LTS Minimal. This is the replacement for the unavailable OVH offer; the game and deployment templates work with this Linux VPS.
 
-Budget roughly €10–15/year for a domain (an estimate; check its renewal price). VPS-1 plus a domain should comfortably fit €10/month. VPS-2 gives build-time headroom if its final checkout price also fits. No paid hosting panel, Windows license or managed database is needed. Capacity for many simultaneous players has not been load-tested.
+On 8 November 2026, the [official plan page](https://www.netcup.com/en/server/vps/vps-lite-1-g12.5s-iv-6m) displays €5.86/month including German 19% VAT, equivalent to approximately **€5.91/month with French 20% VAT**. Select **France** in the country/VAT selector and confirm the checkout total. The minimum contract **and billing period are six months**, so expect roughly **€35.46 upfront**, not a €5.91 first payment. The listed setup fee is €0. The page currently warns that provisioning can be delayed.
+
+Budget roughly €10–20/year separately for a domain (an estimate; check renewal pricing). That keeps the average total around €7–8/month, but the first combined server/domain payment can be around €45–55. No paid hosting panel, Windows license or managed database is needed. Capacity for many simultaneous players has not been load-tested.
 
 ```text
 https://your-domain/       Caddy: HTTPS, static game files
@@ -19,17 +21,118 @@ VPS systemd               starts/restarts both services after reboot
 
 The browser and server share one origin. No Cloudflare tunnel, manual connection link, or running PC is required. There must be **one game-server process** writing the embedded database; do not launch a second process or add multiple replicas.
 
-## 1. Choose the domain and VPS
+## 1. Order and prepare the Netcup VPS
 
-Order the Linux VPS with an SSH key and no commercial control panel. Buy a domain you like; it does not have to match the GitHub repository name. In its DNS, add an **A record** for the chosen hostname to the VPS IPv4 address. Only add AAAA if the VPS IPv6 is configured correctly. `game.example.com` throughout this guide is a placeholder to replace.
+### 1a. Order the right product
 
-Use the provider's initial normal sudo-enabled SSH user (often `ubuntu`). Connect from PowerShell:
+Open the [VPS Lite 1 G12.5s order page](https://www.netcup.com/en/server/vps/vps-lite-1-g12.5s-iv-6m), select France for VAT, and keep **IPv4 + IPv6 Connectivity** selected. Complete the account, order and payment steps. Wait until Netcup confirms that the server is provisioned; a payment confirmation alone does not mean it is ready. This plan assigns a European location automatically.
+
+You will use three different panels:
+
+| Panel                                   | Purpose                                                      |
+| --------------------------------------- | ------------------------------------------------------------ |
+| Netcup **CCP** — Customer Control Panel | Customer account, invoices, domains and DNS                  |
+| Netcup **SCP** — Server Control Panel   | VPS installation, power, network and emergency screen        |
+| Gacha Triad **private host panel**      | Players, moderation, Make admin, boosters, currency and bots |
+
+The [Netcup first-use guide](https://www.netcup.com/en/helpcenter/documentation/server/accessing-server) explains the separate SCP credentials sent by email. Open the SCP through the link in your Netcup account/email, select your server, and note its **public IPv4 address**. Use that address wherever this guide says `YOUR_SERVER_IP`. Do not send account passwords, private keys or root passwords in chat.
+
+### 1b. Create an SSH key on your Windows PC
+
+In **Windows PowerShell**:
 
 ```powershell
-ssh ubuntu@YOUR_SERVER_IP
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.ssh" | Out-Null
+$netcupKey = Join-Path $env:USERPROFILE '.ssh\gachatriad_netcup'
+if (-not (Test-Path -LiteralPath $netcupKey)) {
+    ssh-keygen -t ed25519 -f $netcupKey -C "Gacha Triad Netcup"
+}
+Get-Content "$netcupKey.pub"
 ```
 
-The following shell blocks run **on the VPS**, not on Windows. Keep the provider console available while configuring the firewall. Allow SSH before enabling it:
+Choose a key passphrase when prompted. If that key filename already exists, reuse it; do not overwrite it. Copy the printed **public key**, the single line beginning `ssh-ed25519`. The file without `.pub` is the private key and stays on your PC.
+
+In Netcup SCP, open **Options → SSH Keys** and add that public key. Netcup can then import it while installing an official image. [Official SSH-key documentation](https://www.netcup.com/en/helpcenter/documentation/server/scp-home#ssh-keys).
+
+### 1c. Install Ubuntu on this new VPS
+
+Netcup normally provisions Debian initially. For this guide, install Ubuntu once on the **new, empty VPS**:
+
+1. Select the VPS in Netcup SCP and open **Media → Images → Official Images**.
+2. Choose **Ubuntu 24.04 LTS**, x86-64, then **Minimal**.
+3. Choose **a large partition with OS as root partition**, so the OS can use the full disk.
+4. Select your uploaded SSH key; choose Europe/Paris for timezone if offered.
+5. Click **Install**, complete Netcup's confirmation, and wait for installation to finish. Start the VPS under **Control** if it remains stopped.
+
+This first OS installation erases the VPS disk. **Do not reinstall its image for normal game updates**; section 6 preserves users and game data. Netcup provides a new root password after installation, separate from CCP/SCP passwords. Keep its **Screen** console available for recovery. [Official image-installation instructions](https://www.netcup.com/en/helpcenter/documentation/server/media#official-images).
+
+### 1d. First connection as root, then create the deployment user
+
+In **Windows PowerShell**:
+
+```powershell
+ssh -i "$env:USERPROFILE\.ssh\gachatriad_netcup" root@YOUR_SERVER_IP
+```
+
+Accept the first host-key prompt after checking that the address is your new server. If the key was not imported, use Netcup's new **OS root password**; SSH does not display characters while you type it. If login fails, use **SCP → Screen** or the [Netcup login guide](https://www.netcup.com/en/helpcenter/documentation/server/troubleshooting-server-login). A host-key-change warning after a deliberate reinstall must be checked against that server before replacing its old saved key.
+
+The next block runs **inside that root SSH session on the VPS**:
+
+```bash
+apt update
+apt install -y sudo nano openssh-server
+adduser deploy
+usermod -aG sudo deploy
+install -d -m 0700 -o deploy -g deploy /home/deploy/.ssh
+nano /home/deploy/.ssh/authorized_keys
+```
+
+`adduser` asks you to set a password for `deploy`; remember it because `sudo` will request it later. In Nano, paste your **public** key from step 1b as one line, save with Ctrl+O, Enter, then exit with Ctrl+X. Finish in the same root session:
+
+```bash
+chown deploy:deploy /home/deploy/.ssh/authorized_keys
+chmod 0600 /home/deploy/.ssh/authorized_keys
+```
+
+Leave this root session open temporarily. Open a **second Windows PowerShell window** and verify the new login:
+
+```powershell
+ssh -i "$env:USERPROFILE\.ssh\gachatriad_netcup" deploy@YOUR_SERVER_IP
+```
+
+Inside this second SSH session:
+
+```bash
+whoami
+sudo -v
+```
+
+`whoami` must print `deploy`; `sudo -v` must accept the deploy user's password. **Use this deploy session for all remaining VPS commands.** The updater intentionally refuses to run as root.
+
+### 1e. Save a short SSH connection name
+
+On **Windows**, open your SSH configuration:
+
+```powershell
+notepad "$env:USERPROFILE\.ssh\config"
+```
+
+Add this block, replacing `YOUR_SERVER_IP`. If the file already contains other hosts, append the block instead of replacing them:
+
+```sshconfig
+Host gachatriad
+    HostName YOUR_SERVER_IP
+    User deploy
+    IdentityFile ~/.ssh/gachatriad_netcup
+    IdentitiesOnly yes
+    ServerAliveInterval 30
+```
+
+From a fresh PowerShell window, `ssh gachatriad` should now connect as `deploy`. Later update/admin commands use this saved name.
+
+### 1f. Configure the firewall and finish SSH setup
+
+Run on the **VPS as deploy**, keeping the original root session and Netcup Screen available until a new connection succeeds:
 
 ```bash
 sudo apt update
@@ -41,9 +144,25 @@ sudo ufw allow 443/tcp
 sudo ufw enable
 ```
 
-If using the provider firewall as well, allow 22, 80 and 443 there. Do not open 3001 or 3030. Once SSH-key access is verified, disable password/root SSH login and preferably restrict SSH to your own IP if stable.
+Leave Netcup's SCP firewall on its initial/default policy during this setup; UFW supplies the inbound restrictions above. If you already applied a custom SCP policy, it must also permit SSH/HTTP/HTTPS and retain necessary network services. Adding a custom rule can change Netcup's implicit policy to DROP; keep outbound networking allowed and retain the provider's required DNS/DHCP rules. [Netcup firewall documentation](https://www.netcup.com/en/helpcenter/documentation/server/firewall). Do not expose ports 3001 or 3030.
 
-For the 4 GB VPS, a 2 GB swap file helps avoid build-time memory spikes. Only create it if `swapon --show` shows no existing swap:
+After the deploy key login is verified, configure key-only SSH:
+
+```bash
+sudo tee /etc/ssh/sshd_config.d/00-gachatriad.conf >/dev/null <<'EOF'
+PermitRootLogin no
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+EOF
+if sudo /usr/sbin/sshd -t; then
+    sudo systemctl reload ssh
+fi
+```
+
+If the configuration check prints an error, correct it before reloading. Test `ssh gachatriad` again from a new PowerShell window. Only then close the original root session. Netcup's Screen remains the recovery route if SSH is unavailable.
+
+For the 4 GB VPS, a 2 GB swap file helps avoid build-time memory spikes. Run `swapon --show` first; only create this file if there is no existing swap or `/swapfile`:
 
 ```bash
 sudo fallocate -l 2G /swapfile
@@ -52,6 +171,20 @@ sudo mkswap /swapfile
 sudo swapon /swapfile
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
+
+### 1g. Point your domain at the VPS
+
+Register a domain at Netcup or another registrar. For a newly registered Netcup domain, open **CCP → Domains → magnifying-glass/details → CloudDNS**. Older domains may show **DNS** instead. Edit DNS records here; leave the Nameserver and Zone SOA settings unchanged. For `game.example.com`, the record's Host is `game`; for the bare `example.com`, use `@`. Replace conflicting parking A records for that same hostname. Add AAAA only after configuring/testing the VPS IPv6; remove an old AAAA for this hostname if it points elsewhere. [Netcup CloudDNS instructions](https://www.netcup.com/en/helpcenter/documentation/domain/dns-settings-cloud-dns).
+
+For the selected **gachatriad.com** domain and VPS **62.83.93.199**, the Domain Parker preset currently shows two A records (`@` and `*`) pointing at `46.38.243.234`. Change both existing Destination/Data fields to **62.83.93.199**, leave their TTL at **3600** and Priority blank, then click **Apply changes below the Zone entries**, not the separate Zone SOA button. `@` is the main domain; `*` supplies a wildcard for otherwise unspecified subdomains. Their websites still need to be configured in Caddy before serving them.
+
+Use the **same full hostname** everywhere this guide says `game.example.com`. In Windows PowerShell, check it resolves to your server before enabling HTTPS:
+
+```powershell
+Resolve-DnsName game.example.com -Type A
+```
+
+DNS changes may take time to appear. Buying the VPS alone does not register a domain or configure its DNS.
 
 ## 2. Install Node and Caddy once
 
@@ -157,7 +290,7 @@ On Windows, commit and push the new version as usual:
 git add .
 git commit -m "Update Gacha Triad"
 git push
-ssh -t ubuntu@YOUR_SERVER_IP "bash /opt/gachatriad/source/tools/deploy/update.sh https://game.example.com"
+ssh -t gachatriad "bash /opt/gachatriad/source/tools/deploy/update.sh https://game.example.com"
 ```
 
 That final command deploys **both frontend and backend**. Player data stays outside the release in `/var/lib/gachatriad`. The old game keeps running during the build, a consistent backup is taken before switching, then the services restart and a health check runs. Expect a short maintenance interruption, so update between games. Match timers still use wall-clock time. Players should refresh after an update so open tabs load the new page assets.
@@ -179,7 +312,7 @@ Old release folders are retained for recovery. Check `df -h /opt/gachatriad` and
 From PowerShell open a private SSH forwarding session:
 
 ```powershell
-ssh -N -L 3030:127.0.0.1:3030 ubuntu@YOUR_SERVER_IP
+ssh -N -L 3030:127.0.0.1:3030 gachatriad
 ```
 
 Keep that window running, then open **http://127.0.0.1:3030** locally. If the old PC panel already uses 3030, exit that control tool first; closing only its browser tab does not release the port. Keep the local and remote console ports identical because the console checks its request Host and Origin. The panel supports moderation, administrator assignment, currency/booster grants and bot settings against the hosted server. OS service management owns start/stop/restart in this setup, so the panel cannot launch a second database writer or a public tunnel.
@@ -194,7 +327,7 @@ sudo /usr/local/sbin/gachatriad-backup
 sudo systemctl list-timers gachatriad-backup.timer
 ```
 
-The timer takes a cold database + auth-secret backup around 03:30 Paris time, briefly pausing the game, and retains approximately 14 days under private `/var/backups/gachatriad`. The provider backup is useful too, but regularly download an additional backup off the VPS. Treat archives and `.env` backups as credentials. Test restoration on a separate stopped instance before relying on it.
+The timer takes a cold database + auth-secret backup around 03:30 Paris time, briefly pausing the game, and retains approximately 14 days under private `/var/backups/gachatriad`. Netcup snapshots can complement this; do not assume the plan includes an automatic daily provider backup. For a full VPS recovery point before major OS changes, Netcup recommends an offline snapshot. Regularly download an additional application backup off the VPS. Treat archives and `.env` backups as credentials. Test restoration on a separate stopped instance before relying on it. [Netcup snapshot documentation](https://www.netcup.com/en/helpcenter/documentation/server/media#3-snapshots).
 
 For a manual restore: stop **both** services; preserve the current data folder separately; extract the chosen archive into a new empty `/var/lib/gachatriad`; restore ownership to `gachatriad:gachatriad` and private permissions; restore a matching private environment configuration if needed; start one game service and inspect logs before reopening play. Never extract over a running database.
 

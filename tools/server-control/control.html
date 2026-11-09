@@ -327,13 +327,46 @@
     </section>
     <section class="panel">
       <h2>Bot population</h2>
-      <label
-        >Bot difficulty<select id="botDifficulty" aria-label="Bot difficulty">
-          <option value="easy">Easy</option>
-          <option value="medium" selected>Medium</option>
-          <option value="hard">Hard</option>
-        </select></label
+      <fieldset
+        id="botMix"
+        style="display: grid; gap: 12px; max-width: 560px; border: 0; padding: 0"
       >
+        <legend>Difficulty mix · 30 bots</legend>
+        <label
+          >Easy <output id="easyPercent">0%</output
+          ><input
+            id="easyMix"
+            aria-label="Easy bots percentage"
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+        /></label>
+        <label
+          >Medium <output id="mediumPercent">100%</output
+          ><input
+            id="mediumMix"
+            aria-label="Medium bots percentage"
+            type="range"
+            min="0"
+            max="100"
+            value="100"
+        /></label>
+        <label
+          >Hard <output id="hardPercent">0%</output
+          ><input
+            id="hardMix"
+            aria-label="Hard bots percentage"
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+        /></label>
+      </fieldset>
+      <p>
+        The sliders share 100%. Counts round to 30 bots. Easy bots cannot join Ranked. Bot games
+        never change Elo.
+      </p>
       <p id="populationStatus">Start the server to manage bots.</p>
       <div class="actions">
         <button id="populate" type="button">Populate bots</button>
@@ -427,6 +460,8 @@
         difficultyEdited = false,
         edited = false;
       let pendingGrant = null;
+      let lastMixSlider = null;
+      let anchoredMixSlider = null;
       const el = (id) => document.getElementById(id);
       function text(id, value) {
         el(id).textContent = value;
@@ -438,6 +473,7 @@
         if (!current) return;
         const population = current.online?.population;
         const canAdmin = current.running || (current.managedExternal && !!current.online);
+        el('botMix').disabled = posting || current.busy || !canAdmin;
         el('populate').disabled = posting || current.busy || !canAdmin || !!population?.enabled;
         el('pauseBots').disabled = posting || current.busy || !canAdmin || !population?.enabled;
         el('applyDifficulty').disabled = posting || current.busy || !canAdmin;
@@ -516,13 +552,11 @@
           text('error', current.lastError);
           renderModeration();
           const population = current.online?.population;
-          if (!difficultyEdited)
-            el('botDifficulty').value =
-              population?.difficulty || current.config.botDifficulty || 'medium';
+          if (!difficultyEdited) renderMix(population?.mix || { easy: 0, medium: 100, hard: 0 });
           text(
             'populationStatus',
             population
-              ? `${population.enabled ? 'ON' : 'PAUSED'} · ${population.bots} bots · ${population.activeGames} active games`
+              ? `${population.enabled ? 'ON' : 'PAUSED'} · ${population.bots} bots · ${population.activeGames} active games · Easy ${population.counts?.easy || 0} / Medium ${population.counts?.medium || 0} / Hard ${population.counts?.hard || 0}`
               : 'Start the server to manage bots.',
           );
           const tbody = el('players');
@@ -632,10 +666,40 @@
         searchTimer = setTimeout(refresh, 200);
       });
       const populationAction = async (enabled) => {
-        if (await action('/population', { enabled, difficulty: el('botDifficulty').value }))
-          difficultyEdited = false;
+        if (await action('/population', { enabled, mix: readMix() })) difficultyEdited = false;
       };
-      el('botDifficulty').addEventListener('change', () => (difficultyEdited = true));
+      const difficulties = ['easy', 'medium', 'hard'];
+      function readMix() {
+        return Object.fromEntries(difficulties.map((d) => [d, Number(el(d + 'Mix').value)]));
+      }
+      function renderMix(mix) {
+        for (const d of difficulties) {
+          el(d + 'Mix').value = mix[d];
+          text(d + 'Percent', mix[d] + '%');
+        }
+      }
+      for (const d of difficulties)
+        el(d + 'Mix').addEventListener('input', () => {
+          difficultyEdited = true;
+          const mix = readMix(),
+            other = difficulties.filter((k) => k !== d),
+            left = 100 - mix[d];
+          const sum = mix[other[0]] + mix[other[1]];
+          mix[other[0]] = Math.round(left * (sum ? mix[other[0]] / sum : 0.5));
+          mix[other[1]] = left - mix[other[0]];
+          if (lastMixSlider !== d) {
+            anchoredMixSlider = lastMixSlider;
+            lastMixSlider = d;
+          }
+          if (anchoredMixSlider && anchoredMixSlider !== d) {
+            const keep = anchoredMixSlider,
+              remainder = other.find((k) => k !== keep);
+            const old = Number(el(keep + 'Mix').value);
+            mix[keep] = Math.min(old, left);
+            mix[remainder] = left - mix[keep];
+          }
+          renderMix(mix);
+        });
       el('populate').addEventListener('click', () => populationAction(true));
       el('pauseBots').addEventListener('click', () => populationAction(false));
       el('applyDifficulty').addEventListener('click', () =>

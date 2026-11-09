@@ -314,7 +314,7 @@ export async function checkSocial({ browser, api, apiURL, origin, controller, ad
         !(await controller.state()).moderation.users.some((u) => u.id === deleted.profile.id),
       'Host account deletion failed.',
     );
-    await admin.getByLabel('Bot difficulty', { exact: true }).selectOption('hard');
+    await admin.getByLabel('Hard bots percentage', { exact: true }).fill('100');
     await admin.getByRole('button', { name: 'Apply difficulty', exact: true }).click();
     await until(
       async () => (await controller.state()).online.population.difficulty === 'hard',

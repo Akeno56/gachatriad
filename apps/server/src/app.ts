@@ -41,6 +41,7 @@ export async function createPlatform(
   if (!bots.available) await bots.set(false);
   else if (process.env.POPULATE_BOTS === 'true') await bots.set(true);
   else if (process.env.POPULATE_BOTS === 'false') await bots.set(false);
+  else if ((await bots.status()).enabled) await bots.set(true);
   if (process.env.BOT_DIFFICULTY)
     await bots.set((await bots.status()).enabled, process.env.BOT_DIFFICULTY);
   const app = Fastify({
@@ -187,9 +188,21 @@ export async function createPlatform(
   const notify = () => io.emit('platform:changed');
   store.isOnline = (profileId) =>
     Array.from(io.sockets.sockets.values()).some((socket) => socket.data.profileId === profileId);
+  await store.recoverPresence();
   io.on('connection', (socket) => {
+    void store
+      .presence(socket.data.profileId, true)
+      .then(notify)
+      .catch((error) => app.log.error(error));
     notify();
-    socket.on('disconnect', notify);
+    socket.on('disconnect', () => {
+      if (!shuttingDown && !store.isOnline!(socket.data.profileId))
+        void store
+          .presence(socket.data.profileId, false)
+          .then(notify)
+          .catch((error) => app.log.error(error));
+      notify();
+    });
   });
   const body = (req: FastifyRequest) =>
     req.body && typeof req.body === 'object' ? (req.body as Record<string, unknown>) : {};
@@ -348,7 +361,11 @@ export async function createPlatform(
   app.post('/api/local-control/bots', async (req) => {
     requireHost(req);
     if (typeof body(req).enabled !== 'boolean') throw new GameError('Choose enabled or disabled.');
-    const result = await bots.set(body(req).enabled as boolean, body(req).difficulty);
+    const result = await bots.set(
+      body(req).enabled as boolean,
+      body(req).difficulty,
+      body(req).mix,
+    );
     notify();
     return result;
   });
@@ -412,7 +429,11 @@ export async function createPlatform(
   app.post('/api/local-bots', async (req) => {
     if (!(await profile(req)).isAdmin) throw new GameError('Administrator access required.', 403);
     if (typeof body(req).enabled !== 'boolean') throw new GameError('Choose enabled or disabled.');
-    const status = await bots.set(body(req).enabled as boolean, body(req).difficulty);
+    const status = await bots.set(
+      body(req).enabled as boolean,
+      body(req).difficulty,
+      body(req).mix,
+    );
     notify();
     return status;
   });
@@ -541,6 +562,19 @@ export async function createPlatform(
     return { ok: true };
   });
   app.get('/api/matches/:id', async (req) => store.view((await profile(req)).id, id(req)));
+  app.get('/api/matches/:id/chat', async (req) =>
+    social.battleMessages(await profile(req), id(req)),
+  );
+  app.post('/api/matches/:id/chat', async (req) => {
+    const p = await profile(req),
+      matchId = id(req);
+    const result = await social.postBattle(p, matchId, body(req).message, body(req).requestId);
+    const players = (await store.view(p.id, matchId)).players;
+    for (const socket of io.sockets.sockets.values())
+      if (players.some((player) => player.id === socket.data.profileId))
+        socket.emit('platform:changed');
+    return result;
+  });
   app.post('/api/matches/:id/move', async (req) => {
     const p = await profile(req),
       b = body(req);

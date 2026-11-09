@@ -1006,7 +1006,7 @@ it('atomically exchanges an offered owned card and rejects repeated acceptance',
 it('populates labeled persistent bots, real lobbies, exhibitions and trade offers, then pauses cleanly', async () => {
   await platform.bots.set(true);
   await platform.bots.tick();
-  expect((await platform.bots.status()).bots).toBe(10);
+  expect((await platform.bots.status()).bots).toBe(30);
   const lobbies = await platform.store.lobbies();
   expect(lobbies.some((l) => l.players === 2 && l.host.startsWith('[BOT]'))).toBe(true);
   expect(

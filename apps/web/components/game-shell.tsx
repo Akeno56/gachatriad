@@ -27,7 +27,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
   const [musicVolume, setMusicVolume] = useState(50),
     [sfxVolume, setSfxVolume] = useState(50);
   const [sfx, setSfx] = useState(true);
-  const [crt, setCrt] = useState(true);
+  const [crt, setCrt] = useState(false);
   const [effects, setEffects] = useState(true);
   const [fullScreen, setFullScreen] = useState(false);
   const [notice, setNotice] = useState('');
@@ -70,7 +70,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
   );
   useEffect(() => {
     try {
-      setCrt(localStorage.getItem('triad-crt') !== 'off');
+      setCrt(localStorage.getItem('triad-crt') === 'on');
       setEffects(localStorage.getItem('triad-effects') !== 'off');
       const enabled = localStorage.getItem('triad-sfx') !== 'off';
       setSfx(enabled);

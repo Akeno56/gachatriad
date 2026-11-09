@@ -11,6 +11,7 @@ import { CARDS, STARTER_DECK, CPU_DECK } from '@gacha-triad/shared';
 import type { Mode, PopulationView } from '@gacha-triad/shared/platform';
 import { GameError, GameStore, type Actor } from './store';
 import { Trades } from './trades';
+import { DIFFICULTIES, distributeBots, validateMix } from './bot-difficulty';
 const NAMES = [
   'Nova',
   'Mog',
@@ -22,6 +23,26 @@ const NAMES = [
   'Irvine',
   'Zell',
   'Seifer',
+  'Squall',
+  'Gilgamesh',
+  'Ellone',
+  'Edea',
+  'Cid',
+  'Biggs',
+  'Wedge',
+  'Fujin',
+  'Raijin',
+  'Kiros',
+  'Ward',
+  'Julia',
+  'Raine',
+  'Adel',
+  'Ultimecia',
+  'Boko',
+  'Angelo',
+  'Shiva',
+  'Ifrit',
+  'Carbuncle',
 ];
 const MODES: Mode[] = [
   'custom',
@@ -48,14 +69,34 @@ export class BotPopulation {
   ) {}
   async status(): Promise<PopulationView> {
     return this.store.db.read(async (sql) => {
-      const [e] = await sql<{ enabled: boolean; difficulty: PopulationView['difficulty'] }>(
-        'SELECT enabled,difficulty FROM local_population WHERE id=1',
-      );
+      const [e] = await sql<{
+        enabled: boolean;
+        difficulty: PopulationView['difficulty'];
+        mix: PopulationView['mix'] | null;
+      }>('SELECT enabled,difficulty,mix FROM local_population WHERE id=1');
       const [n] = await sql<{ n: number }>('SELECT count(*)::int n FROM profiles WHERE is_bot');
       const [m] = await sql<{ n: number }>(
         "SELECT count(*)::int n FROM matches WHERE status IN('playing','drafting') AND (player0 IN(SELECT id FROM profiles WHERE is_bot) OR player1 IN(SELECT id FROM profiles WHERE is_bot))",
       );
       return {
+        mix: e.mix ?? {
+          easy: e.difficulty === 'easy' ? 100 : 0,
+          medium: e.difficulty === 'medium' ? 100 : 0,
+          hard: e.difficulty === 'hard' ? 100 : 0,
+        },
+        counts: Object.fromEntries(
+          await Promise.all(
+            DIFFICULTIES.map(async (d) => [
+              d,
+              (
+                await sql<{ n: number }>(
+                  'SELECT count(*)::int n FROM profiles WHERE is_bot AND bot_difficulty=$1',
+                  [d],
+                )
+              )[0].n,
+            ]),
+          ),
+        ) as PopulationView['counts'],
         difficulty: e.difficulty,
         available: this.available,
         enabled: this.available && e.enabled,
@@ -64,22 +105,34 @@ export class BotPopulation {
       };
     });
   }
-  async set(enabled: boolean, difficulty?: unknown) {
-    if (difficulty !== undefined) {
-      if (!['easy', 'medium', 'hard'].includes(String(difficulty)))
-        throw new GameError('Choose Easy, Medium or Hard bots.');
-      await this.store.db.read((sql) =>
-        sql('UPDATE local_population SET difficulty=$1 WHERE id=1', [difficulty]),
-      );
-      if (difficulty === 'easy')
-        await this.store.db.read((sql) =>
-          sql(
-            "UPDATE lobbies SET status='closed' WHERE mode='ranked' AND status='waiting' AND host_id IN(SELECT id FROM profiles WHERE is_bot)",
-          ),
-        );
-    }
+  async set(enabled: boolean, difficulty?: unknown, percentages?: unknown) {
     if (!this.available && enabled)
       throw new GameError('Local bots are disabled on this server.', 403);
+    if (
+      difficulty !== undefined &&
+      !DIFFICULTIES.includes(difficulty as (typeof DIFFICULTIES)[number])
+    )
+      throw new GameError('Choose Easy, Medium or Hard bots.');
+    if (percentages !== undefined && difficulty !== undefined)
+      throw new GameError('Choose difficulty percentages or a single difficulty, not both.');
+    const mix =
+      percentages !== undefined
+        ? validateMix(percentages)
+        : difficulty !== undefined
+          ? validateMix({
+              easy: difficulty === 'easy' ? 100 : 0,
+              medium: difficulty === 'medium' ? 100 : 0,
+              hard: difficulty === 'hard' ? 100 : 0,
+            })
+          : (await this.status()).mix;
+    const dominant = DIFFICULTIES.reduce((best, d) => (mix[d] > mix[best] ? d : best), 'medium');
+    await this.store.db.read((sql) =>
+      sql('UPDATE local_population SET mix=$1::jsonb,difficulty=$2 WHERE id=1', [
+        JSON.stringify(mix),
+        dominant,
+      ]),
+    );
+    const distribution = distributeBots(mix, NAMES.length);
     if (enabled)
       for (let i = 0; i < NAMES.length; i++) {
         const id = `local-bot-${i}`;
@@ -91,11 +144,19 @@ export class BotPopulation {
         });
         const p = await this.store.profile({ id, name: `[BOT] ${NAMES[i]}`, isAnonymous: false });
         await this.store.db.read((sql) =>
-          sql('UPDATE profiles SET is_bot=true WHERE id=$1', [p.id]),
+          sql('UPDATE profiles SET is_bot=true,bot_difficulty=$2 WHERE id=$1', [
+            p.id,
+            distribution[i],
+          ]),
         );
         for (const pack of await this.store.economy.list(p.id))
           if (!pack.openedAt) await this.store.economy.open(p.id, pack.id);
       }
+    await this.store.db.read((sql) =>
+      sql(
+        "UPDATE lobbies SET status='closed' WHERE mode='ranked' AND status='waiting' AND host_id IN(SELECT id FROM profiles WHERE is_bot AND bot_difficulty='easy')",
+      ),
+    );
     await this.store.db.read((sql) =>
       sql('UPDATE local_population SET enabled=$1 WHERE id=1', [enabled]),
     );
@@ -113,8 +174,8 @@ export class BotPopulation {
   }
   private async actors() {
     return this.store.db.read((sql) =>
-      sql<Actor>(
-        'SELECT DISTINCT u.id,u.name,false AS "isAnonymous" FROM "user" u JOIN profile_accounts a ON a.auth_user_id=u.id JOIN profiles p ON p.id=a.profile_id WHERE p.is_bot ORDER BY u.id',
+      sql<Actor & { bot_difficulty: 'easy' | 'medium' | 'hard' }>(
+        'SELECT DISTINCT u.id,u.name,false AS "isAnonymous",p.bot_difficulty FROM "user" u JOIN profile_accounts a ON a.auth_user_id=u.id JOIN profiles p ON p.id=a.profile_id WHERE p.is_bot ORDER BY u.id',
       ),
     );
   }
@@ -127,6 +188,7 @@ export class BotPopulation {
     for (let i = 0; i < actors.length; i++) {
       if (this.closing) break;
       const actor = actors[i];
+      const difficulty = actor.bot_difficulty;
       if ((this.next.get(actor.id) || 0) > Date.now()) continue;
       this.next.set(actor.id, Date.now() + 2200 + randomInt(1800));
       try {
@@ -146,10 +208,9 @@ export class BotPopulation {
             const { hands, ...publicView } = m.game;
             const move = chooseCpuMove(
               { ...publicView, hand: hands[m.seat].flatMap((c) => (c.card ? [c.card] : [])) },
-              population.difficulty === 'medium' ||
-                (m.mode === 'ranked' && population.difficulty === 'easy')
+              difficulty === 'medium' || (m.mode === 'ranked' && difficulty === 'easy')
                 ? 'normal'
-                : population.difficulty,
+                : difficulty,
               seededRandom(randomInt(2 ** 32)),
             );
             if (move) await this.store.move(p.id, m.id, move.cardId, move.cell, m.version);
@@ -169,14 +230,14 @@ export class BotPopulation {
           changed = true;
         }
         if (!enabled) continue;
-        // Leave two demonstration players available for joining user-created tables.
+        // All idle bots can join human tables; keep an exhibition pair and some spare opponents.
         const lobbies = await this.store.lobbies();
         const humanTable = lobbies.find(
           (l) =>
             l.status === 'waiting' &&
             l.allowBots &&
             !l.inviteOnly &&
-            (l.mode !== 'ranked' || population.difficulty !== 'easy') &&
+            (l.mode !== 'ranked' || difficulty !== 'easy') &&
             !l.host.startsWith('[BOT]') &&
             Date.now() - Date.parse(l.createdAt) > 5000,
         );
@@ -185,14 +246,17 @@ export class BotPopulation {
           changed = true;
           continue;
         }
-        if (!p.waitingLobbyId && i < 9) {
+        if (!p.waitingLobbyId && i !== 9 && i < 27) {
           try {
             await this.store.rebuildDeck(p.id);
           } catch {}
           p = await this.store.profile(actor);
           await this.store.createLobby(p, {
-            mode: MODES[i] === 'ranked' && population.difficulty === 'easy' ? 'casual' : MODES[i],
-            name: i === 8 ? '[BOT] Exhibition duel' : `[BOT] ${NAMES[i]}’s table`,
+            mode:
+              MODES[i % MODES.length] === 'ranked' && difficulty === 'easy'
+                ? 'casual'
+                : MODES[i % MODES.length],
+            name: i === 8 ? '[BOT] Exhibition duel' : `${actor.name}’s table`,
             rules: {
               ...STANDARD,
               allOpen: i % 2 === 0,

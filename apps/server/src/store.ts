@@ -59,6 +59,8 @@ interface ProfileRow {
   [key: string]: unknown;
 }
 interface MatchRow {
+  disconnected_at: [number | null, number | null];
+  activity_at: [number, number];
   id: string;
   mode: Mode;
   player0: string;
@@ -171,6 +173,7 @@ export class GameStore {
       '011_chat_channels.sql',
       '012_draft_shop_rematches.sql',
       '013_booster_types_departures.sql',
+      '014_activity_chat_moderation.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -456,10 +459,17 @@ export class GameStore {
         trade,
         mode === 'draft' ? 'drafting' : 'playing',
         state
-          ? Date.now() + (mode === 'solo' && state.turn === 1 ? 700 : 60_000)
+          ? Date.now() + (mode === 'solo' && state.turn === 1 ? 700 : 120_000)
           : Date.now() + 180_000,
       ],
     );
+    await sql('UPDATE matches SET activity_at=$1::jsonb,disconnected_at=$2::jsonb WHERE id=$3', [
+      JSON.stringify([Date.now(), Date.now()]),
+      JSON.stringify(
+        [a, b].map((p) => (p && this.isOnline && !this.isOnline(p) ? Date.now() : null)),
+      ),
+      id,
+    ]);
     return id;
   }
   async lobbies(): Promise<LobbyView[]> {
@@ -660,7 +670,8 @@ export class GameStore {
         name: string;
         avatar_card: string | null;
         selected_title: string | null;
-      }>('SELECT id,name,avatar_card,selected_title FROM profiles WHERE id=$1 OR id=$2', [
+        is_bot: boolean;
+      }>('SELECT id,name,avatar_card,selected_title,is_bot FROM profiles WHERE id=$1 OR id=$2', [
         m.player0,
         m.player1,
       ]);
@@ -696,6 +707,11 @@ export class GameStore {
       };
       return {
         id: m.id,
+        chatAvailable: !!m.player1 && !users.some((p) => p.is_bot),
+        ratingApplies:
+          !!m.player1 &&
+          (m.mode === 'ranked' || m.mode === 'draft') &&
+          !users.some((p) => p.is_bot),
         players: [identity(m.player0), identity(m.player1)],
         prismReward:
           (
@@ -752,6 +768,7 @@ export class GameStore {
   async lockDraft(profileId: string, id: string, ids: string[]) {
     await this.db.tx(async (sql) => {
       const m = await this.load(sql, id, profileId);
+      if (await this.expireInactivity(sql, m)) return;
       if (m.status !== 'drafting' || !m.pools) throw new GameError('This match is not drafting.');
       const seat = m.player0 === profileId ? 0 : 1;
       if (m.decks[seat].length) throw new GameError('Your draft is already locked.');
@@ -763,11 +780,12 @@ export class GameStore {
       const errors = validateDeck(selected);
       if (errors.length) throw new GameError(errors.join(' '));
       m.decks[seat] = ids;
+      await this.recordAction(sql, m, seat);
       if (m.decks.every((d) => d.length === 5)) {
         const state = createGame([cards(m.decks[0]), cards(m.decks[1])], m.rules, rng());
         await sql(
           "UPDATE matches SET decks=$1::jsonb,state=$2::jsonb,status='playing',version=version+1,deadline=$3 WHERE id=$4",
-          [JSON.stringify(m.decks), JSON.stringify(state), Date.now() + 60000, id],
+          [JSON.stringify(m.decks), JSON.stringify(state), Date.now() + 120000, id],
         );
       } else
         await sql('UPDATE matches SET decks=$1::jsonb,version=version+1 WHERE id=$2', [
@@ -780,6 +798,7 @@ export class GameStore {
     await this.db.tx(async (sql) => {
       const m = await this.load(sql, id, profileId),
         seat = m.player0 === profileId ? 0 : 1;
+      if (await this.expireInactivity(sql, m)) return;
       if (m.status !== 'drafting' || !m.pools)
         throw new GameError('This match is not drafting.', 409);
       const revealed = m.draft_revealed ?? [0, 0];
@@ -787,6 +806,7 @@ export class GameStore {
         throw new GameError('Reveal Draft cards in order.', 409);
       if (step < revealed[seat] || revealed[seat] >= m.pools[seat].length) return;
       revealed[seat]++;
+      await this.recordAction(sql, m, seat);
       await sql('UPDATE matches SET draft_revealed=$1::jsonb,version=version+1 WHERE id=$2', [
         JSON.stringify(revealed),
         id,
@@ -933,6 +953,7 @@ export class GameStore {
   async move(profileId: string, id: string, cardId: string, cell: number, version: number) {
     await this.db.tx(async (sql) => {
       const m = await this.load(sql, id, profileId);
+      if (await this.expireInactivity(sql, m)) return;
       if (m.status !== 'playing' || !m.state)
         throw new GameError('The match is not accepting moves.');
       const seat: Player = m.player0 === profileId ? 0 : 1;
@@ -941,9 +962,22 @@ export class GameStore {
       const move = { player: seat, cardId, cell };
       const error = validateMove(m.state, move);
       if (error) throw new GameError(error);
+      await this.recordAction(sql, m, seat);
       const next = applyMove(m.state, move);
       await this.advance(sql, m, next);
     });
+  }
+  private async recordAction(sql: Sql, m: MatchRow, seat: Player) {
+    const now = Date.now(),
+      id = seat === 0 ? m.player0 : m.player1!;
+    m.activity_at[seat] = now;
+    // A valid HTTP move/reveal proves presence even if this browser's socket has dropped.
+    m.disconnected_at[seat] = !this.isOnline || this.isOnline(id) ? null : now;
+    await sql('UPDATE matches SET activity_at=$1::jsonb,disconnected_at=$2::jsonb WHERE id=$3', [
+      JSON.stringify(m.activity_at),
+      JSON.stringify(m.disconnected_at),
+      m.id,
+    ]);
   }
   private async advance(sql: Sql, m: MatchRow, next: GameState) {
     m.state = next;
@@ -952,7 +986,7 @@ export class GameStore {
       Date.now() +
         (m.mode === 'solo' && next.turn === 1
           ? 900 + (next.history.at(-1)?.captures.length ?? 0) * 160
-          : 60_000),
+          : 120_000),
       m.id,
     ]);
     if (next.status === 'complete') await this.finish(sql, m, winner(next)!, null);
@@ -1017,7 +1051,11 @@ export class GameStore {
           id,
         ],
       );
-      if (m.player1 && (m.mode === 'ranked' || m.mode === 'draft')) {
+      if (
+        m.player1 &&
+        !profileRows.some((p) => p.is_bot) &&
+        (m.mode === 'ranked' || m.mode === 'draft')
+      ) {
         const field = m.mode === 'draft' ? 'draft_rating' : 'rating';
         const self = Number(profileRows.find((p) => p.id === id)![field]);
         const opp = Number(profileRows.find((p) => p.id === participants[1 - seat])![field]);
@@ -1031,7 +1069,7 @@ export class GameStore {
       await this.unlock(sql, id);
       await sql('UPDATE profiles SET peak_rating=greatest(peak_rating,rating) WHERE id=$1', [id]);
     }
-    if (m.mode === 'ranked') await awardRankTitles(sql);
+    if (m.mode === 'ranked' && !profileRows.some((p) => p.is_bot)) await awardRankTitles(sql);
     await sql("UPDATE lobbies SET status='closed' WHERE match_id=$1", [m.id]);
   }
   async resign(profileId: string, id: string) {
@@ -1182,15 +1220,13 @@ export class GameStore {
     });
   }
   private async rankedEligible(sql: Sql, id: string) {
-    const [p] = await sql<{ is_bot: boolean; ranked_acknowledged: boolean }>(
-      'SELECT is_bot,ranked_acknowledged FROM profiles WHERE id=$1',
-      [id],
-    );
+    const [p] = await sql<{
+      is_bot: boolean;
+      ranked_acknowledged: boolean;
+      bot_difficulty: string;
+    }>('SELECT is_bot,ranked_acknowledged,bot_difficulty FROM profiles WHERE id=$1', [id]);
     if (p.is_bot) {
-      if (
-        (await sql<{ difficulty: string }>('SELECT difficulty FROM local_population WHERE id=1'))[0]
-          .difficulty === 'easy'
-      )
+      if (p.bot_difficulty === 'easy')
         throw new GameError('Ranked allows Medium and Hard bots only.', 403);
     } else if (!p.ranked_acknowledged)
       throw new GameError(
@@ -1208,13 +1244,81 @@ export class GameStore {
       sql('UPDATE profiles SET tutorial_completed=true WHERE id=$1', [id]),
     );
   }
+  /** Socket presence never counts as a move: a connected AFK player still times out. */
+  async presence(profileId: string, online: boolean) {
+    return this.db.tx(async (sql) => {
+      const matches = await sql<MatchRow>(
+        "SELECT * FROM matches WHERE status IN('playing','drafting') AND (player0=$1 OR player1=$1)",
+        [profileId],
+      );
+      for (const m of matches) {
+        if (await this.expireInactivity(sql, m)) continue;
+        const seat = m.player0 === profileId ? 0 : 1;
+        // Repeated disconnects/restarts cannot extend the grace period.
+        m.disconnected_at[seat] = online ? null : (m.disconnected_at[seat] ?? Date.now());
+        await sql('UPDATE matches SET disconnected_at=$1::jsonb WHERE id=$2', [
+          JSON.stringify(m.disconnected_at),
+          m.id,
+        ]);
+      }
+    });
+  }
+  async recoverPresence() {
+    const players = await this.db.read((sql) =>
+      sql<{ id: string }>(
+        "SELECT DISTINCT p.id FROM profiles p JOIN matches m ON (m.player0=p.id OR m.player1=p.id) WHERE NOT p.is_bot AND m.status IN('playing','drafting')",
+      ),
+    );
+    for (const p of players) await this.presence(p.id, false);
+  }
+  private async expireInactivity(sql: Sql, m: MatchRow, now = Date.now()) {
+    if (m.status === 'complete') return false;
+    const people = await sql<{ id: string; is_bot: boolean }>(
+      'SELECT id,is_bot FROM profiles WHERE id=$1 OR id=$2',
+      [m.player0, m.player1],
+    );
+    const expired: { seat: Player; at: number; reason: string }[] = [];
+    for (const seat of [0, 1] as const) {
+      const id = seat === 0 ? m.player0 : m.player1;
+      if (!id || people.find((p) => p.id === id)?.is_bot) continue;
+      const disconnected = m.disconnected_at[seat];
+      if (disconnected !== null && now >= disconnected + 120000)
+        expired.push({ seat, at: disconnected + 120000, reason: 'disconnected for 120 seconds' });
+      if (m.status === 'drafting' && !m.decks[seat].length && now >= m.activity_at[seat] + 120000)
+        expired.push({
+          seat,
+          at: m.activity_at[seat] + 120000,
+          reason: 'inactive for 120 seconds',
+        });
+      if (
+        m.status === 'playing' &&
+        m.state?.turn === seat &&
+        m.deadline &&
+        now >= Number(m.deadline)
+      )
+        expired.push({ seat, at: Number(m.deadline), reason: 'inactive for 120 seconds' });
+    }
+    if (!expired.length) return false;
+    // If both have gone away, settle once against the player whose grace expired first.
+    const first = expired.sort((a, b) => a.at - b.at || a.seat - b.seat)[0];
+    await this.finish(sql, m, (1 - first.seat) as Player, first.reason);
+    return true;
+  }
   async tick() {
     return this.db.tx(async (sql) => {
+      const active = await sql<MatchRow>(
+        `SELECT * FROM matches WHERE status IN('playing','drafting') AND
+        (deadline<=$1 OR (disconnected_at->>0)::bigint<=$2 OR (disconnected_at->>1)::bigint<=$2 OR
+        (status='drafting' AND ((jsonb_array_length(decks->0)=0 AND (activity_at->>0)::bigint<=$2) OR
+        (jsonb_array_length(decks->1)=0 AND (activity_at->>1)::bigint<=$2))))`,
+        [Date.now(), Date.now() - 120000],
+      );
+      const changed: string[] = [];
+      for (const m of active) if (await this.expireInactivity(sql, m)) changed.push(m.id);
       const due = await sql<MatchRow>(
         "SELECT * FROM matches WHERE (status IN('playing','drafting') AND deadline<$1) OR (status='complete' AND settlement_done=false AND claim_deadline<$1) LIMIT 20",
         [Date.now()],
       );
-      const changed: string[] = [];
       for (const m of due) {
         if (m.status === 'complete') {
           if (m.winner !== null) {
@@ -1231,7 +1335,7 @@ export class GameStore {
           const state = createGame([cards(m.decks[0]), cards(m.decks[1])], m.rules, rng());
           await sql(
             "UPDATE matches SET decks=$1::jsonb,state=$2::jsonb,status='playing',version=version+1,deadline=$3 WHERE id=$4",
-            [JSON.stringify(m.decks), JSON.stringify(state), Date.now() + 60000, m.id],
+            [JSON.stringify(m.decks), JSON.stringify(state), Date.now() + 120000, m.id],
           );
           changed.push(m.id);
           continue;

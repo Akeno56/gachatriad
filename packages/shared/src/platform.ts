@@ -6,6 +6,8 @@ export interface HandCard {
   card: Card | null;
 }
 export interface MatchView {
+  chatAvailable: boolean;
+  ratingApplies: boolean;
   players: readonly [BattleIdentity, BattleIdentity];
   prismReward: number;
   id: string;
@@ -262,7 +264,10 @@ export interface TradeOfferView {
   wanted: Card;
   createdAt: string;
 }
+export type BotMix = { easy: number; medium: number; hard: number };
 export interface PopulationView {
+  mix: BotMix;
+  counts: BotMix;
   difficulty: 'easy' | 'medium' | 'hard';
   available: boolean;
   enabled: boolean;

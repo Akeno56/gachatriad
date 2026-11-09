@@ -17,6 +17,7 @@ import { UNRANKED } from './store';
 import type { Sql } from './database';
 import { GameError } from './errors';
 import { titleName } from './titles';
+import { ChatFilter } from './chat-filter';
 interface Person {
   id: string;
   name: string;
@@ -37,7 +38,79 @@ function registered(p: ProfileView) {
     throw new GameError('Register an account to use friends, invitations and chat.', 403);
 }
 export class Social {
-  constructor(readonly store: GameStore) {}
+  readonly filter: ChatFilter;
+  constructor(readonly store: GameStore) {
+    this.filter = new ChatFilter(store.db);
+  }
+  private async battleAccess(sql: Sql, p: ProfileView, matchId: string, writing = false) {
+    const [m] = await sql<{
+      status: string;
+      completed_at: Date | null;
+      departed: string[];
+      opponent_bot: boolean;
+    }>(
+      `SELECT m.*,coalesce(o.is_bot,true) AS opponent_bot FROM matches m
+      LEFT JOIN profiles o ON o.id=CASE WHEN m.player0=$2 THEN m.player1 ELSE m.player0 END
+      WHERE m.id=$1 AND (m.player0=$2 OR m.player1=$2)`,
+      [matchId, p.id],
+    );
+    if (!m) throw new GameError('This match is private.', 403);
+    if (
+      writing &&
+      (m.opponent_bot ||
+        m.departed.includes(p.id) ||
+        (m.completed_at && Date.now() - new Date(m.completed_at).getTime() > 600000))
+    )
+      throw new GameError('Battle chat is closed.', 409);
+  }
+  async battleMessages(p: ProfileView, matchId: string) {
+    return this.store.db.read(async (sql) => {
+      await this.battleAccess(sql, p, matchId);
+      return (
+        await sql<{ id: string; senderId: string; body: string; createdAt: Date }>(
+          'SELECT id,sender_id AS "senderId",body,created_at AS "createdAt" FROM battle_messages WHERE match_id=$1 ORDER BY created_at DESC,id DESC LIMIT 80',
+          [matchId],
+        )
+      )
+        .reverse()
+        .map((m) => ({ ...m, createdAt: m.createdAt.toISOString() }));
+    });
+  }
+  async postBattle(p: ProfileView, matchId: string, message: unknown, requestId: unknown) {
+    const text = this.messageText(message, requestId);
+    await this.store.db.read((sql) => this.battleAccess(sql, p, matchId, true));
+    const previous = await this.store.db.read((sql) =>
+      sql('SELECT id FROM battle_messages WHERE sender_id=$1 AND request_id=$2', [p.id, requestId]),
+    );
+    if (!previous.length) await this.filter.check(p.id, text);
+    return this.store.db.tx(async (sql) => {
+      await this.battleAccess(sql, p, matchId, true);
+      const [previous] = await sql<{ id: string; match_id: string; body: string }>(
+        'SELECT * FROM battle_messages WHERE sender_id=$1 AND request_id=$2',
+        [p.id, requestId],
+      );
+      if (previous) {
+        if (previous.match_id !== matchId || previous.body !== text)
+          throw new GameError('This send request belongs to another message.', 409);
+        return { id: previous.id };
+      }
+      if (
+        (
+          await sql(
+            "SELECT 1 FROM battle_messages WHERE sender_id=$1 AND created_at>now()-interval '3 seconds'",
+            [p.id],
+          )
+        ).length
+      )
+        throw new GameError('Wait three seconds between messages.', 429);
+      const id = randomUUID();
+      await sql(
+        'INSERT INTO battle_messages(id,match_id,sender_id,body,request_id) VALUES($1,$2,$3,$4,$5)',
+        [id, matchId, p.id, text, requestId],
+      );
+      return { id };
+    });
+  }
   private async requireFriend(sql: Sql, p: ProfileView, target: string) {
     registered(p);
     await this.eligible(sql, target);
@@ -86,6 +159,11 @@ export class Social {
   }
   async postFriend(p: ProfileView, target: string, message: unknown, requestId: unknown) {
     const text = this.messageText(message, requestId);
+    await this.store.db.read((sql) => this.requireFriend(sql, p, target));
+    const previous = await this.store.db.read((sql) =>
+      sql('SELECT id FROM friend_messages WHERE sender_id=$1 AND request_id=$2', [p.id, requestId]),
+    );
+    if (!previous.length) await this.filter.check(p.id, text);
     return this.store.db.tx(async (sql) => {
       await this.requireFriend(sql, p, target);
       const [previous] = await sql<{ id: string; recipient_id: string }>(
@@ -192,6 +270,10 @@ export class Social {
     if (!CHAT_CHANNELS.includes(channel as ChatChannel))
       throw new GameError('Choose General, Trade or Lobbies chat.');
     const text = this.messageText(message, requestId);
+    const previous = await this.store.db.read((sql) =>
+      sql('SELECT id FROM chat_messages WHERE profile_id=$1 AND request_id=$2', [p.id, requestId]),
+    );
+    if (!previous.length) await this.filter.check(p.id, text);
     return this.store.db.tx(async (sql) => {
       const [previous] = await sql<{ id: string; channel: string; body: string }>(
         'SELECT id,channel,body FROM chat_messages WHERE profile_id=$1 AND request_id=$2',
@@ -416,6 +498,7 @@ export class Social {
       JOIN profile_accounts a ON a.profile_id=p.id AND a.is_primary JOIN "user" u ON u.id=a.auth_user_id
       LEFT JOIN server_suspensions s ON s.auth_user_id=u.id
       JOIN matches m ON (m.player0=p.id OR m.player1=p.id) AND m.mode=$1 AND m.status='complete'
+      AND NOT EXISTS(SELECT 1 FROM profiles bot WHERE bot.is_bot AND bot.id IN(m.player0,m.player1))
       WHERE NOT p.is_bot AND NOT coalesce(u."isAnonymous",false) AND s.auth_user_id IS NULL
       GROUP BY p.id ORDER BY p.${rating} DESC,count(m.id) DESC,p.name,p.id LIMIT 100`,
           [kind],

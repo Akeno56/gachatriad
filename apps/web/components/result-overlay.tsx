@@ -49,6 +49,9 @@ export function ResultOverlay({
           </p>
         )}
         {match.endReason && <p>{match.endReason}</p>}
+        {(match.mode === 'ranked' || match.mode === 'draft') && !match.ratingApplies && (
+          <p>Bot opponent · No Elo change.</p>
+        )}
         <section className="result-settlement" aria-label="Match settlement">
           <p className="prism-reward">
             {match.prismReward > 0

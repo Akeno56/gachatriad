@@ -83,8 +83,9 @@ export function RankedWarning() {
         {draft ? (
           <p>
             Three temporary boosters open automatically. Choose five of fifteen cards within the
-            deck rarity limit. Draft rating applies; no card trade. Each booster guarantees a 3★+
-            and a 4★+ card, with 5% Holo. Your temporary cards never enter your collection.
+            deck rarity limit. Draft rating changes only against human players; no card trade. Each
+            booster guarantees a 3★+ and a 4★+ card, with 5% Holo. Your temporary cards never enter
+            your collection.
           </p>
         ) : ranked ? (
           <>
@@ -93,7 +94,10 @@ export function RankedWarning() {
               Trade One also applies on a forfeit. A draw transfers no cards. Losing your last copy
               can leave a deck slot empty.
             </p>
-            <p>Ranked rating applies. Opponents are players or Medium/Hard bots.</p>
+            <p>
+              Ranked rating changes only against human players. Opponents are players or Medium/Hard
+              bots.
+            </p>
           </>
         ) : (
           <p>

@@ -20,6 +20,7 @@ import './draft-shop.css';
 import './queues-training.css';
 import './release-twelve.css';
 import './localization.css';
+import './release-fourteen.css';
 
 export const metadata: Metadata = {
   title: 'Gacha Triad · Cross-world card battle',

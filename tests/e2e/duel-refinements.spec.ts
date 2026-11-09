@@ -35,7 +35,8 @@ test('Holo and CRT visibly animate without hover in both OS motion settings and 
     await page.getByLabel('Find a card').fill('Amber');
     await page.getByLabel('Finish', { exact: true }).selectOption('holo');
     await openSettings(page);
-    await page.getByRole('button', { name: 'CRT filter on', exact: true }).click();
+    if (await page.getByRole('button', { name: 'CRT filter on', exact: true }).isVisible())
+      await page.getByRole('button', { name: 'CRT filter on', exact: true }).click();
     await page.getByRole('button', { name: 'Game settings', exact: true }).click();
     await page.getByRole('button', { name: /Inspect Amber/ }).click();
     await page.mouse.move(0, 0);
