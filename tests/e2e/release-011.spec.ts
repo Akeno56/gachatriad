@@ -66,7 +66,7 @@ async function player(browser: Browser) {
       : route.continue();
   });
   const page = await context.newPage();
-  return { actor, profile, context, page };
+  return { actor, profile, token, context, page };
 }
 test('buys a currency sale and completes a card exchange through Market', async ({
   browser,
@@ -132,6 +132,55 @@ test('buys a currency sale and completes a card exchange through Market', async 
   } finally {
     await seller.context.close();
     await buyer.context.close();
+  }
+});
+
+test('bounds background refresh traffic and does not rerun admin history for world updates', async ({
+  browser,
+}) => {
+  test.setTimeout(90000);
+  const admin = await player(browser),
+    target = await player(browser);
+  try {
+    await platform.moderation.action(admin.profile.id, 'promote', 'Isolated workload test');
+    await admin.page.goto(`/profile?id=${target.profile.id}`);
+    await expect(admin.page.getByRole('heading', { name: 'Administrator review' })).toBeVisible();
+    await expect(admin.page.locator('.profile-header h2')).toHaveText(target.profile.name);
+    await admin.page.waitForTimeout(2300);
+    const counts = { profile: 0, player: 0, history: 0 };
+    admin.page.on('request', (request) => {
+      const path = new URL(request.url()).pathname;
+      if (path === '/api/profile') counts.profile++;
+      if (path === `/api/players/${target.profile.id}`) counts.player++;
+      if (path === `/api/admin/players/${target.profile.id}/history`) counts.history++;
+    });
+    for (let i = 0; i < 50; i++) {
+      const response = await platform.app.inject({
+        method: 'POST',
+        url: '/api/profile/avatar',
+        headers: { authorization: `Bearer ${admin.token}` },
+        payload: { cardId: null },
+      });
+      expect(response.statusCode, response.body).toBe(200);
+      await admin.page.waitForTimeout(100);
+    }
+    await admin.page.waitForTimeout(2300);
+    expect(counts.profile).toBeLessThanOrEqual(6);
+    expect(counts.player).toBe(0);
+    expect(counts.history).toBe(0);
+    await admin.page
+      .locator('.admin-player-review')
+      .getByRole('button', { name: 'Refresh', exact: true })
+      .click();
+    await expect.poll(() => counts.history).toBe(1);
+    await admin.page.getByRole('link', { name: 'Profile', exact: true }).click();
+    await expect(
+      admin.page.getByRole('heading', { name: 'Your profile', exact: true }),
+    ).toBeVisible();
+    await expect(admin.page.locator('.profile-header h2')).toHaveText(admin.profile.name);
+  } finally {
+    await admin.context.close();
+    await target.context.close();
   }
 });
 test('shows the exact Ranked rating delta and Season 0 W/L at the result', async ({

@@ -203,6 +203,7 @@ export class BotPopulation {
               m.id,
               randomDeck(m.draftPool, seededRandom(randomInt(2 ** 32))).map((c) => c.id),
             );
+            changed = true;
           } else if (m.game?.turn === m.seat && m.status === 'playing') {
             // Only the bot's hand and public board are passed to the same CPU policy as solo.
             const { hands, ...publicView } = m.game;
@@ -213,9 +214,11 @@ export class BotPopulation {
                 : difficulty,
               seededRandom(randomInt(2 ** 32)),
             );
-            if (move) await this.store.move(p.id, m.id, move.cardId, move.cell, m.version);
+            if (move) {
+              await this.store.move(p.id, m.id, move.cardId, move.cell, m.version);
+              changed = true;
+            }
           }
-          changed = true;
           continue;
         }
         const pending = await this.store.db.read((sql) =>

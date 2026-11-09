@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { ALL_CARDS as CARDS } from '@gacha-triad/shared';
-import type { ProfileView, TradeOfferView } from '@gacha-triad/shared/platform';
+import type { TradeOfferView } from '@gacha-triad/shared/platform';
+import type { ProfileIdentity } from './store';
 import { Database } from './database';
 import { GameError } from './store';
 import { pruneDeck } from './inventory';
@@ -33,7 +34,7 @@ export class Trades {
       })),
     );
   }
-  async create(p: ProfileView, offered: string, wanted: string | null, price?: number) {
+  async create(p: ProfileIdentity, offered: string, wanted: string | null, price?: number) {
     if (!p.registered) throw new GameError('Register an account to post trade offers.', 403);
     if (
       !CARDS.some((c) => c.id === offered) ||
@@ -69,7 +70,7 @@ export class Trades {
       return { id };
     });
   }
-  async cancel(p: ProfileView, id: string) {
+  async cancel(p: ProfileIdentity, id: string) {
     await this.db.tx(async (sql) => {
       const [o] = await sql<Offer>(
         "UPDATE trade_offers SET status='cancelled',settled_at=now() WHERE id=$1 AND owner_id=$2 AND status='open' RETURNING *",
@@ -82,7 +83,7 @@ export class Trades {
       ]);
     });
   }
-  async accept(p: ProfileView, id: string) {
+  async accept(p: ProfileIdentity, id: string) {
     if (!p.registered) throw new GameError('Register an account to exchange cards.', 403);
     await this.db.tx(async (sql) => {
       const [o] = await sql<Offer>('SELECT * FROM trade_offers WHERE id=$1', [id]);

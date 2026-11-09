@@ -46,6 +46,10 @@ export interface Actor {
   name: string;
   isAnonymous?: boolean | null;
 }
+export type ProfileIdentity = Pick<
+  ProfileView,
+  'id' | 'name' | 'registered' | 'isAdmin' | 'rating' | 'draftRating'
+>;
 interface ProfileRow {
   id: string;
   name: string;
@@ -194,6 +198,49 @@ export class GameStore {
     );
     await this.db.read(awardRankTitles);
   }
+  /** Authorize routine API reads without loading inventory, packs, deck or match history. */
+  async identity(actor: Actor, requested?: string): Promise<ProfileIdentity> {
+    const row = await this.db.read(async (sql) => {
+      const [p] = await sql<{
+        id: string;
+        name: string;
+        rating: number;
+        draft_rating: number;
+        last_seen_at: Date;
+        suspended: boolean;
+        admin: boolean;
+      }>(
+        `SELECT p.id,p.name,p.rating,p.draft_rating,p.last_seen_at,
+        EXISTS(SELECT 1 FROM server_suspensions s WHERE s.auth_user_id=$1) AS suspended,
+        EXISTS(SELECT 1 FROM server_admins a WHERE a.auth_user_id=$1) AS admin
+        FROM profiles p JOIN profile_accounts a ON a.profile_id=p.id
+        WHERE a.auth_user_id=$1 AND a.is_primary ${requested ? 'AND p.id=$2' : ''} LIMIT 1`,
+        requested ? [actor.id, requested] : [actor.id],
+      );
+      if (!p) return null;
+      if (p.suspended)
+        throw new GameError('This account is suspended. Contact the server host.', 403);
+      if (actor.isAnonymous && Date.now() - new Date(p.last_seen_at).getTime() > 7 * 86400000)
+        throw new GameError(
+          'Your unused guest account has expired. Start a new guest session.',
+          401,
+        );
+      await sql(
+        "UPDATE profiles SET last_seen_at=now() WHERE id=$1 AND last_seen_at<now()-interval '1 minute'",
+        [p.id],
+      );
+      return {
+        id: p.id,
+        name: p.name,
+        registered: !actor.isAnonymous,
+        isAdmin: !actor.isAnonymous && p.admin,
+        rating: p.rating,
+        draftRating: p.draft_rating,
+      };
+    });
+    // Creation and invalid-profile checks use the same path as /api/profile, outside the lease.
+    return row ?? this.profile(actor, requested);
+  }
   async profile(actor: Actor, requested?: string): Promise<ProfileView> {
     const result = await this.db.tx(async (sql) => {
       if ((await sql('SELECT 1 FROM server_suspensions WHERE auth_user_id=$1', [actor.id])).length)
@@ -225,11 +272,15 @@ export class GameStore {
           'Your unused guest account has expired. Start a new guest session.',
           401,
         );
-      await sql('UPDATE profiles SET last_seen_at=now() WHERE id=$1', [p.id]);
-      await pruneDeck(sql, p.id);
-      const [current] = await sql<ProfileRow>('SELECT * FROM profiles WHERE id=$1', [p.id]);
-      p.default_deck = current.default_deck;
-      p.avatar_card = current.avatar_card;
+      await sql(
+        "UPDATE profiles SET last_seen_at=now() WHERE id=$1 AND last_seen_at<now()-interval '1 minute'",
+        [p.id],
+      );
+      const pruned = await pruneDeck(sql, p.id);
+      if (pruned) {
+        p.default_deck = pruned.default_deck;
+        p.avatar_card = pruned.avatar_card;
+      }
       const owned = await sql<{ card_id: string; quantity: number; reserved: number }>(
         'SELECT * FROM inventory WHERE profile_id=$1 AND quantity>0',
         [p.id],
@@ -511,7 +562,7 @@ export class GameStore {
     );
   }
   async createLobby(
-    profile: ProfileView,
+    profile: ProfileIdentity,
     input: {
       mode: Mode;
       name?: string;
@@ -583,7 +634,7 @@ export class GameStore {
       return { lobbyId, matchId: null };
     });
   }
-  private async joinRow(sql: Sql, p: ProfileView, lobby: LobbyRow) {
+  private async joinRow(sql: Sql, p: ProfileIdentity, lobby: LobbyRow) {
     if (lobby.mode === 'ranked') {
       await this.rankedEligible(sql, p.id);
       await this.rankedEligible(sql, lobby.host_id);
@@ -639,7 +690,7 @@ export class GameStore {
     );
     return { lobbyId: lobby.id, matchId: mid };
   }
-  async joinLobby(p: ProfileView, id: string) {
+  async joinLobby(p: ProfileIdentity, id: string) {
     return this.db.tx(async (sql) => {
       await this.busy(sql, p.id);
       const [lobby] = await sql<LobbyRow>('SELECT * FROM lobbies WHERE id=$1', [id]);

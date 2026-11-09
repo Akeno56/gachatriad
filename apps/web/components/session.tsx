@@ -5,6 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { io, type Socket } from 'socket.io-client';
 import type { ProfileView } from '@gacha-triad/shared/platform';
 import { api, session, resetSession, ApiError } from '../lib/platform';
+import { refreshScheduler } from '../lib/refresh-scheduler';
 import {
   serverConfigured,
   socketURL,
@@ -51,7 +52,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         try {
           next = await api<ProfileView>('/profile');
         } catch (e) {
-          if (localStorage.getItem(profileKey())) {
+          if (e instanceof ApiError && e.status === 403 && localStorage.getItem(profileKey())) {
             localStorage.removeItem(profileKey());
             next = await api<ProfileView>('/profile');
           } else if (e instanceof ApiError && e.status === 401) {
@@ -89,10 +90,27 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     },
     [refresh],
   );
+  const inMatch = useRef(false);
+  inMatch.current = !!profile?.activeMatchId;
+  const automatic = useRef<ReturnType<typeof refreshScheduler> | null>(null);
   useEffect(() => {
-    void refresh();
-    const timer = setInterval(() => void refresh(), 5000);
-    return () => clearInterval(timer);
+    const scheduler = refreshScheduler(refresh, {
+      interval: () => (inMatch.current ? 250 : 2000),
+      visible: () => !document.hidden,
+    });
+    automatic.current = scheduler;
+    scheduler.request();
+    const visible = () => {
+      if (!document.hidden) scheduler.request();
+    };
+    document.addEventListener('visibilitychange', visible);
+    const timer = setInterval(() => scheduler.request(), 15000);
+    return () => {
+      scheduler.close();
+      automatic.current = null;
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', visible);
+    };
   }, [refresh]);
   useEffect(() => {
     if (!profile) return;
@@ -100,8 +118,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       withCredentials: true,
       auth: (callback) => callback({ profileId: profile.id, token: sessionToken() }),
     });
-    socket.on('platform:changed', () => void refresh());
-    socket.on('connect', () => void refresh());
+    socket.on('platform:changed', () => automatic.current?.request());
+    socket.on('connect', () => automatic.current?.request());
     return () => {
       socket.disconnect();
     };

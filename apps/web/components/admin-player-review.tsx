@@ -5,6 +5,7 @@ import { useSession } from './session';
 import { api } from '../lib/platform';
 import { Card } from './card';
 import { NoTranslate, LocalizedDate } from './i18n';
+import { usePageRefresh } from './use-page-refresh';
 interface History {
   total: number;
   rows: {
@@ -29,7 +30,8 @@ interface History {
   }[];
 }
 export function AdminPlayerReview({ playerId }: { playerId: string }) {
-  const { profile, revision } = useSession();
+  const { profile } = useSession();
+  const [revision, refreshReview] = usePageRefresh();
   const [history, setHistory] = useState<History | null>(null),
     [offset, setOffset] = useState(0),
     [collection, setCollection] = useState<
@@ -57,11 +59,14 @@ export function AdminPlayerReview({ playerId }: { playerId: string }) {
     return () => {
       valid = false;
     };
-  }, [playerId, profile?.isAdmin, revision, offset, section]);
+  }, [playerId, profile?.id, profile?.isAdmin, revision, offset, section]);
   if (!profile?.isAdmin) return null;
   return (
     <section className="menu-window admin-player-review">
       <h2>Administrator review</h2>
+      <button className="text-button" onClick={refreshReview}>
+        Refresh
+      </button>
       <div className="ladder-tabs" role="tablist" aria-label="Administrator review">
         <button
           role="tab"

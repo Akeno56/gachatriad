@@ -2,7 +2,8 @@
 import { LocaleView, NoTranslate, LocalizedDate } from '../../components/i18n';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ALL_CARDS, CARDS, SIDE_NAMES } from '@gacha-triad/shared';
 import type { PlayerProfileView } from '@gacha-triad/shared/platform';
 import { useSession } from '../../components/session';
@@ -12,8 +13,42 @@ import { api } from '../../lib/platform';
 import { AdminGrant } from '../../components/admin-grant';
 import { AdminPlayerReview } from '../../components/admin-player-review';
 import { useSocial, openFriendChat } from '../../components/social-state';
-export default function PlayerProfile() {
-  const { profile, revision, refresh, openAccount } = useSession();
+import { usePageRefresh } from '../../components/use-page-refresh';
+export default function ProfilePage() {
+  return (
+    <Suspense
+      fallback={
+        <LocaleView>
+          <div className="content-page">
+            <p>Loading profile…</p>
+          </div>
+        </LocaleView>
+      }
+    >
+      <PlayerProfile />
+    </Suspense>
+  );
+}
+function PlayerProfile() {
+  const { profile, refresh, openAccount } = useSession();
+  const [revision] = usePageRefresh();
+  const params = useSearchParams();
+  const playerId = params.get('id') || profile?.id;
+  const selfVersion =
+    playerId === profile?.id && profile
+      ? JSON.stringify([
+          profile.name,
+          profile.avatarCardId,
+          profile.titleId,
+          profile.rating,
+          profile.draftRating,
+          profile.played,
+          profile.wins,
+          profile.losses,
+          profile.draws,
+          Object.entries(profile.inventory).map(([id, copy]) => [id, copy.quantity]),
+        ])
+      : '';
   const { data: social, ready: socialReady } = useSocial();
   const [player, setPlayer] = useState<PlayerProfileView | null>(null),
     [error, setError] = useState(''),
@@ -23,7 +58,7 @@ export default function PlayerProfile() {
     [busy, setBusy] = useState(false);
   useEffect(() => {
     if (!profile) return;
-    const id = new URLSearchParams(location.search).get('id') || profile.id;
+    const id = playerId;
     let valid = true;
     void api<PlayerProfileView>(`/players/${id}`)
       .then((p) => {
@@ -36,7 +71,7 @@ export default function PlayerProfile() {
     return () => {
       valid = false;
     };
-  }, [profile?.id, revision]);
+  }, [profile?.id, playerId, revision, selfVersion]);
   useEffect(() => setAvatar(profile?.avatarCardId ?? ''), [profile?.avatarCardId]);
   useEffect(() => setTitle(profile?.titleId ?? ''), [profile?.titleId]);
   const self = player?.id === profile?.id;

@@ -5,8 +5,10 @@ import { useEffect, useRef, useState } from 'react';
 import type { BotMix, PopulationView } from '@gacha-triad/shared/platform';
 import { api } from '../lib/platform';
 import { useSession } from './session';
+import { usePageRefresh } from './use-page-refresh';
 export function LocalBots() {
-  const { profile, revision, refresh } = useSession();
+  const { profile, refresh } = useSession();
+  const [revision] = usePageRefresh(15000);
   const [status, setStatus] = useState<PopulationView | null>(null),
     [pending, setPending] = useState(false),
     [error, setError] = useState('');

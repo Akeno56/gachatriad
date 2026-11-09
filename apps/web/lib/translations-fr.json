@@ -1210,5 +1210,9 @@
   "Random deck · Same · Plus · Combo · No trade": "Deck aléatoire · Same · Plus · Combo · Aucun échange",
   "Draws trade nothing. Trade One requires an account.": "Aucun échange en cas de match nul. Trade One nécessite un compte.",
   "Allow bots to join my lobby": "Autoriser les bots à rejoindre ma table",
-  "Join a public table or create your own custom game. Presets fill the setup without joining a queue.": "Rejoignez une table publique ou créez votre partie personnalisée. Les préréglages remplissent la configuration sans rejoindre une file."
+  "Join a public table or create your own custom game. Presets fill the setup without joining a queue.": "Rejoignez une table publique ou créez votre partie personnalisée. Les préréglages remplissent la configuration sans rejoindre une file.",
+  "The game server is temporarily unavailable. Reconnecting…": "Le serveur de jeu est temporairement indisponible. Reconnexion…",
+  "Too many requests. Please wait a moment before trying again.": "Trop de requêtes. Veuillez patienter un instant avant de réessayer.",
+  "Refresh": "Actualiser",
+  "Loading profile…": "Chargement du profil…"
 }

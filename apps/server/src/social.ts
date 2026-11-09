@@ -11,7 +11,7 @@ import type {
   LadderEntry,
   SocialView,
 } from '@gacha-triad/shared/social';
-import type { ProfileView } from '@gacha-triad/shared/platform';
+import type { ProfileIdentity } from './store';
 import type { GameStore } from './store';
 import { UNRANKED } from './store';
 import type { Sql } from './database';
@@ -33,7 +33,7 @@ function identity(p: Person): BattleIdentity {
     avatar: p.avatar_card ? (cards.get(p.avatar_card) ?? null) : null,
   };
 }
-function registered(p: ProfileView) {
+function registered(p: ProfileIdentity) {
   if (!p.registered)
     throw new GameError('Register an account to use friends, invitations and chat.', 403);
 }
@@ -42,7 +42,7 @@ export class Social {
   constructor(readonly store: GameStore) {
     this.filter = new ChatFilter(store.db);
   }
-  private async battleAccess(sql: Sql, p: ProfileView, matchId: string, writing = false) {
+  private async battleAccess(sql: Sql, p: ProfileIdentity, matchId: string, writing = false) {
     const [m] = await sql<{
       status: string;
       completed_at: Date | null;
@@ -63,7 +63,7 @@ export class Social {
     )
       throw new GameError('Battle chat is closed.', 409);
   }
-  async battleMessages(p: ProfileView, matchId: string) {
+  async battleMessages(p: ProfileIdentity, matchId: string) {
     return this.store.db.read(async (sql) => {
       await this.battleAccess(sql, p, matchId);
       return (
@@ -76,7 +76,7 @@ export class Social {
         .map((m) => ({ ...m, createdAt: m.createdAt.toISOString() }));
     });
   }
-  async postBattle(p: ProfileView, matchId: string, message: unknown, requestId: unknown) {
+  async postBattle(p: ProfileIdentity, matchId: string, message: unknown, requestId: unknown) {
     const text = this.messageText(message, requestId);
     await this.store.db.read((sql) => this.battleAccess(sql, p, matchId, true));
     const previous = await this.store.db.read((sql) =>
@@ -111,7 +111,7 @@ export class Social {
       return { id };
     });
   }
-  private async requireFriend(sql: Sql, p: ProfileView, target: string) {
+  private async requireFriend(sql: Sql, p: ProfileIdentity, target: string) {
     registered(p);
     await this.eligible(sql, target);
     if (
@@ -124,7 +124,7 @@ export class Social {
     )
       throw new GameError('Private chat is available between accepted friends.', 403);
   }
-  async messages(p: ProfileView, target: string): Promise<FriendMessage[]> {
+  async messages(p: ProfileIdentity, target: string): Promise<FriendMessage[]> {
     return this.store.db.read(async (sql) => {
       await this.requireFriend(sql, p, target);
       const rows = await sql<{
@@ -146,7 +146,7 @@ export class Social {
       }));
     });
   }
-  async readMessages(p: ProfileView, target: string, through: unknown) {
+  async readMessages(p: ProfileIdentity, target: string, through: unknown) {
     if (typeof through !== 'string')
       throw new GameError('Choose the last message to mark as read.');
     await this.store.db.tx(async (sql) => {
@@ -157,7 +157,7 @@ export class Social {
       );
     });
   }
-  async postFriend(p: ProfileView, target: string, message: unknown, requestId: unknown) {
+  async postFriend(p: ProfileIdentity, target: string, message: unknown, requestId: unknown) {
     const text = this.messageText(message, requestId);
     await this.store.db.read((sql) => this.requireFriend(sql, p, target));
     const previous = await this.store.db.read((sql) =>
@@ -214,7 +214,7 @@ export class Social {
     if (!p) throw new GameError('Choose an active registered player.', 404);
     return p;
   }
-  async search(p: ProfileView, query: unknown): Promise<BattleIdentity[]> {
+  async search(p: ProfileIdentity, query: unknown): Promise<BattleIdentity[]> {
     registered(p);
     if (typeof query !== 'string' || query.trim().length < 2) return [];
     return this.store.db.read(async (sql) =>
@@ -228,7 +228,7 @@ export class Social {
       ).map(identity),
     );
   }
-  async friend(p: ProfileView, target: unknown, action: 'request' | 'accept' | 'remove') {
+  async friend(p: ProfileIdentity, target: unknown, action: 'request' | 'accept' | 'remove') {
     registered(p);
     if (typeof target !== 'string' || target === p.id)
       throw new GameError('Choose another player.');
@@ -265,7 +265,12 @@ export class Social {
       );
     });
   }
-  async post(p: ProfileView, message: unknown, requestId: unknown, channel: unknown = 'general') {
+  async post(
+    p: ProfileIdentity,
+    message: unknown,
+    requestId: unknown,
+    channel: unknown = 'general',
+  ) {
     registered(p);
     if (!CHAT_CHANNELS.includes(channel as ChatChannel))
       throw new GameError('Choose General, Trade or Lobbies chat.');
@@ -301,7 +306,7 @@ export class Social {
       return { id };
     });
   }
-  async deleteMessage(p: ProfileView, id: string) {
+  async deleteMessage(p: ProfileIdentity, id: string) {
     if (!p.isAdmin) throw new GameError('Administrator access required.', 403);
     await this.store.db.tx(async (sql) => {
       if (
@@ -322,7 +327,7 @@ export class Social {
       "UPDATE lobbies SET status='closed' WHERE status='waiting' AND invited_profile IS NOT NULL AND EXISTS(SELECT 1 FROM duel_invitations d WHERE d.lobby_id=lobbies.id AND d.status IN('expired','declined'))",
     );
   }
-  async view(p: ProfileView, online: Set<string>): Promise<SocialView> {
+  async view(p: ProfileIdentity, online: Set<string>): Promise<SocialView> {
     return this.store.db.tx(async (sql) => {
       await this.expire(sql);
       const friends = await sql<Person & { status: string; requested_by: string }>(
@@ -404,7 +409,7 @@ export class Social {
       };
     });
   }
-  async invite(p: ProfileView, target: unknown) {
+  async invite(p: ProfileIdentity, target: unknown) {
     registered(p);
     if (typeof target !== 'string' || target === p.id) throw new GameError('Choose a friend.');
     await this.store.db.read(async (sql) => {
@@ -441,7 +446,7 @@ export class Social {
       throw e;
     }
   }
-  async respond(p: ProfileView, id: string, accept: boolean) {
+  async respond(p: ProfileIdentity, id: string, accept: boolean) {
     registered(p);
     await this.store.db.tx((sql) => this.expire(sql));
     const row = await this.store.db.tx(async (sql) => {

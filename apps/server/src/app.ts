@@ -60,9 +60,21 @@ export async function createPlatform(
     origin: origins,
     methods: ['GET', 'HEAD', 'POST', 'DELETE', 'OPTIONS'],
     credentials: true,
-    exposedHeaders: ['set-auth-token'],
+    exposedHeaders: ['set-auth-token', 'retry-after', 'x-retry-after'],
   });
   await app.register(rateLimit, { max: 600, timeWindow: '1 minute' });
+  const lastSlowLog = new Map<string, number>();
+  app.addHook('onResponse', async (req, reply) => {
+    if (reply.elapsedTime < 2000 && reply.statusCode !== 429) return;
+    const route = req.routeOptions.url ?? 'unknown';
+    const key = `${route}:${reply.statusCode === 429 ? 'limited' : 'slow'}`;
+    if (Date.now() - (lastSlowLog.get(key) ?? 0) < 30000) return;
+    lastSlowLog.set(key, Date.now());
+    req.log.warn(
+      { route, status: reply.statusCode, durationMs: Math.round(reply.elapsedTime) },
+      'Slow or rate-limited game request',
+    );
+  });
   app.setErrorHandler((error, req, reply) => {
     const code =
       error instanceof GameError
@@ -147,12 +159,19 @@ export async function createPlatform(
       return reply.send(await response.text());
     },
   });
-  async function profile(req: FastifyRequest) {
+  async function sessionActor(req: FastifyRequest) {
     const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
     if (!session) throw new GameError('Your session has expired. Reload to reconnect.', 401);
     await security.remember(session.user.id, req.ip);
     const requested = req.headers['x-profile-id'];
-    return store.profile(session.user, typeof requested === 'string' ? requested : undefined);
+    return {
+      actor: session.user,
+      requested: typeof requested === 'string' ? requested : undefined,
+    };
+  }
+  async function profile(req: FastifyRequest) {
+    const { actor, requested } = await sessionActor(req);
+    return store.identity(actor, requested);
   }
   let shuttingDown = false;
   const transports = new Set<string>();
@@ -189,7 +208,7 @@ export async function createPlatform(
         headers,
       });
       if (!session) throw new Error('Sign in first.');
-      const p = await store.profile(
+      const p = await store.identity(
         session.user,
         typeof socket.handshake.auth.profileId === 'string'
           ? socket.handshake.auth.profileId
@@ -466,7 +485,10 @@ export async function createPlatform(
       })),
     };
   });
-  app.get('/api/profile', profile);
+  app.get('/api/profile', async (req) => {
+    const { actor, requested } = await sessionActor(req);
+    return store.profile(actor, requested);
+  });
   app.post('/api/tutorial/complete', async (req) => {
     await store.completeTutorial((await profile(req)).id);
     return { ok: true };
