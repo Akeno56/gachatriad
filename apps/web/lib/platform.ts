@@ -7,6 +7,7 @@ import {
   clearToken,
   profileKey,
 } from './connection';
+import { recordRequest } from './client-diagnostics';
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -33,6 +34,7 @@ export async function api<T>(
   const profile = localStorage.getItem(profileKey()),
     token = sessionToken();
   let response: Response;
+  const started = performance.now();
   try {
     response = await fetch(`${origin}/api${path}`, {
       method,
@@ -46,6 +48,7 @@ export async function api<T>(
       ...(method === 'GET' ? { signal: AbortSignal.timeout(15000) } : {}),
     });
   } catch (error) {
+    recordRequest(path, 0, started);
     if (method === 'GET') throw new ApiError(unavailable, 503);
     throw error;
   }
@@ -54,9 +57,12 @@ export async function api<T>(
     result = await response.json();
   } catch {
     // Keep the signed session when a gateway sends an empty/HTML restart response.
-    if (response.status !== 429)
+    if (response.status !== 429) {
+      recordRequest(path, response.status, started, response.headers.get('server-timing'));
       throw new ApiError(unavailable, response.ok ? 503 : response.status);
+    }
   }
+  recordRequest(path, response.status, started, response.headers.get('server-timing'));
   const message = result?.error?.message || result?.error || result?.message;
   if (response.status === 429) {
     const header = response.headers.get('retry-after') ?? response.headers.get('x-retry-after');

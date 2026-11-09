@@ -1,10 +1,18 @@
 import { isIP } from 'node:net';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Database } from './database';
 import { GameError } from './errors';
 
 /** IPs come only from Fastify's trusted edge, never from auth payloads. */
 export class AccountSecurity {
   private signupTail = Promise.resolve();
+  private registration = new AsyncLocalStorage<{ allowed: boolean; created: string[] }>();
+  canRegister() {
+    return this.registration.getStore()?.allowed === true;
+  }
+  createdUser(id: string) {
+    this.registration.getStore()?.created.push(id);
+  }
   constructor(readonly db: Database) {}
   async address(input: string) {
     const raw = input.startsWith('::ffff:') ? input.slice(7) : input;
@@ -43,7 +51,7 @@ export class AccountSecurity {
     );
     return address.ip;
   }
-  async signup<T>(ip: string, work: () => Promise<T>): Promise<T> {
+  async signup<T>(ip: string, work: () => Promise<T>, existingLogin = false): Promise<T> {
     // Serialize the complete auth operation so simultaneous signups cannot both pass.
     const previous = this.signupTail;
     let unlock!: () => void;
@@ -58,7 +66,7 @@ export class AccountSecurity {
         process.env.ALLOW_SHARED_TEST_NETWORK === 'true' &&
         (address.ip === '127.0.0.1' || address.ip === '::1')
       )
-        return await work();
+        return await this.registration.run({ allowed: true, created: [] }, work);
       const occupied = await this.db.read((sql) =>
         sql(
           `SELECT 1 FROM account_ips i JOIN "user" u ON u.id=i.user_id
@@ -67,12 +75,17 @@ export class AccountSecurity {
           [address.network],
         ),
       );
-      if (occupied.length)
+      if (occupied.length && !existingLogin)
         throw new GameError(
           'Only one registered account is allowed per IP. Sign in to your existing account or contact the administrator for a shared-network exception.',
           403,
         );
-      return await work();
+      const scope = { allowed: !occupied.length, created: [] as string[] };
+      try {
+        return await this.registration.run(scope, work);
+      } finally {
+        for (const id of scope.created) await this.remember(id, address.ip);
+      }
     } finally {
       unlock();
     }

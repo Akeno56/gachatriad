@@ -3,6 +3,7 @@ import { LocaleView, LanguageSelector } from './i18n';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { FeedbackPanel } from './feedback-panel';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { RetroAudio, type Sound, type MusicScene } from '../lib/audio';
 import { SessionProvider, AccountMenu } from './session';
@@ -287,6 +288,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                         <div className="menu-window volume-panel">
                           <label className="effects-setting">
                             <input
+                              name="game-shell-input-1"
                               type="checkbox"
                               checked={effects}
                               onChange={(e) => {
@@ -304,6 +306,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                           <label>
                             Music volume <output>{musicVolume}%</output>
                             <input
+                              name="game-shell-input-2"
                               aria-label="Music volume"
                               type="range"
                               min="0"
@@ -322,6 +325,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                           <label>
                             Sound effects volume <output>{sfxVolume}%</output>
                             <input
+                              name="game-shell-input-3"
                               aria-label="Sound effects volume"
                               type="range"
                               min="0"
@@ -359,6 +363,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                     <RankedWarning />
                     <ActiveBattleReminder />
                     <SocialPanel />
+                    <FeedbackPanel />
                   </SocialProvider>
                 </ServerConnection>
               </main>

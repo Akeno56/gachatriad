@@ -78,6 +78,7 @@ export function FriendChat({
           <label className="conversation-filter">
             <span className="sr-only">Find a conversation</span>
             <input
+              name="friend-chat-input-1"
               type="search"
               placeholder="Find a conversation"
               value={search}
@@ -228,6 +229,7 @@ export function FriendChat({
                 }}
               >
                 <input
+                  name="friend-chat-input-2"
                   aria-label={`Message ${friend.name}`}
                   placeholder={`Message ${friend.name}…`}
                   maxLength={300}

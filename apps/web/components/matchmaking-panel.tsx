@@ -19,10 +19,16 @@ export function MatchmakingPanel({
 }) {
   const { profile, refresh } = useSession();
   const [busy, setBusy] = useState(false),
+    [practice, setPractice] = useState(false),
     [error, setError] = useState(''),
     [now, setNow] = useState(Date.now());
   const lock = useRef(false),
-    waiting = profile?.waitingLobby;
+    waiting = profile?.waitingLobby,
+    practiceDialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (practice) practiceDialog.current?.showModal();
+    else practiceDialog.current?.close();
+  }, [practice]);
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
@@ -41,7 +47,10 @@ export function MatchmakingPanel({
       )
         return;
       setBusy(true);
-      const result = await api<{ matchId: string | null }>('/lobbies', { mode, allowBots: true });
+      const result = await api<{ matchId: string | null }>('/lobbies', {
+        mode,
+        allowBots: mode === 'casual',
+      });
       await refresh();
       if (result.matchId) onMatch(result.matchId);
     } catch (e) {
@@ -116,6 +125,15 @@ export function MatchmakingPanel({
                   ×
                 </button>
               )}
+              {own && ranked && (
+                <button
+                  className="text-button practice-queue-button"
+                  disabled={busy || !!waiting?.allowBots}
+                  onClick={() => setPractice(true)}
+                >
+                  {waiting?.allowBots ? 'Finding a practice bot…' : 'Play a practice bot — no Elo'}
+                </button>
+              )}
             </div>
           );
         })}
@@ -158,6 +176,44 @@ export function MatchmakingPanel({
         <p className="error-message" role="alert">
           {error}
         </p>
+        <dialog
+          ref={practiceDialog}
+          className="game-dialog menu-window"
+          onCancel={() => setPractice(false)}
+        >
+          <h2>Practice with a bot?</h2>
+          <p>
+            Bot games use the same Ranked or Draft rules and never change Elo. A human opponent can
+            still match first.
+          </p>
+          {waiting?.mode === 'ranked' && <p>Trade One still applies: losing can cost one card.</p>}
+          <div className="result-actions">
+            <button
+              className="primary-button"
+              disabled={busy}
+              onClick={async () => {
+                if (!waiting) return;
+                setBusy(true);
+                setError('');
+                try {
+                  await api(`/lobbies/${waiting.id}/practice`, {});
+                  setPractice(false);
+                  await refresh();
+                } catch (e) {
+                  setError((e as Error).message);
+                  setPractice(false);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              Find practice bot
+            </button>
+            <button className="outline-button" disabled={busy} onClick={() => setPractice(false)}>
+              Keep waiting for a player
+            </button>
+          </div>
+        </dialog>
       </section>
     </LocaleView>
   );

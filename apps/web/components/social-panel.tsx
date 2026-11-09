@@ -238,6 +238,7 @@ export function SocialPanel() {
                   <label>
                     Find a player
                     <input
+                      name="social-panel-input-1"
                       value={query}
                       minLength={2}
                       maxLength={60}

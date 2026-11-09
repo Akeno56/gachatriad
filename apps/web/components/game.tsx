@@ -331,7 +331,7 @@ export function Game() {
               </section>
             </div>
             <div className="build-label">
-              {CARDS.filter((card) => !card.finish).length} CARDS · v0.1.1 Alpha{' '}
+              {CARDS.filter((card) => !card.finish).length} CARDS · v0.1.2 Alpha{' '}
               <Link href="/credits" className="credits-button">
                 Credits
               </Link>
@@ -427,6 +427,7 @@ export function Game() {
                 <label className="draft-sort">
                   Order cards{' '}
                   <select
+                    name="game-select-1"
                     aria-label="Order draft cards"
                     value={draftSort}
                     onChange={(e) => setDraftSort(e.target.value as 'stats' | 'rarity')}

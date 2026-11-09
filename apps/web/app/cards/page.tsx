@@ -84,6 +84,7 @@ export default function CardsPage() {
           <label>
             Sort by
             <select
+              name="page-select-1"
               aria-label="Sort by"
               value={sort}
               onChange={(e) => {
@@ -99,6 +100,7 @@ export default function CardsPage() {
           <label>
             Find a card
             <input
+              name="page-input-2"
               type="search"
               placeholder="Search by name…"
               value={search}
@@ -111,6 +113,7 @@ export default function CardsPage() {
           <label>
             Universe
             <select
+              name="page-select-3"
               aria-label="Universe"
               value={universe}
               onChange={(e) => {
@@ -129,6 +132,7 @@ export default function CardsPage() {
           <label>
             Ownership
             <select
+              name="page-select-4"
               aria-label="Ownership"
               value={ownership}
               disabled={!profile}
@@ -145,6 +149,7 @@ export default function CardsPage() {
           <label>
             Finish
             <select
+              name="page-select-5"
               aria-label="Finish"
               value={finish}
               onChange={(e) => {
@@ -159,6 +164,7 @@ export default function CardsPage() {
           <label>
             Rarity
             <select
+              name="page-select-6"
               aria-label="Rarity"
               value={rarity}
               onChange={(e) => {

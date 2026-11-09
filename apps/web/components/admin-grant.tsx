@@ -43,6 +43,7 @@ export function AdminGrant({ playerId, name }: { playerId: string; name: string 
           <label>
             Grant
             <select
+              name="admin-grant-select-1"
               value={kind}
               onChange={(e) => {
                 setKind(e.target.value);
@@ -56,6 +57,7 @@ export function AdminGrant({ playerId, name }: { playerId: string; name: string 
           <label>
             Amount
             <input
+              name="admin-grant-input-2"
               type="number"
               min="1"
               max={kind === 'prisms' ? 1000000 : 100}

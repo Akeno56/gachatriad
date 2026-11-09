@@ -154,6 +154,7 @@ export default function Lobbies() {
         </p>
         <label className="check-label">
           <input
+            name="page-input-1"
             type="checkbox"
             checked={allowBots}
             onChange={(e) => setAllowBots(e.target.checked)}
@@ -194,7 +195,12 @@ export default function Lobbies() {
           <div className="lobby-filters">
             <label>
               Mode
-              <select aria-label="Mode" value={mode} onChange={(e) => setMode(e.target.value)}>
+              <select
+                name="page-select-2"
+                aria-label="Mode"
+                value={mode}
+                onChange={(e) => setMode(e.target.value)}
+              >
                 <option value="all">All modes</option>
                 {['casual', 'custom', 'roulette'].map((m) => (
                   <option key={m} value={m}>
@@ -206,6 +212,7 @@ export default function Lobbies() {
             <label>
               Status
               <select
+                name="page-select-3"
                 aria-label="Status"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
@@ -295,6 +302,7 @@ export default function Lobbies() {
               <label>
                 Lobby name
                 <input
+                  name="page-input-4"
                   value={name}
                   maxLength={60}
                   placeholder={`${profile?.name}'s table`}
@@ -304,6 +312,7 @@ export default function Lobbies() {
               <label>
                 Visibility
                 <select
+                  name="page-select-5"
                   aria-label="Visibility"
                   value={visibility}
                   onChange={(e) => setVisibility(e.target.value)}
@@ -325,6 +334,7 @@ export default function Lobbies() {
               ].map((t) => (
                 <label key={t.label}>
                   <input
+                    name="page-input-6"
                     type="checkbox"
                     checked={t.value}
                     disabled={

@@ -1,4 +1,24 @@
-# Sharing review — v0.9
+# Sharing review — 0.1.2 Alpha
+
+Reviewed 9 November 2026. This is a source review and isolated regression testing, not an external penetration test. No direct administrator escalation, arbitrary code execution or inventory/currency bypass was found in the reviewed routes. It does not guarantee that every exploit has been excluded.
+
+## Current patch
+
+- Moves, rewards, market transfers, duplicate actions and administrator permissions remain server-authoritative. Editing browser state or calling routes from the console does not bypass authentication, ownership, role checks, reservations or transaction validation. Existing security regressions cover forged admin flags, foreign profiles, socket tokens, spoofed IP headers and disallowed origins.
+- Bulk Trade Up debits and all rewards commit together, with a per-profile request receipt. Replays cannot consume cards twice; altered payloads using the same ID are rejected. Last and reserved copies remain protected. Rewards use server-side cryptographic randomness.
+- Reports accept bounded text and a small diagnostic allowlist. Text is rendered literally in React and with `textContent` in the controller. Markup in a test report did not produce an image or execute a script. Report reads/updates require an authenticated administrator or the private host-control secret. Submission limits apply per protected network hash, including guests.
+- Google/Discord are optional. Client Secrets stay in the private VPS environment. OAuth tokens are encrypted at rest. Better Auth handles provider responses, state and PKCE; local tests verify redirects and reject a forged callback without creating users. Implicit email-based linking is disabled; existing players explicitly connect a provider from their signed-in profile. The IP registration limit also applies to new provider accounts while existing logins remain allowed. Real external consent/login cannot be certified without the operator's provider applications and credentials; see [setup](SOCIAL_LOGIN.md).
+- The public proxy denies `/api/local-control/*` and removes the private-control header. The controller remains on loopback with Host/Origin and POST token checks. Its new report proxy passes those checks. Tests verify that closing a managed controller does not stop the game service.
+- Optional client diagnostics retain at most 12 slow/error requests, redact UUIDs and query strings, and omit bodies, tokens and cookies. `Server-Timing` exposes duration only. Private runtime metrics expose neither a raw save nor credentials.
+- Production dependency audit: **0 known advisories**, 249 production/optional dependencies at review time. No new dependency was added. This advisory scan does not establish the absence of unknown vulnerabilities or check the VPS operating system.
+
+The remaining public-playtest limits are email verification/password recovery (not configured), abuse from multiple IPs/VPNs, and denial-of-service capacity. A one-account-per-IP policy is an abuse signal, not proof that two people share an identity, and households may need a host-managed exception. Use the existing HTTPS/loopback deployment, keep its backups and runtime patched, and verify real provider login after configuration. A staged public playtest is reasonable; a security guarantee is not.
+
+The intermittent long-session slowdown is a separate unresolved live-verification item. See [0.1.2 notes](RELEASE_V0_1_2.md) for the mitigation, endurance checks and diagnostics. No production server change or data wipe was performed by this review.
+
+## Earlier review history
+
+The following notes record earlier milestones and their checks; their test counts are historical.
 
 **v0.13 follow-up:** French translation is local React rendering; user messages and names are not sent to a translation service or interpreted as markup. Optional VPS templates keep both the backend and private controller on loopback, deny the private-control path at the public proxy, and store data/secrets outside static releases. The controller's managed-service mode uses a private shared control secret for moderation/grants and refuses to launch another database writer. An isolated test checks those operations and confirms closing the panel leaves the externally managed game running. Linux provisioning/Caddy/systemd behavior still requires verification on the chosen VPS; the files are deployment templates, not an independently audited production installation. See [hosting](DEDICATED_HOSTING.md).
 

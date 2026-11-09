@@ -11,7 +11,7 @@ import {
   LOCAL_TEST_BUILD,
 } from '../lib/connection';
 export function ServerConnection({ children }: { children: React.ReactNode }) {
-  const [blocked, setBlocked] = useState(STATIC_BUILD),
+  const [blocked, setBlocked] = useState(STATIC_BUILD && !process.env.NEXT_PUBLIC_API_URL),
     [open, setOpen] = useState(false),
     [address, setAddress] = useState(''),
     [error, setError] = useState(''),
@@ -58,16 +58,17 @@ export function ServerConnection({ children }: { children: React.ReactNode }) {
       <label>
         Game server address
         <input
+          name="server-address"
+          autoComplete="url"
           type="url"
           required
           value={address}
-          placeholder="https://your-session.trycloudflare.com"
+          placeholder="https://gachatriad.com"
           onChange={(e) => setAddress(e.target.value)}
         />
       </label>
       <p>
-        The host’s PC runs the shared world. Use the HTTPS link from their server control panel.
-        Your accounts and progress belong to that server.
+        Use the HTTPS address of the game server. Your accounts and progress belong to that server.
       </p>
       <button className="primary-button" disabled={busy}>
         {busy ? 'Connecting…' : 'Connect to server'}

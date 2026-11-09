@@ -152,13 +152,15 @@ export class Economy {
     const rank = definitions.get(selected[0].cardId)!.rarity;
     if (
       kind === 'trade-up' &&
-      (total !== 5 ||
+      (total < 5 ||
+        total > 100 ||
+        total % 5 !== 0 ||
         rank < 1 ||
         rank > 4 ||
         selected.some((c) => definitions.get(c.cardId)!.rarity !== rank))
     )
       throw new GameError(
-        'Trade Up requires exactly five duplicate copies of the same rarity, from 1★ to 4★.',
+        'Trade Up requires groups of five duplicate copies of the same rarity, from 1★ to 4★, up to 20 groups.',
       );
     return this.db.tx(async (sql) => {
       const [previous] = await sql<{
@@ -221,17 +223,21 @@ export class Economy {
         );
       } else {
         const pool = CARDS.filter((c) => c.enabled && c.rarity === rank + 1);
-        const base = pool[randomInt(pool.length)];
-        const id = rollFinish(base.id, ECONOMY.holoPer10000);
-        result.card = definitions.get(id)!;
-        await sql(
-          'INSERT INTO inventory(profile_id,card_id,quantity) VALUES($1,$2,1) ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=inventory.quantity+1',
-          [profileId, id],
-        );
-        await sql(
-          "INSERT INTO inventory_ledger(id,profile_id,card_id,delta,kind) VALUES($1,$2,$3,1,'trade-up')",
-          [randomUUID(), profileId, id],
-        );
+        result.cards = [];
+        for (let roll = 0; roll < total / 5; roll++) {
+          const base = pool[randomInt(pool.length)];
+          const id = rollFinish(base.id, ECONOMY.holoPer10000);
+          result.cards.push(definitions.get(id)!);
+          await sql(
+            'INSERT INTO inventory(profile_id,card_id,quantity) VALUES($1,$2,1) ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=inventory.quantity+1',
+            [profileId, id],
+          );
+          await sql(
+            "INSERT INTO inventory_ledger(id,profile_id,card_id,delta,kind) VALUES($1,$2,$3,1,'trade-up')",
+            [randomUUID(), profileId, id],
+          );
+        }
+        result.card = result.cards[0];
       }
       await sql(
         'INSERT INTO duplicate_actions(profile_id,request_id,kind,inputs,result) VALUES($1,$2,$3,$4::jsonb,$5::jsonb)',

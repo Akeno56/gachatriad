@@ -149,6 +149,7 @@ export default function Market() {
               <label>
                 Offer type
                 <select
+                  name="page-select-1"
                   aria-label="Offer type"
                   value={payment}
                   onChange={(e) => setPayment(e.target.value)}
@@ -160,6 +161,7 @@ export default function Market() {
               <label>
                 You offer
                 <select
+                  name="page-select-2"
                   aria-label="You offer"
                   required
                   value={offered}
@@ -181,6 +183,7 @@ export default function Market() {
                 <label>
                   You request
                   <select
+                    name="page-select-3"
                     aria-label="You request"
                     required
                     value={wanted}
@@ -202,6 +205,7 @@ export default function Market() {
                 <label>
                   Price in Stellar Prisms
                   <input
+                    name="page-input-4"
                     aria-label="Price in Stellar Prisms"
                     type="number"
                     min="1"
@@ -228,6 +232,7 @@ export default function Market() {
           <label>
             Listing type
             <select
+              name="page-select-5"
               aria-label="Listing type"
               value={listingType}
               onChange={(e) => setListingType(e.target.value)}
@@ -240,6 +245,7 @@ export default function Market() {
           <label>
             Minimum price
             <input
+              name="page-input-6"
               aria-label="Minimum price"
               type="number"
               min="1"
@@ -251,6 +257,7 @@ export default function Market() {
           <label>
             Maximum price
             <input
+              name="page-input-7"
               aria-label="Maximum price"
               type="number"
               min="1"
@@ -261,11 +268,21 @@ export default function Market() {
           </label>
           <label>
             Find an offer
-            <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <input
+              name="page-input-8"
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </label>
           <label>
             Show
-            <select aria-label="Show" value={filter} onChange={(e) => setFilter(e.target.value)}>
+            <select
+              name="page-select-9"
+              aria-label="Show"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
               <option value="all">All offers</option>
               <option value="available">Offers I can accept</option>
               <option value="mine">My offers</option>
@@ -273,7 +290,12 @@ export default function Market() {
           </label>
           <label>
             Finish
-            <select aria-label="Finish" value={finish} onChange={(e) => setFinish(e.target.value)}>
+            <select
+              name="page-select-10"
+              aria-label="Finish"
+              value={finish}
+              onChange={(e) => setFinish(e.target.value)}
+            >
               <option value="all">All finishes</option>
               <option value="standard">Standard</option>
               <option value="holo">Holographic</option>
@@ -282,6 +304,7 @@ export default function Market() {
           <label>
             Offered rarity
             <select
+              name="page-select-11"
               aria-label="Offered rarity"
               value={rarity}
               onChange={(e) => setRarity(e.target.value)}
@@ -297,6 +320,7 @@ export default function Market() {
           <label>
             Requested rarity
             <select
+              name="page-select-12"
               aria-label="Requested rarity"
               value={wantedRarity}
               onChange={(e) => setWantedRarity(e.target.value)}
@@ -312,6 +336,7 @@ export default function Market() {
           <label>
             Universe
             <select
+              name="page-select-13"
               aria-label="Universe"
               value={universe}
               onChange={(e) => setUniverse(e.target.value)}
@@ -326,7 +351,12 @@ export default function Market() {
           </label>
           <label>
             Sort
-            <select aria-label="Sort" value={sort} onChange={(e) => setSort(e.target.value)}>
+            <select
+              name="page-select-14"
+              aria-label="Sort"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+            >
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>
               <option value="rarity-high">Rarity: high to low</option>
@@ -340,6 +370,7 @@ export default function Market() {
         <div className="market-collection-filters">
           <label>
             <input
+              name="page-input-15"
               type="checkbox"
               checked={onlyMissing}
               disabled={!profile}
@@ -349,6 +380,7 @@ export default function Market() {
           </label>
           <label>
             <input
+              name="page-input-16"
               type="checkbox"
               checked={onlyDuplicates}
               disabled={!profile}

@@ -14,6 +14,7 @@ import { AdminGrant } from '../../components/admin-grant';
 import { AdminPlayerReview } from '../../components/admin-player-review';
 import { useSocial, openFriendChat } from '../../components/social-state';
 import { usePageRefresh } from '../../components/use-page-refresh';
+import { SocialLogin } from '../../components/social-login';
 export default function ProfilePage() {
   return (
     <Suspense
@@ -79,6 +80,12 @@ function PlayerProfile() {
   return (
     <LocaleView>
       <div className="content-page profile-page">
+        {params.has('error') && (
+          <p role="alert" className="deck-warning">
+            Social sign-in could not finish. Try again, or sign in to your existing account and link
+            the provider from your profile.
+          </p>
+        )}
         <div className="eyebrow">PLAYER RECORD</div>
         <h1>{self ? 'Your profile' : player?.name || 'Player profile'}</h1>
         <p className="error-message" role="alert">
@@ -245,9 +252,11 @@ function PlayerProfile() {
                   }
                 }}
               >
+                {profile?.registered && <SocialLogin link />}
                 <label>
                   Profile card
                   <select
+                    name="page-select-1"
                     aria-label="Profile card"
                     value={avatar}
                     onChange={(e) => setAvatar(e.target.value)}
@@ -272,6 +281,7 @@ function PlayerProfile() {
                 <label>
                   Equipped title
                   <select
+                    name="page-select-2"
                     aria-label="Equipped title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}

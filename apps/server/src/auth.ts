@@ -7,7 +7,15 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Database } from './database';
 import { allowedOrigins } from './config';
-export async function createAuth(db: Database, root: string, baseURL: string) {
+import { APIError } from 'better-auth/api';
+import type { AccountSecurity } from './account-security';
+import { socialProviders } from './social-auth';
+export async function createAuth(
+  db: Database,
+  root: string,
+  baseURL: string,
+  security: AccountSecurity,
+) {
   let secret = process.env.BETTER_AUTH_SECRET;
   if (!secret) {
     const directory = process.env.DATA_DIR || resolve(root, '.data');
@@ -29,7 +37,35 @@ export async function createAuth(db: Database, root: string, baseURL: string) {
     trustedOrigins: [...allowedOrigins(), new URL(baseURL).origin],
     database: { dialect: new PostgresDialect({ pool: db.pool }), type: 'postgres' },
     emailAndPassword: { enabled: true, minPasswordLength: 10, requireEmailVerification: false },
-    account: { accountLinking: { enabled: true, trustedProviders: [] } },
+    socialProviders: socialProviders(),
+    account: {
+      encryptOAuthTokens: true,
+      accountLinking: { enabled: true, disableImplicitLinking: true, trustedProviders: [] },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          before: async (user) => {
+            if (!(user as { isAnonymous?: boolean }).isAnonymous && !security.canRegister())
+              throw new APIError('FORBIDDEN', {
+                message:
+                  'Only one registered account is allowed per IP. Sign in to your existing account or contact the administrator for a shared-network exception.',
+              });
+            return {
+              data: {
+                ...user,
+                name: Array.from(user.name.trim() || 'Player')
+                  .slice(0, 32)
+                  .join(''),
+              },
+            };
+          },
+          after: async (user) => {
+            if (!(user as { isAnonymous?: boolean }).isAnonymous) security.createdUser(user.id);
+          },
+        },
+      },
+    },
     advanced: { ipAddress: { ipAddressHeaders: ['x-gacha-client-ip'] } },
     plugins: [
       bearer({ requireSignature: true }),

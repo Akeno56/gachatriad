@@ -383,6 +383,21 @@ export async function createController(options = {}) {
       return;
     }
     res.setHeader('content-type', 'application/json');
+    if (req.method === 'GET' && new URL(req.url, expected).pathname === '/feedback') {
+      try {
+        const status = new URL(req.url, expected).searchParams.get('status') || 'open';
+        const response = await fetch(
+          localAPI() + '/api/local-control/feedback?status=' + encodeURIComponent(status),
+          { headers: { 'x-local-control': controlSecret }, signal: AbortSignal.timeout(5000) },
+        );
+        res.writeHead(response.status);
+        res.end(await response.text());
+      } catch {
+        res.writeHead(503);
+        res.end(JSON.stringify({ error: 'Game server unavailable.' }));
+      }
+      return;
+    }
     if (
       req.method === 'GET' &&
       ['/battle', '/history'].includes(new URL(req.url, expected).pathname)
@@ -463,7 +478,14 @@ export async function createController(options = {}) {
       else if (req.url === '/tunnel/start') await startTunnel();
       else if (req.url === '/tunnel/stop') await stopTunnel();
       else if (
-        ['/moderation', '/population', '/grant', '/delete-account', '/network'].includes(req.url)
+        [
+          '/moderation',
+          '/population',
+          '/grant',
+          '/delete-account',
+          '/network',
+          '/feedback',
+        ].includes(req.url)
       ) {
         if (!alive(child) && !(managedExternal && (await gameHealth())))
           throw Error('Start the game server first.');
@@ -475,6 +497,8 @@ export async function createController(options = {}) {
             {
               '/population': '/api/local-control/bots',
               '/moderation': '/api/local-control/moderation',
+              '/feedback':
+                '/api/local-control/feedback/' + encodeURIComponent(String(body.id || '')),
               '/grant': '/api/local-control/grant',
               '/delete-account': '/api/local-control/delete-account',
               '/network': '/api/local-control/network',

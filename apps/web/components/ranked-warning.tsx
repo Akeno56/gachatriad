@@ -95,8 +95,8 @@ export function RankedWarning() {
               can leave a deck slot empty.
             </p>
             <p>
-              Ranked rating changes only against human players. Opponents are players or Medium/Hard
-              bots.
+              The queue searches for human players. You can choose a practice bot while waiting;
+              practice games do not change Elo.
             </p>
           </>
         ) : (
@@ -115,6 +115,7 @@ export function RankedWarning() {
         </p>
         <label className="check-label queue-hide-prompt">
           <input
+            name="ranked-warning-input-1"
             type="checkbox"
             checked={hideAgain}
             onChange={(e) => setHideAgain(e.target.checked)}

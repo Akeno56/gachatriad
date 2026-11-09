@@ -150,6 +150,7 @@ export default function Boosters() {
           <label>
             Open at a time{' '}
             <select
+              name="page-select-1"
               aria-label="Boosters to open"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
@@ -297,6 +298,7 @@ export default function Boosters() {
                 <label className="booster-quantity">
                   Quantity
                   <input
+                    name="page-input-2"
                     type="number"
                     aria-label="Booster quantity"
                     value={quantity}

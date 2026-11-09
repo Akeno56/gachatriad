@@ -108,11 +108,17 @@ export default function Collection() {
         <div className="catalog-filters">
           <label>
             Find a card
-            <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <input
+              name="page-input-1"
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </label>
           <label>
             Universe
             <select
+              name="page-select-2"
               aria-label="Universe"
               value={universe}
               onChange={(e) => setUniverse(e.target.value)}
@@ -130,6 +136,7 @@ export default function Collection() {
           <label>
             Sort by
             <select
+              name="page-select-3"
               aria-label="Sort collection"
               value={sort}
               onChange={(e) => setSort(e.target.value)}

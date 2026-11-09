@@ -6,6 +6,7 @@ import { io, type Socket } from 'socket.io-client';
 import type { ProfileView } from '@gacha-triad/shared/platform';
 import { api, session, resetSession, ApiError } from '../lib/platform';
 import { refreshScheduler } from '../lib/refresh-scheduler';
+import { SocialLogin } from './social-login';
 import {
   serverConfigured,
   socketURL,
@@ -249,6 +250,7 @@ export function AccountMenu() {
                 </p>
               )}
               <form onSubmit={submit}>
+                <SocialLogin />
                 {register && (
                   <label>
                     Player name

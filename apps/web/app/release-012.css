@@ -1,0 +1,283 @@
+/* Keep portraits beside their text, and fit communication tools to the game stage. */
+.messenger-drawer .conversation-choice {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  justify-content: start;
+  text-align: left;
+  gap: 9px;
+}
+.messenger-drawer .conversation-choice > span:not(.contact-avatar) {
+  grid-column: 2;
+  grid-row: 1/3;
+  min-width: 0;
+  width: 100%;
+}
+.messenger-drawer .conversation-choice .contact-avatar {
+  grid-column: 1;
+  grid-row: 1/3;
+  width: 34px;
+}
+.messenger-drawer .conversation-choice > time {
+  position: static;
+  grid-column: 3;
+  grid-row: 1;
+  align-self: start;
+}
+.messenger-drawer .conversation-choice > b {
+  grid-column: 3;
+  grid-row: 2;
+  justify-self: end;
+  align-self: end;
+  font-size: 11px;
+  line-height: 18px;
+  padding: 0 5px;
+}
+.messenger-drawer .conversation-choice .player-avatar {
+  width: 34px;
+  height: 34px;
+}
+.practice-queue-button {
+  grid-column: 1/-1;
+  font-size: 14px;
+  padding: 7px 0;
+}
+.social-login {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.social-login .outline-button {
+  flex: 1;
+  min-width: 170px;
+}
+.feedback-trigger {
+  position: fixed;
+  z-index: 45;
+  bottom: 16px;
+  left: 68px;
+  font-size: 14px;
+  padding: 10px 12px;
+}
+.feedback-trigger > span:first-child {
+  margin-right: 7px;
+  color: var(--gold);
+}
+.feedback-dialog {
+  width: min(680px, 94vw);
+  max-height: 85dvh;
+  overflow: auto;
+}
+.feedback-dialog form > label {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+}
+.feedback-dialog textarea {
+  font: 16px var(--sans);
+  line-height: 1.4;
+  resize: vertical;
+  background: #0b1730;
+  color: var(--ivory);
+  border: 1px solid #6e84a7;
+  padding: 10px;
+  width: 100%;
+}
+.feedback-dialog .checkbox-label {
+  display: flex;
+  align-items: center;
+}
+.feedback-privacy {
+  color: var(--muted);
+  font-size: 13px;
+}
+.feedback-filters {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  margin: 14px 0;
+}
+.feedback-report {
+  border-top: 1px solid #526888;
+  padding: 15px 0;
+}
+.feedback-report > p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.feedback-report small {
+  color: var(--muted);
+}
+.feedback-report pre {
+  overflow: auto;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+.duplicate-groups {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+.duplicate-group {
+  border: 1px solid #5e7497;
+  padding: 14px;
+  background: #11213e;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.duplicate-group > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+.duplicate-group strong {
+  color: var(--gold);
+}
+.duplicate-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.duplicate-group > details {
+  flex-basis: 100%;
+}
+.duplicate-preview {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.duplicate-preview > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+}
+.duplicate-preview .player-avatar {
+  width: 26px;
+  height: 26px;
+}
+.duplicate-rewards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  max-height: 55dvh;
+  overflow: auto;
+  margin: 16px 0;
+}
+.duplicate-rewards .playing-card {
+  height: 200px;
+}
+.duplicate-rewards p {
+  font-size: 14px;
+}
+.arena-comms .chat-message {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+.arena-comms .chat-message > .player-avatar {
+  width: 30px;
+  height: 30px;
+}
+.arena-comms .message-content {
+  display: block;
+  min-width: 0;
+}
+.arena-comms .message-heading {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+.arena-comms .message-heading a,
+.arena-comms .message-heading strong,
+.arena-comms .message-title {
+  display: block;
+  max-width: none;
+  width: auto;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+.arena-comms .message-heading a,
+.arena-comms .message-heading strong {
+  font-size: 17px;
+  line-height: 1.1;
+}
+.arena-comms .message-title {
+  font-size: 11px;
+  line-height: 1.25;
+  margin-top: 2px;
+}
+.arena-comms .message-content > p {
+  margin: 6px 0 4px;
+  font-size: 14px;
+  line-height: 1.3;
+}
+.arena-comms .message-time {
+  display: block;
+  text-align: right;
+}
+.battle-screen:not(.arena-screen) .arena-comms {
+  width: min(100%, 560px);
+  height: 270px;
+  margin: 18px auto;
+}
+.battle-screen:not(.arena-screen) .arena-comms .main-chat .chat-messages {
+  min-height: 100px;
+}
+.rules-content {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+.rules-content .rule-grid {
+  align-items: stretch;
+  gap: 20px;
+}
+.rules-content .rule-grid > article {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 20px;
+}
+.rules-content .rule-grid > article > .rule-animation,
+.rules-content .rule-grid > article > .visibility-example {
+  margin-top: auto;
+}
+.rules-content .rule-intro {
+  gap: 18px;
+  margin: 22px 0;
+}
+.rules-content h2 {
+  font-size: 28px;
+}
+.rules-content .special-heading {
+  margin: 30px 0 16px;
+}
+@media (max-width: 680px) {
+  .feedback-trigger {
+    left: 57px;
+    width: 38px;
+    height: 38px;
+    bottom: 14px;
+    padding: 8px;
+  }
+  .feedback-trigger > span:last-child {
+    display: none;
+  }
+  .battle-screen:not(.arena-screen) .arena-comms {
+    width: 100%;
+    height: auto;
+  }
+  .battle-screen:not(.arena-screen) .arena-comms.is-expanded {
+    height: 340px;
+  }
+  .rules-content .rule-grid > article {
+    padding: 16px;
+  }
+}

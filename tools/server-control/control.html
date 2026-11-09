@@ -568,8 +568,22 @@
         account's name to confirm deletion.
       </p>
     </section>
+    <details class="panel" id="feedbackPanel">
+      <summary>Playtest feedback &amp; bug reports</summary>
+      <div class="actions">
+        <select id="feedbackStatus" aria-label="Report status">
+          <option>open</option>
+          <option>reviewing</option>
+          <option>resolved</option>
+          <option>dismissed</option>
+          <option>all</option></select
+        ><button id="feedbackRefresh">Refresh reports</button>
+      </div>
+      <div id="feedbackReports"></div>
+    </details>
     <section class="panel">
       <h2>Server log</h2>
+      <p id="runtimeStats"></p>
       <div id="log" class="log" role="log"></div>
     </section>
     <p class="footer" id="setupNote">
@@ -642,11 +656,14 @@
         });
         el('copy').disabled = !current.shareURL;
       }
+      let refreshing = false;
       async function refresh() {
-        if (closed) return;
+        if (closed || refreshing || document.hidden) return;
+        refreshing = true;
         try {
           const response = await fetch(
             '/state?search=' + encodeURIComponent(el('userSearch').value),
+            { signal: AbortSignal.timeout(8000) },
           );
           current = await response.json();
           text(
@@ -677,6 +694,13 @@
           text('playersCount', current.online?.players.length || 0);
           text('connections', current.online?.connections || 0);
           text('uptime', current.online ? Math.floor(current.online.uptime / 60) + 'm' : '—');
+          const performance = current.online?.performance;
+          text(
+            'runtimeStats',
+            performance
+              ? `Game memory ${performance.memoryMB} MB · Database queue ${performance.databaseQueue} · Recent event-loop delay ${performance.loopMaxMs} ms`
+              : '',
+          );
           text(
             'share',
             current.managedExternal
@@ -741,6 +765,8 @@
           lock();
         } catch {
           text('error', 'The local control panel is offline. Run pnpm control to start it.');
+        } finally {
+          refreshing = false;
         }
       }
       function renderModeration() {
@@ -1016,6 +1042,70 @@
         else text('monitorStatus', 'Choose a battle');
       });
       let searchTimer;
+      async function renderFeedback() {
+        const root = el('feedbackReports');
+        root.textContent = 'Loading reports…';
+        try {
+          const response = await fetch(
+              '/feedback?status=' + encodeURIComponent(el('feedbackStatus').value),
+              { signal: AbortSignal.timeout(6000) },
+            ),
+            reports = await response.json();
+          if (!response.ok) throw Error(reports.error || 'Cannot load reports.');
+          root.replaceChildren();
+          if (!reports.length) root.textContent = 'No reports in this view.';
+          for (const report of reports) {
+            const article = document.createElement('article');
+            article.style.borderTop = '1px solid #526888';
+            article.style.padding = '16px 0';
+            const heading = document.createElement('h3');
+            heading.textContent = report.subject;
+            const author = document.createElement('small');
+            author.textContent =
+              report.player +
+              ' · ' +
+              report.kind +
+              ' · ' +
+              new Date(report.created_at).toLocaleString();
+            const details = document.createElement('p');
+            details.style.whiteSpace = 'pre-wrap';
+            details.textContent = report.details;
+            const context = document.createElement('pre');
+            context.style.whiteSpace = 'pre-wrap';
+            context.textContent = JSON.stringify(report.context, null, 2);
+            const status = document.createElement('select');
+            status.name = 'report-status-' + report.id;
+            status.setAttribute('aria-label', 'Report status');
+            for (const value of ['open', 'reviewing', 'resolved', 'dismissed'])
+              status.append(new Option(value, value));
+            status.value = report.status;
+            const note = document.createElement('textarea');
+            note.name = 'report-note-' + report.id;
+            note.setAttribute('aria-label', 'Private admin note');
+            note.maxLength = 2000;
+            note.value = report.admin_note;
+            const save = document.createElement('button');
+            save.textContent = 'Save report';
+            save.onclick = async () => {
+              save.disabled = true;
+              if (
+                await action('/feedback', { id: report.id, status: status.value, note: note.value })
+              )
+                await renderFeedback();
+              save.disabled = false;
+            };
+            article.append(heading, author, details, context, status, note, save);
+            root.append(article);
+          }
+        } catch (error) {
+          root.textContent = error.message;
+        }
+      }
+      el('feedbackRefresh').addEventListener('click', renderFeedback);
+      el('feedbackStatus').addEventListener('change', renderFeedback);
+      el('feedbackPanel').addEventListener('toggle', () => {
+        if (el('feedbackPanel').open) void renderFeedback();
+      });
       el('userSearch').addEventListener('input', () => {
         renderModeration();
         clearTimeout(searchTimer);
@@ -1144,7 +1234,10 @@
         setTimeout(() => text('copy', 'Copy invitation link'), 1500);
       });
       refresh();
-      setInterval(refresh, 2000);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) void refresh();
+      });
+      setInterval(refresh, 5000);
     </script>
   </body>
 </html>

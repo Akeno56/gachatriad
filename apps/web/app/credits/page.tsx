@@ -36,6 +36,9 @@ export default function Credits() {
             are our own game balance.
           </p>
         </section>
+        <a className="outline-button" href="../privacy/">
+          Playtest privacy
+        </a>
         <section className="menu-window">
           <h2>Music</h2>
           <p>

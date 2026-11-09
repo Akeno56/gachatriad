@@ -92,7 +92,13 @@ export interface ProfileView {
   activeMatchId: string | null;
   pendingTrade: { matchId: string; canClaim: boolean } | null;
   waitingLobbyId: string | null;
-  waitingLobby: { id: string; mode: Mode; createdAt: string; invited: boolean } | null;
+  waitingLobby: {
+    id: string;
+    mode: Mode;
+    createdAt: string;
+    invited: boolean;
+    allowBots?: boolean;
+  } | null;
   profiles: { id: string; name: string }[];
 }
 export const ECONOMY = {
@@ -155,6 +161,7 @@ export interface DuplicateResult {
   consumed: number;
   prisms: number;
   card: Card | null;
+  cards?: Card[];
 }
 export interface DailyBooster {
   available: boolean;

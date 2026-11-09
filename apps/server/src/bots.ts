@@ -48,8 +48,8 @@ const MODES: Mode[] = [
   'custom',
   'custom',
   'casual',
-  'ranked',
-  'draft',
+  'casual',
+  'roulette',
   'roulette',
   'custom',
   'custom',
@@ -154,7 +154,7 @@ export class BotPopulation {
       }
     await this.store.db.read((sql) =>
       sql(
-        "UPDATE lobbies SET status='closed' WHERE mode='ranked' AND status='waiting' AND host_id IN(SELECT id FROM profiles WHERE is_bot AND bot_difficulty='easy')",
+        "UPDATE lobbies SET status='closed' WHERE mode IN('ranked','draft') AND status='waiting' AND host_id IN(SELECT id FROM profiles WHERE is_bot)",
       ),
     );
     await this.store.db.read((sql) =>
@@ -240,11 +240,12 @@ export class BotPopulation {
             l.status === 'waiting' &&
             l.allowBots &&
             !l.inviteOnly &&
-            (l.mode !== 'ranked' || difficulty !== 'easy') &&
+            (!['ranked', 'draft'].includes(l.mode) || difficulty !== 'easy') &&
             !l.host.startsWith('[BOT]') &&
             Date.now() - Date.parse(l.createdAt) > 5000,
         );
-        if (!p.waitingLobbyId && humanTable) {
+        if (humanTable) {
+          if (p.waitingLobbyId) await this.store.cancelLobby(p.id, p.waitingLobbyId);
           await this.store.joinLobby(p, humanTable.id);
           changed = true;
           continue;
@@ -255,10 +256,7 @@ export class BotPopulation {
           } catch {}
           p = await this.store.profile(actor);
           await this.store.createLobby(p, {
-            mode:
-              MODES[i % MODES.length] === 'ranked' && difficulty === 'easy'
-                ? 'casual'
-                : MODES[i % MODES.length],
+            mode: MODES[i % MODES.length],
             name: i === 8 ? '[BOT] Exhibition duel' : `${actor.name}’s table`,
             rules: {
               ...STANDARD,

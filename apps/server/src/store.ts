@@ -183,6 +183,7 @@ export class GameStore {
       '015_spectator_privacy.sql',
       '016_account_networks.sql',
       '017_market_season.sql',
+      '018_playtest_feedback.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -298,8 +299,9 @@ export class GameStore {
         mode: Mode;
         created_at: Date;
         invited_profile: string | null;
+        allow_bots: boolean;
       }>(
-        "SELECT id,mode,created_at,invited_profile FROM lobbies WHERE host_id=$1 AND status='waiting'",
+        "SELECT id,mode,created_at,invited_profile,allow_bots FROM lobbies WHERE host_id=$1 AND status='waiting'",
         [p.id],
       );
       const profiles = await sql<{ id: string; name: string }>(
@@ -360,6 +362,7 @@ export class GameStore {
               mode: waiting[0].mode,
               createdAt: new Date(waiting[0].created_at).toISOString(),
               invited: !!waiting[0].invited_profile,
+              allowBots: waiting[0].allow_bots,
             }
           : null,
         profiles,
@@ -592,7 +595,10 @@ export class GameStore {
         id,
       ]);
       if (mode === 'ranked') await this.rankedEligible(sql, id);
-      const allowBots = input.invitedProfile ? false : (input.allowBots ?? actor.is_bot);
+      const allowBots =
+        input.invitedProfile || mode === 'ranked' || mode === 'draft'
+          ? false
+          : (input.allowBots ?? actor.is_bot);
       if (mode !== 'draft') await this.deck(sql, id, !!rules.random);
       if (mode !== 'custom') {
         const ratingField = mode === 'draft' ? 'draft_rating' : 'rating';
@@ -712,6 +718,16 @@ export class GameStore {
         [id],
       );
     });
+  }
+  async enablePractice(profileId: string, lobbyId: string) {
+    const rows = await this.db.read((sql) =>
+      sql(
+        "UPDATE lobbies SET allow_bots=true WHERE id=$1 AND host_id=$2 AND status='waiting' AND mode IN('ranked','draft') AND invited_profile IS NULL RETURNING id",
+        [lobbyId, profileId],
+      ),
+    );
+    if (!rows.length) throw new GameError('Your queue has ended. Refresh to see your match.', 409);
+    return { ok: true };
   }
   private async load(sql: Sql, id: string, profileId?: string) {
     const [row] = await sql<MatchRow>('SELECT * FROM matches WHERE id=$1', [id]);

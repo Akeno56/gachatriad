@@ -1,9 +1,11 @@
 /** User-supplied recording with a dual-deck crossfade; locally synthesized sound effects. */
 import { assetPath } from './connection';
+import { AudioTrackCache } from './audio-cache';
 export type MusicScene = 'menu' | 'battle';
 export type Sound =
   'menu' | 'select' | 'place' | 'capture' | 'combo' | 'victory' | 'defeat' | 'draw' | 'cancel';
 export class RetroAudio {
+  private tracks = new AudioTrackCache();
   private context: AudioContext | null = null;
   private musicBus: GainNode | null = null;
   private sceneBus: GainNode | null = null;
@@ -82,16 +84,20 @@ export class RetroAudio {
   setMusic(enabled: boolean) {
     this.musicEnabled = enabled;
     if (!enabled) {
+      this.generation++;
+      this.tracks.cancelPending();
       if (this.sceneTimer) clearTimeout(this.sceneTimer);
       this.sceneTimer = null;
       this.decks.forEach((d) => d.pause());
+      if (this.timer) clearInterval(this.timer);
+      this.timer = null;
       return;
     }
     const ctx = this.ensure();
     if (!this.decks.length)
       for (let i = 0; i < 2; i++) {
         const audio = new Audio();
-        audio.preload = 'auto';
+        audio.preload = 'none';
         audio.hidden = true;
         audio.dataset.bgmTrack = String(i);
         document.body.appendChild(audio);
@@ -102,7 +108,10 @@ export class RetroAudio {
         this.decks.push(audio);
         this.gains.push(gain);
       }
-    if (this.loadedScene !== this.scene) this.loadScene();
+    if (this.loadedScene !== this.scene) {
+      if (this.visible) void this.loadScene();
+      return;
+    }
     this.fadeSceneIn();
     if (this.visible) {
       void this.decks[this.active].play().catch(() => {});
@@ -113,7 +122,7 @@ export class RetroAudio {
   setScene(scene: MusicScene) {
     if (scene === this.scene) return;
     this.scene = scene;
-    if (!this.musicEnabled || !this.context || !this.sceneBus) return;
+    if (!this.musicEnabled || !this.context || !this.sceneBus || !this.visible) return;
     if (this.sceneTimer) clearTimeout(this.sceneTimer);
     const now = this.context.currentTime;
     this.sceneBus.gain.cancelScheduledValues(now);
@@ -122,9 +131,7 @@ export class RetroAudio {
     this.sceneTimer = setTimeout(() => {
       this.sceneTimer = null;
       if (!this.musicEnabled) return;
-      this.loadScene();
-      this.fadeSceneIn();
-      if (this.visible) void this.decks[this.active]?.play().catch(() => {});
+      void this.loadScene();
     }, 650);
   }
   private fadeSceneIn() {
@@ -134,28 +141,46 @@ export class RetroAudio {
     this.sceneBus.gain.setValueAtTime(0, now);
     this.sceneBus.gain.linearRampToValueAtTime(1, now + 1.4);
   }
-  private loadScene() {
-    this.generation++;
-    this.loadedScene = this.scene;
+  private async loadScene() {
+    const generation = ++this.generation;
+    const scene = this.scene;
+    this.tracks.cancelPending();
+    this.loadedScene = null;
     this.fading = null;
     this.starting = false;
     this.active = 0;
     const path =
-      this.scene === 'battle'
-        ? '/audio/queen-of-cards.mp3'
-        : '/audio/shuffle-or-boogie-ambient.mp3';
-    this.decks.forEach((deck, i) => {
-      deck.pause();
-      deck.src = assetPath(path);
-      deck.dataset.bgmScene = this.scene;
-      this.gains[i].gain.cancelScheduledValues(this.context!.currentTime);
-      this.gains[i].gain.value = i === 0 ? 1 : 0;
-      deck.load();
-    });
+      scene === 'battle' ? '/audio/queen-of-cards.mp3' : '/audio/shuffle-or-boogie-ambient.mp3';
+    this.decks.forEach((deck) => deck.pause());
+    try {
+      const localURL = await this.tracks.get(assetPath(path));
+      if (generation !== this.generation || !this.musicEnabled || !this.visible || !this.context)
+        return;
+      this.decks.forEach((deck, i) => {
+        deck.src = localURL;
+        deck.dataset.bgmScene = scene;
+        this.gains[i].gain.cancelScheduledValues(this.context!.currentTime);
+        this.gains[i].gain.value = i === 0 ? 1 : 0;
+        deck.load();
+      });
+      this.loadedScene = scene;
+      this.fadeSceneIn();
+      void this.decks[0].play().catch(() => {});
+      if (!this.timer) this.timer = setInterval(() => this.crossfade(), 100);
+    } catch {
+      /* Music failure must never block game requests or input. */
+    }
   }
   private crossfade() {
     const ctx = this.context;
-    if (!ctx || !this.musicEnabled || !this.visible || this.sceneTimer || ctx.state !== 'running')
+    if (
+      !ctx ||
+      !this.musicEnabled ||
+      !this.visible ||
+      this.loadedScene !== this.scene ||
+      this.sceneTimer ||
+      ctx.state !== 'running'
+    )
       return;
     if (this.fading) {
       const f = this.fading;
@@ -239,14 +264,23 @@ export class RetroAudio {
     this.visible = visible;
     if (!this.context) return;
     if (!visible) {
+      this.generation++;
+      this.tracks.cancelPending();
+      if (this.timer) clearInterval(this.timer);
+      this.timer = null;
       this.decks.forEach((d) => d.pause());
       void this.context.suspend().catch(() => {});
     } else if (this.musicEnabled) {
       void this.context
         .resume()
         .then(() => {
+          if (this.loadedScene !== this.scene) {
+            void this.loadScene();
+            return;
+          }
           void this.decks[this.active]?.play().catch(() => {});
           if (this.fading) void this.decks[this.fading.to].play().catch(() => {});
+          if (!this.timer) this.timer = setInterval(() => this.crossfade(), 100);
         })
         .catch(() => {});
     }
@@ -265,6 +299,7 @@ export class RetroAudio {
       d.remove();
     });
     this.decks = [];
+    this.tracks.dispose();
     void this.context?.close().catch(() => {});
   }
 }

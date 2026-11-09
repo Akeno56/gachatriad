@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import { fromNodeHeaders } from 'better-auth/node';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { monitorEventLoopDelay } from 'node:perf_hooks';
 import { Database } from './database';
 import { createAuth } from './auth';
 import { GameStore, GameError, cleanRules } from './store';
@@ -17,6 +18,8 @@ import { GuestLifecycle } from './lifecycle';
 import { Social } from './social';
 import { AccountSecurity } from './account-security';
 import { PlayerReview } from './player-review';
+import { socialProviders } from './social-auth';
+import { Feedback } from './feedback';
 export async function createPlatform(
   root: string,
   options: { memory?: boolean; timers?: boolean; logger?: boolean } = {},
@@ -30,10 +33,12 @@ export async function createPlatform(
   const origin = process.env.CLIENT_ORIGIN || 'http://127.0.0.1:3000';
   const origins = allowedOrigins();
   const authURL = process.env.BETTER_AUTH_URL || origin;
-  const { auth, flushLinks, setGuestCleanup } = await createAuth(db, root, authURL);
+  const security = new AccountSecurity(db);
+  const { auth, flushLinks, setGuestCleanup } = await createAuth(db, root, authURL, security);
+  const enabledSocialProviders = Object.keys(socialProviders());
   const store = new GameStore(db, (await auth.$context).secret);
   await store.migrate(root);
-  const security = new AccountSecurity(db);
+  const feedback = new Feedback(db, (await auth.$context).secret);
   const review = new PlayerReview(db);
   if (process.env.TRIAD_LOCAL_TEST === 'true')
     await security.action('127.0.0.1', 'allow-shared', 'Isolated PC test save');
@@ -60,9 +65,24 @@ export async function createPlatform(
     origin: origins,
     methods: ['GET', 'HEAD', 'POST', 'DELETE', 'OPTIONS'],
     credentials: true,
-    exposedHeaders: ['set-auth-token', 'retry-after', 'x-retry-after'],
+    exposedHeaders: ['set-auth-token', 'retry-after', 'x-retry-after', 'server-timing'],
   });
   await app.register(rateLimit, { max: 600, timeWindow: '1 minute' });
+  const loop = monitorEventLoopDelay({ resolution: 20 });
+  let loopMaxMs = 0;
+  if (options.timers !== false) loop.enable();
+  const performanceTimer =
+    options.timers === false
+      ? null
+      : setInterval(() => {
+          loopMaxMs = Math.round(loop.max / 1e6);
+          if (loopMaxMs >= 1000)
+            app.log.warn(
+              { loopMaxMs, databaseQueue: db.queued },
+              'Game event loop stalled before request handling',
+            );
+          loop.reset();
+        }, 30000).unref();
   const lastSlowLog = new Map<string, number>();
   app.addHook('onResponse', async (req, reply) => {
     if (reply.elapsedTime < 2000 && reply.statusCode !== 429) return;
@@ -94,6 +114,7 @@ export async function createPlatform(
       throw new GameError('Origin is not allowed.', 403);
   });
   app.addHook('onSend', async (_req, reply, payload) => {
+    reply.header('server-timing', `app;dur=${reply.elapsedTime.toFixed(1)}`);
     reply.header('x-content-type-options', 'nosniff');
     reply.header('cache-control', 'no-store');
     reply.header('referrer-policy', 'no-referrer');
@@ -121,10 +142,15 @@ export async function createPlatform(
     handler: async (req, reply) => {
       await security.assertAllowed(req.ip);
       if (req.url.split('?')[0].replace(/\/+$/, '') === '/api/auth/sign-up/email') {
-        const b = req.body as { name?: unknown } | null;
+        const b = req.body as { name?: unknown; email?: unknown } | null;
         if (typeof b?.name !== 'string' || !b.name.trim().length || b.name.trim().length > 32)
           throw new GameError('Player names must contain 1–32 characters.');
         b.name = b.name.trim();
+        if (
+          typeof b.email === 'string' &&
+          b.email.trim().toLowerCase().endsWith('@discord.gachatriad.invalid')
+        )
+          throw new GameError('This address is reserved for Discord sign-in.');
       }
       const headers = fromNodeHeaders(req.headers);
       headers.set('x-gacha-client-ip', req.ip);
@@ -148,7 +174,9 @@ export async function createPlatform(
       const response =
         authBucket(req.url) === 'signup'
           ? await security.signup(req.ip, handleAuth)
-          : await handleAuth();
+          : req.url.split('?')[0].startsWith('/api/auth/callback/')
+            ? await security.signup(req.ip, handleAuth, true)
+            : await handleAuth();
       await flushLinks();
       reply.code(response.status);
       response.headers.forEach((v, k) => {
@@ -256,6 +284,37 @@ export async function createPlatform(
     req.body && typeof req.body === 'object' ? (req.body as Record<string, unknown>) : {};
   const id = (req: FastifyRequest) => (req.params as { id: string }).id;
   app.get('/api/health', async () => ({ ok: true }));
+  app.get('/api/social-providers', async () => enabledSocialProviders);
+  app.post('/api/feedback', async (req) => {
+    const p = await profile(req),
+      address = await security.address(req.ip);
+    return feedback.create(p.id, address.network, body(req));
+  });
+  app.get('/api/admin/feedback', async (req) => {
+    if (!(await profile(req)).isAdmin) throw new GameError('Administrator access required.', 403);
+    return feedback.list((req.query as { status?: string }).status);
+  });
+  app.post('/api/admin/feedback/:id', async (req) => {
+    if (!(await profile(req)).isAdmin) throw new GameError('Administrator access required.', 403);
+    return feedback.update(id(req), body(req).status, body(req).note);
+  });
+  app.get('/api/local-control/feedback', async (req) => {
+    requireHost(req);
+    return feedback.list((req.query as { status?: string }).status);
+  });
+  app.post('/api/local-control/feedback/:id', async (req) => {
+    requireHost(req);
+    return feedback.update(id(req), body(req).status, body(req).note);
+  });
+  app.post('/api/lobbies/:id/practice', async (req) => {
+    const p = await profile(req);
+    const population = await bots.status();
+    if (!population.enabled || population.counts.medium + population.counts.hard === 0)
+      throw new GameError('No Medium or Hard practice bots are available.', 409);
+    const result = await store.enablePractice(p.id, id(req));
+    notify();
+    return result;
+  });
   function requireHost(req: FastifyRequest) {
     if (
       !process.env.LOCAL_CONTROL_SECRET ||
@@ -477,6 +536,11 @@ export async function createPlatform(
         WHERE m.status IN('playing','drafting') ORDER BY m.created_at DESC LIMIT 100`),
       ),
       population: await bots.status(),
+      performance: {
+        loopMaxMs,
+        databaseQueue: db.queued,
+        memoryMB: Math.round(process.memoryUsage().rss / 1048576),
+      },
       uptime: process.uptime(),
       connections: connected.length,
       players: players.map((p) => ({
@@ -752,7 +816,7 @@ export async function createPlatform(
             }
             if (Date.now() - lastBots > 1000) {
               lastBots = Date.now();
-              changed = (await bots.tick()) || changed;
+              changed = (await db.background(() => bots.tick())) || changed;
             }
             if (changed) notify();
           } catch (error) {
@@ -766,6 +830,8 @@ export async function createPlatform(
     bots.shutdown();
     app.log.info('Stopping game timers and player connections.');
     if (timer) clearInterval(timer);
+    if (performanceTimer) clearInterval(performanceTimer);
+    loop.disable();
     io.engine?.close();
     for (const socket of upgradedSockets) socket.destroy();
     while (ticking) await new Promise((r) => setTimeout(r, 10));

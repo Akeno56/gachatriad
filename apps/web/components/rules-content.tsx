@@ -8,7 +8,7 @@ export function RulesContent() {
         <div className="rule-intro">
           <span className="step-number">01</span>
           <div>
-            <h2>Five cards. Nine spaces.</h2>
+            <h2>Taking turns</h2>
             <p>
               You and your opponent each start with five cards. Take turns placing one card in any
               empty cell. A randomly chosen player goes first.
@@ -18,7 +18,7 @@ export function RulesContent() {
         <div className="rule-intro">
           <span className="step-number">02</span>
           <div>
-            <h2>Higher numbers capture.</h2>
+            <h2>Capturing cards</h2>
             <p>
               Each card has a top, right, bottom, and left value. When you place a card, its sides
               challenge the touching sides of adjacent cards. A strictly higher value captures an
@@ -38,7 +38,7 @@ export function RulesContent() {
         <div className="rule-intro">
           <span className="step-number">03</span>
           <div>
-            <h2>Control the board. Count your hand.</h2>
+            <h2>Scoring</h2>
             <p>
               The match ends after nine placements. Every card you control counts for one point,
               including the unplayed card in hand. The scores always add up to 10. More points wins;
@@ -46,7 +46,7 @@ export function RulesContent() {
             </p>
           </div>
         </div>
-        <h2 className="special-heading">Change the rules. Change your strategy.</h2>
+        <h2 className="special-heading">Rules</h2>
         <div className="rule-grid">
           <article>
             <span className="rule-icon">◎</span>
@@ -89,19 +89,17 @@ export function RulesContent() {
           </article>
         </div>
         <p className="rule-note">
-          Same and Plus are evaluated together before captures. Special captures resolve first, then
-          ordinary captures from the placed card, then combo chains. The practice presets enable
-          Combo with Same and Plus.
+          Same and Plus check the board before any cards change ownership. Special captures resolve
+          first, then ordinary captures, then Combo chains.
         </p>
-        <h2 className="special-heading">Choose your table.</h2>
+        <h2 className="special-heading">Modes and card transfers</h2>
         <article className="elemental-rule">
           <h3>Elemental</h3>
           <p>
             Marked cells match one of eight elements. A matching card gains +1 on every side; a
             different element or no affinity loses 1. Neutral cells do nothing. Same, Plus, ordinary
-            and Combo comparisons all use the adjusted values displayed on the cards. Board cards
-            display their adjusted values. Cell and card icons show each element, with a +1 or −1
-            badge for the active modifier.
+            and Combo comparisons all use the adjusted values displayed on the cards. Cell and card
+            icons show each element, with a +1 or −1 badge for the active modifier.
           </p>
         </article>
         <p className="rule-note">
@@ -112,8 +110,8 @@ export function RulesContent() {
           <article>
             <h3>Unranked</h3>
             <p>
-              Three Open, Same, Plus and Combo. No card trade. Use Play unranked or join its queue
-              in the lobby list.
+              Three Open, Same, Plus and Combo. No card trade or rating change. Start matchmaking
+              from Play; you can meet another player or a populated bot.
             </p>
           </article>
           <article>
@@ -123,35 +121,60 @@ export function RulesContent() {
               loser’s original five-card deck, including its unplayed card. A draw trades nothing.
               Forfeiting still loses a card.
             </p>
+            <p>
+              The queue searches for humans. While waiting, you can choose a practice bot. Practice
+              games never change Elo.
+            </p>
           </article>
           <article>
             <h3>Draft</h3>
             <p>
-              A separate rated queue. Three temporary five-card boosters open automatically, one at
-              a time. Each contains three random cards, one guaranteed 3★+ and one guaranteed 4★+,
-              with a 5% Holo chance per card. Choose five of the 15 cards before the three-minute
-              draft deadline. Up to one 5★ and one 4★, or two 4★ without a 5★. Three Open, Same,
-              Plus and Combo; no trade. Unlocked picks are completed automatically at timeout. These
-              cards never enter your collection.
+              Three temporary boosters open automatically. Each contains three random cards, one 3★+
+              and one 4★+, with 5% Holo per card. Choose five of the fifteen cards within three
+              minutes; remaining picks are completed automatically at the deadline. Three Open,
+              Same, Plus and Combo; no trade. These cards never enter your collection.
+            </p>
+            <p>
+              The queue searches for humans. While waiting, you can choose a practice bot. Practice
+              games never change Elo.
             </p>
           </article>
           <article>
             <h3>Roulette & custom</h3>
             <p>
               Roulette has its own queue and draws a compatible set of rules at match start. Custom
-              tables combine visibility, Same, Plus and Random. Random draws a legal deck from your
-              available owned cards. Custom tables appear together in the filterable lobby list.
+              tables combine visibility, Same, Plus, Combo, Elemental and Random. Random draws a
+              legal deck from your available owned cards. Custom tables appear together in the
+              filterable lobby list.
             </p>
           </article>
         </div>
+        <h2 className="special-heading">Decks and timers</h2>
+        <ul className="rule-checklist">
+          <li>
+            A deck contains five different characters: at most one 5★ and one 4★, or two 4★ without
+            a 5★.
+          </li>
+          <li>
+            Each Holographic copy has one permanent +1 side bonus, assigned when acquired. No side
+            can exceed A.
+          </li>
+          <li>
+            Turns last 60 seconds. Your first missed turn auto-plays a card. Miss your next turn too
+            and you forfeit. A manual move resets this warning.
+          </li>
+          <li>
+            Disconnecting for 120 seconds forfeits. During Draft, 120 seconds without revealing or
+            choosing cards also forfeits.
+          </li>
+          <li>
+            Trade One selection lasts two minutes. If the winner does not choose, a losing card is
+            selected automatically. Both players must wait for this transfer before another match.
+          </li>
+        </ul>
         <p className="rule-note">
-          Turns last 60 seconds. The first missed turn auto-plays a card. Miss your next turn too
-          and you lose immediately. A manual move resets the warning. Disconnecting for 120 seconds
-          forfeits. In Draft, 120 seconds without revealing or choosing cards also forfeits. Ranked
-          and Draft games against bots never change Elo. Trade One selection lasts two minutes, then
-          a losing card is chosen automatically. A deck contains five different cards: at most one
-          5★ and one 4★, or two 4★ if it has no 5★. Local bots are clearly labeled [BOT] and use the
-          same rules and inventory transfers.
+          Ranked and Draft use separate Season 0 ratings. Only games between human players change
+          Elo. Practice bots are labeled [BOT].
         </p>
       </div>
     </LocaleView>

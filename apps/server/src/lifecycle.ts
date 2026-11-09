@@ -17,6 +17,7 @@ async function purge(sql: Sql, ids: string[]) {
     [ids],
   );
   await sql('DELETE FROM chat_messages WHERE profile_id=ANY($1::text[])', [ids]);
+  await sql('DELETE FROM feedback_reports WHERE profile_id=ANY($1::text[])', [ids]);
   await sql('DELETE FROM card_purchases WHERE profile_id=ANY($1::text[])', [ids]);
   await sql(
     'UPDATE matches SET rematch_requested_by=NULL,rematch_requested_at=NULL WHERE rematch_requested_by=ANY($1::text[])',

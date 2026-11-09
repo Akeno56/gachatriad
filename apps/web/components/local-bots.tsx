@@ -76,6 +76,7 @@ export function LocalBots() {
                   <output>{mix[d]}%</output>
                 </span>
                 <input
+                  name="local-bots-input-1"
                   type="range"
                   min={0}
                   max={100}
