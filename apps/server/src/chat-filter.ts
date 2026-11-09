@@ -28,6 +28,12 @@ const forbidden = [
   'nigga',
   'faggot',
   'retarded',
+  'dumbass',
+  'idiot',
+  'idiots',
+  'imbecile',
+  'abruti',
+  'abrutis',
   'kys',
   'putain',
   'pute',
@@ -51,9 +57,14 @@ const abuse = forbidden.map(
 export function chatViolation(text: string): string | null {
   const normal = normalizeChat(text);
   const words = normal.replace(/[._*'’\-]+/g, ' ').replace(/\s+/g, ' ');
+  // French lateness uses "en retard"; do not punish ordinary scheduling messages.
+  const retardInsult = /\bretards?\b/.test(
+    words.replace(/\b(?:en|du|de|mon|ton|son|notre|votre|leur) retard\b/g, ''),
+  );
   if (
+    retardInsult ||
     abuse.some((rule) => rule.test(normal)) ||
-    /\b(kill yourself|go die|va mourir|suicide toi|je vais te tuer|i will kill you|fils de pute|you retard|you are a retard)\b/.test(
+    /\b(kill yourself|go die|va mourir|suicide toi|je vais te tuer|i will kill you|fils de pute|stupid ass|dumb ass|you(?: are| re)? (?:so )?stupid|u r stupid|ta gueule|ferme ta gueule|sale debile|tu es debile)\b/.test(
       words,
     )
   )

@@ -4,13 +4,13 @@ import { LocaleView, NoTranslate } from '../../components/i18n';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { LobbyView, Mode } from '@gacha-triad/shared/platform';
+import type { LobbyView } from '@gacha-triad/shared/platform';
 import { STANDARD } from '@gacha-triad/engine';
 import { api } from '../../lib/platform';
 import { useSession } from '../../components/session';
 import { ruleNames } from '../../components/game';
 import { LocalBots } from '../../components/local-bots';
-import { confirmRanked, confirmUnranked, confirmDraft } from '../../components/ranked-warning';
+import { confirmUnranked } from '../../components/ranked-warning';
 import { useAllowBots } from '../../lib/lobby-preferences';
 import { MainChat } from '../../components/main-chat';
 export default function Lobbies() {
@@ -51,8 +51,6 @@ export default function Lobbies() {
   async function enter(path: string, body: unknown) {
     const requestedMode =
       (body as { mode?: string }).mode ?? rows.find((r) => path === `/lobbies/${r.id}/join`)?.mode;
-    if (requestedMode === 'ranked' && !(await confirmRanked(profile))) return;
-    if (requestedMode === 'draft' && !(await confirmDraft(profile))) return;
     if (requestedMode === 'casual' && !(await confirmUnranked(profile))) return;
     setBusy(true);
     setError('');
@@ -82,46 +80,68 @@ export default function Lobbies() {
       }),
   );
   const waiting = rows.find((r) => r.id === profile?.waitingLobbyId);
+  function preset(kind: string) {
+    setVisibility(kind === 'open' ? 'allOpen' : kind === 'trade' ? 'closed' : 'threeOpen');
+    setSame(kind !== 'open');
+    setPlus(kind !== 'open');
+    setCombo(kind !== 'open');
+    setTrade(kind === 'trade');
+    setRandom(kind === 'random');
+    setElemental(false);
+    setCreate(true);
+    setName('');
+    setError('');
+    requestAnimationFrame(() =>
+      document
+        .querySelector('.lobby-create')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+    );
+  }
   return (
     <LocaleView>
       <div className="content-page lobby-page">
         <div className="eyebrow">THE CARD HALL</div>
         <h1>Find a table</h1>
         <p className="page-description">
-          Join a waiting table, or set your own rules. Every waiting and active table appears here.
+          Join a public table or create your own custom game. Presets fill the setup without joining
+          a queue.
         </p>
         <div className="queue-options">
           {(
             [
               {
-                mode: 'casual',
-                name: 'Unranked',
+                kind: 'standard',
+                name: 'Standard rules',
                 text: 'Three Open · Same · Plus · Combo · No trade',
               },
-              { mode: 'ranked', name: 'Ranked', text: 'Same · Plus · Combo · Trade One' },
               {
-                mode: 'draft',
-                name: 'Draft',
-                text: '3 boosters · Choose 5 of 15 · Same · Plus · Combo',
+                kind: 'trade',
+                name: 'Trade One rules',
+                text: 'Closed · Same · Plus · Combo · Trade One',
               },
               {
-                mode: 'roulette',
-                name: 'Roulette',
-                text: 'Random rules at match start · No trade',
+                kind: 'open',
+                name: 'All Open rules',
+                text: 'Both hands visible · No trade',
+              },
+              {
+                kind: 'random',
+                name: 'Random deck rules',
+                text: 'Random deck · Same · Plus · Combo · No trade',
               },
             ] as const
           ).map((q) => (
             <button
-              key={q.mode}
+              key={q.kind}
               className="menu-window queue-option"
               disabled={
                 busy ||
                 !profile ||
                 !!profile.waitingLobbyId ||
                 !!profile.pendingTrade ||
-                ((q.mode === 'ranked' || q.mode === 'draft') && !profile.registered)
+                (q.kind === 'trade' && !profile.registered)
               }
-              onClick={() => enter('/lobbies', { mode: q.mode as Mode, allowBots })}
+              onClick={() => preset(q.kind)}
             >
               <strong>{q.name}</strong>
               <span>{q.text}</span>
@@ -130,7 +150,7 @@ export default function Lobbies() {
         </div>
         <p className="stakes-note">
           Trade One: the winner takes one card from the loser’s played deck, including on a forfeit.
-          Draws trade nothing. Ranked and Draft require an account.
+          Draws trade nothing. Trade One requires an account.
         </p>
         <label className="check-label">
           <input
@@ -138,7 +158,7 @@ export default function Lobbies() {
             checked={allowBots}
             onChange={(e) => setAllowBots(e.target.checked)}
           />
-          Allow bots to join my lobby / queue
+          Allow bots to join my lobby
         </label>
         <LocalBots />
         {waiting && (
@@ -176,7 +196,7 @@ export default function Lobbies() {
               Mode
               <select aria-label="Mode" value={mode} onChange={(e) => setMode(e.target.value)}>
                 <option value="all">All modes</option>
-                {['casual', 'custom', 'ranked', 'draft', 'roulette'].map((m) => (
+                {['casual', 'custom', 'roulette'].map((m) => (
                   <option key={m} value={m}>
                     {m === 'casual' ? 'Unranked' : m}
                   </option>

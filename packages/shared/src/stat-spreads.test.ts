@@ -2,6 +2,11 @@ import { expect, it } from 'vitest';
 import catalog from '../../../data/cards/catalog.json' with { type: 'json' };
 import { CARDS, ALL_CARDS, HOLO_VARIANTS } from './index';
 import { diversifySpreads } from './stat-spreads';
+it('allows identical digits at different directional positions to coexist', () => {
+  const a = { ...CARDS[0], id: 'rotation-a', stats: [4, 4, 5, 4] as const },
+    b = { ...CARDS[0], id: 'rotation-b', stats: [4, 5, 4, 4] as const };
+  expect(diversifySpreads([a, b]).map((c) => c.stats)).toEqual([a.stats, b.stats]);
+});
 it('repairs a unique low-rarity spread above 8 without changing its total', () => {
   const original = { ...CARDS[0], id: 'cap-review', rarity: 3, stats: [10, 9, 3, 2] as const };
   const [fixed] = diversifySpreads([original]);

@@ -8,7 +8,8 @@ interface Offer {
   id: string;
   owner_id: string;
   offered_card: string;
-  wanted_card: string;
+  wanted_card: string | null;
+  price: number | null;
   status: string;
   name: string;
   created_at: Date;
@@ -26,15 +27,25 @@ export class Trades {
         ownerId: t.owner_id,
         owner: t.name,
         offered: CARDS.find((c) => c.id === t.offered_card)!,
-        wanted: CARDS.find((c) => c.id === t.wanted_card)!,
+        wanted: t.wanted_card ? CARDS.find((c) => c.id === t.wanted_card)! : null,
+        price: t.price,
         createdAt: t.created_at.toISOString(),
       })),
     );
   }
-  async create(p: ProfileView, offered: string, wanted: string) {
+  async create(p: ProfileView, offered: string, wanted: string | null, price?: number) {
     if (!p.registered) throw new GameError('Register an account to post trade offers.', 403);
-    if (offered === wanted || ![offered, wanted].every((id) => CARDS.some((c) => c.id === id)))
+    if (
+      !CARDS.some((c) => c.id === offered) ||
+      (wanted !== null &&
+        (price !== undefined || offered === wanted || !CARDS.some((c) => c.id === wanted)))
+    )
       throw new GameError('Choose two different valid cards.');
+    if (
+      wanted === null &&
+      (typeof price !== 'number' || !Number.isSafeInteger(price) || price < 1 || price > 1000000)
+    )
+      throw new GameError('Set a whole-number price between 1 and 1,000,000 Stellar Prisms.');
     return this.db.tx(async (sql) => {
       if (
         (await sql("SELECT id FROM trade_offers WHERE owner_id=$1 AND status='open'", [p.id]))
@@ -52,8 +63,8 @@ export class Trades {
         throw new GameError('You need an available copy to offer.');
       const id = randomUUID();
       await sql(
-        'INSERT INTO trade_offers(id,owner_id,offered_card,wanted_card) VALUES($1,$2,$3,$4)',
-        [id, p.id, offered, wanted],
+        'INSERT INTO trade_offers(id,owner_id,offered_card,wanted_card,price) VALUES($1,$2,$3,$4,$5)',
+        [id, p.id, offered, wanted, wanted === null ? price : null],
       );
       return { id };
     });
@@ -87,6 +98,7 @@ export class Trades {
       )
         throw new GameError('Choose an offer from another account.');
       if (
+        o.wanted_card &&
         !(
           await sql(
             'UPDATE inventory SET quantity=quantity-1 WHERE profile_id=$1 AND card_id=$2 AND quantity>reserved RETURNING card_id',
@@ -95,6 +107,40 @@ export class Trades {
         ).length
       )
         throw new GameError('You need an available copy of the requested card.');
+      if (o.price !== null) {
+        if (
+          !(
+            await sql(
+              'UPDATE profiles SET prisms=prisms-$2 WHERE id=$1 AND prisms>=$2 RETURNING id',
+              [p.id, o.price],
+            )
+          ).length
+        )
+          throw new GameError('Not enough Stellar Prisms.');
+        if (
+          !(
+            await sql(
+              'UPDATE profiles SET prisms=prisms+$2 WHERE id=$1 AND prisms<=2147483647-$2 RETURNING id',
+              [o.owner_id, o.price],
+            )
+          ).length
+        )
+          throw new GameError('The seller cannot receive this payment.', 409);
+        for (const [who, delta] of [
+          [p.id, -o.price],
+          [o.owner_id, o.price],
+        ])
+          await sql(
+            'INSERT INTO prism_ledger(id,profile_id,delta,kind,reference) VALUES($1,$2,$3,$4,$5)',
+            [
+              randomUUID(),
+              who,
+              delta,
+              who === p.id ? 'market-purchase' : 'market-sale',
+              `market:${id}`,
+            ],
+          );
+      }
       if (
         !(
           await sql(
@@ -107,7 +153,7 @@ export class Trades {
       for (const [who, card] of [
         [p.id, o.offered_card],
         [o.owner_id, o.wanted_card],
-      ])
+      ].filter((entry) => entry[1] !== null))
         await sql(
           'INSERT INTO inventory(profile_id,card_id,quantity) VALUES($1,$2,1) ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=inventory.quantity+1',
           [who, card],
@@ -117,7 +163,7 @@ export class Trades {
         [p.id, o.offered_card, 1],
         [o.owner_id, o.offered_card, -1],
         [o.owner_id, o.wanted_card, 1],
-      ])
+      ].filter((entry) => entry[1] !== null))
         await sql(
           "INSERT INTO inventory_ledger(id,profile_id,card_id,delta,kind,offer_id) VALUES($1,$2,$3,$4,'card-trade',$5)",
           [randomUUID(), who, card, delta, id],

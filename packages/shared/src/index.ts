@@ -19,7 +19,6 @@ export const HOLO_VARIANTS: readonly Card[] = CARDS.flatMap((card) =>
   [0, 1, 2, 3].flatMap((originSide) => {
     const original = originals.find((c) => c.id === card.id)!;
     const cap = cardSideCap(card);
-    if (original.stats[originSide] >= 10 && card.stats[originSide] >= cap) return [];
     // Old variant IDs remain valid if the former bonus side reaches the rarity's cap.
     const side = [0, 1, 2, 3].map((n) => (originSide + n) % 4).find((n) => card.stats[n] < cap);
     if (side === undefined) return [];

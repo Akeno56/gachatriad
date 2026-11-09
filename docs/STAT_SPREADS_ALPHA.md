@@ -18,6 +18,6 @@ Existing Holo IDs remain valid. If their former +1 direction reaches the rarity'
 
 The authored Combo puzzle uses fixed teaching values so its demonstration remains reproducible. Its UI identifies those values as training values.
 
-Full before/after data: [stat-spread-alpha010.json](../data/balance/stat-spread-alpha010.json). Regenerate with:
+Historical before/after data: [stat-spread-alpha010.json](../data/balance/stat-spread-alpha010.json). This 0.1.0 report is retained for compatibility checks. The current generator produces the [0.1.1 report](STAT_SPREADS_ALPHA_011.md):
 
     node --import ./apps/server/node_modules/tsx/dist/loader.mjs tools/asset-importer/stat-spread-report.mjs

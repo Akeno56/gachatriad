@@ -10,6 +10,14 @@ export interface MatchView {
   missedTurns?: readonly [number, number];
   chatAvailable: boolean;
   ratingApplies: boolean;
+  ratedResult?: {
+    season: number;
+    rating: number;
+    delta: number | null;
+    wins: number;
+    losses: number;
+    draws: number;
+  } | null;
   players: readonly [BattleIdentity, BattleIdentity];
   prismReward: number;
   id: string;
@@ -263,7 +271,8 @@ export interface TradeOfferView {
   ownerId: string;
   owner: string;
   offered: Card;
-  wanted: Card;
+  wanted: Card | null;
+  price: number | null;
   createdAt: string;
 }
 export type BotMix = { easy: number; medium: number; hard: number };

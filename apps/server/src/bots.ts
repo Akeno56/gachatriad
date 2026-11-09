@@ -306,6 +306,7 @@ export class BotPopulation {
           (o) =>
             !o.owner.startsWith('[BOT]') &&
             Date.now() - Date.parse(o.createdAt) > 8000 &&
+            !!o.wanted &&
             (p.inventory[o.wanted.id]?.available ?? 0) > 0,
         );
         if (offer) {

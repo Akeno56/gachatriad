@@ -214,6 +214,40 @@
       a {
         color: #d3bd87;
       }
+      .monitor-values {
+        display: grid;
+        grid-template-columns: repeat(3, 22px);
+        grid-template-rows: repeat(3, 22px);
+        width: 66px;
+        height: 66px;
+        margin: 0 auto 7px;
+        font:
+          700 18px/22px ui-monospace,
+          monospace;
+      }
+      .monitor-values span {
+        display: grid;
+        place-items: center;
+      }
+      .monitor-values [data-side='top'] {
+        grid-area: 1/2;
+      }
+      .monitor-values [data-side='right'] {
+        grid-area: 2/3;
+      }
+      .monitor-values [data-side='bottom'] {
+        grid-area: 3/2;
+      }
+      .monitor-values [data-side='left'] {
+        grid-area: 2/1;
+      }
+      #monitorBoard > div {
+        min-width: 0;
+        grid-template-columns: minmax(0, 1fr);
+      }
+      #monitorBoard small {
+        overflow-wrap: anywhere;
+      }
       #preview {
         margin-top: 14px;
       }
@@ -951,8 +985,18 @@
                 .map((v) => v + modifier)
                 .map((v) => (v === 10 ? 'A' : String(v)));
               const numbers = document.createElement('strong');
-              numbers.style.whiteSpace = 'pre';
-              numbers.textContent = `   ${values[0]}\n${values[3]}     ${values[1]}\n   ${values[2]}`;
+              numbers.className = 'monitor-values';
+              for (const [side, position] of [
+                [0, 'top'],
+                [1, 'right'],
+                [2, 'bottom'],
+                [3, 'left'],
+              ]) {
+                const value = document.createElement('span');
+                value.dataset.side = position;
+                value.textContent = values[side];
+                numbers.append(value);
+              }
               const name = document.createElement('small');
               name.textContent = item.card.name;
               node.append(numbers, name);

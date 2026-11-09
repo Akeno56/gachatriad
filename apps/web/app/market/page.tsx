@@ -15,6 +15,11 @@ export default function Market() {
   const [offers, setOffers] = useState<TradeOfferView[]>([]),
     [offered, setOffered] = useState(''),
     [wanted, setWanted] = useState(''),
+    [payment, setPayment] = useState('exchange'),
+    [price, setPrice] = useState('236'),
+    [listingType, setListingType] = useState('all'),
+    [minPrice, setMinPrice] = useState(''),
+    [maxPrice, setMaxPrice] = useState(''),
     [search, setSearch] = useState(''),
     [filter, setFilter] = useState('all'),
     [finish, setFinish] = useState('all'),
@@ -29,8 +34,8 @@ export default function Market() {
     [selected, setSelected] = useState<TradeOfferView | null>(null);
   useEffect(() => {
     if (profile)
-      void api<TradeOfferView[]>('/trades')
-        .then(setOffers)
+      void api<TradeOfferView[]>('/trades?includeSales=true')
+        .then((rows) => setOffers(rows.map((o) => ({ ...o, price: o.price ?? null }))))
         .catch((e) => setError(e.message));
   }, [profile?.id, revision]);
   const confirmRef = useRef<HTMLDialogElement>(null);
@@ -42,14 +47,16 @@ export default function Market() {
     canAccept = (o: TradeOfferView) =>
       !!profile?.registered &&
       !profile.profiles.some((p) => p.id === o.ownerId) &&
-      (profile.inventory[o.wanted.id]?.available ?? 0) > 0,
+      (o.price !== null
+        ? profile.prisms >= o.price
+        : !!o.wanted && (profile.inventory[o.wanted.id]?.available ?? 0) > 0),
     visible = offers
       .filter(
         (o) =>
           (
             o.offered.name +
             ' ' +
-            o.wanted.name +
+            (o.wanted?.name ?? '') +
             ' ' +
             o.owner +
             ' ' +
@@ -58,27 +65,36 @@ export default function Market() {
             .toLowerCase()
             .includes(search.toLowerCase()) &&
           (filter !== 'mine' || o.ownerId === profile?.id) &&
+          (listingType === 'all' ||
+            (listingType === 'sale' ? o.price !== null : o.price === null)) &&
+          (!minPrice || (o.price !== null && o.price >= Number(minPrice))) &&
+          (!maxPrice || (o.price !== null && o.price <= Number(maxPrice))) &&
           (finish === 'all' || (o.offered.finish ?? 'standard') === finish) &&
           (filter !== 'available' || canAccept(o)) &&
           (rarity === 'all' || o.offered.rarity === Number(rarity)) &&
-          (wantedRarity === 'all' || o.wanted.rarity === Number(wantedRarity)) &&
+          (wantedRarity === 'all' || o.wanted?.rarity === Number(wantedRarity)) &&
           (universe === 'all' || o.offered.universeId === universe) &&
           (!onlyMissing || (!!profile && !(profile.inventory[o.offered.id]?.quantity ?? 0))) &&
           (!onlyDuplicates ||
             (!!profile &&
+              !!o.wanted &&
               (profile.inventory[o.wanted.id]?.quantity ?? 0) > 1 &&
               (profile.inventory[o.wanted.id]?.available ?? 0) > 0)),
       )
       .sort((a, b) =>
-        sort === 'oldest'
-          ? Date.parse(a.createdAt) - Date.parse(b.createdAt)
-          : sort === 'rarity-high'
-            ? b.offered.rarity - a.offered.rarity
-            : sort === 'rarity-low'
-              ? a.offered.rarity - b.offered.rarity
-              : sort === 'name'
-                ? a.offered.name.localeCompare(b.offered.name)
-                : Date.parse(b.createdAt) - Date.parse(a.createdAt),
+        sort === 'price-low'
+          ? (a.price ?? Infinity) - (b.price ?? Infinity)
+          : sort === 'price-high'
+            ? (b.price ?? -1) - (a.price ?? -1)
+            : sort === 'oldest'
+              ? Date.parse(a.createdAt) - Date.parse(b.createdAt)
+              : sort === 'rarity-high'
+                ? b.offered.rarity - a.offered.rarity
+                : sort === 'rarity-low'
+                  ? a.offered.rarity - b.offered.rarity
+                  : sort === 'name'
+                    ? a.offered.name.localeCompare(b.offered.name)
+                    : Date.parse(b.createdAt) - Date.parse(a.createdAt),
       );
   async function run(path: string, body?: unknown, method?: string) {
     setBusy(true);
@@ -97,10 +113,10 @@ export default function Market() {
     <LocaleView>
       <div className="content-page market-page">
         <div className="eyebrow">THE TRADING POST</div>
-        <h1>Card exchange</h1>
+        <h1>Market</h1>
         <p className="page-description">
-          Trade one owned card for another. Your offered copy stays reserved until accepted or
-          cancelled. Exchanges are permanent and require an account.
+          Sell cards for Stellar Prisms or exchange one card for another. Listed copies stay
+          reserved until bought, exchanged or cancelled.
         </p>
         <LocalBots />
         <MainChat compact />
@@ -119,14 +135,28 @@ export default function Market() {
           </aside>
         )}
         <details className="menu-window trade-create">
-          <summary>Post a trade offer</summary>
+          <summary>Post an offer</summary>
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              void run('/trades', { offered, wanted });
+              void run(
+                '/trades',
+                payment === 'sale' ? { offered, price: Number(price) } : { offered, wanted },
+              );
             }}
           >
             <div className="lobby-filters">
+              <label>
+                Offer type
+                <select
+                  aria-label="Offer type"
+                  value={payment}
+                  onChange={(e) => setPayment(e.target.value)}
+                >
+                  <option value="exchange">Card exchange</option>
+                  <option value="sale">Sell for Stellar Prisms</option>
+                </select>
+              </label>
               <label>
                 You offer
                 <select
@@ -147,26 +177,42 @@ export default function Market() {
                   ))}
                 </select>
               </label>
-              <label>
-                You request
-                <select
-                  aria-label="You request"
-                  required
-                  value={wanted}
-                  onChange={(e) => setWanted(e.target.value)}
-                >
-                  <option value="">Choose a card</option>
-                  {CARDS.filter((c) => c.id !== offered).map((c) => (
-                    <option key={c.id} value={c.id}>
-                      <NoTranslate>{c.name}</NoTranslate>
-                      {c.finish === 'holo'
-                        ? ` · Holo +1 ${SIDE_NAMES[c.holoBonusSide ?? 0]}`
-                        : ''}{' '}
-                      · {c.rarity}★
-                    </option>
-                  ))}
-                </select>
-              </label>
+              {payment === 'exchange' ? (
+                <label>
+                  You request
+                  <select
+                    aria-label="You request"
+                    required
+                    value={wanted}
+                    onChange={(e) => setWanted(e.target.value)}
+                  >
+                    <option value="">Choose a card</option>
+                    {CARDS.filter((c) => c.id !== offered).map((c) => (
+                      <option key={c.id} value={c.id}>
+                        <NoTranslate>{c.name}</NoTranslate>
+                        {c.finish === 'holo'
+                          ? ` · Holo +1 ${SIDE_NAMES[c.holoBonusSide ?? 0]}`
+                          : ''}{' '}
+                        · {c.rarity}★
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : (
+                <label>
+                  Price in Stellar Prisms
+                  <input
+                    aria-label="Price in Stellar Prisms"
+                    type="number"
+                    min="1"
+                    max="1000000"
+                    step="1"
+                    required
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                  />
+                </label>
+              )}
             </div>
             <button className="primary-button" disabled={busy || !profile?.registered}>
               Post offer
@@ -180,6 +226,40 @@ export default function Market() {
         </details>
         <div className="market-filters">
           <label>
+            Listing type
+            <select
+              aria-label="Listing type"
+              value={listingType}
+              onChange={(e) => setListingType(e.target.value)}
+            >
+              <option value="all">All listings</option>
+              <option value="sale">Currency sales</option>
+              <option value="exchange">Card exchanges</option>
+            </select>
+          </label>
+          <label>
+            Minimum price
+            <input
+              aria-label="Minimum price"
+              type="number"
+              min="1"
+              max="1000000"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+            />
+          </label>
+          <label>
+            Maximum price
+            <input
+              aria-label="Maximum price"
+              type="number"
+              min="1"
+              max="1000000"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+            />
+          </label>
+          <label>
             Find an offer
             <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} />
           </label>
@@ -187,7 +267,7 @@ export default function Market() {
             Show
             <select aria-label="Show" value={filter} onChange={(e) => setFilter(e.target.value)}>
               <option value="all">All offers</option>
-              <option value="available">Trades I can accept</option>
+              <option value="available">Offers I can accept</option>
               <option value="mine">My offers</option>
             </select>
           </label>
@@ -252,6 +332,8 @@ export default function Market() {
               <option value="rarity-high">Rarity: high to low</option>
               <option value="rarity-low">Rarity: low to high</option>
               <option value="name">Card name</option>
+              <option value="price-low">Price: lowest first</option>
+              <option value="price-high">Price: highest first</option>
             </select>
           </label>
         </div>
@@ -286,14 +368,14 @@ export default function Market() {
               setOnlyMissing(false);
               setOnlyDuplicates(false);
               setSort('newest');
+              setListingType('all');
+              setMinPrice('');
+              setMaxPrice('');
             }}
           >
             Reset filters
           </button>
         </div>
-        <p className="market-price-note">
-          Card-for-card offers · Currency price filters arrive with currency listings.
-        </p>
         <p className="market-count" role="status">
           {visible.length} matching offers
         </p>
@@ -314,7 +396,14 @@ export default function Market() {
                 <b aria-hidden="true">⇄</b>
                 <div>
                   <span>YOU GIVE</span>
-                  <Card card={o.wanted} />
+                  {o.wanted ? (
+                    <Card card={o.wanted} />
+                  ) : (
+                    <div className="market-payment">
+                      <strong>◇ {o.price}</strong>
+                      <span>Stellar Prisms</span>
+                    </div>
+                  )}
                 </div>
               </div>
               {o.ownerId === profile?.id ? (
@@ -332,7 +421,7 @@ export default function Market() {
                   aria-describedby={`eligibility-${o.id}`}
                   onClick={() => setSelected(o)}
                 >
-                  Review exchange
+                  {o.price !== null ? 'Review purchase' : 'Review exchange'}
                 </button>
               )}
               {o.ownerId !== profile?.id && !canAccept(o) && (
@@ -341,7 +430,9 @@ export default function Market() {
                     ? 'An account is required to accept trades.'
                     : profile.profiles.some((p) => p.id === o.ownerId)
                       ? 'This offer belongs to one of your profiles.'
-                      : `You need an available copy of ${o.wanted.name}.`}
+                      : o.price !== null
+                        ? 'Not enough Stellar Prisms.'
+                        : `You need an available copy of ${o.wanted!.name}.`}
                 </p>
               )}
             </article>
@@ -357,27 +448,35 @@ export default function Market() {
             className="trade-confirm menu-window"
             aria-label="Confirm card exchange"
           >
-            <p>
-              Give{' '}
-              <strong>
-                <NoTranslate>{selected.wanted.name}</NoTranslate>
-              </strong>{' '}
-              to <NoTranslate>{selected.owner}</NoTranslate> and receive{' '}
-              <strong>
-                <NoTranslate>{selected.offered.name}</NoTranslate>
-              </strong>
-              ? One copy of each card is permanently transferred.
-            </p>
+            {selected.price !== null ? (
+              <p>
+                Pay <strong>{selected.price} Stellar Prisms</strong> to{' '}
+                <NoTranslate>{selected.owner}</NoTranslate> and receive{' '}
+                <NoTranslate>{selected.offered.name}</NoTranslate>? The purchase is permanent.
+              </p>
+            ) : (
+              <p>
+                Give{' '}
+                <strong>
+                  <NoTranslate>{selected.wanted!.name}</NoTranslate>
+                </strong>{' '}
+                to <NoTranslate>{selected.owner}</NoTranslate> and receive{' '}
+                <strong>
+                  <NoTranslate>{selected.offered.name}</NoTranslate>
+                </strong>
+                ? One copy of each card is permanently transferred.
+              </p>
+            )}
             <div className="result-actions">
               <button className="outline-button" disabled={busy} onClick={() => setSelected(null)}>
-                Keep my card
+                Cancel
               </button>
               <button
                 className="primary-button"
                 disabled={busy}
                 onClick={() => run(`/trades/${selected.id}/accept`, {})}
               >
-                Confirm exchange
+                {selected.price !== null ? 'Confirm purchase' : 'Confirm exchange'}
               </button>
             </div>
           </dialog>

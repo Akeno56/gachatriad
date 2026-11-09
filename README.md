@@ -1,5 +1,7 @@
 # Gacha Triad
 
+**0.1.1 Alpha:** Season 0 Elo deltas and W/L on rated results, a Market for currency sales and card exchanges, custom-only lobby presets, ordered stat spreads, expanded EN/FR moderation, compact menu pages and aligned host-monitor values. No accounts or progress are reset. See [release notes and publishing commands](docs/RELEASE_V0_1_1.md).
+
 **0.1.0 Alpha:** Viewport-fitted battles, battle chat, spectating, a conversation drawer and Ladder tabs. New account/IP restrictions, private history and collection review, queue-only rated games, admin test wins, Cards sorting and updated prices. All 814 cards now have distinct spreads while preserving their totals and Aha's override. Turns last 60 seconds: one auto-play, then forfeit on the same player's next missed turn; a manual move clears the warning. The 120-second disconnect limit remains. See [release details and publishing commands](docs/RELEASE_V0_1_0.md) and the [VPS hosting guide](docs/DEDICATED_HOSTING.md). Existing accounts and progress are preserved.
 
 A local Triple Triad fan game with FF-style menus, CRT presentation, 814 playable cross-game cards and persistent multiplayer services.

@@ -1,0 +1,235 @@
+/* Compact menus share the battle screen's scale without shrinking battle overlays. */
+.content-page {
+  max-width: 1600px;
+  width: calc(100% - 36px);
+  margin: 18px auto;
+  padding: 22px 24px;
+}
+.content-page > h1 {
+  font-size: 40px;
+  margin: 10px 0;
+}
+.content-page > .page-description {
+  margin-bottom: 16px;
+  font-size: 15px;
+  max-width: 850px;
+}
+.content-page .primary-button,
+.content-page .outline-button {
+  font-size: 21px;
+  padding: 7px 14px;
+  min-height: 38px;
+}
+.content-page input:not([type='checkbox']):not([type='range']),
+.content-page select {
+  padding: 7px 9px;
+  min-height: 36px;
+}
+.content-page .catalog-grid {
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 18px;
+}
+.content-page .catalog-grid .playing-card {
+  height: 270px;
+}
+.content-page .catalog-grid .card-values {
+  transform: scale(1);
+}
+.content-page .catalog-grid .card-caption strong {
+  font-size: 23px;
+}
+.content-page .album-card-info h2 {
+  font-size: 19px;
+}
+.content-page .album-card-footer .card-buy-button {
+  font-size: 18px;
+  min-height: 31px;
+  padding: 5px 8px;
+}
+.content-page .album-filters,
+.content-page .market-filters {
+  gap: 10px 14px;
+}
+.content-page .profile-header {
+  padding: 22px;
+  gap: 26px;
+}
+.content-page .profile-portrait {
+  width: 144px;
+  height: 208px;
+}
+.content-page .profile-header h2 {
+  font-size: 40px;
+}
+.content-page .profile-stats {
+  gap: 12px;
+  margin: 18px 0;
+}
+.content-page .profile-stats > div {
+  padding: 16px 13px;
+}
+.content-page .profile-stats strong {
+  font-size: 34px;
+  margin-top: 8px;
+}
+.content-page .booster-tile-art {
+  height: 220px;
+  gap: 10px;
+}
+.content-page .booster-tile-art > img {
+  height: 110px;
+}
+.content-page .booster-tile-details h2 {
+  font-size: 26px;
+}
+.content-page .queue-option {
+  padding: 16px;
+}
+.content-page .queue-option strong {
+  font-size: 24px;
+}
+.content-page .achievement {
+  padding: 16px;
+  gap: 16px;
+}
+.content-page .achievement h2 {
+  font-size: 24px;
+}
+.content-page .ladder-table td,
+.content-page .ladder-table th {
+  padding: 10px;
+}
+.deck-page .saved-deck {
+  padding: 14px 18px;
+  margin: 14px 0;
+}
+.deck-page .saved-deck h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+.deck-page .deck-preview {
+  max-width: 740px;
+  gap: 12px;
+}
+.deck-page .deck-preview button {
+  height: 180px;
+}
+.deck-page .deck-preview .card-caption strong {
+  font-size: 20px;
+}
+.deck-page .deck-preview .card-values {
+  transform: scale(0.9);
+}
+.deck-page .saved-deck > p {
+  margin: 7px 0;
+}
+.market-page .trade-grid {
+  grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
+  gap: 18px;
+}
+.deck-page .catalog-grid article > p {
+  margin-top: 9px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+.market-page .market-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+}
+.market-page .trade-offer {
+  padding: 16px;
+}
+.market-page .trade-pair .playing-card {
+  height: 220px;
+}
+.market-page .trade-pair .card-values {
+  transform: scale(0.85);
+  transform-origin: top left;
+}
+.market-page .trade-pair .card-caption strong {
+  font-size: 19px;
+}
+.market-payment {
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #7b91b7;
+  background: #0d1933;
+}
+.market-payment strong {
+  color: var(--gold);
+  font: 32px var(--pixel);
+}
+.market-payment span {
+  color: #c4d4ed;
+  font-size: 14px;
+}
+.rated-result {
+  padding: 12px;
+  border: 1px solid #6e83a6;
+  background: #0c1830;
+  margin: 12px 0;
+}
+.rated-result p {
+  margin: 0 0 4px;
+  font: 25px var(--pixel);
+}
+.rated-result small {
+  color: #afc3e1;
+}
+.rating-gain {
+  color: #9de2ae;
+}
+.rating-loss {
+  color: #f1a2a9;
+}
+@media (max-width: 680px) {
+  .content-page .profile-header {
+    padding: 16px;
+    gap: 16px;
+  }
+  .content-page .profile-portrait {
+    width: 112px;
+    height: 168px;
+  }
+  .content-page {
+    width: calc(100% - 20px);
+    padding: 16px 12px;
+    margin: 12px auto;
+  }
+  .content-page > h1 {
+    font-size: 34px;
+  }
+  .content-page .catalog-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 10px;
+  }
+  .content-page .catalog-grid .playing-card {
+    height: 230px;
+  }
+  .content-page .catalog-grid .card-caption strong {
+    font-size: 20px;
+  }
+  .content-page .primary-button,
+  .content-page .outline-button {
+    min-height: 42px;
+  }
+  .content-page .catalog-grid .card-buy-button {
+    font-size: 16px;
+    padding: 4px;
+    min-height: 34px;
+  }
+  .deck-page .deck-preview button {
+    height: 155px;
+    flex-basis: 108px;
+  }
+  .deck-page .saved-deck {
+    padding: 12px;
+  }
+  .market-page .trade-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

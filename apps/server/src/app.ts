@@ -554,14 +554,27 @@ export async function createPlatform(
   });
   app.get('/api/trades', async (req) => {
     await profile(req);
-    return trades.list();
+    const offers = await trades.list();
+    // Old open clients require a requested card and cannot render currency listings.
+    return (req.query as { includeSales?: string }).includeSales === 'true'
+      ? offers
+      : offers.filter((o) => o.wanted !== null);
   });
   app.post('/api/trades', async (req) => {
     const p = await profile(req),
       b = body(req);
-    if (typeof b.offered !== 'string' || typeof b.wanted !== 'string')
-      throw new GameError('Choose two cards.');
-    const result = await trades.create(p, b.offered, b.wanted);
+    if (
+      typeof b.offered !== 'string' ||
+      (b.price === undefined && typeof b.wanted !== 'string') ||
+      (b.price !== undefined && b.wanted != null)
+    )
+      throw new GameError('Choose a card exchange or a currency sale.');
+    const result = await trades.create(
+      p,
+      b.offered,
+      b.price === undefined ? (b.wanted as string) : null,
+      b.price as number | undefined,
+    );
     notify();
     return result;
   });

@@ -37,9 +37,13 @@ it('splits eight universes across the two booster pools and preserves the exact 
     ),
   ).toBe(28);
   expect(
-    HOLO_VARIANTS.filter((card) => card.baseCardId === aha.id)
-      .map((card) => card.holoBonusSide)
-      .sort(),
+    [
+      ...new Set(
+        HOLO_VARIANTS.filter((card) => card.baseCardId === aha.id).map(
+          (card) => card.holoBonusSide,
+        ),
+      ),
+    ].sort(),
   ).toEqual([1, 3]);
   expect(CARDS.some((card) => ['star-rail:ellen', 'star-rail:astra-yao'].includes(card.id))).toBe(
     false,

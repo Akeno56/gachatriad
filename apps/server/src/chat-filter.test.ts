@@ -3,6 +3,14 @@ import { chatViolation } from './chat-filter';
 it('blocks clear English and French abuse, including common obfuscation', () => {
   for (const text of [
     'fuck!',
+    'retard stupid ass',
+    'r3tard',
+    'stupid ass',
+    'you are so stupid',
+    'dumbass',
+    'sale débile',
+    'abruti',
+    'ta gueule',
     'F U C K',
     'f.u.c.k',
     'fück',
@@ -27,6 +35,9 @@ it('does not substring-match ordinary names, gameplay or friendly EN/FR conversa
     'Je cherche une carte 4 étoiles.',
     'Merci, à bientôt !',
     'Désolé, je suis en retard.',
+    'Le train a du retard.',
+    'Pardon pour mon retard.',
+    'I made a stupid move.',
     'https://gachatriad.com',
   ])
     expect(chatViolation(text), text).toBeNull();

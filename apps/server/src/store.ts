@@ -59,6 +59,7 @@ interface ProfileRow {
   [key: string]: unknown;
 }
 interface MatchRow {
+  season: number;
   disconnected_at: [number | null, number | null];
   activity_at: [number, number];
   id: string;
@@ -177,6 +178,7 @@ export class GameStore {
       '014_activity_chat_moderation.sql',
       '015_spectator_privacy.sql',
       '016_account_networks.sql',
+      '017_market_season.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -728,7 +730,36 @@ export class GameStore {
           avatar: p?.avatar_card ? (byId.get(p.avatar_card) ?? null) : null,
         };
       };
+      let ratedResult: MatchView['ratedResult'] = null;
+      if (!spectator && m.status === 'complete' && (m.mode === 'ranked' || m.mode === 'draft')) {
+        const field = m.mode === 'draft' ? 'draft_rating' : 'rating';
+        const [person] = await sql<{ rating: number }>(
+          `SELECT ${field} AS rating FROM profiles WHERE id=$1`,
+          [profileId],
+        );
+        const [audit] = await sql<{ before_rating: number; after_rating: number }>(
+          'SELECT before_rating,after_rating FROM match_ratings WHERE match_id=$1 AND profile_id=$2',
+          [m.id, profileId],
+        );
+        const [record] = await sql<{ wins: number; losses: number; draws: number }>(
+          `SELECT
+          count(*) FILTER(WHERE NOT m.is_draw AND m.winner=CASE WHEN m.player0=$1 THEN 0 ELSE 1 END)::int AS wins,
+          count(*) FILTER(WHERE NOT m.is_draw AND m.winner<>CASE WHEN m.player0=$1 THEN 0 ELSE 1 END)::int AS losses,
+          count(*) FILTER(WHERE m.is_draw)::int AS draws
+          FROM matches m WHERE (m.player0=$1 OR m.player1=$1) AND m.status='complete' AND m.mode=$2 AND m.season=$3
+          AND m.player1 IS NOT NULL AND coalesce(m.end_reason,'')<>'admin test result'
+          AND NOT EXISTS(SELECT 1 FROM profiles bot WHERE bot.is_bot AND bot.id IN(m.player0,m.player1))`,
+          [profileId, m.mode, m.season],
+        );
+        ratedResult = {
+          season: m.season,
+          rating: audit?.after_rating ?? person.rating,
+          delta: audit ? audit.after_rating - audit.before_rating : null,
+          ...record,
+        };
+      }
       return {
+        ratedResult,
         id: m.id,
         spectator,
         missedTurns: m.auto_turns,

@@ -130,7 +130,7 @@ test('shows three titled messages and defaults each public chat to its page chan
     );
     await page.getByRole('tab', { name: 'General', exact: true }).click();
     await visibleThree();
-    await page.getByRole('link', { name: 'Trades', exact: true }).click();
+    await page.getByRole('link', { name: 'Market', exact: true }).click();
     await expect(page.getByRole('tab', { name: 'Trade', exact: true })).toHaveAttribute(
       'aria-selected',
       'true',

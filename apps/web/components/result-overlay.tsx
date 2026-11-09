@@ -49,8 +49,29 @@ export function ResultOverlay({
           </p>
         )}
         {match.endReason && <p>{match.endReason}</p>}
+        {match.ratedResult && (
+          <section className="rated-result" aria-label="Season result">
+            <p>
+              Rating: <strong>{match.ratedResult.rating}</strong>
+              {match.ratedResult.delta !== null && (
+                <span className={match.ratedResult.delta < 0 ? 'rating-loss' : 'rating-gain'}>
+                  {' '}
+                  ({match.ratedResult.delta > 0 ? '+' : ''}
+                  {match.ratedResult.delta})
+                </span>
+              )}{' '}
+              <strong>{`${match.ratedResult.wins}W ${match.ratedResult.losses}L`}</strong>
+              {match.ratedResult.draws > 0 && (
+                <small> · {`${match.ratedResult.draws} draws`}</small>
+              )}
+            </p>
+            <small>
+              Season {match.ratedResult.season} · {match.mode === 'draft' ? 'Draft' : 'Ranked'}
+            </small>
+          </section>
+        )}
         {(match.mode === 'ranked' || match.mode === 'draft') && !match.ratingApplies && (
-          <p>Bot opponent · No Elo change.</p>
+          <p>No Elo change.</p>
         )}
         <section className="result-settlement" aria-label="Match settlement">
           <p className="prism-reward">

@@ -87,6 +87,20 @@ try {
   const move = legalMoves(row.state)[0];
   await platform.store.move(people[move.player].id, matchId, move.cardId, move.cell, row.version);
   await expect(page.locator('#monitorBoard strong')).toHaveCount(1);
+  const positions = await page.locator('#monitorBoard .monitor-values').evaluate((node) =>
+    Object.fromEntries(
+      Array.from(node.querySelectorAll('span')).map((span) => {
+        const b = span.getBoundingClientRect();
+        return [span.dataset.side, { x: b.x + b.width / 2, y: b.y + b.height / 2 }];
+      }),
+    ),
+  );
+  expect(Math.abs(positions.top.x - positions.bottom.x)).toBeLessThan(1);
+  expect(Math.abs(positions.left.y - positions.right.y)).toBeLessThan(1);
+  expect(positions.top.y).toBeLessThan(positions.left.y);
+  expect(positions.bottom.y).toBeGreaterThan(positions.right.y);
+  expect(positions.left.x).toBeLessThan(positions.top.x);
+  expect(positions.right.x).toBeGreaterThan(positions.bottom.x);
   await expect(page.locator('#monitorBoard img')).toHaveCount(0);
   await expect(page.locator('#monitorStatus')).toContainText('PLAYING');
   await page.locator('#battleMonitor').screenshot({ path: '.cache/v15-battle-monitor.png' });

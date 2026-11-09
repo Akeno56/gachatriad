@@ -175,7 +175,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                     { href: '/cards', label: 'Cards' },
                     { href: '/lobbies', label: 'Lobbies' },
                     { href: '/collection', label: 'Collection' },
-                    { href: '/market', label: 'Trades' },
+                    { href: '/market', label: 'Market' },
                     { href: '/boosters', label: 'Boosters' },
                     { href: '/ladder', label: 'Ladder' },
                     { href: '/rules', label: 'Rulebook' },

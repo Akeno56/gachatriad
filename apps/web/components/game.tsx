@@ -331,7 +331,7 @@ export function Game() {
               </section>
             </div>
             <div className="build-label">
-              {CARDS.filter((card) => !card.finish).length} CARDS · v0.1.0 Alpha{' '}
+              {CARDS.filter((card) => !card.finish).length} CARDS · v0.1.1 Alpha{' '}
               <Link href="/credits" className="credits-button">
                 Credits
               </Link>

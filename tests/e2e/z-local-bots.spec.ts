@@ -58,7 +58,7 @@ test('populates labeled bots, joins a real bot duel, preserves guest progress an
   await page.goto('/market');
   await expect(page.locator('.trade-offer').first()).toBeVisible();
   await expect(page.locator('.trade-offer').first()).toContainText('[BOT]');
-  await page.getByText('Post a trade offer', { exact: true }).click();
+  await page.getByText('Post an offer', { exact: true }).click();
   const inventory = await (await page.request.get('/api/profile')).json();
   const offers = await (await page.request.get('/api/trades')).json();
   const give = inventory.deck[0],
