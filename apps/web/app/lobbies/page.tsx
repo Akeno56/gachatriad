@@ -372,7 +372,15 @@ export default function Lobbies() {
                   <strong>
                     {row.players}/2 <span>{row.status === 'waiting' ? 'Waiting' : 'Playing'}</span>
                   </strong>
-                  {row.hostId !== profile?.id && (
+                  {row.status === 'playing' && row.matchId && !row.inviteOnly && (
+                    <Link
+                      className="outline-button spectate-button"
+                      href={`/?spectate=${row.matchId}`}
+                    >
+                      Spectate
+                    </Link>
+                  )}
+                  {row.status === 'waiting' && row.hostId !== profile?.id && (
                     <button
                       className="outline-button"
                       disabled={

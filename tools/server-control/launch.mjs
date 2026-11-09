@@ -1,9 +1,11 @@
 import { spawn } from 'node:child_process';
 import { closeSync, openSync } from 'node:fs';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { normalizeStaticExport } from '../normalize-static-export.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -24,11 +26,27 @@ async function main() {
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }
+  const buildPreview = process.argv.includes('--local-test');
+  const localTest = buildPreview || process.argv.includes('--test-server');
+  if (localTest) {
+    Object.assign(process.env, {
+      TRIAD_LOCAL_TEST: 'true',
+      CONTROL_PORT: '3040',
+      PREVIEW_PORT: '3100',
+      SERVER_PORT: '3101',
+      DATA_DIR: resolve(root, '.data-local'),
+      EXTERNAL_GAME_SERVER: 'false',
+      FRONTEND_URL: 'https://akeno56.github.io/gachatriad/',
+    });
+    delete process.env.BOT_DIFFICULTY;
+    delete process.env.BETTER_AUTH_SECRET;
+  }
   const port = Number(process.env.CONTROL_PORT || 3030);
   if (!Number.isInteger(port) || port < 1 || port > 65535)
     throw Error('CONTROL_PORT must be a port number between 1 and 65535.');
   const url = `http://127.0.0.1:${port}`;
 
+  let activeState = null;
   async function ready() {
     let response;
     try {
@@ -39,10 +57,78 @@ async function main() {
     const html = await response.text();
     const ours = response.ok && html.includes('<title>Gacha Triad · Server Control</title>');
     if (!ours) throw Error(`Another application is using ${url}. Close it and try again.`);
+    if (localTest) {
+      let state;
+      try {
+        state = await (await fetch(url + '/state', { signal: AbortSignal.timeout(1500) })).json();
+      } catch {
+        return false;
+      }
+      activeState = state;
+      if (!state.localTest)
+        throw Error(`${url} is not the isolated local test panel. Close that other panel first.`);
+    }
     return true;
   }
 
-  if (!(await ready())) {
+  let running = await ready();
+  const desiredRevision = localTest
+    ? createHash('sha256')
+        .update(await readFile(resolve(root, 'tools/server-control/index.mjs')))
+        .digest('hex')
+    : '';
+  if (localTest && running && (buildPreview || activeState?.controlRevision !== desiredRevision)) {
+    const html = await (await fetch(url)).text();
+    const token = html.match(/const token = '([^']+)'/)?.[1];
+    const stopped = await fetch(url + '/exit', {
+      method: 'POST',
+      headers: { origin: url, 'content-type': 'application/json', 'x-control-token': token },
+      body: '{}',
+    });
+    if (!stopped.ok)
+      throw Error('The local test server is busy. Wait for its current action, then retry.');
+    const until = Date.now() + 30000;
+    while (await ready()) {
+      if (Date.now() > until)
+        throw Error('The old test panel is still shutting down. Retry shortly.');
+      await new Promise((done) => setTimeout(done, 200));
+    }
+    running = false;
+  }
+  if (buildPreview) {
+    const cli = createRequire(resolve(root, 'apps/web/package.json')).resolve('next/dist/bin/next');
+    console.log('Building the current code for localhost. Test data: .data-local');
+    await new Promise((done, reject) => {
+      const build = spawn(process.execPath, [cli, 'build', '--webpack'], {
+        cwd: resolve(root, 'apps/web'),
+        windowsHide: true,
+        stdio: 'inherit',
+        env: {
+          ...process.env,
+          NODE_ENV: 'production',
+          STATIC_EXPORT: 'true',
+          NEXT_PUBLIC_BASE_PATH: '',
+          NEXT_PUBLIC_LOCAL_TEST: 'true',
+          NEXT_PUBLIC_API_URL: 'http://127.0.0.1:3101',
+          NEXT_PUBLIC_SERVER_URL: 'http://127.0.0.1:3101',
+        },
+      });
+      build.once('error', reject);
+      build.once('exit', (code) =>
+        code === 0
+          ? done()
+          : reject(Error('The local test build failed. See the build output above.')),
+      );
+    });
+    console.log(
+      `Normalized ${await normalizeStaticExport(resolve(root, 'apps/web/out'))} static navigation payloads.`,
+    );
+    await writeFile(
+      resolve(root, 'apps/web/out/build-info.json'),
+      JSON.stringify({ basePath: '', apiOrigin: 'http://127.0.0.1:3101', hosting: 'local-test' }),
+    );
+  }
+  if (!running) {
     try {
       createRequire(resolve(root, 'apps/server/package.json')).resolve('tsx');
     } catch {

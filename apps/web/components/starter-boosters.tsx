@@ -2,7 +2,7 @@
 import { LocaleView } from './i18n';
 
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useSession } from './session';
 import { assetPath } from '../lib/connection';
@@ -10,7 +10,10 @@ export function StarterBoosters() {
   const { profile, openAccount } = useSession(),
     pathname = usePathname();
   const dialog = useRef<HTMLDialogElement>(null);
+  const [watching, setWatching] = useState(false);
+  useEffect(() => setWatching(new URLSearchParams(location.search).has('spectate')), [pathname]);
   const needed =
+    !watching &&
     !!profile?.starterBoosters &&
     !profile.activeMatchId &&
     ['/', '/lobbies'].includes(pathname.replace(/\/$/, '') || '/');

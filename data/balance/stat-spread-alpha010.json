@@ -1,0 +1,5342 @@
+{
+  "summary": {
+    "release": "0.1.0 Alpha",
+    "cards": 814,
+    "changed": 660,
+    "oldDistinct": 154,
+    "newDistinct": 814,
+    "totalsPreserved": true,
+    "raritiesPreserved": true,
+    "sideCaps": {
+      "1": 8,
+      "2": 8,
+      "3": 8,
+      "4": 10,
+      "5": 10
+    },
+    "rarityAudit": [
+      {
+        "rarity": 1,
+        "cards": 127,
+        "cap": 8,
+        "maxBaseSide": 8,
+        "maxHoloSide": 8,
+        "invalid": 0
+      },
+      {
+        "rarity": 2,
+        "cards": 242,
+        "cap": 8,
+        "maxBaseSide": 8,
+        "maxHoloSide": 8,
+        "invalid": 0
+      },
+      {
+        "rarity": 3,
+        "cards": 201,
+        "cap": 8,
+        "maxBaseSide": 8,
+        "maxHoloSide": 8,
+        "invalid": 0
+      },
+      {
+        "rarity": 4,
+        "cards": 159,
+        "cap": 10,
+        "maxBaseSide": 10,
+        "maxHoloSide": 10,
+        "invalid": 0
+      },
+      {
+        "rarity": 5,
+        "cards": 85,
+        "cap": 10,
+        "maxBaseSide": 10,
+        "maxHoloSide": 10,
+        "invalid": 0
+      }
+    ]
+  },
+  "changed": [
+    {
+      "id": "endfield:mi-fu",
+      "name": "Mi Fu",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [8, 2, 10, 8]
+    },
+    {
+      "id": "endfield:rossi",
+      "name": "Rossi",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [5, 10, 6, 7]
+    },
+    {
+      "id": "endfield:si",
+      "name": "Si",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [9, 5, 10, 4]
+    },
+    {
+      "id": "endfield:tangtang",
+      "name": "Tangtang",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [9, 8, 7, 4]
+    },
+    {
+      "id": "endfield:yvonne",
+      "name": "Yvonne",
+      "rarity": 4,
+      "total": 24,
+      "before": [4, 8, 5, 7],
+      "after": [8, 3, 10, 3]
+    },
+    {
+      "id": "endfield:zhuang-fangyi",
+      "name": "Zhuang Fangyi",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 6, 6, 10],
+      "after": [6, 4, 10, 8]
+    },
+    {
+      "id": "genshin:aino",
+      "name": "Aino",
+      "rarity": 3,
+      "total": 19,
+      "before": [5, 5, 5, 4],
+      "after": [6, 2, 4, 7]
+    },
+    {
+      "id": "genshin:albedo",
+      "name": "Albedo",
+      "rarity": 4,
+      "total": 23,
+      "before": [5, 6, 6, 6],
+      "after": [1, 10, 6, 6]
+    },
+    {
+      "id": "genshin:alhaitham",
+      "name": "Alhaitham",
+      "rarity": 3,
+      "total": 19,
+      "before": [5, 5, 5, 4],
+      "after": [5, 4, 4, 6]
+    },
+    {
+      "id": "genshin:aloy",
+      "name": "Aloy",
+      "rarity": 2,
+      "total": 16,
+      "before": [4, 4, 4, 4],
+      "after": [2, 4, 2, 8]
+    },
+    {
+      "id": "genshin:alyosha",
+      "name": "Alyosha",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 4, 4, 8],
+      "after": [6, 5, 1, 8]
+    },
+    {
+      "id": "genshin:arataki-itto",
+      "name": "Arataki Itto",
+      "rarity": 3,
+      "total": 20,
+      "before": [3, 3, 7, 7],
+      "after": [8, 7, 3, 2]
+    },
+    {
+      "id": "genshin:arlecchino",
+      "name": "Arlecchino",
+      "rarity": 4,
+      "total": 23,
+      "before": [8, 4, 7, 4],
+      "after": [3, 3, 7, 10]
+    },
+    {
+      "id": "genshin:baizhu",
+      "name": "Baizhu",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 5, 5, 5],
+      "after": [1, 6, 4, 8]
+    },
+    {
+      "id": "genshin:beidou",
+      "name": "Beidou",
+      "rarity": 3,
+      "total": 19,
+      "before": [3, 7, 6, 3],
+      "after": [1, 8, 3, 7]
+    },
+    {
+      "id": "genshin:bennett",
+      "name": "Bennett",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 6, 4, 6],
+      "after": [7, 4, 1, 8]
+    },
+    {
+      "id": "genshin:candace",
+      "name": "Candace",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 3, 7, 3],
+      "after": [5, 5, 3, 3]
+    },
+    {
+      "id": "genshin:charlotte",
+      "name": "Charlotte",
+      "rarity": 2,
+      "total": 18,
+      "before": [3, 6, 3, 6],
+      "after": [3, 3, 7, 5]
+    },
+    {
+      "id": "genshin:chasca",
+      "name": "Chasca",
+      "rarity": 3,
+      "total": 21,
+      "before": [5, 4, 8, 4],
+      "after": [6, 6, 7, 2]
+    },
+    {
+      "id": "genshin:chevreuse",
+      "name": "Chevreuse",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 6, 4, 6],
+      "after": [6, 6, 1, 7]
+    },
+    {
+      "id": "genshin:chongyun",
+      "name": "Chongyun",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 4, 3, 3],
+      "after": [5, 7, 1, 1]
+    },
+    {
+      "id": "genshin:citlali",
+      "name": "Citlali",
+      "rarity": 4,
+      "total": 23,
+      "before": [7, 4, 8, 4],
+      "after": [7, 2, 6, 8]
+    },
+    {
+      "id": "genshin:clorinde",
+      "name": "Clorinde",
+      "rarity": 3,
+      "total": 21,
+      "before": [6, 4, 7, 4],
+      "after": [7, 2, 7, 5]
+    },
+    {
+      "id": "genshin:collei",
+      "name": "Collei",
+      "rarity": 2,
+      "total": 16,
+      "before": [2, 2, 6, 6],
+      "after": [4, 6, 3, 3]
+    },
+    {
+      "id": "genshin:cyno",
+      "name": "Cyno",
+      "rarity": 4,
+      "total": 24,
+      "before": [9, 5, 5, 5],
+      "after": [7, 8, 7, 2]
+    },
+    {
+      "id": "genshin:dahlia",
+      "name": "Dahlia",
+      "rarity": 2,
+      "total": 16,
+      "before": [4, 4, 4, 4],
+      "after": [8, 1, 3, 4]
+    },
+    {
+      "id": "genshin:dehya",
+      "name": "Dehya",
+      "rarity": 2,
+      "total": 18,
+      "before": [5, 5, 4, 4],
+      "after": [1, 1, 8, 8]
+    },
+    {
+      "id": "genshin:diluc",
+      "name": "Diluc",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 4, 7, 4],
+      "after": [5, 2, 7, 5]
+    },
+    {
+      "id": "genshin:diona",
+      "name": "Diona",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 4, 4, 8],
+      "after": [5, 8, 5, 2]
+    },
+    {
+      "id": "genshin:dori",
+      "name": "Dori",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 2, 2, 5],
+      "after": [6, 3, 2, 3]
+    },
+    {
+      "id": "genshin:durin",
+      "name": "Durin",
+      "rarity": 4,
+      "total": 24,
+      "before": [7, 4, 8, 5],
+      "after": [3, 8, 5, 8]
+    },
+    {
+      "id": "genshin:emilie",
+      "name": "Emilie",
+      "rarity": 4,
+      "total": 23,
+      "before": [6, 5, 6, 6],
+      "after": [1, 2, 10, 10]
+    },
+    {
+      "id": "genshin:escoffier",
+      "name": "Escoffier",
+      "rarity": 4,
+      "total": 24,
+      "before": [9, 3, 3, 9],
+      "after": [4, 2, 9, 9]
+    },
+    {
+      "id": "genshin:eula",
+      "name": "Eula",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 4, 5],
+      "after": [2, 3, 4, 8]
+    },
+    {
+      "id": "genshin:faruzan",
+      "name": "Faruzan",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 8, 4, 4],
+      "after": [2, 2, 8, 8]
+    },
+    {
+      "id": "genshin:fischl",
+      "name": "Fischl",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 8, 4, 4],
+      "after": [1, 7, 7, 5]
+    },
+    {
+      "id": "genshin:flins",
+      "name": "Flins",
+      "rarity": 4,
+      "total": 24,
+      "before": [9, 9, 3, 3],
+      "after": [7, 6, 4, 7]
+    },
+    {
+      "id": "genshin:freminet",
+      "name": "Freminet",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 2, 2, 5],
+      "after": [2, 7, 1, 4]
+    },
+    {
+      "id": "genshin:furina",
+      "name": "Furina",
+      "rarity": 4,
+      "total": 23,
+      "before": [6, 5, 6, 6],
+      "after": [1, 4, 8, 10]
+    },
+    {
+      "id": "genshin:gaming",
+      "name": "Gaming",
+      "rarity": 3,
+      "total": 19,
+      "before": [5, 5, 4, 5],
+      "after": [2, 8, 5, 4]
+    },
+    {
+      "id": "genshin:ganyu",
+      "name": "Ganyu",
+      "rarity": 3,
+      "total": 19,
+      "before": [6, 4, 6, 3],
+      "after": [6, 5, 7, 1]
+    },
+    {
+      "id": "genshin:gorou",
+      "name": "Gorou",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 6, 3, 6],
+      "after": [7, 1, 4, 7]
+    },
+    {
+      "id": "genshin:hu-tao",
+      "name": "Hu Tao",
+      "rarity": 3,
+      "total": 21,
+      "before": [6, 4, 7, 4],
+      "after": [8, 6, 6, 1]
+    },
+    {
+      "id": "genshin:iansan",
+      "name": "Iansan",
+      "rarity": 3,
+      "total": 20,
+      "before": [6, 4, 6, 4],
+      "after": [7, 4, 5, 4]
+    },
+    {
+      "id": "genshin:illuga",
+      "name": "Illuga",
+      "rarity": 3,
+      "total": 20,
+      "before": [6, 4, 6, 4],
+      "after": [3, 6, 3, 8]
+    },
+    {
+      "id": "genshin:ineffa",
+      "name": "Ineffa",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [9, 10, 2, 3]
+    },
+    {
+      "id": "genshin:jahoda",
+      "name": "Jahoda",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 7, 4, 4],
+      "after": [3, 7, 4, 5]
+    },
+    {
+      "id": "genshin:jean",
+      "name": "Jean",
+      "rarity": 3,
+      "total": 19,
+      "before": [6, 3, 6, 4],
+      "after": [4, 3, 8, 4]
+    },
+    {
+      "id": "genshin:kachina",
+      "name": "Kachina",
+      "rarity": 2,
+      "total": 16,
+      "before": [4, 4, 4, 4],
+      "after": [5, 5, 1, 5]
+    },
+    {
+      "id": "genshin:kaeya",
+      "name": "Kaeya",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 7, 3, 3],
+      "after": [5, 5, 2, 4]
+    },
+    {
+      "id": "genshin:kamisato-ayaka",
+      "name": "Kamisato Ayaka",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 4, 8, 4],
+      "after": [6, 6, 6, 2]
+    },
+    {
+      "id": "genshin:kamisato-ayato",
+      "name": "Kamisato Ayato",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 5, 3],
+      "after": [5, 6, 3, 3]
+    },
+    {
+      "id": "genshin:kaveh",
+      "name": "Kaveh",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 3, 4],
+      "after": [4, 5, 2, 3]
+    },
+    {
+      "id": "genshin:keqing",
+      "name": "Keqing",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 5, 4],
+      "after": [2, 4, 7, 4]
+    },
+    {
+      "id": "genshin:kinich",
+      "name": "Kinich",
+      "rarity": 4,
+      "total": 23,
+      "before": [7, 4, 8, 4],
+      "after": [1, 8, 8, 6]
+    },
+    {
+      "id": "genshin:kirara",
+      "name": "Kirara",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 5, 2, 2],
+      "after": [1, 4, 8, 1]
+    },
+    {
+      "id": "genshin:klee",
+      "name": "Klee",
+      "rarity": 4,
+      "total": 23,
+      "before": [5, 6, 6, 6],
+      "after": [9, 2, 10, 2]
+    },
+    {
+      "id": "genshin:kuki-shinobu",
+      "name": "Kuki Shinobu",
+      "rarity": 2,
+      "total": 18,
+      "before": [5, 5, 4, 4],
+      "after": [6, 2, 8, 2]
+    },
+    {
+      "id": "genshin:lan-yan",
+      "name": "Lan Yan",
+      "rarity": 2,
+      "total": 18,
+      "before": [6, 6, 3, 3],
+      "after": [4, 7, 1, 6]
+    },
+    {
+      "id": "genshin:lauma",
+      "name": "Lauma",
+      "rarity": 4,
+      "total": 24,
+      "before": [7, 4, 8, 5],
+      "after": [8, 3, 7, 6]
+    },
+    {
+      "id": "genshin:layla",
+      "name": "Layla",
+      "rarity": 2,
+      "total": 16,
+      "before": [7, 3, 3, 3],
+      "after": [4, 7, 1, 4]
+    },
+    {
+      "id": "genshin:linnea",
+      "name": "Linnea",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [8, 8, 5, 7]
+    },
+    {
+      "id": "genshin:lisa",
+      "name": "Lisa",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 3, 5],
+      "after": [4, 4, 5, 1]
+    },
+    {
+      "id": "genshin:lohen",
+      "name": "Lohen",
+      "rarity": 4,
+      "total": 23,
+      "before": [8, 4, 7, 4],
+      "after": [9, 1, 9, 4]
+    },
+    {
+      "id": "genshin:lyney",
+      "name": "Lyney",
+      "rarity": 3,
+      "total": 21,
+      "before": [4, 8, 4, 5],
+      "after": [5, 2, 8, 6]
+    },
+    {
+      "id": "genshin:mavuika",
+      "name": "Mavuika",
+      "rarity": 4,
+      "total": 24,
+      "before": [3, 9, 9, 3],
+      "after": [2, 6, 8, 8]
+    },
+    {
+      "id": "genshin:mika",
+      "name": "Mika",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 3, 4],
+      "after": [3, 2, 2, 7]
+    },
+    {
+      "id": "genshin:mona",
+      "name": "Mona",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [8, 1, 6, 9]
+    },
+    {
+      "id": "genshin:nahida",
+      "name": "Nahida",
+      "rarity": 3,
+      "total": 21,
+      "before": [5, 5, 6, 5],
+      "after": [8, 7, 1, 5]
+    },
+    {
+      "id": "genshin:navia",
+      "name": "Navia",
+      "rarity": 3,
+      "total": 21,
+      "before": [5, 6, 5, 5],
+      "after": [4, 8, 6, 3]
+    },
+    {
+      "id": "genshin:nefer",
+      "name": "Nefer",
+      "rarity": 4,
+      "total": 24,
+      "before": [9, 3, 3, 9],
+      "after": [1, 7, 10, 6]
+    },
+    {
+      "id": "genshin:nicole",
+      "name": "Nicole",
+      "rarity": 4,
+      "total": 24,
+      "before": [9, 9, 3, 3],
+      "after": [10, 2, 4, 8]
+    },
+    {
+      "id": "genshin:nilou",
+      "name": "Nilou",
+      "rarity": 3,
+      "total": 21,
+      "before": [5, 5, 6, 5],
+      "after": [4, 8, 2, 7]
+    },
+    {
+      "id": "genshin:ningguang",
+      "name": "Ningguang",
+      "rarity": 2,
+      "total": 16,
+      "before": [2, 6, 6, 2],
+      "after": [1, 3, 5, 7]
+    },
+    {
+      "id": "genshin:odette",
+      "name": "Odette",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [7, 6, 7, 8]
+    },
+    {
+      "id": "genshin:ororon",
+      "name": "Ororon",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [1, 3, 8, 8]
+    },
+    {
+      "id": "genshin:prune",
+      "name": "Prune",
+      "rarity": 3,
+      "total": 20,
+      "before": [6, 4, 6, 4],
+      "after": [6, 5, 8, 1]
+    },
+    {
+      "id": "genshin:raiden-shogun",
+      "name": "Raiden Shogun",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 6, 4, 6],
+      "after": [5, 6, 6, 3]
+    },
+    {
+      "id": "genshin:rosaria",
+      "name": "Rosaria",
+      "rarity": 2,
+      "total": 18,
+      "before": [4, 3, 7, 4],
+      "after": [5, 6, 1, 6]
+    },
+    {
+      "id": "genshin:sandrone",
+      "name": "Sandrone",
+      "rarity": 5,
+      "total": 28,
+      "before": [4, 10, 10, 4],
+      "after": [8, 9, 5, 6]
+    },
+    {
+      "id": "genshin:sangonomiya-kokomi",
+      "name": "Sangonomiya Kokomi",
+      "rarity": 3,
+      "total": 20,
+      "before": [7, 3, 3, 7],
+      "after": [2, 6, 7, 5]
+    },
+    {
+      "id": "genshin:sayu",
+      "name": "Sayu",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 4, 3],
+      "after": [2, 8, 3, 1]
+    },
+    {
+      "id": "genshin:sethos",
+      "name": "Sethos",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 5, 3, 5],
+      "after": [1, 6, 6, 3]
+    },
+    {
+      "id": "genshin:shikanoin-heizou",
+      "name": "Shikanoin Heizou",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 4, 3, 3],
+      "after": [3, 1, 7, 3]
+    },
+    {
+      "id": "genshin:sigewinne",
+      "name": "Sigewinne",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 5, 5, 5],
+      "after": [8, 3, 2, 6]
+    },
+    {
+      "id": "genshin:skirk",
+      "name": "Skirk",
+      "rarity": 4,
+      "total": 24,
+      "before": [3, 3, 9, 9],
+      "after": [7, 6, 5, 6]
+    },
+    {
+      "id": "genshin:tartaglia",
+      "name": "Tartaglia",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 3, 7, 3],
+      "after": [1, 6, 8, 2]
+    },
+    {
+      "id": "genshin:tighnari",
+      "name": "Tighnari",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 2, 6],
+      "after": [4, 1, 5, 7]
+    },
+    {
+      "id": "genshin:traveler-anemo",
+      "name": "Traveler Anemo",
+      "rarity": 3,
+      "total": 19,
+      "before": [6, 3, 3, 7],
+      "after": [2, 7, 2, 8]
+    },
+    {
+      "id": "genshin:traveler-cryo",
+      "name": "Traveler Cryo",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [4, 5, 6, 9]
+    },
+    {
+      "id": "genshin:traveler-dendro",
+      "name": "Traveler Dendro",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 6, 3, 6],
+      "after": [8, 3, 3, 5]
+    },
+    {
+      "id": "genshin:traveler-electro",
+      "name": "Traveler Electro",
+      "rarity": 2,
+      "total": 16,
+      "before": [5, 3, 5, 3],
+      "after": [3, 2, 8, 3]
+    },
+    {
+      "id": "genshin:traveler-geo",
+      "name": "Traveler Geo",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 4, 3, 7],
+      "after": [1, 5, 5, 6]
+    },
+    {
+      "id": "genshin:traveler-hydro",
+      "name": "Traveler Hydro",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 2, 6, 6],
+      "after": [1, 3, 8, 5]
+    },
+    {
+      "id": "genshin:traveler-pyro",
+      "name": "Traveler Pyro",
+      "rarity": 3,
+      "total": 21,
+      "before": [8, 7, 3, 3],
+      "after": [8, 1, 4, 8]
+    },
+    {
+      "id": "genshin:valeriy",
+      "name": "Valeriy",
+      "rarity": 3,
+      "total": 20,
+      "before": [3, 3, 7, 7],
+      "after": [2, 8, 2, 8]
+    },
+    {
+      "id": "genshin:varka",
+      "name": "Varka",
+      "rarity": 4,
+      "total": 24,
+      "before": [5, 9, 5, 5],
+      "after": [9, 2, 7, 6]
+    },
+    {
+      "id": "genshin:venti",
+      "name": "Venti",
+      "rarity": 3,
+      "total": 21,
+      "before": [3, 3, 8, 7],
+      "after": [4, 5, 5, 7]
+    },
+    {
+      "id": "genshin:vesna",
+      "name": "Vesna",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [3, 7, 8, 10]
+    },
+    {
+      "id": "genshin:vodyanitsa",
+      "name": "Vodyanitsa",
+      "rarity": 5,
+      "total": 28,
+      "before": [9, 5, 9, 5],
+      "after": [8, 6, 6, 8]
+    },
+    {
+      "id": "genshin:wanderer",
+      "name": "Wanderer",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 6, 4, 6],
+      "after": [6, 4, 3, 7]
+    },
+    {
+      "id": "genshin:wriothesley",
+      "name": "Wriothesley",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 6, 10, 6],
+      "after": [7, 9, 6, 6]
+    },
+    {
+      "id": "genshin:xiangling",
+      "name": "Xiangling",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 7, 4, 4],
+      "after": [6, 6, 2, 5]
+    },
+    {
+      "id": "genshin:xianyun",
+      "name": "Xianyun",
+      "rarity": 3,
+      "total": 20,
+      "before": [6, 4, 6, 4],
+      "after": [6, 2, 4, 8]
+    },
+    {
+      "id": "genshin:xiao",
+      "name": "Xiao",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 4, 4, 8],
+      "after": [4, 6, 6, 4]
+    },
+    {
+      "id": "genshin:xilonen",
+      "name": "Xilonen",
+      "rarity": 4,
+      "total": 23,
+      "before": [6, 5, 6, 6],
+      "after": [2, 9, 8, 4]
+    },
+    {
+      "id": "genshin:xingqiu",
+      "name": "Xingqiu",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 7, 4, 4],
+      "after": [8, 1, 5, 5]
+    },
+    {
+      "id": "genshin:yae-miko",
+      "name": "Yae Miko",
+      "rarity": 5,
+      "total": 28,
+      "before": [4, 10, 10, 4],
+      "after": [2, 9, 8, 9]
+    },
+    {
+      "id": "genshin:yanfei",
+      "name": "Yanfei",
+      "rarity": 2,
+      "total": 16,
+      "before": [2, 2, 6, 6],
+      "after": [2, 5, 2, 7]
+    },
+    {
+      "id": "genshin:yaoyao",
+      "name": "Yaoyao",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 3, 4],
+      "after": [2, 5, 2, 5]
+    },
+    {
+      "id": "genshin:yelan",
+      "name": "Yelan",
+      "rarity": 3,
+      "total": 21,
+      "before": [5, 4, 8, 4],
+      "after": [8, 3, 5, 5]
+    },
+    {
+      "id": "genshin:yoimiya",
+      "name": "Yoimiya",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 5, 5, 5],
+      "after": [6, 1, 6, 6]
+    },
+    {
+      "id": "genshin:yumemizuki-mizuki",
+      "name": "Yumemizuki Mizuki",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 6, 6, 10],
+      "after": [10, 10, 5, 3]
+    },
+    {
+      "id": "genshin:yun-jin",
+      "name": "Yun Jin",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 3, 4],
+      "after": [1, 6, 6, 1]
+    },
+    {
+      "id": "genshin:zhongli",
+      "name": "Zhongli",
+      "rarity": 3,
+      "total": 21,
+      "before": [5, 5, 5, 6],
+      "after": [3, 6, 6, 6]
+    },
+    {
+      "id": "genshin:zibai",
+      "name": "Zibai",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [9, 7, 7, 5]
+    },
+    {
+      "id": "nte:adler",
+      "name": "Adler",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [5, 4, 8, 3]
+    },
+    {
+      "id": "nte:akane-rin",
+      "name": "Akane Rin",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 10, 6, 6],
+      "after": [8, 8, 4, 8]
+    },
+    {
+      "id": "nte:aurelia",
+      "name": "Aurelia",
+      "rarity": 2,
+      "total": 18,
+      "before": [3, 6, 3, 6],
+      "after": [4, 7, 5, 2]
+    },
+    {
+      "id": "nte:baicang",
+      "name": "Baicang",
+      "rarity": 4,
+      "total": 23,
+      "before": [4, 8, 4, 7],
+      "after": [5, 8, 4, 6]
+    },
+    {
+      "id": "nte:blackbird",
+      "name": "Blackbird",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [9, 10, 6, 3]
+    },
+    {
+      "id": "nte:chaos",
+      "name": "Chaos",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [8, 4, 8, 4]
+    },
+    {
+      "id": "nte:chiz",
+      "name": "Chiz",
+      "rarity": 3,
+      "total": 21,
+      "before": [5, 5, 6, 5],
+      "after": [7, 7, 4, 3]
+    },
+    {
+      "id": "nte:daffodil",
+      "name": "Daffodill",
+      "rarity": 4,
+      "total": 23,
+      "before": [3, 9, 8, 3],
+      "after": [3, 8, 4, 8]
+    },
+    {
+      "id": "nte:edgar",
+      "name": "Edgar",
+      "rarity": 2,
+      "total": 16,
+      "before": [6, 2, 2, 6],
+      "after": [7, 7, 1, 1]
+    },
+    {
+      "id": "nte:fadia",
+      "name": "Fadia",
+      "rarity": 4,
+      "total": 23,
+      "before": [3, 9, 8, 3],
+      "after": [5, 9, 3, 6]
+    },
+    {
+      "id": "nte:haniel",
+      "name": "Haniel",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 6, 4, 6],
+      "after": [4, 7, 8, 1]
+    },
+    {
+      "id": "nte:hathor",
+      "name": "Hathor",
+      "rarity": 3,
+      "total": 21,
+      "before": [8, 4, 5, 4],
+      "after": [7, 6, 1, 7]
+    },
+    {
+      "id": "nte:hotori",
+      "name": "Hotori",
+      "rarity": 4,
+      "total": 24,
+      "before": [3, 9, 9, 3],
+      "after": [10, 5, 4, 5]
+    },
+    {
+      "id": "nte:iroi",
+      "name": "Iroi",
+      "rarity": 5,
+      "total": 28,
+      "before": [9, 5, 9, 5],
+      "after": [7, 7, 10, 4]
+    },
+    {
+      "id": "nte:jiuyuan",
+      "name": "Jiuyuan",
+      "rarity": 4,
+      "total": 23,
+      "before": [3, 3, 9, 8],
+      "after": [10, 5, 5, 3]
+    },
+    {
+      "id": "nte:lacrimosa",
+      "name": "Lacrimosa",
+      "rarity": 5,
+      "total": 28,
+      "before": [10, 10, 4, 4],
+      "after": [1, 9, 9, 9]
+    },
+    {
+      "id": "nte:linko",
+      "name": "Linko",
+      "rarity": 5,
+      "total": 28,
+      "before": [4, 4, 10, 10],
+      "after": [1, 10, 7, 10]
+    },
+    {
+      "id": "nte:shinku",
+      "name": "Shinku",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [5, 6, 8, 5]
+    },
+    {
+      "id": "nte:skia",
+      "name": "Skia",
+      "rarity": 2,
+      "total": 18,
+      "before": [5, 5, 4, 4],
+      "after": [8, 4, 4, 2]
+    },
+    {
+      "id": "nte:zankou",
+      "name": "Zankou",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 6, 6, 10],
+      "after": [10, 7, 7, 4]
+    },
+    {
+      "id": "nte:zero",
+      "name": "Zero",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 6, 6, 10],
+      "after": [9, 3, 10, 6]
+    },
+    {
+      "id": "star-rail:acheron",
+      "name": "Acheron",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [7, 5, 9, 3]
+    },
+    {
+      "id": "star-rail:archer",
+      "name": "Archer",
+      "rarity": 5,
+      "total": 28,
+      "before": [4, 10, 10, 4],
+      "after": [10, 4, 8, 6]
+    },
+    {
+      "id": "star-rail:argenti",
+      "name": "Argenti",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 3, 7, 3],
+      "after": [6, 1, 3, 7]
+    },
+    {
+      "id": "star-rail:arlan",
+      "name": "Arlan",
+      "rarity": 1,
+      "total": 12,
+      "before": [3, 3, 3, 3],
+      "after": [3, 4, 3, 2]
+    },
+    {
+      "id": "star-rail:ashveil",
+      "name": "Ashveil",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 10, 6, 6],
+      "after": [7, 9, 3, 9]
+    },
+    {
+      "id": "star-rail:asta",
+      "name": "Asta",
+      "rarity": 2,
+      "total": 16,
+      "before": [2, 6, 6, 2],
+      "after": [2, 8, 1, 5]
+    },
+    {
+      "id": "star-rail:aventurine",
+      "name": "Aventurine",
+      "rarity": 3,
+      "total": 21,
+      "before": [3, 3, 8, 7],
+      "after": [6, 6, 5, 4]
+    },
+    {
+      "id": "star-rail:aventurine-waveflair",
+      "name": "Aventurine Waveflair",
+      "rarity": 5,
+      "total": 28,
+      "before": [10, 10, 4, 4],
+      "after": [9, 3, 8, 8]
+    },
+    {
+      "id": "star-rail:bailu",
+      "name": "Bailu",
+      "rarity": 3,
+      "total": 19,
+      "before": [7, 6, 3, 3],
+      "after": [6, 5, 5, 3]
+    },
+    {
+      "id": "star-rail:black-swan",
+      "name": "Black Swan",
+      "rarity": 4,
+      "total": 24,
+      "before": [3, 9, 9, 3],
+      "after": [1, 10, 10, 3]
+    },
+    {
+      "id": "star-rail:blade",
+      "name": "Blade",
+      "rarity": 2,
+      "total": 18,
+      "before": [4, 5, 5, 4],
+      "after": [5, 4, 3, 6]
+    },
+    {
+      "id": "star-rail:boothill",
+      "name": "Boothill",
+      "rarity": 3,
+      "total": 20,
+      "before": [7, 7, 3, 3],
+      "after": [7, 5, 1, 7]
+    },
+    {
+      "id": "star-rail:bronya",
+      "name": "Bronya",
+      "rarity": 3,
+      "total": 20,
+      "before": [7, 7, 3, 3],
+      "after": [2, 7, 7, 4]
+    },
+    {
+      "id": "star-rail:castorice",
+      "name": "Castorice",
+      "rarity": 5,
+      "total": 28,
+      "before": [5, 9, 5, 9],
+      "after": [10, 9, 1, 8]
+    },
+    {
+      "id": "star-rail:cerydra",
+      "name": "Cerydra",
+      "rarity": 4,
+      "total": 23,
+      "before": [6, 6, 5, 6],
+      "after": [5, 7, 10, 1]
+    },
+    {
+      "id": "star-rail:cipher",
+      "name": "Cipher",
+      "rarity": 3,
+      "total": 21,
+      "before": [3, 3, 8, 7],
+      "after": [8, 3, 8, 2]
+    },
+    {
+      "id": "star-rail:clara",
+      "name": "Clara",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 6, 3, 2],
+      "after": [7, 4, 3, 3]
+    },
+    {
+      "id": "star-rail:cyrene",
+      "name": "Cyrene",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 6, 6, 10],
+      "after": [8, 8, 2, 10]
+    },
+    {
+      "id": "star-rail:dan-heng",
+      "name": "Dan Heng",
+      "rarity": 1,
+      "total": 12,
+      "before": [3, 3, 3, 3],
+      "after": [1, 5, 5, 1]
+    },
+    {
+      "id": "star-rail:imbibitor-lunae",
+      "name": "Dan Heng • Imbibitor Lunae",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 2, 6, 6],
+      "after": [4, 1, 8, 4]
+    },
+    {
+      "id": "star-rail:dan-heng-permansor-terrae",
+      "name": "Dan Heng • Permansor Terrae",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [6, 5, 3, 10]
+    },
+    {
+      "id": "star-rail:dr-ratio",
+      "name": "Dr. Ratio",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 3, 7, 3],
+      "after": [8, 1, 6, 1]
+    },
+    {
+      "id": "star-rail:evanescia",
+      "name": "Evanescia",
+      "rarity": 5,
+      "total": 28,
+      "before": [4, 10, 10, 4],
+      "after": [7, 10, 10, 1]
+    },
+    {
+      "id": "star-rail:firefly",
+      "name": "Firefly",
+      "rarity": 4,
+      "total": 24,
+      "before": [5, 7, 4, 8],
+      "after": [8, 8, 7, 1]
+    },
+    {
+      "id": "star-rail:fu-xuan",
+      "name": "Fu Xuan",
+      "rarity": 4,
+      "total": 23,
+      "before": [9, 5, 5, 4],
+      "after": [3, 4, 9, 7]
+    },
+    {
+      "id": "star-rail:gallagher",
+      "name": "Gallagher",
+      "rarity": 3,
+      "total": 19,
+      "before": [7, 6, 3, 3],
+      "after": [7, 3, 2, 7]
+    },
+    {
+      "id": "star-rail:gepard",
+      "name": "Gepard",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 5, 3, 6],
+      "after": [4, 6, 1, 6]
+    },
+    {
+      "id": "star-rail:gilgamesh",
+      "name": "Gilgamesh",
+      "rarity": 4,
+      "total": 24,
+      "before": [8, 5, 7, 4],
+      "after": [8, 6, 6, 4]
+    },
+    {
+      "id": "star-rail:guinaifen",
+      "name": "Guinaifen",
+      "rarity": 1,
+      "total": 12,
+      "before": [3, 3, 3, 3],
+      "after": [4, 4, 3, 1]
+    },
+    {
+      "id": "star-rail:herta",
+      "name": "Herta",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 3, 7, 3],
+      "after": [4, 7, 3, 2]
+    },
+    {
+      "id": "star-rail:himeko",
+      "name": "Himeko",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 2, 6, 6],
+      "after": [2, 5, 6, 4]
+    },
+    {
+      "id": "star-rail:himeko-nova",
+      "name": "Himeko Nova",
+      "rarity": 5,
+      "total": 28,
+      "before": [10, 6, 6, 6],
+      "after": [5, 6, 10, 7]
+    },
+    {
+      "id": "star-rail:huohuo",
+      "name": "Huohuo",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 6, 10, 6],
+      "after": [5, 9, 6, 8]
+    },
+    {
+      "id": "star-rail:hyacine",
+      "name": "Hyacine",
+      "rarity": 5,
+      "total": 28,
+      "before": [10, 10, 4, 4],
+      "after": [10, 5, 9, 4]
+    },
+    {
+      "id": "star-rail:hysilens",
+      "name": "Hysilens",
+      "rarity": 4,
+      "total": 24,
+      "before": [3, 3, 9, 9],
+      "after": [4, 10, 4, 6]
+    },
+    {
+      "id": "star-rail:jade",
+      "name": "Jade",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [8, 2, 7, 3]
+    },
+    {
+      "id": "star-rail:jiaoqiu",
+      "name": "Jiaoqiu",
+      "rarity": 3,
+      "total": 19,
+      "before": [5, 4, 5, 5],
+      "after": [1, 8, 2, 8]
+    },
+    {
+      "id": "star-rail:jing-yuan",
+      "name": "Jing Yuan",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 7, 3, 4],
+      "after": [2, 2, 7, 6]
+    },
+    {
+      "id": "star-rail:jingliu",
+      "name": "Jingliu",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 4, 4, 7],
+      "after": [4, 8, 2, 5]
+    },
+    {
+      "id": "star-rail:kafka",
+      "name": "Kafka",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [2, 2, 10, 10]
+    },
+    {
+      "id": "star-rail:lingsha",
+      "name": "Lingsha",
+      "rarity": 4,
+      "total": 23,
+      "before": [5, 6, 6, 6],
+      "after": [2, 6, 5, 10]
+    },
+    {
+      "id": "star-rail:luocha",
+      "name": "Luocha",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [5, 8, 2, 5]
+    },
+    {
+      "id": "star-rail:lynx",
+      "name": "Lynx",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 5, 3, 5],
+      "after": [1, 7, 1, 7]
+    },
+    {
+      "id": "star-rail:march-7th",
+      "name": "March 7th",
+      "rarity": 1,
+      "total": 12,
+      "before": [2, 4, 4, 2],
+      "after": [5, 1, 3, 3]
+    },
+    {
+      "id": "star-rail:march-7th-swordmaster",
+      "name": "March 7th • The Hunt",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 5, 3, 5],
+      "after": [6, 5, 4, 1]
+    },
+    {
+      "id": "star-rail:moze",
+      "name": "Moze",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 4, 3],
+      "after": [5, 1, 3, 5]
+    },
+    {
+      "id": "star-rail:mydei",
+      "name": "Mydei",
+      "rarity": 3,
+      "total": 21,
+      "before": [8, 4, 5, 4],
+      "after": [4, 8, 3, 6]
+    },
+    {
+      "id": "star-rail:pearl",
+      "name": "Pearl",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 6, 6, 10],
+      "after": [3, 8, 10, 7]
+    },
+    {
+      "id": "star-rail:pela",
+      "name": "Pela",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 3, 3, 3],
+      "after": [2, 4, 2, 6]
+    },
+    {
+      "id": "star-rail:phainon",
+      "name": "Phainon",
+      "rarity": 4,
+      "total": 23,
+      "before": [8, 4, 7, 4],
+      "after": [6, 7, 5, 5]
+    },
+    {
+      "id": "star-rail:qingque",
+      "name": "Qingque",
+      "rarity": 1,
+      "total": 12,
+      "before": [3, 3, 3, 3],
+      "after": [6, 1, 4, 1]
+    },
+    {
+      "id": "star-rail:rappa",
+      "name": "Rappa",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 8, 4, 4],
+      "after": [6, 3, 8, 3]
+    },
+    {
+      "id": "star-rail:rin-tohsaka",
+      "name": "Rin Tohsaka",
+      "rarity": 5,
+      "total": 28,
+      "before": [10, 10, 4, 4],
+      "after": [9, 2, 8, 9]
+    },
+    {
+      "id": "star-rail:robin-summeretto",
+      "name": "Robin Summeretto",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [7, 8, 5, 8]
+    },
+    {
+      "id": "star-rail:ruan-mei",
+      "name": "Ruan Mei",
+      "rarity": 4,
+      "total": 23,
+      "before": [5, 6, 6, 6],
+      "after": [3, 7, 6, 7]
+    },
+    {
+      "id": "star-rail:saber",
+      "name": "Saber",
+      "rarity": 4,
+      "total": 24,
+      "before": [8, 5, 7, 4],
+      "after": [6, 10, 2, 6]
+    },
+    {
+      "id": "star-rail:sampo",
+      "name": "Sampo",
+      "rarity": 1,
+      "total": 12,
+      "before": [3, 3, 3, 3],
+      "after": [6, 2, 3, 1]
+    },
+    {
+      "id": "star-rail:serval",
+      "name": "Serval",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 3, 4],
+      "after": [2, 4, 3, 5]
+    },
+    {
+      "id": "star-rail:silver-wolf",
+      "name": "Silver Wolf",
+      "rarity": 3,
+      "total": 21,
+      "before": [5, 4, 8, 4],
+      "after": [5, 1, 8, 7]
+    },
+    {
+      "id": "star-rail:silver-wolf-lv-999",
+      "name": "Silver Wolf • Lv. 999",
+      "rarity": 5,
+      "total": 28,
+      "before": [5, 9, 5, 9],
+      "after": [8, 9, 7, 4]
+    },
+    {
+      "id": "star-rail:sparkle",
+      "name": "Sparkle",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [7, 5, 7, 5]
+    },
+    {
+      "id": "star-rail:the-dahlia",
+      "name": "The Dahlia",
+      "rarity": 4,
+      "total": 24,
+      "before": [3, 3, 9, 9],
+      "after": [7, 4, 9, 4]
+    },
+    {
+      "id": "star-rail:the-herta",
+      "name": "The Herta",
+      "rarity": 3,
+      "total": 21,
+      "before": [5, 6, 5, 5],
+      "after": [1, 8, 4, 8]
+    },
+    {
+      "id": "star-rail:tingyun",
+      "name": "Tingyun",
+      "rarity": 2,
+      "total": 16,
+      "before": [7, 3, 3, 3],
+      "after": [3, 4, 3, 6]
+    },
+    {
+      "id": "star-rail:tingyun-fugue",
+      "name": "Tingyun • Fugue",
+      "rarity": 4,
+      "total": 23,
+      "before": [7, 4, 8, 4],
+      "after": [9, 9, 2, 3]
+    },
+    {
+      "id": "star-rail:topaz",
+      "name": "Topaz & Numby",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 4, 7, 4],
+      "after": [7, 6, 5, 1]
+    },
+    {
+      "id": "star-rail:trailblazer-destruction",
+      "name": "Trailblazer • Destruction",
+      "rarity": 2,
+      "total": 16,
+      "before": [6, 2, 2, 6],
+      "after": [2, 6, 1, 7]
+    },
+    {
+      "id": "star-rail:trailblazer-elation",
+      "name": "Trailblazer • Elation",
+      "rarity": 5,
+      "total": 28,
+      "before": [5, 9, 5, 9],
+      "after": [10, 2, 6, 10]
+    },
+    {
+      "id": "star-rail:trailblazer-harmony",
+      "name": "Trailblazer • Harmony",
+      "rarity": 4,
+      "total": 23,
+      "before": [8, 4, 7, 4],
+      "after": [8, 5, 5, 5]
+    },
+    {
+      "id": "star-rail:trailblazer-preservation",
+      "name": "Trailblazer • Preservation",
+      "rarity": 2,
+      "total": 16,
+      "before": [2, 2, 6, 6],
+      "after": [5, 7, 3, 1]
+    },
+    {
+      "id": "star-rail:trailblazer-remembrance",
+      "name": "Trailblazer • Remembrance",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [3, 7, 7, 7]
+    },
+    {
+      "id": "star-rail:tribbie",
+      "name": "Tribbie",
+      "rarity": 4,
+      "total": 24,
+      "before": [9, 9, 3, 3],
+      "after": [7, 3, 6, 8]
+    },
+    {
+      "id": "star-rail:welt",
+      "name": "Welt",
+      "rarity": 4,
+      "total": 24,
+      "before": [5, 5, 5, 9],
+      "after": [10, 4, 8, 2]
+    },
+    {
+      "id": "star-rail:yanqing",
+      "name": "Yanqing",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 5, 3, 5],
+      "after": [5, 2, 7, 2]
+    },
+    {
+      "id": "star-rail:yao-guang",
+      "name": "Yao Guang",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [9, 10, 2, 7]
+    },
+    {
+      "id": "star-rail:yunli",
+      "name": "Yunli",
+      "rarity": 3,
+      "total": 19,
+      "before": [6, 3, 3, 7],
+      "after": [3, 1, 8, 7]
+    },
+    {
+      "id": "wuthering-waves:aalto",
+      "name": "Aalto",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 4, 3, 3],
+      "after": [1, 1, 5, 7]
+    },
+    {
+      "id": "wuthering-waves:aemeath",
+      "name": "Aemeath",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [9, 6, 6, 3]
+    },
+    {
+      "id": "wuthering-waves:augusta",
+      "name": "Augusta",
+      "rarity": 4,
+      "total": 23,
+      "before": [4, 8, 4, 7],
+      "after": [3, 9, 4, 7]
+    },
+    {
+      "id": "wuthering-waves:baizhi",
+      "name": "Baizhi",
+      "rarity": 2,
+      "total": 16,
+      "before": [4, 4, 4, 4],
+      "after": [8, 4, 2, 2]
+    },
+    {
+      "id": "wuthering-waves:brant",
+      "name": "Brant",
+      "rarity": 3,
+      "total": 21,
+      "before": [4, 8, 4, 5],
+      "after": [3, 2, 8, 8]
+    },
+    {
+      "id": "wuthering-waves:buling",
+      "name": "Buling",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [7, 6, 2, 5]
+    },
+    {
+      "id": "wuthering-waves:calcharo",
+      "name": "Calcharo",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 5, 4],
+      "after": [1, 4, 4, 8]
+    },
+    {
+      "id": "wuthering-waves:camellya",
+      "name": "Camellya",
+      "rarity": 3,
+      "total": 19,
+      "before": [3, 7, 6, 3],
+      "after": [5, 4, 7, 3]
+    },
+    {
+      "id": "wuthering-waves:cantarella",
+      "name": "Cantarella",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 4, 4, 8],
+      "after": [7, 7, 5, 1]
+    },
+    {
+      "id": "wuthering-waves:cartethyia",
+      "name": "Cartethyia",
+      "rarity": 4,
+      "total": 23,
+      "before": [7, 4, 8, 4],
+      "after": [1, 7, 8, 7]
+    },
+    {
+      "id": "wuthering-waves:changli",
+      "name": "Changli",
+      "rarity": 3,
+      "total": 20,
+      "before": [7, 7, 3, 3],
+      "after": [8, 5, 5, 2]
+    },
+    {
+      "id": "wuthering-waves:chisa",
+      "name": "Chisa",
+      "rarity": 5,
+      "total": 28,
+      "before": [4, 4, 10, 10],
+      "after": [6, 6, 8, 8]
+    },
+    {
+      "id": "wuthering-waves:chixia",
+      "name": "Chixia",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 5, 2, 2],
+      "after": [3, 7, 2, 2]
+    },
+    {
+      "id": "wuthering-waves:ciaccona",
+      "name": "Ciaccona",
+      "rarity": 4,
+      "total": 23,
+      "before": [9, 5, 5, 4],
+      "after": [1, 7, 9, 6]
+    },
+    {
+      "id": "wuthering-waves:danjin",
+      "name": "Danjin",
+      "rarity": 2,
+      "total": 16,
+      "before": [2, 2, 6, 6],
+      "after": [3, 6, 2, 5]
+    },
+    {
+      "id": "wuthering-waves:denia",
+      "name": "Denia",
+      "rarity": 5,
+      "total": 28,
+      "before": [10, 6, 6, 6],
+      "after": [8, 8, 8, 4]
+    },
+    {
+      "id": "wuthering-waves:encore",
+      "name": "Encore",
+      "rarity": 3,
+      "total": 19,
+      "before": [6, 3, 3, 7],
+      "after": [5, 8, 5, 1]
+    },
+    {
+      "id": "wuthering-waves:galbrena",
+      "name": "Galbrena",
+      "rarity": 4,
+      "total": 23,
+      "before": [4, 8, 4, 7],
+      "after": [2, 2, 9, 10]
+    },
+    {
+      "id": "wuthering-waves:hiyuki",
+      "name": "Hiyuki",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [10, 8, 4, 6]
+    },
+    {
+      "id": "wuthering-waves:hsin",
+      "name": "Hsin",
+      "rarity": 5,
+      "total": 28,
+      "before": [9, 5, 9, 5],
+      "after": [10, 3, 9, 6]
+    },
+    {
+      "id": "wuthering-waves:iuno",
+      "name": "Iuno",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [10, 3, 7, 4]
+    },
+    {
+      "id": "wuthering-waves:jianxin",
+      "name": "Jianxin",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 3, 7, 3],
+      "after": [6, 4, 4, 3]
+    },
+    {
+      "id": "wuthering-waves:jingran",
+      "name": "Jingran",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [2, 10, 10, 6]
+    },
+    {
+      "id": "wuthering-waves:jinhsi",
+      "name": "Jinhsi",
+      "rarity": 3,
+      "total": 21,
+      "before": [4, 8, 4, 5],
+      "after": [5, 7, 5, 4]
+    },
+    {
+      "id": "wuthering-waves:jiyan",
+      "name": "Jiyan",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [1, 5, 6, 8]
+    },
+    {
+      "id": "wuthering-waves:lingyang",
+      "name": "Lingyang",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 5, 5, 5],
+      "after": [5, 5, 7, 2]
+    },
+    {
+      "id": "wuthering-waves:lucilla",
+      "name": "Lucilla",
+      "rarity": 5,
+      "total": 28,
+      "before": [4, 10, 10, 4],
+      "after": [4, 9, 10, 5]
+    },
+    {
+      "id": "wuthering-waves:lucy",
+      "name": "Lucy",
+      "rarity": 4,
+      "total": 23,
+      "before": [4, 9, 5, 5],
+      "after": [10, 6, 2, 5]
+    },
+    {
+      "id": "wuthering-waves:lumi",
+      "name": "Lumi",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 4, 3],
+      "after": [2, 6, 3, 3]
+    },
+    {
+      "id": "wuthering-waves:lupa",
+      "name": "Lupa",
+      "rarity": 4,
+      "total": 23,
+      "before": [8, 3, 3, 9],
+      "after": [4, 3, 8, 8]
+    },
+    {
+      "id": "wuthering-waves:luuk-herssen",
+      "name": "Luuk Herssen",
+      "rarity": 4,
+      "total": 24,
+      "before": [9, 9, 3, 3],
+      "after": [8, 8, 4, 4]
+    },
+    {
+      "id": "wuthering-waves:mornye",
+      "name": "Mornye",
+      "rarity": 5,
+      "total": 28,
+      "before": [5, 9, 5, 9],
+      "after": [9, 5, 7, 7]
+    },
+    {
+      "id": "wuthering-waves:mortefi",
+      "name": "Mortefi",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 6, 4, 6],
+      "after": [5, 7, 3, 5]
+    },
+    {
+      "id": "wuthering-waves:phoebe",
+      "name": "Phoebe",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [5, 5, 6, 4]
+    },
+    {
+      "id": "wuthering-waves:phrolova",
+      "name": "Phrolova",
+      "rarity": 4,
+      "total": 23,
+      "before": [9, 5, 5, 4],
+      "after": [4, 9, 2, 8]
+    },
+    {
+      "id": "wuthering-waves:qingxiao",
+      "name": "Qingxiao",
+      "rarity": 5,
+      "total": 28,
+      "before": [5, 9, 5, 9],
+      "after": [8, 5, 8, 7]
+    },
+    {
+      "id": "wuthering-waves:qiuyuan",
+      "name": "Qiuyuan",
+      "rarity": 4,
+      "total": 24,
+      "before": [4, 8, 5, 7],
+      "after": [9, 2, 4, 9]
+    },
+    {
+      "id": "wuthering-waves:rebecca",
+      "name": "Rebecca",
+      "rarity": 4,
+      "total": 24,
+      "before": [9, 5, 5, 5],
+      "after": [5, 9, 7, 3]
+    },
+    {
+      "id": "wuthering-waves:roccia",
+      "name": "Roccia",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 4, 7, 4],
+      "after": [6, 6, 1, 6]
+    },
+    {
+      "id": "wuthering-waves:rover-aero",
+      "name": "Rover (Aero)",
+      "rarity": 3,
+      "total": 21,
+      "before": [6, 4, 7, 4],
+      "after": [8, 7, 2, 4]
+    },
+    {
+      "id": "wuthering-waves:rover-electro",
+      "name": "Rover (Electro)",
+      "rarity": 4,
+      "total": 23,
+      "before": [5, 4, 9, 5],
+      "after": [3, 10, 2, 8]
+    },
+    {
+      "id": "wuthering-waves:rover-havoc",
+      "name": "Rover (Havoc)",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 6, 3, 5],
+      "after": [5, 3, 1, 8]
+    },
+    {
+      "id": "wuthering-waves:rover-spectro",
+      "name": "Rover (Spectro)",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [3, 6, 6, 5]
+    },
+    {
+      "id": "wuthering-waves:sigrika",
+      "name": "Sigrika",
+      "rarity": 4,
+      "total": 24,
+      "before": [8, 5, 7, 4],
+      "after": [8, 9, 2, 5]
+    },
+    {
+      "id": "wuthering-waves:suisui",
+      "name": "Suisui",
+      "rarity": 5,
+      "total": 28,
+      "before": [9, 5, 9, 5],
+      "after": [9, 9, 2, 8]
+    },
+    {
+      "id": "wuthering-waves:taoqi",
+      "name": "Taoqi",
+      "rarity": 1,
+      "total": 14,
+      "before": [2, 5, 5, 2],
+      "after": [1, 6, 1, 6]
+    },
+    {
+      "id": "wuthering-waves:the-shorekeeper",
+      "name": "The Shorekeeper",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 6, 10, 6],
+      "after": [8, 4, 8, 8]
+    },
+    {
+      "id": "wuthering-waves:verina",
+      "name": "Verina",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [4, 5, 9, 6]
+    },
+    {
+      "id": "wuthering-waves:xiangli-yao",
+      "name": "Xiangli Yao",
+      "rarity": 3,
+      "total": 19,
+      "before": [6, 4, 6, 3],
+      "after": [5, 8, 3, 3]
+    },
+    {
+      "id": "wuthering-waves:yangyang",
+      "name": "Yangyang",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 5, 2, 2],
+      "after": [1, 5, 4, 4]
+    },
+    {
+      "id": "wuthering-waves:yangyang-xuanling",
+      "name": "Yangyang Xuanling",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [8, 9, 3, 8]
+    },
+    {
+      "id": "wuthering-waves:yinlin",
+      "name": "Yinlin",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 4, 4, 7],
+      "after": [1, 7, 4, 7]
+    },
+    {
+      "id": "wuthering-waves:youhu",
+      "name": "Youhu",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 4, 3],
+      "after": [5, 2, 5, 2]
+    },
+    {
+      "id": "wuthering-waves:yuanwu",
+      "name": "Yuanwu",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 4, 4],
+      "after": [3, 8, 1, 2]
+    },
+    {
+      "id": "wuthering-waves:zani",
+      "name": "Zani",
+      "rarity": 3,
+      "total": 20,
+      "before": [3, 7, 7, 3],
+      "after": [4, 6, 3, 7]
+    },
+    {
+      "id": "wuthering-waves:zhezhi",
+      "name": "Zhezhi",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 6, 3, 6],
+      "after": [4, 8, 3, 4]
+    },
+    {
+      "id": "zenless:alice",
+      "name": "Alice",
+      "rarity": 4,
+      "total": 24,
+      "before": [3, 9, 9, 3],
+      "after": [2, 9, 7, 6]
+    },
+    {
+      "id": "zenless:anby-demara",
+      "name": "Anby",
+      "rarity": 2,
+      "total": 16,
+      "before": [4, 4, 4, 4],
+      "after": [8, 4, 1, 3]
+    },
+    {
+      "id": "zenless:anby-demara-soldier-0",
+      "name": "Anby: Soldier 0",
+      "rarity": 4,
+      "total": 23,
+      "before": [5, 4, 9, 5],
+      "after": [8, 6, 7, 2]
+    },
+    {
+      "id": "zenless:anton",
+      "name": "Anton",
+      "rarity": 2,
+      "total": 16,
+      "before": [6, 2, 2, 6],
+      "after": [3, 3, 2, 8]
+    },
+    {
+      "id": "zenless:aria",
+      "name": "Aria",
+      "rarity": 4,
+      "total": 24,
+      "before": [5, 5, 9, 5],
+      "after": [1, 10, 3, 10]
+    },
+    {
+      "id": "zenless:astra-yao",
+      "name": "Astra Yao",
+      "rarity": 4,
+      "total": 24,
+      "before": [9, 5, 5, 5],
+      "after": [10, 6, 6, 2]
+    },
+    {
+      "id": "zenless:banyue",
+      "name": "Banyue",
+      "rarity": 4,
+      "total": 24,
+      "before": [3, 9, 9, 3],
+      "after": [8, 3, 5, 8]
+    },
+    {
+      "id": "zenless:ben",
+      "name": "Ben",
+      "rarity": 2,
+      "total": 16,
+      "before": [4, 4, 4, 4],
+      "after": [4, 6, 2, 4]
+    },
+    {
+      "id": "zenless:billy-kid",
+      "name": "Billy",
+      "rarity": 2,
+      "total": 18,
+      "before": [5, 4, 4, 5],
+      "after": [6, 3, 7, 2]
+    },
+    {
+      "id": "zenless:billy-starlight",
+      "name": "Billy - Starlight",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [3, 8, 10, 3]
+    },
+    {
+      "id": "zenless:burnice",
+      "name": "Burnice",
+      "rarity": 4,
+      "total": 24,
+      "before": [9, 9, 3, 3],
+      "after": [4, 9, 7, 4]
+    },
+    {
+      "id": "zenless:caesar",
+      "name": "Caesar",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [1, 8, 8, 3]
+    },
+    {
+      "id": "zenless:cissia",
+      "name": "Cissia",
+      "rarity": 4,
+      "total": 24,
+      "before": [7, 4, 8, 5],
+      "after": [1, 7, 6, 10]
+    },
+    {
+      "id": "zenless:claret",
+      "name": "Claret",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 10, 6, 6],
+      "after": [6, 8, 8, 6]
+    },
+    {
+      "id": "zenless:dialyn",
+      "name": "Dialyn",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 6, 10, 6],
+      "after": [10, 9, 2, 7]
+    },
+    {
+      "id": "zenless:ellen",
+      "name": "Ellen",
+      "rarity": 3,
+      "total": 21,
+      "before": [8, 7, 3, 3],
+      "after": [8, 5, 2, 6]
+    },
+    {
+      "id": "zenless:evelyn",
+      "name": "Evelyn",
+      "rarity": 4,
+      "total": 23,
+      "before": [5, 5, 4, 9],
+      "after": [5, 8, 3, 7]
+    },
+    {
+      "id": "zenless:grace-howard",
+      "name": "Grace",
+      "rarity": 4,
+      "total": 23,
+      "before": [4, 8, 4, 7],
+      "after": [4, 4, 5, 10]
+    },
+    {
+      "id": "zenless:harumasa",
+      "name": "Harumasa",
+      "rarity": 4,
+      "total": 23,
+      "before": [4, 8, 4, 7],
+      "after": [3, 5, 6, 9]
+    },
+    {
+      "id": "zenless:hugo",
+      "name": "Hugo",
+      "rarity": 3,
+      "total": 21,
+      "before": [5, 4, 8, 4],
+      "after": [7, 3, 5, 6]
+    },
+    {
+      "id": "zenless:jane-doe",
+      "name": "Jane Doe",
+      "rarity": 4,
+      "total": 23,
+      "before": [5, 4, 9, 5],
+      "after": [2, 7, 4, 10]
+    },
+    {
+      "id": "zenless:ju-fufu",
+      "name": "Ju Fufu",
+      "rarity": 4,
+      "total": 23,
+      "before": [3, 3, 9, 8],
+      "after": [8, 6, 6, 3]
+    },
+    {
+      "id": "zenless:koleda",
+      "name": "Koleda",
+      "rarity": 3,
+      "total": 21,
+      "before": [8, 7, 3, 3],
+      "after": [3, 8, 5, 5]
+    },
+    {
+      "id": "zenless:lighter",
+      "name": "Lighter",
+      "rarity": 4,
+      "total": 23,
+      "before": [5, 5, 4, 9],
+      "after": [5, 4, 8, 6]
+    },
+    {
+      "id": "zenless:lucia",
+      "name": "Lucia",
+      "rarity": 5,
+      "total": 28,
+      "before": [9, 5, 9, 5],
+      "after": [6, 7, 6, 9]
+    },
+    {
+      "id": "zenless:lucy",
+      "name": "Lucy",
+      "rarity": 2,
+      "total": 18,
+      "before": [4, 4, 5, 5],
+      "after": [2, 6, 4, 6]
+    },
+    {
+      "id": "zenless:lycaon",
+      "name": "Lycaon",
+      "rarity": 4,
+      "total": 23,
+      "before": [8, 3, 3, 9],
+      "after": [6, 7, 4, 6]
+    },
+    {
+      "id": "zenless:manato",
+      "name": "Manato",
+      "rarity": 3,
+      "total": 19,
+      "before": [6, 3, 3, 7],
+      "after": [6, 8, 4, 1]
+    },
+    {
+      "id": "zenless:miyabi",
+      "name": "Miyabi",
+      "rarity": 4,
+      "total": 24,
+      "before": [5, 5, 5, 9],
+      "after": [8, 2, 6, 8]
+    },
+    {
+      "id": "zenless:nangong-yu",
+      "name": "Nangong Yu",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 6, 6, 10],
+      "after": [8, 10, 1, 9]
+    },
+    {
+      "id": "zenless:nekomata",
+      "name": "Nekomata",
+      "rarity": 4,
+      "total": 23,
+      "before": [9, 8, 3, 3],
+      "after": [1, 9, 5, 8]
+    },
+    {
+      "id": "zenless:nicole-demara",
+      "name": "Nicole",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 4, 8, 4],
+      "after": [6, 4, 4, 6]
+    },
+    {
+      "id": "zenless:norma",
+      "name": "Norma",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [5, 8, 6, 9]
+    },
+    {
+      "id": "zenless:orphie-and-magus",
+      "name": "Orphie & Magus",
+      "rarity": 4,
+      "total": 23,
+      "before": [9, 5, 5, 4],
+      "after": [9, 2, 7, 5]
+    },
+    {
+      "id": "zenless:pan-yinhu",
+      "name": "Pan Yinhu",
+      "rarity": 3,
+      "total": 19,
+      "before": [5, 5, 4, 5],
+      "after": [7, 8, 3, 1]
+    },
+    {
+      "id": "zenless:phoenix",
+      "name": "Phoenix",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 10, 6, 6],
+      "after": [9, 3, 9, 7]
+    },
+    {
+      "id": "zenless:piper",
+      "name": "Piper",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 6, 4, 6],
+      "after": [7, 6, 6, 1]
+    },
+    {
+      "id": "zenless:promeia",
+      "name": "Promeia",
+      "rarity": 4,
+      "total": 24,
+      "before": [5, 5, 5, 9],
+      "after": [7, 7, 4, 6]
+    },
+    {
+      "id": "zenless:pyrois",
+      "name": "Pyrois",
+      "rarity": 4,
+      "total": 24,
+      "before": [5, 7, 4, 8],
+      "after": [1, 4, 10, 9]
+    },
+    {
+      "id": "zenless:remielle",
+      "name": "Remielle",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 6, 10, 6],
+      "after": [4, 8, 9, 7]
+    },
+    {
+      "id": "zenless:rina",
+      "name": "Rina",
+      "rarity": 4,
+      "total": 24,
+      "before": [8, 5, 7, 4],
+      "after": [2, 10, 7, 5]
+    },
+    {
+      "id": "zenless:roxy",
+      "name": "Roxy",
+      "rarity": 4,
+      "total": 24,
+      "before": [4, 8, 5, 7],
+      "after": [3, 8, 9, 4]
+    },
+    {
+      "id": "zenless:seed",
+      "name": "Seed",
+      "rarity": 4,
+      "total": 24,
+      "before": [5, 5, 5, 9],
+      "after": [7, 6, 6, 5]
+    },
+    {
+      "id": "zenless:seth",
+      "name": "Seth",
+      "rarity": 2,
+      "total": 16,
+      "before": [5, 3, 5, 3],
+      "after": [4, 4, 5, 3]
+    },
+    {
+      "id": "zenless:sigrid",
+      "name": "Sigrid",
+      "rarity": 5,
+      "total": 28,
+      "before": [5, 9, 5, 9],
+      "after": [3, 8, 7, 10]
+    },
+    {
+      "id": "zenless:soldier-11",
+      "name": "Soldier 11",
+      "rarity": 4,
+      "total": 23,
+      "before": [6, 6, 6, 5],
+      "after": [5, 7, 4, 7]
+    },
+    {
+      "id": "zenless:soukaku",
+      "name": "Soukaku",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 5, 5, 5],
+      "after": [6, 4, 4, 5]
+    },
+    {
+      "id": "zenless:sunna",
+      "name": "Sunna",
+      "rarity": 5,
+      "total": 28,
+      "before": [10, 6, 6, 6],
+      "after": [10, 7, 4, 7]
+    },
+    {
+      "id": "zenless:trigger",
+      "name": "Trigger",
+      "rarity": 4,
+      "total": 23,
+      "before": [8, 3, 3, 9],
+      "after": [3, 7, 10, 3]
+    },
+    {
+      "id": "zenless:velina",
+      "name": "Velina",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [9, 6, 4, 9]
+    },
+    {
+      "id": "zenless:vivian",
+      "name": "Vivian",
+      "rarity": 4,
+      "total": 23,
+      "before": [6, 6, 5, 6],
+      "after": [10, 2, 10, 1]
+    },
+    {
+      "id": "zenless:yanagi",
+      "name": "Yanagi",
+      "rarity": 4,
+      "total": 23,
+      "before": [6, 6, 5, 6],
+      "after": [4, 9, 9, 1]
+    },
+    {
+      "id": "zenless:ye-shunguang",
+      "name": "Ye Shunguang",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [6, 10, 5, 7]
+    },
+    {
+      "id": "zenless:yidhari",
+      "name": "Yidhari",
+      "rarity": 4,
+      "total": 24,
+      "before": [9, 3, 3, 9],
+      "after": [2, 7, 7, 8]
+    },
+    {
+      "id": "zenless:yixuan",
+      "name": "Yixuan",
+      "rarity": 4,
+      "total": 24,
+      "before": [9, 9, 3, 3],
+      "after": [8, 9, 1, 6]
+    },
+    {
+      "id": "zenless:ukinami-yuzuha",
+      "name": "Yuzuha",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [7, 7, 6, 8]
+    },
+    {
+      "id": "zenless:zhao",
+      "name": "Zhao",
+      "rarity": 4,
+      "total": 24,
+      "before": [3, 9, 9, 3],
+      "after": [9, 9, 1, 5]
+    },
+    {
+      "id": "zenless:zhu-yuan",
+      "name": "Zhu Yuan",
+      "rarity": 3,
+      "total": 21,
+      "before": [8, 4, 5, 4],
+      "after": [5, 7, 7, 2]
+    },
+    {
+      "id": "epic-seven:abyssal-yufine",
+      "name": "Abyssal Yufine",
+      "rarity": 3,
+      "total": 19,
+      "before": [5, 4, 5, 5],
+      "after": [5, 6, 6, 2]
+    },
+    {
+      "id": "epic-seven:ae-ningning",
+      "name": "ae-NINGNING",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 5, 3, 6],
+      "after": [5, 2, 3, 7]
+    },
+    {
+      "id": "epic-seven:aither",
+      "name": "Aither",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 3, 4],
+      "after": [7, 2, 2, 3]
+    },
+    {
+      "id": "epic-seven:alencia",
+      "name": "Alencia",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 5, 3, 6],
+      "after": [5, 6, 1, 5]
+    },
+    {
+      "id": "epic-seven:all-rounder-wanda",
+      "name": "All-Rounder Wanda",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 3, 4],
+      "after": [8, 4, 1, 1]
+    },
+    {
+      "id": "epic-seven:amiki",
+      "name": "Amiki",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 4, 3],
+      "after": [6, 2, 4, 2]
+    },
+    {
+      "id": "epic-seven:angelic-montmorancy",
+      "name": "Angelic Montmorancy",
+      "rarity": 1,
+      "total": 14,
+      "before": [2, 5, 5, 2],
+      "after": [4, 2, 5, 3]
+    },
+    {
+      "id": "epic-seven:apocalypse-ravi",
+      "name": "Apocalypse Ravi",
+      "rarity": 3,
+      "total": 19,
+      "before": [5, 4, 5, 5],
+      "after": [2, 3, 7, 7]
+    },
+    {
+      "id": "epic-seven:aram",
+      "name": "Aram",
+      "rarity": 3,
+      "total": 20,
+      "before": [6, 4, 6, 4],
+      "after": [4, 6, 8, 2]
+    },
+    {
+      "id": "epic-seven:aramintha",
+      "name": "Aramintha",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 5, 3, 6],
+      "after": [1, 2, 7, 7]
+    },
+    {
+      "id": "epic-seven:arbiter-vildred",
+      "name": "Arbiter Vildred",
+      "rarity": 5,
+      "total": 28,
+      "before": [10, 6, 6, 6],
+      "after": [10, 6, 10, 2]
+    },
+    {
+      "id": "epic-seven:argent-waves-hwayoung",
+      "name": "Argent Waves Hwayoung",
+      "rarity": 3,
+      "total": 20,
+      "before": [6, 4, 6, 4],
+      "after": [3, 8, 2, 7]
+    },
+    {
+      "id": "epic-seven:aria",
+      "name": "Aria",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 6, 3, 5],
+      "after": [7, 1, 1, 8]
+    },
+    {
+      "id": "epic-seven:arunka",
+      "name": "Arunka",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 4, 3, 7],
+      "after": [1, 4, 8, 4]
+    },
+    {
+      "id": "epic-seven:assassin-coli",
+      "name": "Assassin Coli",
+      "rarity": 2,
+      "total": 16,
+      "before": [5, 3, 5, 3],
+      "after": [1, 4, 6, 5]
+    },
+    {
+      "id": "epic-seven:aubade-ludwig",
+      "name": "Aubade Ludwig",
+      "rarity": 4,
+      "total": 24,
+      "before": [4, 8, 5, 7],
+      "after": [7, 1, 7, 9]
+    },
+    {
+      "id": "epic-seven:baiken",
+      "name": "Baiken",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 4, 5],
+      "after": [5, 4, 5, 3]
+    },
+    {
+      "id": "epic-seven:basar",
+      "name": "Basar",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 6, 3, 5],
+      "after": [8, 6, 2, 1]
+    },
+    {
+      "id": "epic-seven:bask",
+      "name": "Bask",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 2, 2, 5],
+      "after": [4, 3, 1, 6]
+    },
+    {
+      "id": "epic-seven:bellona",
+      "name": "Bellona",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 2, 6],
+      "after": [5, 8, 3, 1]
+    },
+    {
+      "id": "epic-seven:benimaru",
+      "name": "Benimaru",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 2, 6],
+      "after": [6, 1, 4, 6]
+    },
+    {
+      "id": "epic-seven:blaze-dingo",
+      "name": "Blaze Dingo",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 7, 3, 3],
+      "after": [5, 1, 2, 8]
+    },
+    {
+      "id": "epic-seven:blood-moon-haste",
+      "name": "Blood Moon Haste",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 4, 3, 7],
+      "after": [2, 6, 4, 5]
+    },
+    {
+      "id": "epic-seven:brieg",
+      "name": "Brieg",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 6, 3, 2],
+      "after": [2, 8, 5, 2]
+    },
+    {
+      "id": "epic-seven:butcher-corps-inquisitor",
+      "name": "Butcher Corps Inquisitor",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 2, 2, 5],
+      "after": [1, 6, 5, 2]
+    },
+    {
+      "id": "epic-seven:byblis",
+      "name": "Byblis",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 2, 6, 6],
+      "after": [5, 7, 1, 4]
+    },
+    {
+      "id": "epic-seven:camilla",
+      "name": "Camilla",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 3, 4],
+      "after": [8, 3, 2, 1]
+    },
+    {
+      "id": "epic-seven:captain-rikoris",
+      "name": "Captain Rikoris",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 4, 4],
+      "after": [4, 7, 2, 1]
+    },
+    {
+      "id": "epic-seven:celeste",
+      "name": "Celeste",
+      "rarity": 1,
+      "total": 14,
+      "before": [2, 2, 5, 5],
+      "after": [5, 1, 1, 7]
+    },
+    {
+      "id": "epic-seven:celestial-mercedes",
+      "name": "Celestial Mercedes",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 5, 3, 5],
+      "after": [5, 2, 4, 5]
+    },
+    {
+      "id": "epic-seven:celine",
+      "name": "Celine",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [5, 7, 1, 7]
+    },
+    {
+      "id": "epic-seven:cermia",
+      "name": "Cermia",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 2, 6],
+      "after": [2, 3, 8, 4]
+    },
+    {
+      "id": "epic-seven:chaos-inquisitor",
+      "name": "Chaos Inquisitor",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 4, 4],
+      "after": [4, 1, 4, 5]
+    },
+    {
+      "id": "epic-seven:charles",
+      "name": "Charles",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 3, 7, 3],
+      "after": [7, 4, 2, 4]
+    },
+    {
+      "id": "epic-seven:charlotte",
+      "name": "Charlotte",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 4, 3, 7],
+      "after": [3, 1, 7, 6]
+    },
+    {
+      "id": "epic-seven:chloe",
+      "name": "Chloe",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 5, 3],
+      "after": [2, 6, 2, 7]
+    },
+    {
+      "id": "epic-seven:choux",
+      "name": "Choux",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 5, 3],
+      "after": [3, 4, 4, 6]
+    },
+    {
+      "id": "epic-seven:church-of-ilryos-axe",
+      "name": "Church of Ilryos Axe",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 4, 3],
+      "after": [2, 3, 3, 6]
+    },
+    {
+      "id": "epic-seven:cidd",
+      "name": "Cidd",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 3, 7, 3],
+      "after": [3, 3, 8, 3]
+    },
+    {
+      "id": "epic-seven:clarissa",
+      "name": "Clarissa",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 3, 3, 7],
+      "after": [3, 7, 4, 2]
+    },
+    {
+      "id": "epic-seven:claudia",
+      "name": "Claudia",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 4, 3],
+      "after": [4, 4, 2, 4]
+    },
+    {
+      "id": "epic-seven:closer-charles",
+      "name": "Closer Charles",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 2, 6],
+      "after": [5, 2, 5, 5]
+    },
+    {
+      "id": "epic-seven:command-model-laika",
+      "name": "Command Model Laika",
+      "rarity": 2,
+      "total": 17,
+      "before": [5, 4, 4, 4],
+      "after": [1, 3, 7, 6]
+    },
+    {
+      "id": "epic-seven:commander-pavel",
+      "name": "Commander Pavel",
+      "rarity": 3,
+      "total": 20,
+      "before": [6, 4, 6, 4],
+      "after": [1, 8, 6, 5]
+    },
+    {
+      "id": "epic-seven:conqueror-lilias",
+      "name": "Conqueror Lilias",
+      "rarity": 2,
+      "total": 17,
+      "before": [2, 6, 6, 3],
+      "after": [6, 6, 1, 4]
+    },
+    {
+      "id": "epic-seven:corvus",
+      "name": "Corvus",
+      "rarity": 2,
+      "total": 16,
+      "before": [4, 4, 4, 4],
+      "after": [6, 3, 3, 4]
+    },
+    {
+      "id": "epic-seven:crescent-moon-rin",
+      "name": "Crescent Moon Rin",
+      "rarity": 2,
+      "total": 16,
+      "before": [6, 6, 2, 2],
+      "after": [2, 3, 5, 6]
+    },
+    {
+      "id": "epic-seven:crimson-armin",
+      "name": "Crimson Armin",
+      "rarity": 2,
+      "total": 16,
+      "before": [5, 3, 5, 3],
+      "after": [2, 8, 4, 2]
+    },
+    {
+      "id": "epic-seven:crozet",
+      "name": "Crozet",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 5, 3, 5],
+      "after": [2, 4, 6, 4]
+    },
+    {
+      "id": "epic-seven:desert-jewel-basar",
+      "name": "Desert Jewel Basar",
+      "rarity": 4,
+      "total": 23,
+      "before": [3, 3, 9, 8],
+      "after": [8, 3, 6, 6]
+    },
+    {
+      "id": "epic-seven:destina",
+      "name": "Destina",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 5, 4],
+      "after": [6, 4, 5, 2]
+    },
+    {
+      "id": "epic-seven:dingo",
+      "name": "Dingo",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 5, 3, 5],
+      "after": [3, 6, 1, 6]
+    },
+    {
+      "id": "epic-seven:dizzy",
+      "name": "Dizzy",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 5, 4, 4],
+      "after": [1, 5, 6, 5]
+    },
+    {
+      "id": "epic-seven:dominiel",
+      "name": "Dominiel",
+      "rarity": 2,
+      "total": 16,
+      "before": [6, 2, 2, 6],
+      "after": [1, 3, 4, 8]
+    },
+    {
+      "id": "epic-seven:doris",
+      "name": "Doris",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 3, 4],
+      "after": [5, 5, 1, 3]
+    },
+    {
+      "id": "epic-seven:dragon-king-sharun",
+      "name": "Dragon King Sharun",
+      "rarity": 3,
+      "total": 19,
+      "before": [6, 3, 3, 7],
+      "after": [6, 1, 8, 4]
+    },
+    {
+      "id": "epic-seven:eaton",
+      "name": "Eaton",
+      "rarity": 1,
+      "total": 14,
+      "before": [2, 5, 5, 2],
+      "after": [6, 6, 1, 1]
+    },
+    {
+      "id": "epic-seven:eda",
+      "name": "Eda",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 3, 7, 3],
+      "after": [8, 3, 1, 5]
+    },
+    {
+      "id": "epic-seven:edward-elric",
+      "name": "Edward Elric",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 6, 3, 2],
+      "after": [5, 4, 7, 1]
+    },
+    {
+      "id": "epic-seven:elena",
+      "name": "Elena",
+      "rarity": 3,
+      "total": 20,
+      "before": [6, 4, 6, 4],
+      "after": [3, 6, 8, 3]
+    },
+    {
+      "id": "epic-seven:eligos",
+      "name": "Eligos",
+      "rarity": 3,
+      "total": 19,
+      "before": [7, 6, 3, 3],
+      "after": [2, 5, 7, 5]
+    },
+    {
+      "id": "epic-seven:elphelt",
+      "name": "Elphelt",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 4, 3, 7],
+      "after": [8, 2, 2, 5]
+    },
+    {
+      "id": "epic-seven:elson",
+      "name": "Elson",
+      "rarity": 1,
+      "total": 14,
+      "before": [2, 5, 5, 2],
+      "after": [2, 8, 2, 2]
+    },
+    {
+      "id": "epic-seven:empyrean-ilynav",
+      "name": "Empyrean Ilynav",
+      "rarity": 4,
+      "total": 23,
+      "before": [8, 3, 3, 9],
+      "after": [8, 9, 5, 1]
+    },
+    {
+      "id": "epic-seven:enott",
+      "name": "Enott",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 5, 3, 3],
+      "after": [7, 3, 1, 3]
+    },
+    {
+      "id": "epic-seven:ervalen",
+      "name": "Ervalen",
+      "rarity": 2,
+      "total": 17,
+      "before": [5, 3, 6, 3],
+      "after": [7, 1, 2, 7]
+    },
+    {
+      "id": "epic-seven:estelle",
+      "name": "Estelle",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [8, 9, 10, 1]
+    },
+    {
+      "id": "epic-seven:eternal-wanderer-ludwig",
+      "name": "Eternal Wanderer Ludwig",
+      "rarity": 3,
+      "total": 19,
+      "before": [3, 7, 6, 3],
+      "after": [5, 7, 4, 3]
+    },
+    {
+      "id": "epic-seven:ezra",
+      "name": "Ezra",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 4, 4],
+      "after": [1, 5, 7, 1]
+    },
+    {
+      "id": "epic-seven:fairytale-tenebria",
+      "name": "Fairytale Tenebria",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 4, 3, 7],
+      "after": [6, 1, 8, 2]
+    },
+    {
+      "id": "epic-seven:falconer-kluri",
+      "name": "Falconer Kluri",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 5, 3],
+      "after": [3, 2, 6, 3]
+    },
+    {
+      "id": "epic-seven:fallen-cecilia",
+      "name": "Fallen Cecilia",
+      "rarity": 3,
+      "total": 19,
+      "before": [6, 3, 6, 4],
+      "after": [1, 7, 3, 8]
+    },
+    {
+      "id": "epic-seven:fenne",
+      "name": "Fenne",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 4, 3, 7],
+      "after": [8, 4, 2, 3]
+    },
+    {
+      "id": "epic-seven:fenris",
+      "name": "Fenris",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 6, 3, 6],
+      "after": [4, 4, 8, 3]
+    },
+    {
+      "id": "epic-seven:festive-eda",
+      "name": "Festive Eda",
+      "rarity": 3,
+      "total": 20,
+      "before": [6, 4, 6, 4],
+      "after": [8, 7, 1, 4]
+    },
+    {
+      "id": "epic-seven:fighter-maya",
+      "name": "Fighter Maya",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 3, 3, 7],
+      "after": [4, 4, 7, 1]
+    },
+    {
+      "id": "epic-seven:flan",
+      "name": "Flan",
+      "rarity": 2,
+      "total": 17,
+      "before": [5, 3, 6, 3],
+      "after": [8, 4, 1, 4]
+    },
+    {
+      "id": "epic-seven:free-spirit-tieria",
+      "name": "Free Spirit Tieria",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 5, 3, 5],
+      "after": [5, 1, 5, 5]
+    },
+    {
+      "id": "epic-seven:frida",
+      "name": "Frida",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 8, 4, 4],
+      "after": [3, 4, 8, 5]
+    },
+    {
+      "id": "epic-seven:fumyr",
+      "name": "Fumyr",
+      "rarity": 2,
+      "total": 17,
+      "before": [2, 6, 6, 3],
+      "after": [5, 5, 4, 3]
+    },
+    {
+      "id": "epic-seven:furious",
+      "name": "Furious",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 5, 3, 5],
+      "after": [5, 4, 4, 3]
+    },
+    {
+      "id": "epic-seven:general-purrgis",
+      "name": "General Purrgis",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 5, 3, 5],
+      "after": [7, 5, 2, 2]
+    },
+    {
+      "id": "epic-seven:genesis-ras",
+      "name": "Genesis Ras",
+      "rarity": 4,
+      "total": 24,
+      "before": [7, 4, 8, 5],
+      "after": [10, 4, 1, 9]
+    },
+    {
+      "id": "epic-seven:glenn",
+      "name": "Glenn",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 3, 4],
+      "after": [6, 5, 1, 2]
+    },
+    {
+      "id": "epic-seven:gloomyrain",
+      "name": "Gloomyrain",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 3, 4],
+      "after": [3, 4, 2, 5]
+    },
+    {
+      "id": "epic-seven:godmother",
+      "name": "Godmother",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 4, 3],
+      "after": [4, 1, 1, 8]
+    },
+    {
+      "id": "epic-seven:great-chief-khawana",
+      "name": "Great Chief Khawana",
+      "rarity": 2,
+      "total": 16,
+      "before": [2, 2, 6, 6],
+      "after": [1, 6, 7, 2]
+    },
+    {
+      "id": "epic-seven:guard-captain-krau",
+      "name": "Guard Captain Krau",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 7, 3, 4],
+      "after": [8, 1, 7, 1]
+    },
+    {
+      "id": "epic-seven:guider-aither",
+      "name": "Guider Aither",
+      "rarity": 2,
+      "total": 16,
+      "before": [7, 3, 3, 3],
+      "after": [8, 3, 3, 2]
+    },
+    {
+      "id": "epic-seven:gunther",
+      "name": "Gunther",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 3, 4],
+      "after": [1, 8, 2, 3]
+    },
+    {
+      "id": "epic-seven:haru",
+      "name": "Haru",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [9, 5, 9, 1]
+    },
+    {
+      "id": "epic-seven:hasol",
+      "name": "Hasol",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 2, 2, 5],
+      "after": [7, 4, 1, 2]
+    },
+    {
+      "id": "epic-seven:haste",
+      "name": "Haste",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 6, 3, 2],
+      "after": [2, 7, 5, 3]
+    },
+    {
+      "id": "epic-seven:hataan",
+      "name": "Hataan",
+      "rarity": 1,
+      "total": 14,
+      "before": [2, 5, 5, 2],
+      "after": [4, 4, 1, 5]
+    },
+    {
+      "id": "epic-seven:hecate",
+      "name": "Hecate",
+      "rarity": 4,
+      "total": 24,
+      "before": [5, 9, 5, 5],
+      "after": [5, 8, 10, 1]
+    },
+    {
+      "id": "epic-seven:helen",
+      "name": "Helen",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 3, 4],
+      "after": [1, 1, 6, 6]
+    },
+    {
+      "id": "epic-seven:hellion-lua",
+      "name": "Hellion Lua",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 7, 4, 4],
+      "after": [8, 2, 7, 2]
+    },
+    {
+      "id": "epic-seven:holiday-yufine",
+      "name": "Holiday Yufine",
+      "rarity": 3,
+      "total": 19,
+      "before": [6, 3, 6, 4],
+      "after": [5, 6, 1, 7]
+    },
+    {
+      "id": "epic-seven:hurado",
+      "name": "Hurado",
+      "rarity": 1,
+      "total": 14,
+      "before": [2, 5, 5, 2],
+      "after": [4, 1, 3, 6]
+    },
+    {
+      "id": "epic-seven:hwayoung",
+      "name": "Hwayoung",
+      "rarity": 2,
+      "total": 17,
+      "before": [7, 3, 4, 3],
+      "after": [6, 3, 4, 4]
+    },
+    {
+      "id": "epic-seven:ian",
+      "name": "Ian",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 5, 3, 3],
+      "after": [5, 3, 1, 5]
+    },
+    {
+      "id": "epic-seven:ilynav",
+      "name": "Ilynav",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 6, 3, 5],
+      "after": [4, 7, 2, 4]
+    },
+    {
+      "id": "epic-seven:immortal-wukong",
+      "name": "Immortal Wukong",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 6, 3, 5],
+      "after": [5, 5, 2, 5]
+    },
+    {
+      "id": "epic-seven:inferno-khawazu",
+      "name": "Inferno Khawazu",
+      "rarity": 2,
+      "total": 16,
+      "before": [5, 3, 5, 3],
+      "after": [7, 1, 7, 1]
+    },
+    {
+      "id": "epic-seven:infinite-horizon-achates",
+      "name": "Infinite Horizon Achates",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [5, 4, 4, 7]
+    },
+    {
+      "id": "epic-seven:iseria",
+      "name": "Iseria",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 5, 3, 6],
+      "after": [6, 2, 2, 7]
+    },
+    {
+      "id": "epic-seven:ivana",
+      "name": "Ivana",
+      "rarity": 4,
+      "total": 23,
+      "before": [3, 3, 9, 8],
+      "after": [1, 6, 7, 9]
+    },
+    {
+      "id": "epic-seven:jack-o",
+      "name": "Jack-O'",
+      "rarity": 2,
+      "total": 17,
+      "before": [2, 6, 6, 3],
+      "after": [3, 8, 3, 3]
+    },
+    {
+      "id": "epic-seven:jecht",
+      "name": "Jecht",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 3, 4],
+      "after": [2, 4, 6, 2]
+    },
+    {
+      "id": "epic-seven:jena",
+      "name": "Jena",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 5, 3],
+      "after": [1, 7, 3, 3]
+    },
+    {
+      "id": "epic-seven:jenua",
+      "name": "Jenua",
+      "rarity": 3,
+      "total": 19,
+      "before": [6, 3, 3, 7],
+      "after": [7, 1, 7, 4]
+    },
+    {
+      "id": "epic-seven:judge-kise",
+      "name": "Judge Kise",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 5, 4],
+      "after": [2, 7, 7, 1]
+    },
+    {
+      "id": "epic-seven:kane",
+      "name": "Kane",
+      "rarity": 2,
+      "total": 17,
+      "before": [5, 3, 6, 3],
+      "after": [1, 7, 6, 3]
+    },
+    {
+      "id": "epic-seven:karin",
+      "name": "Karin",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 5, 3, 5],
+      "after": [7, 5, 1, 3]
+    },
+    {
+      "id": "epic-seven:kawerik",
+      "name": "Kawerik",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [5, 8, 9, 2]
+    },
+    {
+      "id": "epic-seven:kayron",
+      "name": "Kayron",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 4, 5],
+      "after": [4, 2, 4, 7]
+    },
+    {
+      "id": "epic-seven:ken",
+      "name": "Ken",
+      "rarity": 2,
+      "total": 17,
+      "before": [5, 4, 4, 4],
+      "after": [7, 3, 2, 5]
+    },
+    {
+      "id": "epic-seven:khawana",
+      "name": "Khawana",
+      "rarity": 2,
+      "total": 16,
+      "before": [6, 6, 2, 2],
+      "after": [1, 8, 6, 1]
+    },
+    {
+      "id": "epic-seven:khawazu",
+      "name": "Khawazu",
+      "rarity": 2,
+      "total": 16,
+      "before": [6, 6, 2, 2],
+      "after": [2, 2, 8, 4]
+    },
+    {
+      "id": "epic-seven:kiris",
+      "name": "Kiris",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 4, 4],
+      "after": [2, 2, 8, 2]
+    },
+    {
+      "id": "epic-seven:kise",
+      "name": "Kise",
+      "rarity": 2,
+      "total": 17,
+      "before": [7, 3, 4, 3],
+      "after": [2, 8, 4, 3]
+    },
+    {
+      "id": "epic-seven:kitty-clarissa",
+      "name": "Kitty Clarissa",
+      "rarity": 2,
+      "total": 16,
+      "before": [4, 4, 4, 4],
+      "after": [2, 7, 3, 4]
+    },
+    {
+      "id": "epic-seven:kizuna-ai",
+      "name": "Kizuna AI",
+      "rarity": 2,
+      "total": 16,
+      "before": [5, 3, 5, 3],
+      "after": [8, 1, 1, 6]
+    },
+    {
+      "id": "epic-seven:krau",
+      "name": "Krau",
+      "rarity": 2,
+      "total": 17,
+      "before": [2, 6, 6, 3],
+      "after": [4, 4, 6, 3]
+    },
+    {
+      "id": "epic-seven:lady-of-the-scales",
+      "name": "Lady of the Scales",
+      "rarity": 5,
+      "total": 28,
+      "before": [10, 6, 6, 6],
+      "after": [3, 8, 8, 9]
+    },
+    {
+      "id": "epic-seven:laia",
+      "name": "Laia",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 5, 3, 6],
+      "after": [5, 2, 6, 4]
+    },
+    {
+      "id": "epic-seven:last-piece-karin",
+      "name": "Last Piece Karin",
+      "rarity": 2,
+      "total": 16,
+      "before": [2, 2, 6, 6],
+      "after": [8, 3, 1, 4]
+    },
+    {
+      "id": "epic-seven:last-rider-krau",
+      "name": "Last Rider Krau",
+      "rarity": 3,
+      "total": 19,
+      "before": [6, 3, 3, 7],
+      "after": [3, 6, 5, 5]
+    },
+    {
+      "id": "epic-seven:lena",
+      "name": "Lena",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 3, 4],
+      "after": [2, 2, 3, 7]
+    },
+    {
+      "id": "epic-seven:leo",
+      "name": "Leo",
+      "rarity": 2,
+      "total": 16,
+      "before": [7, 3, 3, 3],
+      "after": [5, 3, 4, 4]
+    },
+    {
+      "id": "epic-seven:lethe",
+      "name": "Lethe",
+      "rarity": 3,
+      "total": 19,
+      "before": [5, 4, 5, 5],
+      "after": [5, 2, 4, 8]
+    },
+    {
+      "id": "epic-seven:lidica",
+      "name": "Lidica",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 4, 8, 4],
+      "after": [6, 2, 5, 7]
+    },
+    {
+      "id": "epic-seven:lilibet",
+      "name": "Lilibet",
+      "rarity": 2,
+      "total": 17,
+      "before": [2, 6, 6, 3],
+      "after": [5, 3, 4, 5]
+    },
+    {
+      "id": "epic-seven:lilka",
+      "name": "Lilka",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 4, 3],
+      "after": [2, 4, 4, 4]
+    },
+    {
+      "id": "epic-seven:lionheart-cermia",
+      "name": "Lionheart Cermia",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [6, 3, 5, 6]
+    },
+    {
+      "id": "epic-seven:lisette",
+      "name": "Lisette",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [4, 7, 3, 10]
+    },
+    {
+      "id": "epic-seven:lone-crescent-bellona",
+      "name": "Lone Crescent Bellona",
+      "rarity": 4,
+      "total": 23,
+      "before": [5, 6, 6, 6],
+      "after": [3, 7, 8, 5]
+    },
+    {
+      "id": "epic-seven:lone-wolf-peira",
+      "name": "Lone Wolf Peira",
+      "rarity": 3,
+      "total": 20,
+      "before": [6, 4, 6, 4],
+      "after": [4, 7, 3, 6]
+    },
+    {
+      "id": "epic-seven:lots",
+      "name": "Lots",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 3, 7, 3],
+      "after": [2, 4, 5, 5]
+    },
+    {
+      "id": "epic-seven:lua",
+      "name": "Lua",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 5, 4],
+      "after": [4, 7, 1, 5]
+    },
+    {
+      "id": "epic-seven:lucy",
+      "name": "Lucy",
+      "rarity": 1,
+      "total": 14,
+      "before": [2, 5, 5, 2],
+      "after": [7, 1, 4, 2]
+    },
+    {
+      "id": "epic-seven:ludwig",
+      "name": "Ludwig",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 5, 4, 4],
+      "after": [6, 1, 2, 8]
+    },
+    {
+      "id": "epic-seven:luluca",
+      "name": "Luluca",
+      "rarity": 2,
+      "total": 17,
+      "before": [7, 3, 4, 3],
+      "after": [8, 1, 4, 4]
+    },
+    {
+      "id": "epic-seven:luna",
+      "name": "Luna",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 4, 5],
+      "after": [2, 6, 7, 2]
+    },
+    {
+      "id": "epic-seven:magic-scholar-doris",
+      "name": "Magic Scholar Doris",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 5, 3],
+      "after": [5, 1, 2, 6]
+    },
+    {
+      "id": "epic-seven:maid-chloe",
+      "name": "Maid Chloe",
+      "rarity": 3,
+      "total": 20,
+      "before": [7, 7, 3, 3],
+      "after": [4, 7, 7, 2]
+    },
+    {
+      "id": "epic-seven:martial-artist-ken",
+      "name": "Martial Artist Ken",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 6, 3, 5],
+      "after": [6, 5, 1, 5]
+    },
+    {
+      "id": "epic-seven:mascot-hazel",
+      "name": "Mascot Hazel",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 5, 3],
+      "after": [7, 3, 3, 1]
+    },
+    {
+      "id": "epic-seven:maya",
+      "name": "Maya",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 7, 3, 3],
+      "after": [2, 7, 6, 1]
+    },
+    {
+      "id": "epic-seven:mediator-kawerik",
+      "name": "Mediator Kawerik",
+      "rarity": 2,
+      "total": 17,
+      "before": [5, 4, 4, 4],
+      "after": [8, 1, 5, 3]
+    },
+    {
+      "id": "epic-seven:melissa",
+      "name": "Melissa",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 5, 4],
+      "after": [5, 8, 2, 2]
+    },
+    {
+      "id": "epic-seven:mercedes",
+      "name": "Mercedes",
+      "rarity": 2,
+      "total": 16,
+      "before": [7, 3, 3, 3],
+      "after": [4, 7, 4, 1]
+    },
+    {
+      "id": "epic-seven:mercenary-helga",
+      "name": "Mercenary Helga",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 3, 5],
+      "after": [3, 2, 3, 6]
+    },
+    {
+      "id": "epic-seven:midnight-gala-lilias",
+      "name": "Midnight Gala Lilias",
+      "rarity": 3,
+      "total": 20,
+      "before": [3, 3, 7, 7],
+      "after": [6, 1, 7, 6]
+    },
+    {
+      "id": "epic-seven:milim",
+      "name": "Milim",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 4, 3, 7],
+      "after": [1, 7, 8, 1]
+    },
+    {
+      "id": "epic-seven:mirsa",
+      "name": "Mirsa",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 5, 3],
+      "after": [8, 1, 1, 4]
+    },
+    {
+      "id": "epic-seven:moon-bunny-dominiel",
+      "name": "Moon Bunny Dominiel",
+      "rarity": 3,
+      "total": 21,
+      "before": [5, 4, 8, 4],
+      "after": [3, 7, 5, 6]
+    },
+    {
+      "id": "epic-seven:mort",
+      "name": "Mort",
+      "rarity": 4,
+      "total": 23,
+      "before": [6, 6, 5, 6],
+      "after": [1, 7, 7, 8]
+    },
+    {
+      "id": "epic-seven:mui",
+      "name": "Mui",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 6, 3, 5],
+      "after": [1, 6, 4, 6]
+    },
+    {
+      "id": "epic-seven:muwi",
+      "name": "Muwi",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 4, 3, 3],
+      "after": [6, 1, 3, 4]
+    },
+    {
+      "id": "epic-seven:nahkwol",
+      "name": "Nahkwol",
+      "rarity": 2,
+      "total": 17,
+      "before": [5, 4, 4, 4],
+      "after": [2, 5, 5, 5]
+    },
+    {
+      "id": "epic-seven:navy-captain-landy",
+      "name": "Navy Captain Landy",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 4, 4, 7],
+      "after": [2, 4, 6, 7]
+    },
+    {
+      "id": "epic-seven:nemunas",
+      "name": "Nemunas",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 2, 2, 5],
+      "after": [1, 3, 5, 5]
+    },
+    {
+      "id": "epic-seven:new-kid-adin",
+      "name": "New Kid Adin",
+      "rarity": 2,
+      "total": 16,
+      "before": [7, 3, 3, 3],
+      "after": [6, 4, 5, 1]
+    },
+    {
+      "id": "epic-seven:new-moon-luna",
+      "name": "New Moon Luna",
+      "rarity": 4,
+      "total": 23,
+      "before": [7, 4, 8, 4],
+      "after": [9, 5, 2, 7]
+    },
+    {
+      "id": "epic-seven:notos",
+      "name": "Notos",
+      "rarity": 4,
+      "total": 24,
+      "before": [9, 3, 3, 9],
+      "after": [6, 6, 9, 3]
+    },
+    {
+      "id": "epic-seven:ocean-breeze-luluca",
+      "name": "Ocean Breeze Luluca",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 6, 3, 5],
+      "after": [8, 3, 3, 3]
+    },
+    {
+      "id": "epic-seven:operator-sigret",
+      "name": "Operator Sigret",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 2, 6],
+      "after": [4, 5, 1, 7]
+    },
+    {
+      "id": "epic-seven:orte",
+      "name": "Orte",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 4, 3, 3],
+      "after": [2, 8, 1, 3]
+    },
+    {
+      "id": "epic-seven:otillie",
+      "name": "Otillie",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 3, 5],
+      "after": [1, 5, 1, 7]
+    },
+    {
+      "id": "epic-seven:pavel",
+      "name": "Pavel",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 5, 4, 4],
+      "after": [8, 3, 5, 1]
+    },
+    {
+      "id": "epic-seven:peacemaker-furious",
+      "name": "Peacemaker Furious",
+      "rarity": 2,
+      "total": 16,
+      "before": [4, 4, 4, 4],
+      "after": [3, 6, 4, 3]
+    },
+    {
+      "id": "epic-seven:pearlhorizon",
+      "name": "Pearlhorizon",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 2, 2, 5],
+      "after": [7, 2, 3, 2]
+    },
+    {
+      "id": "epic-seven:peira",
+      "name": "Peira",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 6, 3, 2],
+      "after": [3, 4, 2, 8]
+    },
+    {
+      "id": "epic-seven:penelope",
+      "name": "Penelope",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 3, 5],
+      "after": [6, 4, 2, 2]
+    },
+    {
+      "id": "epic-seven:perfumer-byblis",
+      "name": "Perfumer Byblis",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [9, 4, 6, 9]
+    },
+    {
+      "id": "epic-seven:pernilla",
+      "name": "Pernilla",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 4, 3],
+      "after": [5, 4, 3, 2]
+    },
+    {
+      "id": "epic-seven:pirate-captain-flan",
+      "name": "Pirate Captain Flan",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [8, 8, 2, 2]
+    },
+    {
+      "id": "epic-seven:politis",
+      "name": "Politis",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [5, 4, 5, 6]
+    },
+    {
+      "id": "epic-seven:purrgis",
+      "name": "Purrgis",
+      "rarity": 2,
+      "total": 16,
+      "before": [7, 3, 3, 3],
+      "after": [7, 1, 1, 7]
+    },
+    {
+      "id": "epic-seven:ragnvald",
+      "name": "Ragnvald",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 3, 4],
+      "after": [4, 5, 4, 1]
+    },
+    {
+      "id": "epic-seven:ram",
+      "name": "Ram",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 7, 3, 4],
+      "after": [4, 5, 5, 3]
+    },
+    {
+      "id": "epic-seven:ran",
+      "name": "Ran",
+      "rarity": 3,
+      "total": 19,
+      "before": [6, 4, 6, 3],
+      "after": [4, 5, 6, 4]
+    },
+    {
+      "id": "epic-seven:ravi",
+      "name": "Ravi",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 7, 3, 4],
+      "after": [4, 3, 4, 6]
+    },
+    {
+      "id": "epic-seven:ray",
+      "name": "Ray",
+      "rarity": 2,
+      "total": 17,
+      "before": [7, 3, 4, 3],
+      "after": [7, 6, 1, 3]
+    },
+    {
+      "id": "epic-seven:rem",
+      "name": "Rem",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 3, 7, 3],
+      "after": [4, 8, 1, 4]
+    },
+    {
+      "id": "epic-seven:remnant-violet",
+      "name": "Remnant Violet",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 5, 3],
+      "after": [2, 1, 8, 6]
+    },
+    {
+      "id": "epic-seven:renoa",
+      "name": "Renoa",
+      "rarity": 4,
+      "total": 24,
+      "before": [7, 4, 8, 5],
+      "after": [9, 3, 8, 4]
+    },
+    {
+      "id": "epic-seven:requiem-roana",
+      "name": "Requiem Roana",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [8, 5, 2, 5]
+    },
+    {
+      "id": "epic-seven:requiemroar",
+      "name": "Requiemroar",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 3, 5],
+      "after": [6, 1, 6, 1]
+    },
+    {
+      "id": "epic-seven:researcher-carrot",
+      "name": "Researcher Carrot",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 3, 4],
+      "after": [2, 2, 2, 8]
+    },
+    {
+      "id": "epic-seven:revna",
+      "name": "Revna",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 5, 3, 3],
+      "after": [4, 2, 4, 4]
+    },
+    {
+      "id": "epic-seven:rhianna-and-luciella",
+      "name": "Rhianna and Luciella",
+      "rarity": 5,
+      "total": 28,
+      "before": [4, 10, 10, 4],
+      "after": [5, 8, 5, 10]
+    },
+    {
+      "id": "epic-seven:righteous-thief-roozid",
+      "name": "Righteous Thief Roozid",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 3, 4],
+      "after": [2, 3, 5, 4]
+    },
+    {
+      "id": "epic-seven:rikoris",
+      "name": "Rikoris",
+      "rarity": 1,
+      "total": 14,
+      "before": [2, 2, 5, 5],
+      "after": [1, 6, 2, 5]
+    },
+    {
+      "id": "epic-seven:rima",
+      "name": "Rima",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 2, 2, 5],
+      "after": [7, 1, 2, 4]
+    },
+    {
+      "id": "epic-seven:rimuru",
+      "name": "Rimuru",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 5, 4, 4],
+      "after": [6, 7, 2, 2]
+    },
+    {
+      "id": "epic-seven:rin",
+      "name": "Rin",
+      "rarity": 2,
+      "total": 16,
+      "before": [5, 3, 5, 3],
+      "after": [6, 6, 1, 3]
+    },
+    {
+      "id": "epic-seven:riza-hawkeye",
+      "name": "Riza Hawkeye",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 6, 3, 2],
+      "after": [5, 5, 6, 1]
+    },
+    {
+      "id": "epic-seven:roaming-warrior-leo",
+      "name": "Roaming Warrior Leo",
+      "rarity": 2,
+      "total": 16,
+      "before": [5, 3, 5, 3],
+      "after": [6, 3, 2, 5]
+    },
+    {
+      "id": "epic-seven:roana",
+      "name": "Roana",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 6, 3, 2],
+      "after": [2, 7, 3, 5]
+    },
+    {
+      "id": "epic-seven:robin",
+      "name": "Robin",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 3, 7, 3],
+      "after": [8, 5, 2, 2]
+    },
+    {
+      "id": "epic-seven:romann",
+      "name": "Romann",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 5, 3, 5],
+      "after": [7, 2, 2, 5]
+    },
+    {
+      "id": "epic-seven:rose",
+      "name": "Rose",
+      "rarity": 2,
+      "total": 16,
+      "before": [2, 2, 6, 6],
+      "after": [1, 8, 2, 5]
+    },
+    {
+      "id": "epic-seven:roy-mustang",
+      "name": "Roy Mustang",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 3, 7, 3],
+      "after": [4, 6, 2, 5]
+    },
+    {
+      "id": "epic-seven:ruiza",
+      "name": "Ruiza",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 6, 3, 5],
+      "after": [8, 7, 1, 1]
+    },
+    {
+      "id": "epic-seven:sage-baal-and-sezan",
+      "name": "Sage Baal & Sezan",
+      "rarity": 3,
+      "total": 20,
+      "before": [7, 7, 3, 3],
+      "after": [3, 5, 5, 7]
+    },
+    {
+      "id": "epic-seven:saria",
+      "name": "Saria",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 4, 4, 8],
+      "after": [8, 8, 1, 3]
+    },
+    {
+      "id": "epic-seven:savior-adin",
+      "name": "Savior Adin",
+      "rarity": 2,
+      "total": 16,
+      "before": [5, 3, 5, 3],
+      "after": [1, 5, 5, 5]
+    },
+    {
+      "id": "epic-seven:schniel",
+      "name": "Schniel",
+      "rarity": 4,
+      "total": 23,
+      "before": [6, 6, 5, 6],
+      "after": [4, 10, 2, 7]
+    },
+    {
+      "id": "epic-seven:schuri",
+      "name": "Schuri",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 8, 4, 4],
+      "after": [6, 6, 2, 6]
+    },
+    {
+      "id": "epic-seven:sea-phantom-politis",
+      "name": "Sea Phantom Politis",
+      "rarity": 3,
+      "total": 20,
+      "before": [8, 4, 4, 4],
+      "after": [5, 6, 5, 4]
+    },
+    {
+      "id": "epic-seven:sealed-eye-surin",
+      "name": "Sealed Eye Surin",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 3, 3, 7],
+      "after": [1, 7, 5, 3]
+    },
+    {
+      "id": "epic-seven:seaside-bellona",
+      "name": "Seaside Bellona",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 5, 4, 4],
+      "after": [4, 6, 6, 1]
+    },
+    {
+      "id": "epic-seven:senya",
+      "name": "Senya",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 7, 3, 4],
+      "after": [7, 2, 1, 7]
+    },
+    {
+      "id": "epic-seven:shadow-knight-pyllis",
+      "name": "Shadow Knight Pyllis",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 3, 4],
+      "after": [7, 1, 1, 5]
+    },
+    {
+      "id": "epic-seven:shadow-rose",
+      "name": "Shadow Rose",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 3, 7, 3],
+      "after": [4, 2, 6, 4]
+    },
+    {
+      "id": "epic-seven:shalltear",
+      "name": "Shalltear",
+      "rarity": 2,
+      "total": 17,
+      "before": [5, 4, 4, 4],
+      "after": [4, 4, 2, 7]
+    },
+    {
+      "id": "epic-seven:sharun",
+      "name": "Sharun",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 6, 3, 2],
+      "after": [5, 5, 5, 2]
+    },
+    {
+      "id": "epic-seven:shepherd-jena",
+      "name": "Shepherd Jena",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 4, 3, 3],
+      "after": [1, 4, 4, 5]
+    },
+    {
+      "id": "epic-seven:shepherd-of-the-dark-diene",
+      "name": "Shepherd of the Dark Diene",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [2, 10, 9, 7]
+    },
+    {
+      "id": "epic-seven:shooting-star-achates",
+      "name": "Shooting Star Achates",
+      "rarity": 2,
+      "total": 16,
+      "before": [7, 3, 3, 3],
+      "after": [2, 3, 8, 3]
+    },
+    {
+      "id": "epic-seven:shuna",
+      "name": "Shuna",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 2, 6, 6],
+      "after": [3, 3, 3, 8]
+    },
+    {
+      "id": "epic-seven:sigret",
+      "name": "Sigret",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 4, 3, 7],
+      "after": [1, 5, 7, 4]
+    },
+    {
+      "id": "epic-seven:silk",
+      "name": "Silk",
+      "rarity": 2,
+      "total": 16,
+      "before": [5, 3, 5, 3],
+      "after": [4, 5, 6, 1]
+    },
+    {
+      "id": "epic-seven:silvertide-christy",
+      "name": "Silvertide Christy",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 8, 4, 4],
+      "after": [5, 6, 7, 2]
+    },
+    {
+      "id": "epic-seven:sinful-angelica",
+      "name": "Sinful Angelica",
+      "rarity": 2,
+      "total": 17,
+      "before": [7, 3, 4, 3],
+      "after": [1, 2, 6, 8]
+    },
+    {
+      "id": "epic-seven:sol",
+      "name": "Sol",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 4, 5],
+      "after": [3, 8, 5, 1]
+    },
+    {
+      "id": "epic-seven:solitaria-of-the-snow",
+      "name": "Solitaria of the Snow",
+      "rarity": 3,
+      "total": 19,
+      "before": [5, 5, 4, 5],
+      "after": [5, 1, 5, 8]
+    },
+    {
+      "id": "epic-seven:sonia",
+      "name": "Sonia",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 4, 3, 3],
+      "after": [8, 2, 3, 1]
+    },
+    {
+      "id": "epic-seven:specimen-sez",
+      "name": "Specimen Sez",
+      "rarity": 2,
+      "total": 17,
+      "before": [5, 3, 6, 3],
+      "after": [8, 2, 5, 2]
+    },
+    {
+      "id": "epic-seven:specter-tenebria",
+      "name": "Specter Tenebria",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 6, 3, 5],
+      "after": [4, 4, 7, 2]
+    },
+    {
+      "id": "epic-seven:spirit-eye-celine",
+      "name": "Spirit Eye Celine",
+      "rarity": 4,
+      "total": 23,
+      "before": [5, 6, 6, 6],
+      "after": [10, 6, 3, 4]
+    },
+    {
+      "id": "epic-seven:stark",
+      "name": "Stark",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 5, 3, 6],
+      "after": [5, 1, 5, 6]
+    },
+    {
+      "id": "epic-seven:straze",
+      "name": "Straze",
+      "rarity": 3,
+      "total": 20,
+      "before": [7, 7, 3, 3],
+      "after": [3, 7, 6, 4]
+    },
+    {
+      "id": "epic-seven:summer-break-charlotte",
+      "name": "Summer Break Charlotte",
+      "rarity": 3,
+      "total": 19,
+      "before": [5, 5, 4, 5],
+      "after": [3, 3, 8, 5]
+    },
+    {
+      "id": "epic-seven:summers-disciple-alexa",
+      "name": "Summer's Disciple Alexa",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 5, 3, 3],
+      "after": [3, 3, 2, 6]
+    },
+    {
+      "id": "epic-seven:summertime-iseria",
+      "name": "Summertime Iseria",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 5, 4, 4],
+      "after": [2, 3, 6, 6]
+    },
+    {
+      "id": "epic-seven:surin",
+      "name": "Surin",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 5, 3],
+      "after": [7, 5, 3, 2]
+    },
+    {
+      "id": "epic-seven:suthan",
+      "name": "Suthan",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 2, 2, 5],
+      "after": [1, 3, 7, 3]
+    },
+    {
+      "id": "epic-seven:sven",
+      "name": "Sven",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 4, 3],
+      "after": [8, 1, 4, 1]
+    },
+    {
+      "id": "epic-seven:swift-flagbearer-sigret",
+      "name": "Swift Flagbearer Sigret",
+      "rarity": 3,
+      "total": 20,
+      "before": [8, 4, 4, 4],
+      "after": [3, 8, 8, 1]
+    },
+    {
+      "id": "epic-seven:sylvan-sage-vivian",
+      "name": "Sylvan Sage Vivian",
+      "rarity": 2,
+      "total": 17,
+      "before": [7, 3, 4, 3],
+      "after": [1, 6, 6, 4]
+    },
+    {
+      "id": "epic-seven:tactical-archetype-coli",
+      "name": "Tactical Archetype Coli",
+      "rarity": 4,
+      "total": 23,
+      "before": [3, 3, 9, 8],
+      "after": [10, 9, 3, 1]
+    },
+    {
+      "id": "epic-seven:taeyou",
+      "name": "Taeyou",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 5, 3],
+      "after": [2, 4, 6, 5]
+    },
+    {
+      "id": "epic-seven:talia",
+      "name": "Talia",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 2, 2, 5],
+      "after": [3, 5, 5, 1]
+    },
+    {
+      "id": "epic-seven:tamarinne",
+      "name": "Tamarinne",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 2, 6],
+      "after": [4, 7, 3, 3]
+    },
+    {
+      "id": "epic-seven:taranor-guard",
+      "name": "Taranor Guard",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 4, 3],
+      "after": [2, 6, 4, 2]
+    },
+    {
+      "id": "epic-seven:taranor-royal-guard",
+      "name": "Taranor Royal Guard",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 5, 2, 2],
+      "after": [1, 3, 4, 6]
+    },
+    {
+      "id": "epic-seven:tempest-surin",
+      "name": "Tempest Surin",
+      "rarity": 2,
+      "total": 16,
+      "before": [4, 4, 4, 4],
+      "after": [1, 7, 6, 2]
+    },
+    {
+      "id": "epic-seven:tenebria",
+      "name": "Tenebria",
+      "rarity": 2,
+      "total": 17,
+      "before": [7, 3, 4, 3],
+      "after": [2, 4, 8, 3]
+    },
+    {
+      "id": "epic-seven:tidal-rift-elvira",
+      "name": "Tidal Rift Elvira",
+      "rarity": 4,
+      "total": 24,
+      "before": [6, 6, 6, 6],
+      "after": [5, 10, 2, 7]
+    },
+    {
+      "id": "epic-seven:tieria",
+      "name": "Tieria",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 4, 3],
+      "after": [3, 2, 7, 2]
+    },
+    {
+      "id": "epic-seven:top-model-luluca",
+      "name": "Top Model Luluca",
+      "rarity": 3,
+      "total": 19,
+      "before": [5, 5, 4, 5],
+      "after": [8, 6, 2, 3]
+    },
+    {
+      "id": "epic-seven:tori",
+      "name": "Tori",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 4, 4, 8],
+      "after": [6, 8, 2, 4]
+    },
+    {
+      "id": "epic-seven:troublemaker-crozet",
+      "name": "Troublemaker Crozet",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 5, 3, 5],
+      "after": [3, 2, 4, 7]
+    },
+    {
+      "id": "epic-seven:twisted-eidolon-kayron",
+      "name": "Twisted Eidolon Kayron",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 4, 7, 4],
+      "after": [8, 1, 2, 8]
+    },
+    {
+      "id": "epic-seven:tywin",
+      "name": "Tywin",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 2, 6, 6],
+      "after": [7, 1, 6, 3]
+    },
+    {
+      "id": "epic-seven:unbound-knight-arowell",
+      "name": "Unbound Knight Arowell",
+      "rarity": 2,
+      "total": 16,
+      "before": [3, 7, 3, 3],
+      "after": [6, 1, 1, 8]
+    },
+    {
+      "id": "epic-seven:uncharted-pioneer-politis",
+      "name": "Uncharted Pioneer Politis",
+      "rarity": 4,
+      "total": 23,
+      "before": [5, 4, 9, 5],
+      "after": [4, 6, 6, 7]
+    },
+    {
+      "id": "epic-seven:urban-shadow-choux",
+      "name": "Urban Shadow Choux",
+      "rarity": 3,
+      "total": 20,
+      "before": [7, 3, 3, 7],
+      "after": [6, 3, 6, 5]
+    },
+    {
+      "id": "epic-seven:verdant-adin",
+      "name": "Verdant Adin",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 3, 4],
+      "after": [4, 4, 4, 2]
+    },
+    {
+      "id": "epic-seven:veronica",
+      "name": "Veronica",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 2, 6],
+      "after": [7, 8, 1, 1]
+    },
+    {
+      "id": "epic-seven:victorika",
+      "name": "Victorika",
+      "rarity": 2,
+      "total": 16,
+      "before": [4, 4, 4, 4],
+      "after": [3, 5, 2, 6]
+    },
+    {
+      "id": "epic-seven:vigilante-leader-glenn",
+      "name": "Vigilante Leader Glenn",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 3, 3, 3],
+      "after": [6, 1, 1, 6]
+    },
+    {
+      "id": "epic-seven:vildred",
+      "name": "Vildred",
+      "rarity": 4,
+      "total": 23,
+      "before": [5, 4, 9, 5],
+      "after": [10, 8, 2, 3]
+    },
+    {
+      "id": "epic-seven:violet",
+      "name": "Violet",
+      "rarity": 2,
+      "total": 17,
+      "before": [3, 2, 6, 6],
+      "after": [2, 7, 6, 2]
+    },
+    {
+      "id": "epic-seven:vivian",
+      "name": "Vivian",
+      "rarity": 2,
+      "total": 17,
+      "before": [2, 6, 6, 3],
+      "after": [5, 5, 3, 4]
+    },
+    {
+      "id": "epic-seven:wanda",
+      "name": "Wanda",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 4, 3, 4],
+      "after": [8, 2, 2, 2]
+    },
+    {
+      "id": "epic-seven:wanderer-silk",
+      "name": "Wanderer Silk",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 4, 4, 8],
+      "after": [7, 3, 5, 5]
+    },
+    {
+      "id": "epic-seven:wandering-prince-cidd",
+      "name": "Wandering Prince Cidd",
+      "rarity": 2,
+      "total": 16,
+      "before": [4, 4, 4, 4],
+      "after": [6, 4, 2, 4]
+    },
+    {
+      "id": "epic-seven:watcher-schuri",
+      "name": "Watcher Schuri",
+      "rarity": 2,
+      "total": 17,
+      "before": [2, 6, 6, 3],
+      "after": [2, 7, 1, 7]
+    },
+    {
+      "id": "epic-seven:westwind-executioner-schuri",
+      "name": "Westwind Executioner Schuri",
+      "rarity": 2,
+      "total": 17,
+      "before": [7, 3, 4, 3],
+      "after": [3, 3, 5, 6]
+    },
+    {
+      "id": "epic-seven:witch-of-the-mere-tenebria",
+      "name": "Witch of the Mere Tenebria",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [4, 5, 8, 3]
+    },
+    {
+      "id": "epic-seven:wretched-rose",
+      "name": "Wretched Rose",
+      "rarity": 2,
+      "total": 16,
+      "before": [4, 4, 4, 4],
+      "after": [4, 3, 5, 4]
+    },
+    {
+      "id": "epic-seven:yoonryoung",
+      "name": "Yoonryoung",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 2, 2, 5],
+      "after": [6, 2, 5, 1]
+    },
+    {
+      "id": "epic-seven:young-senya",
+      "name": "Young Senya",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 6, 4, 6],
+      "after": [7, 2, 7, 4]
+    },
+    {
+      "id": "epic-seven:yufine",
+      "name": "Yufine",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 5, 4],
+      "after": [4, 4, 3, 6]
+    },
+    {
+      "id": "epic-seven:yulha",
+      "name": "Yulha",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 6, 3, 6],
+      "after": [6, 6, 6, 1]
+    },
+    {
+      "id": "epic-seven:yuna",
+      "name": "Yuna",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 6, 3, 2],
+      "after": [1, 8, 4, 4]
+    },
+    {
+      "id": "epic-seven:zahhak",
+      "name": "Zahhak",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 5, 3],
+      "after": [2, 6, 3, 6]
+    },
+    {
+      "id": "epic-seven:zealot-carmainerose",
+      "name": "Zealot Carmainerose",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 5, 2, 2],
+      "after": [3, 6, 4, 1]
+    },
+    {
+      "id": "epic-seven:zio",
+      "name": "Zio",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [9, 3, 7, 9]
+    },
+    {
+      "id": "star-savior:annah",
+      "name": "Annah",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 4, 3, 3],
+      "after": [2, 3, 1, 8]
+    },
+    {
+      "id": "star-savior:asherah",
+      "name": "Asherah",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 5, 5, 5],
+      "after": [2, 7, 3, 7]
+    },
+    {
+      "id": "star-savior:asherah-waltz-of-starlight",
+      "name": "Asherah (Waltz of Starlight)",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 6, 10, 6],
+      "after": [6, 9, 7, 6]
+    },
+    {
+      "id": "star-savior:bell-rhys",
+      "name": "Bell",
+      "rarity": 4,
+      "total": 23,
+      "before": [6, 6, 5, 6],
+      "after": [4, 5, 7, 7]
+    },
+    {
+      "id": "star-savior:besta",
+      "name": "Besta",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 4, 3],
+      "after": [2, 1, 5, 6]
+    },
+    {
+      "id": "star-savior:bunnygirl-charlotte",
+      "name": "Charlotte (Bunnygirl)",
+      "rarity": 5,
+      "total": 28,
+      "before": [4, 4, 10, 10],
+      "after": [5, 10, 5, 8]
+    },
+    {
+      "id": "star-savior:bunnygirl-claire",
+      "name": "Claire (Bunnygirl)",
+      "rarity": 4,
+      "total": 23,
+      "before": [4, 8, 4, 7],
+      "after": [8, 5, 2, 8]
+    },
+    {
+      "id": "star-savior:bunnygirl-scarlet",
+      "name": "Scarlet (Bunnygirl)",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 6, 3, 6],
+      "after": [8, 8, 2, 1]
+    },
+    {
+      "id": "star-savior:carmen",
+      "name": "Carmen",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 4, 5],
+      "after": [2, 8, 2, 5]
+    },
+    {
+      "id": "star-savior:carmen-eternal-promise",
+      "name": "Carmen (Eternal Promise)",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [9, 1, 9, 9]
+    },
+    {
+      "id": "star-savior:carnelia",
+      "name": "Carnelia",
+      "rarity": 4,
+      "total": 23,
+      "before": [9, 8, 3, 3],
+      "after": [2, 6, 9, 6]
+    },
+    {
+      "id": "star-savior:ceres",
+      "name": "Ceres",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 4, 5],
+      "after": [1, 7, 2, 7]
+    },
+    {
+      "id": "star-savior:charlotte",
+      "name": "Charlotte",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 4, 8, 4],
+      "after": [6, 5, 4, 5]
+    },
+    {
+      "id": "star-savior:claire",
+      "name": "Claire",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 5, 3, 3],
+      "after": [1, 3, 3, 7]
+    },
+    {
+      "id": "star-savior:clarissa",
+      "name": "Clarissa",
+      "rarity": 1,
+      "total": 14,
+      "before": [5, 3, 3, 3],
+      "after": [1, 4, 1, 8]
+    },
+    {
+      "id": "star-savior:cristelle",
+      "name": "Cristelle",
+      "rarity": 5,
+      "total": 28,
+      "before": [9, 5, 9, 5],
+      "after": [5, 10, 3, 10]
+    },
+    {
+      "id": "star-savior:dana",
+      "name": "Dana",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [6, 1, 6, 7]
+    },
+    {
+      "id": "star-savior:elisa",
+      "name": "Elisa",
+      "rarity": 3,
+      "total": 20,
+      "before": [8, 4, 4, 4],
+      "after": [4, 5, 7, 4]
+    },
+    {
+      "id": "star-savior:emilly",
+      "name": "Emily",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 10, 6, 6],
+      "after": [6, 4, 9, 9]
+    },
+    {
+      "id": "star-savior:epindel",
+      "name": "Epindel",
+      "rarity": 3,
+      "total": 19,
+      "before": [7, 6, 3, 3],
+      "after": [6, 8, 3, 2]
+    },
+    {
+      "id": "star-savior:epindel-sun",
+      "name": "Epindel (Sun)",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 3, 7, 3],
+      "after": [3, 7, 2, 5]
+    },
+    {
+      "id": "star-savior:fei",
+      "name": "Fei",
+      "rarity": 5,
+      "total": 28,
+      "before": [6, 6, 6, 10],
+      "after": [5, 7, 9, 7]
+    },
+    {
+      "id": "star-savior:frey",
+      "name": "Frey",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 5, 5, 5],
+      "after": [4, 4, 6, 5]
+    },
+    {
+      "id": "star-savior:frey-noble-princess",
+      "name": "Frey (Noble Princess)",
+      "rarity": 4,
+      "total": 23,
+      "before": [8, 4, 7, 4],
+      "after": [5, 10, 4, 4]
+    },
+    {
+      "id": "star-savior:haydee",
+      "name": "Haydee",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 4, 4, 8],
+      "after": [5, 5, 7, 3]
+    },
+    {
+      "id": "star-savior:hilde",
+      "name": "Hilde",
+      "rarity": 5,
+      "total": 28,
+      "before": [7, 7, 7, 7],
+      "after": [8, 7, 6, 7]
+    },
+    {
+      "id": "star-savior:kyra",
+      "name": "Kyra",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 6, 4, 6],
+      "after": [6, 2, 6, 6]
+    },
+    {
+      "id": "star-savior:lacy",
+      "name": "Lacy",
+      "rarity": 4,
+      "total": 23,
+      "before": [3, 9, 8, 3],
+      "after": [4, 9, 4, 6]
+    },
+    {
+      "id": "star-savior:lily",
+      "name": "Lily",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 4, 7, 4],
+      "after": [4, 2, 7, 6]
+    },
+    {
+      "id": "star-savior:lugh",
+      "name": "Lugh",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 4, 8, 4],
+      "after": [5, 3, 8, 4]
+    },
+    {
+      "id": "star-savior:luna",
+      "name": "Luna",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [1, 7, 4, 8]
+    },
+    {
+      "id": "star-savior:luna-white-pearl-trap",
+      "name": "Luna (White Pearl Trap)",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 5, 3],
+      "after": [1, 7, 1, 8]
+    },
+    {
+      "id": "star-savior:lydia",
+      "name": "Lydia",
+      "rarity": 3,
+      "total": 20,
+      "before": [3, 3, 7, 7],
+      "after": [8, 3, 6, 3]
+    },
+    {
+      "id": "star-savior:lyn",
+      "name": "Lyn",
+      "rarity": 2,
+      "total": 17,
+      "before": [6, 3, 2, 6],
+      "after": [4, 3, 5, 5]
+    },
+    {
+      "id": "star-savior:marcille",
+      "name": "Marcille",
+      "rarity": 1,
+      "total": 14,
+      "before": [2, 2, 5, 5],
+      "after": [6, 2, 2, 4]
+    },
+    {
+      "id": "star-savior:mina",
+      "name": "Yoo Mina",
+      "rarity": 4,
+      "total": 23,
+      "before": [8, 3, 3, 9],
+      "after": [7, 2, 7, 7]
+    },
+    {
+      "id": "star-savior:muriel",
+      "name": "Muriel",
+      "rarity": 4,
+      "total": 23,
+      "before": [6, 6, 5, 6],
+      "after": [9, 10, 3, 1]
+    },
+    {
+      "id": "star-savior:naru",
+      "name": "Naru",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 3, 3, 5],
+      "after": [3, 1, 6, 4]
+    },
+    {
+      "id": "star-savior:omega",
+      "name": "Omega",
+      "rarity": 3,
+      "total": 19,
+      "before": [7, 6, 3, 3],
+      "after": [6, 2, 5, 6]
+    },
+    {
+      "id": "star-savior:petra",
+      "name": "Petra",
+      "rarity": 3,
+      "total": 20,
+      "before": [8, 4, 4, 4],
+      "after": [8, 2, 2, 8]
+    },
+    {
+      "id": "star-savior:rosaria",
+      "name": "Rosaria",
+      "rarity": 2,
+      "total": 17,
+      "before": [5, 3, 6, 3],
+      "after": [4, 6, 3, 4]
+    },
+    {
+      "id": "star-savior:scarlet",
+      "name": "Scarlet",
+      "rarity": 1,
+      "total": 14,
+      "before": [4, 3, 3, 4],
+      "after": [1, 7, 2, 4]
+    },
+    {
+      "id": "star-savior:seira",
+      "name": "Seira",
+      "rarity": 3,
+      "total": 20,
+      "before": [5, 5, 5, 5],
+      "after": [2, 3, 7, 8]
+    },
+    {
+      "id": "star-savior:serpang",
+      "name": "Serpang",
+      "rarity": 3,
+      "total": 19,
+      "before": [5, 4, 5, 5],
+      "after": [2, 7, 8, 2]
+    },
+    {
+      "id": "star-savior:smile",
+      "name": "Smile",
+      "rarity": 3,
+      "total": 19,
+      "before": [4, 7, 4, 4],
+      "after": [5, 3, 5, 6]
+    },
+    {
+      "id": "star-savior:smile-sunshine-cat",
+      "name": "Smile (Sunshine Cat)",
+      "rarity": 2,
+      "total": 17,
+      "before": [2, 6, 6, 3],
+      "after": [6, 1, 7, 3]
+    },
+    {
+      "id": "star-savior:tanya",
+      "name": "Tanya",
+      "rarity": 3,
+      "total": 20,
+      "before": [4, 6, 4, 6],
+      "after": [4, 4, 7, 5]
+    },
+    {
+      "id": "star-savior:trish",
+      "name": "Trish",
+      "rarity": 2,
+      "total": 17,
+      "before": [4, 4, 5, 4],
+      "after": [2, 7, 2, 6]
+    },
+    {
+      "id": "star-savior:tyria",
+      "name": "Tyria",
+      "rarity": 2,
+      "total": 17,
+      "before": [5, 3, 6, 3],
+      "after": [1, 7, 7, 2]
+    },
+    {
+      "id": "star-savior:vera",
+      "name": "Vera",
+      "rarity": 1,
+      "total": 14,
+      "before": [3, 5, 3, 3],
+      "after": [5, 1, 5, 3]
+    }
+  ]
+}

@@ -28,7 +28,10 @@ export function FirstDuelTutorial() {
     [error, setError] = useState('');
   const ref = useRef<HTMLDialogElement>(null),
     heading = useRef<HTMLHeadingElement>(null);
+  const [watching, setWatching] = useState(false);
+  useEffect(() => setWatching(new URLSearchParams(location.search).has('spectate')), [pathname]);
   const required =
+    !watching &&
     !!profile &&
     profile.played === 0 &&
     profile.deck.length === 5 &&

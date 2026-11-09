@@ -9,6 +9,10 @@ import { once } from 'node:events';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 if (existsSync(resolve(root, '.env'))) process.loadEnvFile(resolve(root, '.env'));
 export async function createController(options = {}) {
+  const controlRevision = createHash('sha256')
+    .update(await readFile(fileURLToPath(import.meta.url)))
+    .digest('hex');
+  const localTest = options.localTest ?? process.env.TRIAD_LOCAL_TEST === 'true';
   const dataDir = resolve(options.dataDir || process.env.DATA_DIR || resolve(root, '.data'));
   await mkdir(dataDir, { recursive: true });
   const settingsPath = resolve(dataDir, 'server-control.json');
@@ -23,7 +27,11 @@ export async function createController(options = {}) {
   } catch {}
   const port = Number(options.port || process.env.CONTROL_PORT || 3030),
     previewPort = Number(options.previewPort || process.env.PREVIEW_PORT || 3000);
-  const managedExternal = options.managedExternal ?? process.env.EXTERNAL_GAME_SERVER === 'true';
+  if (localTest)
+    config = { ...config, gamePort: Number(options.gamePort || process.env.SERVER_PORT || 3101) };
+  const managedExternal = localTest
+    ? false
+    : (options.managedExternal ?? process.env.EXTERNAL_GAME_SERVER === 'true');
   const csrf = randomBytes(32).toString('hex'),
     controlSecret = managedExternal
       ? process.env.LOCAL_CONTROL_SECRET
@@ -93,6 +101,8 @@ export async function createController(options = {}) {
     if (publicURL) link.searchParams.set('server', publicURL);
     return {
       config,
+      controlRevision,
+      localTest,
       busy,
       running,
       external: !running && (await gameHealth()),
@@ -373,6 +383,35 @@ export async function createController(options = {}) {
       return;
     }
     res.setHeader('content-type', 'application/json');
+    if (
+      req.method === 'GET' &&
+      ['/battle', '/history'].includes(new URL(req.url, expected).pathname)
+    ) {
+      const query = new URL(req.url, expected);
+      const matchId = new URL(req.url, expected).searchParams.get('id') || '';
+      try {
+        const response = await fetch(
+          localAPI() +
+            '/api/local-control' +
+            query.pathname +
+            '/' +
+            encodeURIComponent(matchId) +
+            (query.pathname === '/history'
+              ? '?offset=' + encodeURIComponent(query.searchParams.get('offset') || '0')
+              : ''),
+          {
+            headers: { 'x-local-control': controlSecret },
+            signal: AbortSignal.timeout(3000),
+          },
+        );
+        res.writeHead(response.status);
+        res.end(await response.text());
+      } catch {
+        res.writeHead(503);
+        res.end(JSON.stringify({ error: 'Game server unavailable.' }));
+      }
+      return;
+    }
     if (req.method === 'GET' && new URL(req.url, expected).pathname === '/state') {
       res.end(
         JSON.stringify(await state(new URL(req.url, expected).searchParams.get('search') || '')),
@@ -423,7 +462,9 @@ export async function createController(options = {}) {
       } else if (req.url === '/tunnel/install') await installTunnel();
       else if (req.url === '/tunnel/start') await startTunnel();
       else if (req.url === '/tunnel/stop') await stopTunnel();
-      else if (['/moderation', '/population', '/grant', '/delete-account'].includes(req.url)) {
+      else if (
+        ['/moderation', '/population', '/grant', '/delete-account', '/network'].includes(req.url)
+      ) {
         if (!alive(child) && !(managedExternal && (await gameHealth())))
           throw Error('Start the game server first.');
         const population = req.url === '/population';
@@ -436,6 +477,7 @@ export async function createController(options = {}) {
               '/moderation': '/api/local-control/moderation',
               '/grant': '/api/local-control/grant',
               '/delete-account': '/api/local-control/delete-account',
+              '/network': '/api/local-control/network',
             }[req.url],
           {
             method: 'POST',

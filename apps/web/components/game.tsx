@@ -45,6 +45,7 @@ const describe = (c: CardData, modifier = 0) =>
 export function Game() {
   const { profile, error: connectionError, revision, refresh } = useSession();
   const [receivedMatch, setMatch] = useState<MatchView | null>(null),
+    [watchingId, setWatchingId] = useState<string | null>(null),
     [matchId, setMatchId] = useState<string | null>(null),
     [selected, setSelected] = useState<string | null>(null),
     [error, setError] = useState(''),
@@ -67,7 +68,12 @@ export function Game() {
   useEffect(
     () => () => {
       const last = receivedRef.current;
-      if (last?.id === matchId && last.status === 'complete' && !last.trade.pending)
+      if (
+        !last?.spectator &&
+        last?.id === matchId &&
+        last.status === 'complete' &&
+        !last.trade.pending
+      )
         void api(`/matches/${last.id}/leave`, {}).catch(() => {});
     },
     [matchId],
@@ -96,23 +102,32 @@ export function Game() {
     setDetail(card);
     setDetailModifier(modifier);
   }
-  const load = useCallback(async (id: string) => {
-    try {
-      const next = await api<MatchView>(`/matches/${id}`);
-      setMatch((current) =>
-        current?.id === id && current.version > next.version ? current : next,
-      );
-      setError('');
-    } catch (e) {
-      setError((e as Error).message);
-    }
-  }, []);
+  const load = useCallback(
+    async (id: string) => {
+      try {
+        const next = await api<MatchView>(`${watchingId ? '/spectate' : '/matches'}/${id}`);
+        setMatch((current) =>
+          current?.id === id && current.version > next.version ? current : next,
+        );
+        setError('');
+      } catch (e) {
+        setError((e as Error).message);
+      }
+    },
+    [watchingId],
+  );
   useEffect(() => {
     if (!profile) return;
     const query = new URLSearchParams(location.search).get('match');
+    const watch = new URLSearchParams(location.search).get('spectate');
     const target = profile.pendingTrade?.matchId ?? profile.activeMatchId;
-    if (target && target !== matchId) setMatchId(target);
-    else if (!matchId && query) setMatchId(query);
+    if (target && target !== matchId) {
+      setWatchingId(null);
+      setMatchId(target);
+    } else if (!target && watch && watch !== matchId) {
+      setWatchingId(watch);
+      setMatchId(watch);
+    } else if (!matchId && query) setMatchId(query);
   }, [profile, matchId]);
   useEffect(() => {
     if (match?.rematch?.matchId) {
@@ -124,8 +139,33 @@ export function Game() {
     if (matchId) void load(matchId);
   }, [matchId, revision, load]);
   useEffect(() => {
-    if (matchId) history.replaceState(history.state, '', appPath(`/?match=${matchId}`));
-  }, [matchId]);
+    if (matchId)
+      history.replaceState(
+        history.state,
+        '',
+        appPath(`/?${watchingId ? 'spectate' : 'match'}=${matchId}`),
+      );
+  }, [matchId, watchingId]);
+  useEffect(() => {
+    if (!match?.game) return;
+    document.body.classList.add('in-battle');
+    window.scrollTo(0, 0);
+    const measure = () => {
+      const bar = document.querySelector('.system-bar')?.getBoundingClientRect().height ?? 62;
+      document.documentElement.style.setProperty(
+        '--battle-space',
+        `${Math.max(250, window.innerHeight - bar - 56)}px`,
+      );
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    window.visualViewport?.addEventListener('resize', measure);
+    return () => {
+      document.body.classList.remove('in-battle');
+      window.removeEventListener('resize', measure);
+      window.visualViewport?.removeEventListener('resize', measure);
+    };
+  }, [match?.id, !!match?.game]);
   useEffect(() => {
     const timer = setInterval(() => setClock(Date.now()), 1000);
     return () => clearInterval(timer);
@@ -141,7 +181,13 @@ export function Game() {
     own = game?.hands[seat] ?? [],
     opponent = game?.hands[other] ?? [];
   useEffect(() => {
-    if (match?.status !== 'complete' || resolving || resultSeen.current === match.id) return;
+    if (
+      match?.spectator ||
+      match?.status !== 'complete' ||
+      resolving ||
+      resultSeen.current === match.id
+    )
+      return;
     resultSeen.current = match.id;
     sound(match.winner === seat ? 'victory' : match.winner === 'draw' ? 'draw' : 'defeat');
   }, [match?.status, match?.id, match?.winner, resolving, seat, sound]);
@@ -178,6 +224,7 @@ export function Game() {
     }
   }
   function menu() {
+    setWatchingId(null);
     setMatch(null);
     setMatchId(null);
     setSelected(null);
@@ -185,14 +232,15 @@ export function Game() {
     history.replaceState(history.state, '', appPath('/'));
   }
   function place(cell: number) {
-    if (!match || !game || game.turn !== seat || busy || resolving) return;
+    if (!match || match.spectator || !game || game.turn !== seat || busy || resolving) return;
     if (!selected) {
       setError('Select a card from your hand first.');
       return;
     }
     void action(`/matches/${match.id}/move`, { cardId: selected, cell, version: match.version });
   }
-  const canPlay = match?.status === 'playing' && game?.turn === seat && !busy && !resolving;
+  const canPlay =
+    !match?.spectator && match?.status === 'playing' && game?.turn === seat && !busy && !resolving;
   const displayScore = game
     ? [game.hands[0].length, game.hands[1].length]
     : [...(match?.score ?? [5, 5])];
@@ -218,7 +266,10 @@ export function Game() {
     );
   });
   const draftErrors = validateDeck(match?.draftPool.filter((c) => draft.includes(c.id)) ?? []);
-  if (!profile || (!profile.activeMatchId && !profile.deck.length && profile.starterBoosters > 0))
+  if (
+    !profile ||
+    (!watchingId && !profile.activeMatchId && !profile.deck.length && profile.starterBoosters > 0)
+  )
     return (
       <LocaleView>
         <section className="first-visit-screen">
@@ -231,7 +282,9 @@ export function Game() {
     );
   return (
     <LocaleView>
-      <div className={`play-page ${match ? 'battle-screen' : 'title-screen'}`}>
+      <div
+        className={`play-page ${match ? 'battle-screen' : 'title-screen'} ${match?.spectator ? 'spectator-screen' : ''} ${match?.game ? 'arena-screen' : ''}`}
+      >
         {callout && (
           <div
             key={callout + ':' + match?.game?.history.length}
@@ -278,7 +331,7 @@ export function Game() {
               </section>
             </div>
             <div className="build-label">
-              {CARDS.filter((card) => !card.finish).length} CARDS · v0.14{' '}
+              {CARDS.filter((card) => !card.finish).length} CARDS · v0.1.0 Alpha{' '}
               <Link href="/credits" className="credits-button">
                 Credits
               </Link>
@@ -294,7 +347,9 @@ export function Game() {
                     ? 'Choose your hand'
                     : match.mode === 'solo'
                       ? 'Practice duel'
-                      : 'Online duel'}
+                      : match.spectator
+                        ? 'Spectating'
+                        : 'Online duel'}
                 </strong>
               </div>
               <div className="rule-badges">
@@ -304,18 +359,49 @@ export function Game() {
                 {match.trade.rule === 'one' && <span>Trade One</span>}
               </div>
               <div className="battle-actions">
+                {profile?.isAdmin && !match.spectator && match.status !== 'complete' && (
+                  <button
+                    className="text-button"
+                    disabled={busy}
+                    onClick={() => {
+                      if (
+                        confirm(
+                          'Finish this match as an admin test win? No rating or currency is awarded.',
+                        )
+                      )
+                        void action(`/matches/${match.id}/admin-win`, {});
+                    }}
+                  >
+                    Admin: instant win
+                  </button>
+                )}
                 <button className="text-button" onClick={() => setDialog('rules')}>
                   How to play
                 </button>
                 <button
                   className="text-button"
-                  onClick={() => (match.status === 'complete' ? menu() : setDialog('exit'))}
+                  onClick={() =>
+                    match.spectator
+                      ? location.assign(appPath('/lobbies'))
+                      : match.status === 'complete'
+                        ? menu()
+                        : setDialog('exit')
+                  }
                 >
-                  {match.status === 'complete' ? 'Return to menu' : 'Leave match'}
+                  {match.spectator
+                    ? 'Back to lobbies'
+                    : match.status === 'complete'
+                      ? 'Return to menu'
+                      : 'Leave match'}
                 </button>
               </div>
             </div>
-            {match.status === 'drafting' && !draftCeremonyDone && !match.draftLocked ? (
+            {match.status === 'drafting' && match.spectator ? (
+              <div className="menu-window spectator-wait">
+                <h2>Players are drafting</h2>
+                <p>The battle starts when both hands are ready. Draft choices stay private.</p>
+              </div>
+            ) : match.status === 'drafting' && !draftCeremonyDone && !match.draftLocked ? (
               <DraftOpening
                 key={match.id}
                 match={match}
@@ -411,7 +497,9 @@ export function Game() {
                         )}
                         <small>
                           {game.turn === seat && match.status === 'playing'
-                            ? 'YOUR TURN'
+                            ? match.spectator
+                              ? 'PLAYING'
+                              : 'YOUR TURN'
                             : 'CHALLENGER'}
                         </small>
                       </div>
@@ -449,27 +537,39 @@ export function Game() {
                   <div className="battle-layout">
                     <div className="hand player-hand">
                       <div className="hand-label">
-                        YOUR HAND <span>{own.length}/5</span>
+                        {match.spectator ? match.names[seat] : 'YOUR HAND'}{' '}
+                        <span>{own.length}/5</span>
                       </div>
                       <div className="hand-cards">
                         {own.map(
                           ({ slotId, card }) =>
-                            card && (
+                            (card || match.spectator) && (
                               <button
                                 key={slotId}
-                                className={`hand-card ${selected === card.id ? 'is-selected' : ''}`}
+                                className={`hand-card ${selected === card?.id ? 'is-selected' : ''}`}
                                 data-testid="player-card"
-                                aria-label={`Select ${describe(card)}`}
-                                aria-pressed={selected === card.id}
-                                disabled={!canPlay}
+                                aria-label={
+                                  match.spectator
+                                    ? card
+                                      ? `Inspect ${card.name}`
+                                      : 'Hidden spectator card'
+                                    : `Select ${describe(card!)}`
+                                }
+                                aria-pressed={selected === card?.id}
+                                disabled={match.spectator ? !card : !canPlay}
                                 onClick={() => {
-                                  setSelected(card.id === selected ? null : card.id);
+                                  if (match.spectator) {
+                                    if (card) inspect(card);
+                                    return;
+                                  }
+                                  setSelected(card!.id === selected ? null : card!.id);
                                   setError('');
                                   sound('menu');
                                 }}
                               >
                                 <Card
-                                  card={card}
+                                  card={card ?? undefined}
+                                  hidden={!card}
                                   owner={0}
                                   compact
                                   showElement={!!match.rules.elemental}
@@ -498,19 +598,31 @@ export function Game() {
                           ? 'RESOLVING CAPTURES…'
                           : match.status === 'complete'
                             ? 'MATCH COMPLETE'
-                            : game.turn === seat
-                              ? selected
-                                ? 'Choose an empty space'
-                                : 'Your turn · Select a card'
-                              : `${match.names[other]} is ${match.mode === 'solo' ? 'thinking' : 'playing'}…`}
-                        {match.mode !== 'solo' && match.status === 'playing' && (
+                            : match.spectator
+                              ? `${match.names[game.turn]} is playing…`
+                              : game.turn === seat
+                                ? selected
+                                  ? 'Choose an empty space'
+                                  : 'Your turn · Select a card'
+                                : `${match.names[other]} is ${match.mode === 'solo' ? 'thinking' : 'playing'}…`}
+                        {match.status === 'playing' && (
                           <small>
                             {' '}
                             · {Math.max(0, Math.ceil(((match.deadline ?? clock) - clock) / 1000))}s
                           </small>
                         )}
                       </div>
-                      {match.status === 'complete' && !resultOpen && (
+                      {match.status === 'playing' && (
+                        <p
+                          className={`turn-policy ${(match.missedTurns?.[game.turn] ?? 0) > 0 ? 'timeout-danger' : ''}`}
+                          role="note"
+                        >
+                          {(match.missedTurns?.[game.turn] ?? 0) > 0
+                            ? 'Next timeout: instant defeat.'
+                            : '0 seconds: auto-play once. Miss your next turn: defeat.'}
+                        </p>
+                      )}
+                      {!match.spectator && match.status === 'complete' && !resultOpen && (
                         <button
                           className="outline-button reopen-result"
                           onClick={() => setResultOpen(true)}
@@ -571,11 +683,13 @@ export function Game() {
                       </div>
                       <div className="board-bottom">
                         <span>
-                          <i className="legend-dot mint-dot" /> YOU
+                          <i className="legend-dot mint-dot" />{' '}
+                          {match.spectator ? match.names[seat] : 'YOU'}
                         </span>
                         <span>{game.history.length}/9 PLACED</span>
                         <span>
-                          <i className="legend-dot rose-dot" /> OPPONENT
+                          <i className="legend-dot rose-dot" />{' '}
+                          {match.spectator ? match.names[other] : 'OPPONENT'}
                         </span>
                       </div>
                     </div>
@@ -631,12 +745,17 @@ export function Game() {
                       ))}
                     </ol>
                   </details>
+                  {match.spectator && match.status === 'complete' && (
+                    <p className="spectator-result">
+                      {match.winner === 'draw' ? 'Draw' : `${match.names[match.winner ?? 0]} wins`}
+                    </p>
+                  )}
                 </>
               )
             )}
           </section>
         )}
-        {match?.chatAvailable && <BattleChat match={match} />}
+        {match && <BattleChat key={match.id} match={match} />}
         <p className="error-message" role="alert">
           {error || connectionError}
         </p>
@@ -693,7 +812,7 @@ export function Game() {
           ) : null}
         </dialog>
         <CardDetail card={detail} modifier={detailModifier} onClose={() => setDetail(null)} />
-        {match?.status === 'complete' && !resolving && resultOpen && (
+        {!match?.spectator && match?.status === 'complete' && !resolving && resultOpen && (
           <ResultOverlay
             match={match}
             busy={busy}

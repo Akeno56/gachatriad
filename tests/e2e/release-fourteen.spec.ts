@@ -10,7 +10,8 @@ test('keeps mobile fields focusable while polling, supports private battle chat 
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/');
   await openStarterPacks(page);
-  await page.request.post('/api/tutorial/complete', { data: {} });
+  const tutorial = await page.request.post('/api/tutorial/complete', { data: {} });
+  expect(tutorial.status(), await tutorial.text()).toBe(200);
   await page.reload();
   await expect(page.locator('.game-shell')).not.toHaveClass(/crt-enabled/);
   await expect(page.getByLabel('Main chat message', { exact: true })).toHaveAttribute(
@@ -75,6 +76,7 @@ test('keeps mobile fields focusable while polling, supports private battle chat 
     );
     await page.locator('.friend-chat').getByRole('button', { name: 'Send', exact: true }).click();
     await expect(page.locator('.friend-chat .private-message')).toContainText('Hello in private!');
+    await page.screenshot({ path: info.outputPath('messenger.png') });
     await page
       .locator('.social-heading')
       .getByRole('button', { name: 'Close', exact: true })
@@ -87,6 +89,7 @@ test('keeps mobile fields focusable while polling, supports private battle chat 
     const { matchId } = await join.json();
     await page.goto(`/?match=${matchId}`);
     await other.goto(`/?match=${matchId}`);
+    if (mobile) await page.getByRole('button', { name: /^Chat/ }).click();
     const chat = page.getByLabel('Message your opponent', { exact: true });
     await typeInto(chat, 'Bien joué !');
     await page.locator('.battle-chat').getByRole('button', { name: 'Send', exact: true }).click();

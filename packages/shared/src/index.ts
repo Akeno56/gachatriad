@@ -1,10 +1,12 @@
 import type { Card, Stats } from '@gacha-triad/engine';
 import catalog from '../../../data/cards/catalog.json' with { type: 'json' };
 import universes from '../../../data/universes/index.json' with { type: 'json' };
-export const CARDS: readonly Card[] = catalog.map((c) => ({
+import { diversifySpreads, cardSideCap } from './stat-spreads';
+const originals: readonly Card[] = catalog.map((c) => ({
   ...c,
   stats: c.stats as unknown as Card['stats'],
 }));
+export const CARDS: readonly Card[] = diversifySpreads(originals);
 export const UNIVERSES = universes;
 export const SIDE_NAMES = ['Top', 'Right', 'Bottom', 'Left'] as const;
 const legacySide = (card: Card) => {
@@ -12,22 +14,27 @@ const legacySide = (card: Card) => {
   const hash = [...card.id].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
   return eligible[hash % eligible.length];
 };
-/** Stable variant IDs preserve the acquired +1 direction through decks, trades and receipts. */
+/** Stable variant IDs preserve copy identity through balancing, decks, trades and receipts. */
 export const HOLO_VARIANTS: readonly Card[] = CARDS.flatMap((card) =>
-  card.stats.flatMap((value, side) =>
-    value >= 10
-      ? []
-      : [
-          {
-            ...card,
-            id: side === legacySide(card) ? `${card.id}::holo` : `${card.id}::holo:${side}`,
-            baseCardId: card.id,
-            finish: 'holo' as const,
-            holoBonusSide: side as 0 | 1 | 2 | 3,
-            stats: card.stats.map((n, i) => n + Number(i === side)) as unknown as Stats,
-          },
-        ],
-  ),
+  [0, 1, 2, 3].flatMap((originSide) => {
+    const original = originals.find((c) => c.id === card.id)!;
+    const cap = cardSideCap(card);
+    if (original.stats[originSide] >= 10 && card.stats[originSide] >= cap) return [];
+    // Old variant IDs remain valid if the former bonus side reaches the rarity's cap.
+    const side = [0, 1, 2, 3].map((n) => (originSide + n) % 4).find((n) => card.stats[n] < cap);
+    if (side === undefined) return [];
+    const legacy = legacySide(original);
+    return [
+      {
+        ...card,
+        id: originSide === legacy ? `${card.id}::holo` : `${card.id}::holo:${originSide}`,
+        baseCardId: card.id,
+        finish: 'holo' as const,
+        holoBonusSide: side as 0 | 1 | 2 | 3,
+        stats: card.stats.map((n, i) => n + Number(i === side)) as unknown as Stats,
+      },
+    ];
+  }),
 );
 export const HOLO_CARDS = HOLO_VARIANTS.filter((card) => card.id.endsWith('::holo'));
 export const ALL_CARDS: readonly Card[] = [...CARDS, ...HOLO_VARIANTS];

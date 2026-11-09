@@ -28,6 +28,7 @@ const child = spawn(
     env: {
       ...process.env,
       STATIC_EXPORT: 'true',
+      NEXT_PUBLIC_LOCAL_TEST: 'false',
       NEXT_PUBLIC_BASE_PATH: '',
       NEXT_PUBLIC_API_URL: site.origin,
       NEXT_PUBLIC_SERVER_URL: site.origin,

@@ -33,19 +33,20 @@ export default function Ladder() {
     <LocaleView>
       <div className="content-page ladder-page">
         <h1>Ladder</h1>
-        <label>
-          Leaderboard
-          <select aria-label="Leaderboard" value={mode} onChange={(e) => setMode(e.target.value)}>
-            <option value="ranked">Constructed ranked</option>
-            <option value="draft">Draft</option>
-          </select>
-        </label>
-        <p>
-          Registered human players with at least one completed duel in this mode. Rating order;
-          fewer than five games is provisional. Bots and suspended accounts are excluded.
-        </p>
+        <div className="ladder-tabs" role="tablist" aria-label="Leaderboard">
+          <button role="tab" aria-selected={mode === 'ranked'} onClick={() => setMode('ranked')}>
+            Ranked
+          </button>
+          <button role="tab" aria-selected={mode === 'draft'} onClick={() => setMode('draft')}>
+            Draft
+          </button>
+        </div>
         <p role="alert">{error}</p>
-        <div className="menu-window ladder-table">
+        <div
+          className="menu-window ladder-table"
+          role="tabpanel"
+          aria-label={mode === 'ranked' ? 'Ranked' : 'Draft'}
+        >
           <table>
             <thead>
               <tr>

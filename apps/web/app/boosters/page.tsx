@@ -356,7 +356,8 @@ export default function Boosters() {
                 </p>
                 <p>
                   Five distinct characters per pack. Holo adds +1 to one randomly chosen side below
-                  A; that direction stays fixed through trades and decks.
+                  its rarity cap: 8 for 1★–3★, A for 4★–5★. That direction stays fixed through
+                  trades and decks.
                 </p>
                 <p>
                   Universe I: Genshin, Star Rail, ZZZ and Wuthering Waves. Universe II: Epic Seven,

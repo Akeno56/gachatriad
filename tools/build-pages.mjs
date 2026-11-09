@@ -14,6 +14,7 @@ const child = spawn(
     env: {
       ...process.env,
       STATIC_EXPORT: 'true',
+      NEXT_PUBLIC_LOCAL_TEST: 'false',
       NEXT_PUBLIC_BASE_PATH: process.env.NEXT_PUBLIC_BASE_PATH ?? inferred,
     },
   },

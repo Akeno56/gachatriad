@@ -315,15 +315,110 @@
           <tr>
             <th>Player</th>
             <th>Account</th>
+            <th>IP address</th>
             <th>Activity</th>
           </tr>
         </thead>
         <tbody id="players">
           <tr>
-            <td colspan="3" class="empty">No players connected.</td>
+            <td colspan="4" class="empty">No players connected.</td>
           </tr>
         </tbody>
       </table>
+    </section>
+    <section class="panel" id="battleMonitor">
+      <h2>Live battle monitor</h2>
+      <label
+        >Ongoing battle<select id="monitorMatch" aria-label="Ongoing battle">
+          <option value="">Choose a battle</option>
+        </select></label
+      >
+      <p id="monitorStatus">Select a battle to watch its public board. No artwork is loaded.</p>
+      <div
+        id="monitorPlayers"
+        style="display: flex; justify-content: space-between; gap: 16px"
+      ></div>
+      <div
+        id="monitorBoard"
+        aria-label="Live battle board"
+        style="
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 6px;
+          max-width: 440px;
+          margin: 16px auto;
+        "
+      ></div>
+    </section>
+    <section class="panel" id="playerReview">
+      <h2>Battle history review</h2>
+      <label
+        >Player<select id="reviewUser">
+          <option value="">Choose a user</option>
+        </select></label
+      >
+      <p id="reviewSummary">Select a player to inspect their results and repeated opponents.</p>
+      <p>
+        Repeated wins are a review signal, not proof of win trading. Admin test results are excluded
+        from opponent summaries.
+      </p>
+      <div style="overflow: auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Opponent</th>
+              <th>Mode</th>
+              <th>Games</th>
+              <th>W / D / L</th>
+              <th>Longest win streak</th>
+            </tr>
+          </thead>
+          <tbody id="reviewPairs"></tbody>
+        </table>
+      </div>
+      <div style="overflow: auto">
+        <table>
+          <thead>
+            <tr>
+              <th>When</th>
+              <th>Opponent</th>
+              <th>Mode</th>
+              <th>Result</th>
+              <th>Rating</th>
+              <th>Finish</th>
+              <th>Trade</th>
+            </tr>
+          </thead>
+          <tbody id="reviewRows"></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button id="historyPrev">Previous</button><button id="historyNext">Next</button>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Network restrictions</h2>
+      <p>
+        One registered account per IPv4 address / IPv6 /64 network. Existing accounts stay
+        accessible. Shared-network exceptions allow household accounts. IP blocks also deny guests.
+      </p>
+      <label
+        >IP address<input id="networkAddress" placeholder="IP from the player list" maxlength="80"
+      /></label>
+      <label
+        >Action<select id="networkAction">
+          <option value="block">Block network</option>
+          <option value="unblock">Unblock network</option>
+          <option value="allow-shared">Allow shared accounts</option>
+          <option value="restrict-shared">Restore one-account limit</option>
+        </select></label
+      >
+      <button id="networkApply">Apply restriction</button>
+      <p id="networkStatus" role="status"></p>
+      <details>
+        <summary>Saved restrictions and recent actions</summary>
+        <pre id="networkLog"></pre>
+      </details>
     </section>
     <section class="panel">
       <h2>Bot population</h2>
@@ -501,6 +596,13 @@
             'setupNote',
             'Private hosted console on loopback. Access it through SSH; persistent saves are stored on the VPS. Setup and updates: docs/DEDICATED_HOSTING.md.',
           );
+        if (current.localTest) {
+          text('status', current.busy ? 'TEST SERVER · WORKING' : 'TEST SERVER · PC');
+          text(
+            'setupNote',
+            'PC test server with a separate .data-local save. Panel: 3040. Local preview: 3100. Game server: 3101.',
+          );
+        }
         document.querySelectorAll('#settings button').forEach((b) => {
           b.disabled = posting || current.busy || current.managedExternal;
         });
@@ -551,6 +653,20 @@
           if (current.previewURL) el('preview').href = current.previewURL;
           text('error', current.lastError);
           renderModeration();
+          const selectedBattle = el('monitorMatch').value;
+          const battles = current.online?.battles || [];
+          el('monitorMatch').replaceChildren(new Option('Choose a battle', ''));
+          for (const battle of battles)
+            el('monitorMatch').append(
+              new Option(
+                `${battle.player0} vs ${battle.player1} · ${battle.mode} · ${battle.status}`,
+                battle.id,
+              ),
+            );
+          if (selectedBattle && !battles.some((b) => b.id === selectedBattle))
+            el('monitorMatch').append(new Option('Completed battle', selectedBattle));
+          el('monitorMatch').value = selectedBattle;
+          await renderBattle();
           const population = current.online?.population;
           if (!difficultyEdited) renderMix(population?.mix || { easy: 0, medium: 100, hard: 0 });
           text(
@@ -566,6 +682,7 @@
             for (const value of [
               p.name,
               p.registered ? 'Registered' : 'Guest',
+              p.ip || 'Unknown',
               p.match ? p.match.mode + ' · ' + p.match.status : 'In the card hall',
             ]) {
               const cell = document.createElement('td');
@@ -577,7 +694,7 @@
           if (!tbody.children.length) {
             const row = document.createElement('tr'),
               cell = document.createElement('td');
-            cell.colSpan = 3;
+            cell.colSpan = 4;
             cell.className = 'empty';
             cell.textContent = 'No players connected.';
             row.append(cell);
@@ -593,6 +710,23 @@
         }
       }
       function renderModeration() {
+        text(
+          'networkLog',
+          [
+            ...(current?.moderation?.networks || []).map(
+              (n) =>
+                `${n.network} · ${n.blocked ? 'BLOCKED' : 'Access allowed'} · ${n.allow_shared ? 'Shared accounts allowed' : 'One account'}`,
+            ),
+            ...(current?.moderation?.securityLog || []).map(
+              (n) => `${n.created_at} · ${n.action} · ${n.network} · ${n.note}`,
+            ),
+          ].join('\n'),
+        );
+        const reviewSelected = el('reviewUser').value;
+        el('reviewUser').replaceChildren(new Option('Choose a user', ''));
+        for (const user of current?.moderation?.users || [])
+          el('reviewUser').append(new Option(user.name, user.id));
+        el('reviewUser').value = reviewSelected;
         const selected = el('grantUser').value;
         el('grantUser').replaceChildren(new Option('Choose a user', ''));
         for (const user of current?.moderation?.users || [])
@@ -605,7 +739,14 @@
           if (!`${user.name} ${user.id}`.toLowerCase().includes(search)) continue;
           const row = document.createElement('tr');
           const name = document.createElement('td');
-          name.textContent = `${user.name} (${user.id.slice(0, 8)})`;
+          const link = profileLink(user.id, user.name);
+          name.append(
+            link,
+            document.createElement('br'),
+            document.createTextNode(user.ip || 'IP not recorded yet'),
+          );
+          if (user.blocked) name.append(document.createTextNode(' · Network blocked'));
+          if (user.allowShared) name.append(document.createTextNode(' · Shared-network exception'));
           const role = document.createElement('td');
           role.textContent = user.suspended
             ? `Suspended: ${user.reason}`
@@ -619,6 +760,24 @@
             ['disconnect', 'Disconnect'],
             [user.suspended ? 'restore' : 'suspend', user.suspended ? 'Restore access' : 'Suspend'],
           ];
+          const history = document.createElement('button');
+          history.textContent = 'History';
+          history.onclick = () => {
+            el('reviewUser').value = user.id;
+            historyOffset = 0;
+            void renderHistory();
+            el('playerReview').scrollIntoView({ behavior: 'smooth' });
+          };
+          actions.append(history);
+          if (user.ip) {
+            const network = document.createElement('button');
+            network.textContent = 'Network';
+            network.onclick = () => {
+              el('networkAddress').value = user.ip;
+              el('networkAddress').focus();
+            };
+            actions.append(network);
+          }
           if (user.registered)
             choices.push([
               user.isAdmin ? 'demote' : 'promote',
@@ -659,6 +818,159 @@
             .join('\n') || 'No moderation actions.',
         );
       }
+      let monitorPending = false;
+      function profileLink(id, name) {
+        const a = document.createElement('a');
+        a.textContent = name;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        const site =
+          current.localTest && current.previewURL ? current.previewURL : current.config.frontendURL;
+        a.href = new URL('profile/?id=' + encodeURIComponent(id), site).href;
+        return a;
+      }
+      let historyOffset = 0,
+        historyPending = false;
+      async function renderHistory() {
+        const id = el('reviewUser').value;
+        if (!id || historyPending) return;
+        historyPending = true;
+        try {
+          const r = await fetch(
+              '/history?id=' + encodeURIComponent(id) + '&offset=' + historyOffset,
+            ),
+            data = await r.json();
+          if (!r.ok) throw Error(data.error || 'History unavailable.');
+          text(
+            'reviewSummary',
+            `${data.person.name} · ${data.total} completed games · showing ${historyOffset + 1}–${Math.min(historyOffset + 100, data.total)}`,
+          );
+          el('reviewPairs').replaceChildren();
+          el('reviewRows').replaceChildren();
+          for (const pair of data.pairs) {
+            const tr = document.createElement('tr');
+            for (const value of [
+              pair.opponent,
+              pair.mode,
+              pair.games,
+              `${pair.wins} / ${pair.draws} / ${pair.losses}`,
+              pair.longest_win_streak,
+            ]) {
+              const td = document.createElement('td');
+              td.textContent = value;
+              tr.append(td);
+            }
+            if (pair.longest_win_streak >= 5) tr.style.background = '#65432d';
+            el('reviewPairs').append(tr);
+          }
+          for (const game of data.rows) {
+            const tr = document.createElement('tr');
+            for (const value of [
+              new Date(game.completed_at).toLocaleString(),
+              game.opponent,
+              game.mode,
+              game.result,
+              game.before_rating === null
+                ? 'Not recorded'
+                : `${game.before_rating} → ${game.after_rating}`,
+              game.end_reason || `${game.turns} turns`,
+              game.trade_rule === 'one'
+                ? game.claimed_card || (game.settlement_done ? 'No card' : 'Pending')
+                : 'None',
+            ]) {
+              const td = document.createElement('td');
+              td.textContent = value;
+              tr.append(td);
+            }
+            el('reviewRows').append(tr);
+          }
+          el('historyPrev').disabled = historyOffset === 0;
+          el('historyNext').disabled = historyOffset + 100 >= data.total;
+        } catch (e) {
+          text('reviewSummary', e.message);
+        } finally {
+          historyPending = false;
+        }
+      }
+      el('reviewUser').onchange = () => {
+        historyOffset = 0;
+        void renderHistory();
+      };
+      el('historyPrev').onclick = () => {
+        historyOffset = Math.max(0, historyOffset - 100);
+        void renderHistory();
+      };
+      el('historyNext').onclick = () => {
+        historyOffset += 100;
+        void renderHistory();
+      };
+      el('networkApply').onclick = async () => {
+        const network = el('networkAddress').value.trim(),
+          mode = el('networkAction').value;
+        if (!network || !confirm(`${mode}: ${network}?`)) return;
+        if (await action('/network', { network, action: mode, reason: el('moderationNote').value }))
+          text('networkStatus', 'Network restriction updated.');
+      };
+      async function renderBattle() {
+        const id = el('monitorMatch').value;
+        if (!id || monitorPending) return;
+        monitorPending = true;
+        try {
+          const response = await fetch('/battle?id=' + encodeURIComponent(id));
+          const match = await response.json();
+          if (!response.ok) throw Error(match.error);
+          if (el('monitorMatch').value !== id) return;
+          text(
+            'monitorStatus',
+            `${match.status.toUpperCase()} · ${match.score[0]} / ${match.score[1]} · ${match.game ? match.names[match.game.turn] + "'s turn" : 'Draft picks are private'}`,
+          );
+          el('monitorPlayers').replaceChildren();
+          for (let seat = 0; seat < 2; seat++) {
+            const info = document.createElement('span');
+            const hand = match.game?.hands[seat] || [];
+            info.textContent = `${match.names[seat]} · ${hand.length} cards · ${hand.filter((c) => c.card).length} revealed`;
+            el('monitorPlayers').append(info);
+          }
+          el('monitorBoard').replaceChildren();
+          for (let cell = 0; cell < 9; cell++) {
+            const item = match.game?.board[cell],
+              node = document.createElement('div');
+            Object.assign(node.style, {
+              aspectRatio: '1',
+              border: '1px solid #607491',
+              padding: '8px',
+              display: 'grid',
+              placeContent: 'center',
+              textAlign: 'center',
+              background: item ? (item.owner === 0 ? '#244875' : '#753843') : '#0b172c',
+            });
+            if (item) {
+              const element = match.game.cellElements?.[cell],
+                modifier = element ? (item.card.element === element ? 1 : -1) : 0;
+              const values = item.card.stats
+                .map((v) => v + modifier)
+                .map((v) => (v === 10 ? 'A' : String(v)));
+              const numbers = document.createElement('strong');
+              numbers.style.whiteSpace = 'pre';
+              numbers.textContent = `   ${values[0]}\n${values[3]}     ${values[1]}\n   ${values[2]}`;
+              const name = document.createElement('small');
+              name.textContent = item.card.name;
+              node.append(numbers, name);
+            } else
+              node.textContent = String.fromCharCode(65 + Math.floor(cell / 3)) + ((cell % 3) + 1);
+            el('monitorBoard').append(node);
+          }
+        } catch (error) {
+          text('monitorStatus', error.message);
+        } finally {
+          monitorPending = false;
+        }
+      }
+      el('monitorMatch').addEventListener('change', () => {
+        el('monitorBoard').replaceChildren();
+        if (el('monitorMatch').value) void renderBattle();
+        else text('monitorStatus', 'Choose a battle');
+      });
       let searchTimer;
       el('userSearch').addEventListener('input', () => {
         renderModeration();

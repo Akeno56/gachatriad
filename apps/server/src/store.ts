@@ -90,6 +90,7 @@ interface MatchRow {
 interface LobbyRow {
   allow_bots: boolean;
   invited_profile: string | null;
+  spectatable: boolean;
   id: string;
   host_id: string;
   guest_id: string | null;
@@ -174,6 +175,8 @@ export class GameStore {
       '012_draft_shop_rematches.sql',
       '013_booster_types_departures.sql',
       '014_activity_chat_moderation.sql',
+      '015_spectator_privacy.sql',
+      '016_account_networks.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -459,7 +462,7 @@ export class GameStore {
         trade,
         mode === 'draft' ? 'drafting' : 'playing',
         state
-          ? Date.now() + (mode === 'solo' && state.turn === 1 ? 700 : 120_000)
+          ? Date.now() + (mode === 'solo' && state.turn === 1 ? 700 : 60_000)
           : Date.now() + 180_000,
       ],
     );
@@ -472,10 +475,11 @@ export class GameStore {
     ]);
     return id;
   }
-  async lobbies(): Promise<LobbyView[]> {
+  async lobbies(includeRated = false): Promise<LobbyView[]> {
     return this.db.read(async (sql) => {
       const rows = await sql<LobbyRow & { host: string }>(
-        "SELECT l.*,p.name host FROM lobbies l JOIN profiles p ON p.id=l.host_id WHERE l.status IN('waiting','playing') ORDER BY l.created_at DESC LIMIT 200",
+        "SELECT l.*,p.name host FROM lobbies l JOIN profiles p ON p.id=l.host_id WHERE l.status IN('waiting','playing') AND ($1 OR l.mode NOT IN('ranked','draft')) ORDER BY l.created_at DESC LIMIT 200",
+        [includeRated],
       );
       return rows.map((r) => ({
         id: r.id,
@@ -483,7 +487,7 @@ export class GameStore {
         host: r.host,
         hostId: r.host_id,
         allowBots: r.allow_bots,
-        inviteOnly: !!r.invited_profile,
+        inviteOnly: !!r.invited_profile || !r.spectatable,
         mode: r.mode,
         rules: r.rules,
         tradeRule: r.trade_rule,
@@ -551,12 +555,17 @@ export class GameStore {
         );
         for (const row of candidates) {
           if (await this.related(sql, row.host_id, id)) continue;
+          if (
+            (mode === 'ranked' || mode === 'draft') &&
+            (await this.sharedNetwork(sql, row.host_id, id))
+          )
+            continue;
           return this.joinRow(sql, profile, row);
         }
       }
       const lobbyId = randomUUID();
       await sql(
-        "INSERT INTO lobbies(id,host_id,name,mode,rules,trade_rule,status,allow_bots,invited_profile) VALUES($1,$2,$3,$4,$5::jsonb,$6,'waiting',$7,$8)",
+        "INSERT INTO lobbies(id,host_id,name,mode,rules,trade_rule,status,allow_bots,invited_profile,spectatable) VALUES($1,$2,$3,$4,$5::jsonb,$6,'waiting',$7,$8,$9)",
         [
           lobbyId,
           id,
@@ -566,6 +575,7 @@ export class GameStore {
           trade,
           allowBots,
           input.invitedProfile ?? null,
+          !input.invitedProfile,
         ],
       );
       return { lobbyId, matchId: null };
@@ -657,12 +667,23 @@ export class GameStore {
       throw new GameError('This match is private.', 403);
     return row;
   }
-  async view(profileId: string, id: string): Promise<MatchView> {
+  async view(profileId: string, id: string, spectator = false, host = false): Promise<MatchView> {
     return this.db.read(async (sql) => {
-      const m = await this.load(sql, id, profileId);
-      const seat: Player = m.player0 === profileId ? 0 : 1;
+      const m = await this.load(sql, id, spectator ? undefined : profileId);
+      if (
+        spectator &&
+        !host &&
+        !(
+          await sql(
+            'SELECT 1 FROM lobbies WHERE match_id=$1 AND spectatable AND invited_profile IS NULL',
+            [id],
+          )
+        ).length
+      )
+        throw new GameError('This battle is not available to spectators.', 403);
+      const seat: Player = spectator || m.player0 === profileId ? 0 : 1;
       const rematchUnavailable =
-        m.status === 'complete' && m.player1
+        !spectator && m.status === 'complete' && m.player1
           ? await this.rematchUnavailable(sql, m, profileId)
           : null;
       const users = await sql<{
@@ -685,7 +706,9 @@ export class GameStore {
                   .digest('hex')
                   .slice(0, 24),
                 card:
-                  player === seat || isRevealed(m.state!, player as Player, card.id) ? card : null,
+                  (!spectator && player === seat) || isRevealed(m.state!, player as Player, card.id)
+                    ? card
+                    : null,
               })),
             ) as MatchView['game'] extends infer _T
               ? [
@@ -707,11 +730,15 @@ export class GameStore {
       };
       return {
         id: m.id,
-        chatAvailable: !!m.player1 && !users.some((p) => p.is_bot),
+        spectator,
+        missedTurns: m.auto_turns,
+        chatAvailable: !spectator && !!m.player1 && !users.some((p) => p.is_bot),
         ratingApplies:
           !!m.player1 &&
           (m.mode === 'ranked' || m.mode === 'draft') &&
-          !users.some((p) => p.is_bot),
+          !users.some((p) => p.is_bot) &&
+          m.end_reason !== 'admin test result' &&
+          !(await this.sharedNetwork(sql, m.player0, m.player1)),
         players: [identity(m.player0), identity(m.player1)],
         prismReward:
           (
@@ -738,27 +765,31 @@ export class GameStore {
         rules: m.rules,
         deadline: m.deadline ? Number(m.deadline) : null,
         endReason: m.end_reason,
-        draftPool: m.status === 'drafting' && m.pools ? cards(m.pools[seat]) : [],
+        draftPool: !spectator && m.status === 'drafting' && m.pools ? cards(m.pools[seat]) : [],
         draftLocked: m.decks[seat].length === 5,
         draftRevealed: m.draft_revealed?.[seat] ?? 0,
         rematch: {
           unavailableReason: rematchUnavailable,
           requestedBy:
+            !spectator &&
             m.rematch_requested_at &&
             Date.now() - new Date(m.rematch_requested_at).getTime() < 300000
               ? m.rematch_requested_by
               : null,
-          matchId: m.rematch_match_id,
+          matchId: spectator ? null : m.rematch_match_id,
           expiresAt: m.rematch_requested_at
             ? new Date(m.rematch_requested_at).getTime() + 300000
             : null,
         },
         trade: {
           rule: m.trade_rule,
-          pending: !m.settlement_done && m.status === 'complete',
-          canClaim: !m.settlement_done && m.status === 'complete' && m.winner === seat,
+          pending: !spectator && !m.settlement_done && m.status === 'complete',
+          canClaim:
+            !spectator && !m.settlement_done && m.status === 'complete' && m.winner === seat,
           choices:
-            m.status === 'complete' && !m.is_draw ? cards(m.decks[m.winner === 0 ? 1 : 0]) : [],
+            !spectator && m.status === 'complete' && !m.is_draw
+              ? cards(m.decks[m.winner === 0 ? 1 : 0])
+              : [],
           claimedCard: m.claimed_card ? (byId.get(m.claimed_card) ?? null) : null,
           expiresAt: m.claim_deadline ? Number(m.claim_deadline) : null,
         },
@@ -785,7 +816,7 @@ export class GameStore {
         const state = createGame([cards(m.decks[0]), cards(m.decks[1])], m.rules, rng());
         await sql(
           "UPDATE matches SET decks=$1::jsonb,state=$2::jsonb,status='playing',version=version+1,deadline=$3 WHERE id=$4",
-          [JSON.stringify(m.decks), JSON.stringify(state), Date.now() + 120000, id],
+          [JSON.stringify(m.decks), JSON.stringify(state), Date.now() + 60000, id],
         );
       } else
         await sql('UPDATE matches SET decks=$1::jsonb,version=version+1 WHERE id=$2', [
@@ -892,7 +923,7 @@ export class GameStore {
         m.player0,
       ]);
       await sql(
-        "INSERT INTO lobbies(id,host_id,guest_id,name,mode,rules,trade_rule,status,match_id,allow_bots) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7,'playing',$8,$9)",
+        "INSERT INTO lobbies(id,host_id,guest_id,name,mode,rules,trade_rule,status,match_id,allow_bots,spectatable) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7,'playing',$8,$9,COALESCE((SELECT spectatable AND invited_profile IS NULL FROM lobbies WHERE match_id=$10 LIMIT 1),false))",
         [
           randomUUID(),
           m.player0,
@@ -903,6 +934,7 @@ export class GameStore {
           m.trade_rule,
           next,
           other.is_bot,
+          id,
         ],
       );
       await sql('UPDATE matches SET rematch_match_id=$1,version=version+1 WHERE id=$2', [next, id]);
@@ -913,6 +945,8 @@ export class GameStore {
     match: MatchRow,
     viewer: string,
   ): Promise<string | null> {
+    if (match.mode === 'ranked' || match.mode === 'draft')
+      return 'Rated matches use matchmaking. Join the queue for your next game.';
     if (match.departed?.length)
       return 'A player has left this match. Start a new game to play again.';
     const opponent = match.player0 === viewer ? match.player1 : match.player0;
@@ -933,6 +967,25 @@ export class GameStore {
     )
       return 'Your opponent is already in another game or lobby.';
     return null;
+  }
+  private async sharedNetwork(sql: Sql, a: string, b: string) {
+    return (
+      (
+        await sql(
+          `SELECT 1 FROM profile_accounts a JOIN account_ips ia ON ia.user_id=a.auth_user_id
+      JOIN account_ips ib ON ib.network=ia.network JOIN profile_accounts b ON b.auth_user_id=ib.user_id
+      WHERE a.profile_id=$1 AND b.profile_id=$2
+      AND NOT ($3 AND ia.network IN('127.0.0.1','::1'))
+      AND NOT EXISTS(SELECT 1 FROM account_networks n WHERE n.network=ia.network AND n.allow_shared) LIMIT 1`,
+          [
+            a,
+            b,
+            process.env.NODE_ENV !== 'production' &&
+              process.env.ALLOW_SHARED_TEST_NETWORK === 'true',
+          ],
+        )
+      ).length > 0
+    );
   }
   async leaveResult(profileId: string, id: string) {
     await this.db.tx(async (sql) => {
@@ -957,11 +1010,20 @@ export class GameStore {
       if (m.status !== 'playing' || !m.state)
         throw new GameError('The match is not accepting moves.');
       const seat: Player = m.player0 === profileId ? 0 : 1;
+      if (m.deadline && Number(m.deadline) <= Date.now()) {
+        await this.timeoutTurn(sql, m);
+        return;
+      }
       if (m.version !== version)
         throw new GameError('The board changed. Your view has been refreshed.', 409);
       const move = { player: seat, cardId, cell };
       const error = validateMove(m.state, move);
       if (error) throw new GameError(error);
+      m.auto_turns[seat] = 0;
+      await sql('UPDATE matches SET auto_turns=$1::jsonb WHERE id=$2', [
+        JSON.stringify(m.auto_turns),
+        id,
+      ]);
       await this.recordAction(sql, m, seat);
       const next = applyMove(m.state, move);
       await this.advance(sql, m, next);
@@ -986,7 +1048,7 @@ export class GameStore {
       Date.now() +
         (m.mode === 'solo' && next.turn === 1
           ? 900 + (next.history.at(-1)?.captures.length ?? 0) * 160
-          : 120_000),
+          : 60_000),
       m.id,
     ]);
     if (next.status === 'complete') await this.finish(sql, m, winner(next)!, null);
@@ -1025,6 +1087,7 @@ export class GameStore {
     for (let seat = 0; seat < 2; seat++) {
       const id = participants[seat];
       if (!id) continue;
+      if (reason === 'admin test result') continue;
       const turns = m.state?.history.filter((t) => t.move.player === seat) ?? [];
       const captures = turns.flatMap((t) => t.captures);
       const total = m.state ? scores(m.state)[seat] : 0;
@@ -1054,6 +1117,7 @@ export class GameStore {
       if (
         m.player1 &&
         !profileRows.some((p) => p.is_bot) &&
+        !(await this.sharedNetwork(sql, m.player0, m.player1)) &&
         (m.mode === 'ranked' || m.mode === 'draft')
       ) {
         const field = m.mode === 'draft' ? 'draft_rating' : 'rating';
@@ -1065,11 +1129,16 @@ export class GameStore {
           Math.round(32 * (actual - expected)),
           id,
         ]);
+        await sql(
+          `INSERT INTO match_ratings(match_id,profile_id,before_rating,after_rating) SELECT $1,id,$2,${field} FROM profiles WHERE id=$3 ON CONFLICT DO NOTHING`,
+          [m.id, self, id],
+        );
       }
       await this.unlock(sql, id);
       await sql('UPDATE profiles SET peak_rating=greatest(peak_rating,rating) WHERE id=$1', [id]);
     }
-    if (m.mode === 'ranked' && !profileRows.some((p) => p.is_bot)) await awardRankTitles(sql);
+    if (reason !== 'admin test result' && m.mode === 'ranked' && !profileRows.some((p) => p.is_bot))
+      await awardRankTitles(sql);
     await sql("UPDATE lobbies SET status='closed' WHERE match_id=$1", [m.id]);
   }
   async resign(profileId: string, id: string) {
@@ -1083,6 +1152,18 @@ export class GameStore {
         (1 - loser) as Player,
         m.status === 'drafting' ? 'draft abandoned' : 'forfeit',
       );
+    });
+  }
+  async adminWin(profileId: string, id: string) {
+    await this.db.tx(async (sql) => {
+      const allowed = await sql(
+        'SELECT 1 FROM server_admins ad JOIN profile_accounts a ON a.auth_user_id=ad.auth_user_id WHERE a.profile_id=$1',
+        [profileId],
+      );
+      if (!allowed.length) throw new GameError('Administrator access required.', 403);
+      const m = await this.load(sql, id, profileId);
+      if (m.status === 'complete') return;
+      await this.finish(sql, m, m.player0 === profileId ? 0 : 1, 'admin test result');
     });
   }
   private async claim(sql: Sql, m: MatchRow, cardId: string) {
@@ -1290,13 +1371,6 @@ export class GameStore {
           at: m.activity_at[seat] + 120000,
           reason: 'inactive for 120 seconds',
         });
-      if (
-        m.status === 'playing' &&
-        m.state?.turn === seat &&
-        m.deadline &&
-        now >= Number(m.deadline)
-      )
-        expired.push({ seat, at: Number(m.deadline), reason: 'inactive for 120 seconds' });
     }
     if (!expired.length) return false;
     // If both have gone away, settle once against the player whose grace expired first.
@@ -1335,39 +1409,39 @@ export class GameStore {
           const state = createGame([cards(m.decks[0]), cards(m.decks[1])], m.rules, rng());
           await sql(
             "UPDATE matches SET decks=$1::jsonb,state=$2::jsonb,status='playing',version=version+1,deadline=$3 WHERE id=$4",
-            [JSON.stringify(m.decks), JSON.stringify(state), Date.now() + 120000, m.id],
+            [JSON.stringify(m.decks), JSON.stringify(state), Date.now() + 60000, m.id],
           );
           changed.push(m.id);
           continue;
         }
-        if (!m.state) continue;
-        if (m.mode === 'solo' && m.state.turn === 0) continue;
-        let move;
-        if (m.mode === 'solo')
-          move = chooseCpuMove(cpuView(m.state), m.difficulty || 'easy', rng());
-        else {
-          m.auto_turns[m.state.turn]++;
-          if (m.auto_turns[m.state.turn] >= 3) {
-            await this.finish(sql, m, (1 - m.state.turn) as Player, 'three missed turns');
-            changed.push(m.id);
-            continue;
-          }
-          await sql('UPDATE matches SET auto_turns=$1::jsonb WHERE id=$2', [
-            JSON.stringify(m.auto_turns),
-            m.id,
-          ]);
-          const moves = legalMoves(m.state);
-          move = moves[randomInt(moves.length)];
-        }
-        if (move) {
-          await this.advance(sql, m, applyMove(m.state, move));
-          changed.push(m.id);
-        }
+        if (await this.timeoutTurn(sql, m)) changed.push(m.id);
       }
       await sql(
         "UPDATE lobbies SET status='closed' WHERE status='waiting' AND created_at<now()-interval '15 minutes'",
       );
       return changed;
     });
+  }
+  private async timeoutTurn(sql: Sql, m: MatchRow) {
+    if (!m.state) return false;
+    const seat = m.state.turn;
+    let move;
+    if (m.mode === 'solo' && seat === 1)
+      move = chooseCpuMove(cpuView(m.state), m.difficulty || 'easy', rng());
+    else {
+      m.auto_turns[seat]++;
+      if (m.auto_turns[seat] >= 2) {
+        await this.finish(sql, m, (1 - seat) as Player, 'two consecutive missed turns');
+        return true;
+      }
+      await sql('UPDATE matches SET auto_turns=$1::jsonb WHERE id=$2', [
+        JSON.stringify(m.auto_turns),
+        m.id,
+      ]);
+      const moves = legalMoves(m.state);
+      move = moves[randomInt(moves.length)];
+    }
+    if (move) await this.advance(sql, m, applyMove(m.state, move));
+    return !!move;
   }
 }

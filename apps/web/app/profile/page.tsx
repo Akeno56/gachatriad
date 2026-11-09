@@ -10,6 +10,7 @@ import { Card } from '../../components/card';
 import { assetPath } from '../../lib/connection';
 import { api } from '../../lib/platform';
 import { AdminGrant } from '../../components/admin-grant';
+import { AdminPlayerReview } from '../../components/admin-player-review';
 import { useSocial, openFriendChat } from '../../components/social-state';
 export default function PlayerProfile() {
   const { profile, revision, refresh, openAccount } = useSession();
@@ -269,6 +270,7 @@ export default function PlayerProfile() {
               ))}
             </details>
             <AdminGrant playerId={player.id} name={player.name} />
+            <AdminPlayerReview playerId={player.id} />
             <h2 className="profile-section-title">
               Earned achievements · {player.achievements.length}
             </h2>

@@ -10,7 +10,6 @@ import { ServerConnection } from './server-connection';
 import { FirstDuelTutorial } from './tutorial';
 import { StarterBoosters } from './starter-boosters';
 import { useSession } from './session';
-import { assetPath } from '../lib/connection';
 import { RankedWarning } from './ranked-warning';
 import { SocialPanel } from './social-panel';
 import { SocialProvider } from './social-state';
@@ -167,11 +166,8 @@ export function GameShell({ children }: { children: React.ReactNode }) {
               <div className="screen-grain" aria-hidden="true" />
               <header className="system-bar">
                 <Link href="/" className="system-brand" aria-label="Gacha Triad home">
-                  <img
-                    src={assetPath('/assets/ui/triad-logo.webp')}
-                    alt="Gacha Triad"
-                    draggable={false}
-                  />
+                  <strong>Gacha Triad</strong>
+                  <small>Alpha</small>
                 </Link>
                 <nav aria-label="Main navigation">
                   {[

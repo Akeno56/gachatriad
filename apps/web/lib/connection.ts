@@ -1,8 +1,10 @@
 export const APP_BASE = process.env.NEXT_PUBLIC_BASE_PATH || '';
 export const STATIC_BUILD = process.env.NEXT_PUBLIC_STATIC_EXPORT === 'true';
+export const LOCAL_TEST_BUILD = process.env.NEXT_PUBLIC_LOCAL_TEST === 'true';
 export const assetPath = (path: string) => `${APP_BASE}${path}`;
 export const appPath = assetPath;
 export function serverURL() {
+  if (LOCAL_TEST_BUILD) return process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3101';
   if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL || '';
   return localStorage.getItem('triad-server') || process.env.NEXT_PUBLIC_API_URL || '';
 }
@@ -11,6 +13,8 @@ export function serverConfigured() {
 }
 export function normalizeServerURL(value: string) {
   const url = new URL(value);
+  if (LOCAL_TEST_BUILD && url.origin !== serverURL())
+    throw Error('Local test mode only connects to the local test server.');
   if (
     url.protocol !== 'https:' &&
     !(url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname))

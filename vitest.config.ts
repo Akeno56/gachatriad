@@ -8,6 +8,7 @@ export default defineConfig({
       'apps/web/lib/**/*.test.ts',
     ],
     environment: 'node',
+    env: { ALLOW_SHARED_TEST_NETWORK: 'true' },
     testTimeout: 20000,
     hookTimeout: 30000,
   },

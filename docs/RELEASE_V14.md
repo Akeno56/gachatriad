@@ -1,5 +1,7 @@
 # v0.14 — Match activity, chat and bot population
 
+The turn policy and interface described here are superseded by [0.1.0 Alpha](RELEASE_V0_1_0.md). The 120-second disconnect policy, moderation and bot economy remain.
+
 This update preserves existing accounts, collections, currency and history. Migration 014 is additive. Do not run a reset or copy the old PC save to the VPS.
 
 ## Match abandonment

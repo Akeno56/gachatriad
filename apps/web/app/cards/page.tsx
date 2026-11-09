@@ -34,6 +34,7 @@ export default function CardsPage() {
     [ownership, setOwnership] = useState('all'),
     [rarity, setRarity] = useState('all'),
     [finish, setFinish] = useState('standard'),
+    [sort, setSort] = useState('name'),
     [page, setPage] = useState(0),
     [detail, setDetail] = useState<CardData | null>(null);
   const ownedHolos = new Map<string, CardData[]>();
@@ -44,15 +45,28 @@ export default function CardsPage() {
       ownedHolos.set(card.baseCardId!, group);
     }
   const holoCards = HOLO_CARDS.flatMap((card) => ownedHolos.get(card.baseCardId!) ?? [card]);
-  const cards = (finish === 'holo' ? holoCards : CARDS).filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) &&
-      (universe === 'all' || c.universeId === universe) &&
-      (rarity === 'all' || c.rarity === Number(rarity)) &&
-      (ownership === 'all' ||
-        (ownership === 'owned' && (profile?.inventory[c.id]?.quantity ?? 0) > 0) ||
-        (ownership === 'missing' && profile && !profile.inventory[c.id]?.quantity)),
-  );
+  const cards = (finish === 'holo' ? holoCards : CARDS)
+    .filter(
+      (c) =>
+        c.name.toLowerCase().includes(search.toLowerCase()) &&
+        (universe === 'all' || c.universeId === universe) &&
+        (rarity === 'all' || c.rarity === Number(rarity)) &&
+        (ownership === 'all' ||
+          (ownership === 'owned' && (profile?.inventory[c.id]?.quantity ?? 0) > 0) ||
+          (ownership === 'missing' && profile && !profile.inventory[c.id]?.quantity)),
+    )
+    .sort((a, b) => {
+      const total = (c: CardData) => c.stats.reduce((sum, n) => sum + n, 0);
+      return (
+        (sort === 'stats'
+          ? total(b) - total(a) || b.rarity - a.rarity
+          : sort === 'rarity'
+            ? b.rarity - a.rarity || total(b) - total(a)
+            : 0) ||
+        a.name.localeCompare(b.name) ||
+        a.id.localeCompare(b.id)
+      );
+    });
   const pages = Math.max(1, Math.ceil(cards.length / 24)),
     current = Math.min(page, pages - 1),
     visible = cards.slice(current * 24, (current + 1) * 24),
@@ -67,6 +81,21 @@ export default function CardsPage() {
           are greyed out.
         </p>
         <div className="album-filters">
+          <label>
+            Sort by
+            <select
+              aria-label="Sort by"
+              value={sort}
+              onChange={(e) => {
+                setSort(e.target.value);
+                setPage(0);
+              }}
+            >
+              <option value="name">Name A–Z</option>
+              <option value="rarity">Rarity: highest first</option>
+              <option value="stats">Total stats: highest first</option>
+            </select>
+          </label>
           <label>
             Find a card
             <input
@@ -149,7 +178,8 @@ export default function CardsPage() {
         {finish === 'holo' && (
           <p className="finish-note">
             Holo adds +1 to one random side when acquired. The highlighted value stays fixed through
-            trades. Holo copies cannot be bought directly.
+            trades. Holo copies cannot be bought directly. Printed and Holo values are capped at 8
+            for 1★–3★ cards and A for 4★–5★ cards.
           </p>
         )}
         <p className="catalog-count" role="status">

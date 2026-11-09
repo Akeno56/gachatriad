@@ -21,7 +21,6 @@ export function SocialPanel() {
     [busy, setBusy] = useState(false),
     [query, setQuery] = useState(''),
     [results, setResults] = useState<BattleIdentity[]>([]);
-  const dialog = useRef<HTMLDialogElement>(null);
   const seen = useRef(new Set<string>()),
     seenOwner = useRef('');
   const [inviteToast, setInviteToast] = useState<{
@@ -112,8 +111,12 @@ export function SocialPanel() {
     return () => window.removeEventListener('triad:friend-chat', show);
   }, []);
   useEffect(() => {
-    if (open) dialog.current?.showModal();
-    else dialog.current?.close();
+    if (!open) return;
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', escape);
+    return () => window.removeEventListener('keydown', escape);
   }, [open]);
   const notifications =
     data.friends.filter((f) => f.status === 'incoming').length +
@@ -142,18 +145,19 @@ export function SocialPanel() {
       <>
         <button
           className="social-launcher outline-button"
-          onClick={() => setOpen(true)}
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
           aria-label={`Friends and private chat${notifications ? ` (${notifications} notifications)` : ''}`}
         >
           Friends &amp; messages {notifications > 0 && <b>{notifications}</b>}
         </button>
         {!open && toast}
         {open && (
-          <dialog
-            ref={dialog}
-            className="game-dialog menu-window social-dialog"
+          <aside
+            role="dialog"
+            aria-modal="false"
+            className="menu-window social-dialog messenger-drawer"
             aria-labelledby="social-title"
-            onCancel={() => setOpen(false)}
           >
             <div className="social-heading">
               <h2 id="social-title">Friends &amp; messages</h2>
@@ -388,7 +392,7 @@ export function SocialPanel() {
               </section>
             )}
             {toast}
-          </dialog>
+          </aside>
         )}
       </>
     </LocaleView>

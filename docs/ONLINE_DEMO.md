@@ -54,7 +54,9 @@ The workflow uses Node 24-compatible Pages actions (`configure-pages@v6`, `uploa
 
 ## 3. Start the PC control tool
 
-On Windows, double-click **Start Server Control.cmd** in the project folder. It starts the private panel in the background and opens **http://127.0.0.1:3030** in your browser. The launcher window stays open to show the panel address and any error; press a key to close it. If Windows does not open a browser, open that address manually. Opening the launcher again reuses the running panel. Use the panel's **Start server**, **Shut down server** and **Restart server** buttons; closing the browser does not stop the server.
+If you already use port 3030 for the VPS's SSH admin connection, double-click **Start Test Server Control.cmd** instead. It opens an independent PC test panel at **http://127.0.0.1:3040**, with a test backend on 3101 and separate `.data-local/` save. It supports the same GitHub Pages + Cloudflare links. **Start Local Test.cmd** additionally rebuilds the latest frontend and offers a local preview on 3100; use it for unpublished UI changes.
+
+Otherwise, **Start Server Control.cmd** retains the original PC panel on **http://127.0.0.1:3030**. The launcher window stays open to show the panel address and any error; press a key to close it. If Windows does not open a browser, open that address manually. Opening the launcher again reuses the running panel. Use the panel's **Start server**, **Shut down server** and **Restart server** buttons; closing the browser does not stop the server.
 
 On this development PC, Node and the project dependencies are already installed, so the launcher needs no pnpm commands. A local frontend build is optional when playing through GitHub Pages.
 

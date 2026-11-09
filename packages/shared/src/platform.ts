@@ -6,6 +6,8 @@ export interface HandCard {
   card: Card | null;
 }
 export interface MatchView {
+  spectator?: boolean;
+  missedTurns?: readonly [number, number];
   chatAvailable: boolean;
   ratingApplies: boolean;
   players: readonly [BattleIdentity, BattleIdentity];
@@ -99,7 +101,7 @@ export const ECONOMY = {
   draftGuaranteedWeights: [0, 0, 0, 85, 15],
   holoPer10000: 50,
   draftHoloPer10000: 500,
-  cardPrices: [50, 125, 200, 300, 500],
+  cardPrices: [100, 200, 500, 1000, 2500],
   recyclePrisms: [5, 10, 20, 40, 75],
 } as const;
 export const BOOSTER_TYPES = [

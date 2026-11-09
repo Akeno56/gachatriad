@@ -17,7 +17,7 @@ Custom lobbies share one public, filterable browser displaying 1/2 waiting or 2/
 
 Pending Trade One settlement blocks both players from starting another match until the winner chooses a card or the two-minute automatic claim resolves. The winner is prompted to return to selection when navigating away. Completed multiplayer results support a rematch with the same opponent/rules; humans must both agree, while idle bots accept automatically. A lost last copy must still be replaced in the active deck before starting a constructed rematch.
 
-All owned decks contain five different enabled cards: at most one 5★ and one 4★, or two 4★ without a 5★. Human turns allow 120 seconds, then forfeit without automatic moves. A separate 120-second disconnection grace applies even during the other player's turn; another connected tab keeps a player online. Draft selection forfeits after 120 seconds without a new reveal or locking the deck. Timers and matches persist across reload/restart. Labeled bots are exempt from human inactivity checks; Ranked/Draft results against them never change either participant's Elo. See [v0.14](RELEASE_V14.md).
+All owned decks contain five different enabled cards: at most one 5★ and one 4★, or two 4★ without a 5★. Turns last 60 seconds. A player's first missed turn auto-plays one legal card; missing their next turn forfeits immediately. A manual move clears that warning. A separate 120-second disconnection grace applies even during the other player's turn; another connected tab keeps a player online. Draft selection forfeits after 120 seconds without a new reveal or locking the deck. Timers and matches persist across reload/restart. Ranked/Draft results against bots never change either participant's Elo. See [v0.15](RELEASE_V15.md).
 
 The Combo lesson now replays six legal placements using approved catalog values, then places Billy at A2. His left 5 + Endministrator's right 3 = 8, and bottom 4 + Anby's top 4 = 8. Plus flips both. Anby's right 4 beats Chixia's left 2; Endministrator's bottom 9 beats Yangyang's top 5. These are exactly two Combo captures. The old lesson description below is historical and superseded.
 
@@ -28,6 +28,8 @@ Primary reference: [FFXIV official Triple Triad guide](https://na.finalfantasyxi
 ## Standard
 
 Two players each bring five distinct card definitions. A uniformly chosen first player starts. Each turn places exactly one hand card into an empty cell on a 3×3 board. Values are ordered **top, right, bottom, left**, range 1–10, and display 10 as **A**. Compare only orthogonally adjacent touching sides. A strictly greater attacking value captures an opposing card. Equal values do not capture normally. Ownership changes; identity and directional values do not. Cards never rotate.
+
+Printed and Holo sides are capped at **8 for 1★–3★ cards**, and **A for 4★–5★**. Holo adds +1 only to a side below that rarity's cap. Elemental modifiers still apply to the current board values during a match.
 
 After nine placements, count board ownership plus each player's remaining hand. Total score stays 10. More than 5 wins; 5–5 draws. No turn timers or surrender rewards exist in local practice.
 
@@ -66,8 +68,8 @@ Same Wall, Reverse, Fallen Ace, Order, Chaos, Sudden Death, Ascension, Descensio
 
 ## Reproducible Combo lesson
 
-The title menu's **Combo lesson** replays March 7th to C1, Chixia to B3, Yangyang to B1, Endministrator to A1, Amber to A3 and Anby to B2 with the published catalog values. Before the solution, A1, B1, B2 and B3 belong to the opponent.
+The title menu's **Combo lesson** replays March 7th to C1, Chixia to B3, Yangyang to B1, Endministrator to A1, Amber to A3 and Anby to B2 with fixed teaching values, identified in its UI. Low-rarity training values also respect the cap of 8. Before the solution, A1, B1, B2 and B3 belong to the opponent.
 
-Place Billy at A2. His left 5 + Endministrator's right 3 = 8, and bottom 4 + Anby's top 4 = 8. **Plus** captures both. Anby's right 4 beats Chixia's left 2 at B3 (**Combo**); Endministrator's bottom 9 beats Yangyang's top 5 at B1 (**Combo**). Exactly four cards flip, two through Combo.
+Place Billy at A2. His left 5 + Endministrator's right 3 = 8, and bottom 4 + Anby's top 4 = 8. **Plus** captures both. Anby's right 4 beats Chixia's left 2 at B3 (**Combo**); Endministrator's bottom 8 beats Yangyang's top 5 at B1 (**Combo**). Exactly four cards flip, two through Combo.
 
 This is verified in both engine and browser tests. Combo existed in the engine; the new presentation makes its trigger and sequence visible through delayed flips, reason badges, a callout, and sound.

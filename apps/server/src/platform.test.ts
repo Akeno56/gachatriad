@@ -130,7 +130,7 @@ it('keeps both Ranked players blocked until Trade One settles and reports the pe
   const a = await user(true),
     b = await user(true);
   const lobby = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'ranked', allowBots: false });
-  const joined = await ok<{ matchId: string }>(b, `/lobbies/${lobby.lobbyId}/join`, {});
+  const joined = await ok<{ matchId: string }>(b, '/lobbies', { mode: 'ranked' });
   const result = await ok<MatchView>(b, `/matches/${joined.matchId}/resign`, {});
   for (const [c, canClaim] of [
     [a, true],
@@ -324,7 +324,11 @@ it('enables Same, Plus and Combo in new unranked and Draft games without Trade O
     const a = await user(true),
       b = await user(true);
     const lobby = await ok<{ lobbyId: string }>(a, '/lobbies', { mode, allowBots: false });
-    const joined = await ok<{ matchId: string }>(b, `/lobbies/${lobby.lobbyId}/join`, {});
+    const joined = await ok<{ matchId: string }>(
+      b,
+      mode === 'draft' ? '/lobbies' : `/lobbies/${lobby.lobbyId}/join`,
+      mode === 'draft' ? { mode } : {},
+    );
     const match = await ok<MatchView>(a, `/matches/${joined.matchId}`);
     expect(match.rules).toMatchObject({ threeOpen: true, same: true, plus: true, combo: true });
     expect(match.trade.rule).toBe('none');
@@ -838,9 +842,7 @@ it('keeps Draft, Roulette and unranked queues separate and prevents guest ranked
   const r = await ok<{ lobbyId: string; matchId: null }>(a, '/lobbies', { mode: 'roulette' });
   const u = await ok<{ lobbyId: string; matchId: null }>(b, '/lobbies', { mode: 'casual' });
   expect([d, r, u].every((q) => q.matchId === null)).toBe(true);
-  expect((await ok<LobbyView[]>(c, '/lobbies')).find((l) => l.id === d.lobbyId)?.tradeRule).toBe(
-    'none',
-  );
+  expect((await ok<LobbyView[]>(c, '/lobbies')).some((l) => l.id === d.lobbyId)).toBe(false);
   await ok(c, `/lobbies/${d.lobbyId}`, undefined, 'DELETE');
   await ok(a, `/lobbies/${r.lobbyId}`, undefined, 'DELETE');
   await ok(b, `/lobbies/${u.lobbyId}`, undefined, 'DELETE');
@@ -849,7 +851,7 @@ it('settles Trade One exactly once with permanent inventory changes, even on for
   const a = await user(true),
     b = await user(true);
   const l = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'ranked' });
-  const { matchId } = await ok<{ matchId: string }>(b, `/lobbies/${l.lobbyId}/join`, {});
+  const { matchId } = await ok<{ matchId: string }>(b, '/lobbies', { mode: 'ranked' });
   const started = await ok<MatchView>(a, `/matches/${matchId}`);
   expect(started.rules).toMatchObject({ same: true, plus: true, combo: true, allOpen: false });
   expect(started.game!.hands[1].every((c) => c.card === null)).toBe(true);
@@ -879,7 +881,7 @@ it('locks only offered Draft cards and completes a full server-authoritative gam
   const a = await user(true),
     b = await user(true);
   const { lobbyId } = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'draft' });
-  const { matchId } = await ok<{ matchId: string }>(b, `/lobbies/${lobbyId}/join`, {});
+  const { matchId } = await ok<{ matchId: string }>(b, '/lobbies', { mode: 'draft' });
   for (const c of [a, b]) {
     const m = await ok<MatchView>(c, `/matches/${matchId}`);
     expect(m.draftPool).toHaveLength(15);
@@ -922,7 +924,7 @@ it('a completed ranked draw releases all stakes and transfers no cards', async (
   const a = await user(true),
     b = await user(true);
   const { lobbyId } = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'ranked' });
-  const { matchId } = await ok<{ matchId: string }>(b, `/lobbies/${lobbyId}/join`, {});
+  const { matchId } = await ok<{ matchId: string }>(b, '/lobbies', { mode: 'ranked' });
   const [row] = await platform.db.read((sql) =>
     sql<{ state: GameState }>('SELECT state FROM matches WHERE id=$1', [matchId]),
   );
@@ -1509,7 +1511,7 @@ it('guards first ranked entry, equips earned titles, exposes match avatars and l
   await ok(a, '/profile/avatar', { cardId: a.profile.deck[0] });
   expect((await request(a, '/profile/title', { titleId: 'triad-master' })).statusCode).toBe(400);
   const lobby = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'ranked', allowBots: false });
-  const joined = await ok<{ matchId: string }>(b, `/lobbies/${lobby.lobbyId}/join`, {});
+  const joined = await ok<{ matchId: string }>(b, '/lobbies', { mode: 'ranked' });
   const match = await ok<MatchView>(a, `/matches/${joined.matchId}`);
   expect(match.players[0].avatar?.id).toBe(a.profile.deck[0]);
   await ok(b, `/matches/${joined.matchId}/resign`, {});

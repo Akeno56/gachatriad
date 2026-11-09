@@ -17,8 +17,9 @@ export function ComboLesson() {
     <LocaleView>
       <div className="combo-lesson">
         <p className="lesson-intro">
-          A real position, replayed from six legal moves. Billy Kid’s touching sums both equal{' '}
-          <b>8</b>: <b>5 + 3</b> against Endministrator and <b>4 + 4</b> against Anby.
+          A training position with fixed teaching values, replayed from six legal moves. Billy Kid’s
+          touching sums both equal <b>8</b>: <b>5 + 3</b> against Endministrator and <b>4 + 4</b>{' '}
+          against Anby.
         </p>
         <div className="lesson-layout">
           <div className="lesson-hand">

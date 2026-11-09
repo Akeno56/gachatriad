@@ -1,6 +1,6 @@
 # Gacha Triad
 
-**v0.14:** Server-enforced 120-second inactivity/disconnect forfeits, moderated English/French public/friend/battle chat, 30 bots with linked difficulty percentages, and human-only Ranked/Draft Elo. CRT defaults to off for new visitors. See [release details and publishing commands](docs/RELEASE_V14.md) and the [VPS hosting guide](docs/DEDICATED_HOSTING.md). Existing accounts and progress are preserved.
+**0.1.0 Alpha:** Viewport-fitted battles, battle chat, spectating, a conversation drawer and Ladder tabs. New account/IP restrictions, private history and collection review, queue-only rated games, admin test wins, Cards sorting and updated prices. All 814 cards now have distinct spreads while preserving their totals and Aha's override. Turns last 60 seconds: one auto-play, then forfeit on the same player's next missed turn; a manual move clears the warning. The 120-second disconnect limit remains. See [release details and publishing commands](docs/RELEASE_V0_1_0.md) and the [VPS hosting guide](docs/DEDICATED_HOSTING.md). Existing accounts and progress are preserved.
 
 A local Triple Triad fan game with FF-style menus, CRT presentation, 814 playable cross-game cards and persistent multiplayer services.
 
@@ -64,7 +64,7 @@ Guests can train, build their starter deck, play unranked/custom/Roulette and br
 - **Custom:** visible public tables combining Closed/Three Open/All Open, Same, Plus, Random and optional Trade One. All custom rules share the lobby browser.
 - **Draft:** separate rated queue; three temporary boosters open automatically, then choose five legal cards from 15 offers and play Three Open + Same/Plus/Combo with no trade. Draft cards do not enter permanent inventory.
 - **Roulette:** separate queue; compatible advanced rules are drawn when the match begins.
-- **Match activity:** 120 seconds without a move on your turn, or disconnected, forfeits the match. Inactive Draft selection also forfeits after 120 seconds. Waiting rooms expire after 15 minutes.
+- **Match activity:** 60-second turns; one missed turn auto-plays, the same player's next missed turn forfeits. Manual play clears the warning. Disconnection or inactive Draft selection forfeits after 120 seconds. Waiting rooms expire after 15 minutes.
 - **Collection:** five distinct owned available characters per deck; at most one 5★ and one 4★, or two 4★ without a 5★. Auto build repairs a deck after losing or trading a card. Cosmetic finishes do not add a second character slot.
 - **Exchange:** permanent card-for-card offers with reservations, confirmation, atomic settlement and a ledger. A currency marketplace and auctions are future work.
 - **Achievements:** eleven persistent goals derived from server-recorded games, capture chains, collection and Trade One.

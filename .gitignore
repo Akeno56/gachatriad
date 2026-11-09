@@ -11,6 +11,7 @@ test-results/
 prydwenData/
 kyaraData/
 .data/
+.data-local/
 apps/web/out/
 .tools/
 /Final_Fantasy_8_Queen_of_Cards_OC_ReMix.mp3

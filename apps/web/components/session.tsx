@@ -224,6 +224,12 @@ export function AccountMenu() {
                 Your guest collection is kept when you register. An account is required for ranked,
                 rated Draft and Trade One.
               </p>
+              {register && (
+                <p className="account-network-note">
+                  One account per IP. Server administrators can view IP addresses to investigate
+                  abuse. Contact an administrator for a shared-household exception.
+                </p>
+              )}
               <form onSubmit={submit}>
                 {register && (
                   <label>

@@ -498,6 +498,7 @@ export class Social {
       JOIN profile_accounts a ON a.profile_id=p.id AND a.is_primary JOIN "user" u ON u.id=a.auth_user_id
       LEFT JOIN server_suspensions s ON s.auth_user_id=u.id
       JOIN matches m ON (m.player0=p.id OR m.player1=p.id) AND m.mode=$1 AND m.status='complete'
+      AND coalesce(m.end_reason,'')<>'admin test result'
       AND NOT EXISTS(SELECT 1 FROM profiles bot WHERE bot.is_bot AND bot.id IN(m.player0,m.player1))
       WHERE NOT p.is_bot AND NOT coalesce(u."isAnonymous",false) AND s.auth_user_id IS NULL
       GROUP BY p.id ORDER BY p.${rating} DESC,count(m.id) DESC,p.name,p.id LIMIT 100`,

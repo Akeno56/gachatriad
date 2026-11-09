@@ -15,6 +15,8 @@ import { allowedOrigins } from './config';
 import { Moderation } from './moderation';
 import { GuestLifecycle } from './lifecycle';
 import { Social } from './social';
+import { AccountSecurity } from './account-security';
+import { PlayerReview } from './player-review';
 export async function createPlatform(
   root: string,
   options: { memory?: boolean; timers?: boolean; logger?: boolean } = {},
@@ -31,6 +33,10 @@ export async function createPlatform(
   const { auth, flushLinks, setGuestCleanup } = await createAuth(db, root, authURL);
   const store = new GameStore(db, (await auth.$context).secret);
   await store.migrate(root);
+  const security = new AccountSecurity(db);
+  const review = new PlayerReview(db);
+  if (process.env.TRIAD_LOCAL_TEST === 'true')
+    await security.action('127.0.0.1', 'allow-shared', 'Isolated PC test save');
   const guests = new GuestLifecycle(store);
   setGuestCleanup((ids) => guests.discard(ids));
   await guests.cleanup();
@@ -101,6 +107,7 @@ export async function createPlatform(
       },
     },
     handler: async (req, reply) => {
+      await security.assertAllowed(req.ip);
       if (req.url.split('?')[0].replace(/\/+$/, '') === '/api/auth/sign-up/email') {
         const b = req.body as { name?: unknown } | null;
         if (typeof b?.name !== 'string' || !b.name.trim().length || b.name.trim().length > 32)
@@ -109,13 +116,27 @@ export async function createPlatform(
       }
       const headers = fromNodeHeaders(req.headers);
       headers.set('x-gacha-client-ip', req.ip);
-      const response = await auth.handler(
-        new Request(new URL(req.url, authURL), {
-          method: req.method,
-          headers,
-          ...(req.method === 'POST' ? { body: JSON.stringify(req.body ?? {}) } : {}),
-        }),
-      );
+      const handleAuth = async () => {
+        const response = await auth.handler(
+          new Request(new URL(req.url, authURL), {
+            method: req.method,
+            headers,
+            ...(req.method === 'POST' ? { body: JSON.stringify(req.body ?? {}) } : {}),
+          }),
+        );
+        if (response.ok) {
+          const result = (await response
+            .clone()
+            .json()
+            .catch(() => null)) as { user?: { id: string } } | null;
+          if (result?.user?.id) await security.remember(result.user.id, req.ip);
+        }
+        return response;
+      };
+      const response =
+        authBucket(req.url) === 'signup'
+          ? await security.signup(req.ip, handleAuth)
+          : await handleAuth();
       await flushLinks();
       reply.code(response.status);
       response.headers.forEach((v, k) => {
@@ -129,6 +150,7 @@ export async function createPlatform(
   async function profile(req: FastifyRequest) {
     const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
     if (!session) throw new GameError('Your session has expired. Reload to reconnect.', 401);
+    await security.remember(session.user.id, req.ip);
     const requested = req.headers['x-profile-id'];
     return store.profile(session.user, typeof requested === 'string' ? requested : undefined);
   }
@@ -180,6 +202,13 @@ export async function createPlatform(
       socket.data.profileId = p.id;
       socket.data.name = p.name;
       socket.data.registered = p.registered;
+      const ip =
+        typeof socket.request.headers['x-forwarded-for'] === 'string' &&
+        socket.request.socket.remoteAddress?.replace(/^::ffff:/, '') === '127.0.0.1'
+          ? socket.request.headers['x-forwarded-for'].split(',').at(-1)!.trim()
+          : socket.request.socket.remoteAddress || socket.handshake.address;
+      socket.data.ip = await security.remember(session.user.id, ip);
+      socket.data.network = (await security.address(ip)).network;
       next();
     } catch {
       next(new Error('Session unavailable.'));
@@ -329,7 +358,40 @@ export async function createPlatform(
     return {
       users: await moderation.users(String((req.query as { search?: string }).search ?? '')),
       log: await moderation.log(),
+      networks: await db.read((sql) =>
+        sql('SELECT * FROM account_networks ORDER BY network LIMIT 200'),
+      ),
+      securityLog: await db.read((sql) =>
+        sql(
+          'SELECT action,network,note,created_at FROM security_log ORDER BY created_at DESC LIMIT 50',
+        ),
+      ),
     };
+  });
+  app.get('/api/local-control/battle/:id', async (req) => {
+    requireHost(req);
+    return store.view('', id(req), true, true);
+  });
+  app.get('/api/local-control/history/:id', async (req) => {
+    requireHost(req);
+    return review.history(id(req), Number((req.query as { offset?: string }).offset || 0));
+  });
+  app.get('/api/admin/players/:id/history', async (req) => {
+    if (!(await profile(req)).isAdmin) throw new GameError('Administrator access required.', 403);
+    return review.history(id(req), Number((req.query as { offset?: string }).offset || 0));
+  });
+  app.get('/api/admin/players/:id/collection', async (req) => {
+    if (!(await profile(req)).isAdmin) throw new GameError('Administrator access required.', 403);
+    return review.collection(id(req));
+  });
+  app.post('/api/local-control/network', async (req) => {
+    requireHost(req);
+    const b = body(req),
+      network = await security.action(b.network, b.action, b.reason);
+    if (b.action === 'block')
+      for (const socket of io.sockets.sockets.values())
+        if (socket.data.network === network) socket.disconnect(true);
+    return { ok: true };
   });
   app.post('/api/local-control/moderation', async (req) => {
     requireHost(req);
@@ -376,7 +438,7 @@ export async function createPlatform(
       ...new Map(
         connected.map((s) => [
           s.data.profileId,
-          { id: s.data.profileId, name: s.data.name, registered: s.data.registered },
+          { id: s.data.profileId, name: s.data.name, registered: s.data.registered, ip: s.data.ip },
         ]),
       ).values(),
     ];
@@ -390,6 +452,11 @@ export async function createPlatform(
         )
       : [];
     return {
+      battles: await db.read((sql) =>
+        sql(`SELECT m.id,m.mode,m.status,p.name AS player0,coalesce(o.name,'CPU') AS player1
+        FROM matches m JOIN profiles p ON p.id=m.player0 LEFT JOIN profiles o ON o.id=m.player1
+        WHERE m.status IN('playing','drafting') ORDER BY m.created_at DESC LIMIT 100`),
+      ),
       population: await bots.status(),
       uptime: process.uptime(),
       connections: connected.length,
@@ -552,6 +619,11 @@ export async function createPlatform(
     },
   );
   app.post('/api/lobbies/:id/join', async (req) => {
+    const [lobby] = await db.read((sql) =>
+      sql<{ mode: string }>('SELECT mode FROM lobbies WHERE id=$1', [id(req)]),
+    );
+    if (lobby && ['ranked', 'draft'].includes(lobby.mode))
+      throw new GameError('Rated matches are queue only. Join matchmaking.', 403);
     const result = await store.joinLobby(await profile(req), id(req));
     notify();
     return result;
@@ -562,6 +634,14 @@ export async function createPlatform(
     return { ok: true };
   });
   app.get('/api/matches/:id', async (req) => store.view((await profile(req)).id, id(req)));
+  app.post('/api/matches/:id/admin-win', async (req) => {
+    const p = await profile(req);
+    if (!p.isAdmin) throw new GameError('Administrator access required.', 403);
+    await store.adminWin(p.id, id(req));
+    notify();
+    return store.view(p.id, id(req));
+  });
+  app.get('/api/spectate/:id', async (req) => store.view((await profile(req)).id, id(req), true));
   app.get('/api/matches/:id/chat', async (req) =>
     social.battleMessages(await profile(req), id(req)),
   );
@@ -666,5 +746,5 @@ export async function createPlatform(
       release();
     }
   });
-  return { app, store, db, auth, bots, trades, moderation, guests, social };
+  return { app, store, db, auth, bots, trades, moderation, guests, social, security, review };
 }

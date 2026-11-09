@@ -22,6 +22,7 @@ export function FriendChat({
   const friends = data.friends.filter((f) => f.status === 'friend');
   const friend = friends.find((f) => f.id === playerId);
   const [messages, setMessages] = useState<FriendMessage[]>([]),
+    [search, setSearch] = useState(''),
     [message, setMessage] = useState(''),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
@@ -29,6 +30,13 @@ export function FriendChat({
     sticky = useRef(true),
     pending = useRef<{ text: string; id: string } | null>(null);
   const currentTarget = useRef(playerId);
+  useEffect(() => {
+    if (playerId || !friends.length || !window.matchMedia('(min-width:681px)').matches) return;
+    const recent = [...data.conversations]
+      .sort((a, b) => b.lastAt.localeCompare(a.lastAt))
+      .find((c) => friends.some((f) => f.id === c.playerId));
+    select(recent?.playerId ?? friends.find((f) => f.online)?.id ?? friends[0].id);
+  }, [playerId, data.friends, data.conversations]);
   currentTarget.current = playerId;
   useEffect(() => {
     setMessages([]);
@@ -65,10 +73,20 @@ export function FriendChat({
   }, [messages.at(-1)?.id]);
   return (
     <LocaleView>
-      <section className="friend-chat" aria-label="Friend chat">
+      <section className="friend-chat" aria-label="Friend chat" data-active={!!friend}>
         <div className="conversation-list" aria-label="Private conversations">
+          <label className="conversation-filter">
+            <span className="sr-only">Find a conversation</span>
+            <input
+              type="search"
+              placeholder="Find a conversation"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </label>
           {!friends.length && <p>Add a friend to start a private conversation.</p>}
-          {[...friends]
+          {friends
+            .filter((f) => f.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
             .sort((a, b) =>
               (data.conversations.find((c) => c.playerId === b.id)?.lastAt ?? '').localeCompare(
                 data.conversations.find((c) => c.playerId === a.id)?.lastAt ?? '',
@@ -83,12 +101,13 @@ export function FriendChat({
                   aria-pressed={friend?.id === f.id}
                   onClick={() => select(f.id)}
                 >
-                  <Avatar card={f.avatar} name={f.name} />
+                  <span className={`contact-avatar ${f.online ? 'is-online' : ''}`}>
+                    <Avatar card={f.avatar} name={f.name} />
+                  </span>
                   <span>
                     <strong>
                       <NoTranslate>{f.name}</NoTranslate>
                     </strong>
-                    {f.title && <small className="friend-chat-title">{f.title}</small>}
                     <small>
                       {thread?.lastMessage ? (
                         <NoTranslate>{thread.lastMessage}</NoTranslate>
@@ -100,6 +119,14 @@ export function FriendChat({
                     </small>
                   </span>
                   {!!thread?.unread && <b>{thread.unread}</b>}
+                  {thread?.lastAt && (
+                    <time dateTime={thread.lastAt}>
+                      {new Date(thread.lastAt).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </time>
+                  )}
                 </button>
               );
             })}
@@ -108,7 +135,31 @@ export function FriendChat({
           {friend ? (
             <>
               <div className="friend-conversation-heading">
+                <button
+                  className="text-button conversation-back"
+                  onClick={() => select('')}
+                  aria-label="Back to conversations"
+                >
+                  ‹
+                </button>
                 <ChatMessageContent person={friend} />
+                <button
+                  className="text-button"
+                  onClick={async () => {
+                    setError('');
+                    try {
+                      await api('/invites', { playerId: friend.id });
+                      await refresh();
+                    } catch (e) {
+                      setError((e as Error).message);
+                    }
+                  }}
+                  disabled={
+                    !!profile?.activeMatchId || !!profile?.waitingLobbyId || !!profile?.pendingTrade
+                  }
+                >
+                  Invite to duel
+                </button>
               </div>
               <small className="conversation-presence">
                 {friend.online ? 'Online' : 'Offline'} · Private conversation
@@ -192,7 +243,11 @@ export function FriendChat({
               </small>
             </>
           ) : (
-            <p>Select a friend to open your conversation.</p>
+            <div className="conversation-empty">
+              <span aria-hidden="true">✉</span>
+              <h3>Your conversations</h3>
+              <p>Select a friend to send a message.</p>
+            </div>
           )}
           <p className="error-message" role="alert">
             {error}

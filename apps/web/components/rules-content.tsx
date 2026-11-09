@@ -145,12 +145,13 @@ export function RulesContent() {
           </article>
         </div>
         <p className="rule-note">
-          You forfeit after 120 seconds without playing on your turn, or after 120 seconds
-          disconnected. In Draft, 120 seconds without revealing or choosing cards also forfeits.
-          Ranked and Draft games against bots never change Elo. Trade One selection lasts two
-          minutes, then a losing card is chosen automatically. A deck contains five different cards:
-          at most one 5★ and one 4★, or two 4★ if it has no 5★. Local bots are clearly labeled [BOT]
-          and use the same rules and inventory transfers.
+          Turns last 60 seconds. The first missed turn auto-plays a card. Miss your next turn too
+          and you lose immediately. A manual move resets the warning. Disconnecting for 120 seconds
+          forfeits. In Draft, 120 seconds without revealing or choosing cards also forfeits. Ranked
+          and Draft games against bots never change Elo. Trade One selection lasts two minutes, then
+          a losing card is chosen automatically. A deck contains five different cards: at most one
+          5★ and one 4★, or two 4★ if it has no 5★. Local bots are clearly labeled [BOT] and use the
+          same rules and inventory transfers.
         </p>
       </div>
     </LocaleView>

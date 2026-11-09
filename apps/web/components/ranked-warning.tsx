@@ -105,6 +105,11 @@ export function RankedWarning() {
             player or an available populated bot.
           </p>
         )}
+        <p>
+          Turns last 60 seconds. Your first missed turn auto-plays one card. Miss your next turn too
+          and you lose immediately. Playing manually resets the warning. Disconnecting for 120
+          seconds also forfeits.
+        </p>
         <p className="error-message" role="alert">
           {error}
         </p>

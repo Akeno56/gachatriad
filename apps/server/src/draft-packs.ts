@@ -13,7 +13,12 @@ export function rollRarity(weights: readonly number[], draw = randomInt): number
 const definitions = new Map(ALL_CARDS.map((card) => [card.id, card]));
 export function rollFinish(baseId: string, per10000: number, draw = randomInt) {
   if (draw(10000) >= per10000) return baseId;
-  const variants = HOLO_VARIANTS.filter((card) => card.baseCardId === baseId);
+  const directions = new Set<number>();
+  const variants = HOLO_VARIANTS.filter((card) => {
+    if (card.baseCardId !== baseId || directions.has(card.holoBonusSide!)) return false;
+    directions.add(card.holoBonusSide!);
+    return true;
+  });
   return variants.length ? variants[draw(variants.length)].id : baseId;
 }
 export function draftPool(): Card[] {

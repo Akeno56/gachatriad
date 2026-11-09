@@ -1,0 +1,843 @@
+/* Arena sizing follows the viewport, while collection artwork retains its full size. */
+.system-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  min-width: 108px;
+  line-height: 1;
+}
+.system-brand strong {
+  font: 24px/1 var(--pixel);
+  white-space: nowrap;
+}
+.system-brand small {
+  font: 11px/1.2 var(--sans);
+  letter-spacing: 2px;
+  color: #bdc9dc;
+}
+.admin-player-review {
+  padding: 18px;
+  margin: 20px 0;
+}
+.admin-history-table {
+  overflow: auto;
+  max-height: 400px;
+}
+.admin-history-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 15px/1.5 var(--sans);
+}
+.admin-history-table th,
+.admin-history-table td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #53698b;
+}
+.admin-collection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+  max-height: 650px;
+  overflow: auto;
+  align-content: start;
+  grid-auto-rows: max-content;
+}
+.admin-collection-grid .playing-card {
+  height: 220px;
+}
+.admin-collection-grid .card-values {
+  transform: scale(0.8);
+  transform-origin: top left;
+}
+.admin-collection-grid .card-caption strong {
+  font-size: 18px;
+}
+.admin-collection-grid article > p {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+.arena-screen {
+  --board-size: min(630px, calc(var(--battle-space, 760px) - 255px), calc((100vw - 380px) * 0.56));
+  --hand-size: max(125px, calc(var(--board-size) * 0.3));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(260px, 23vw, 330px);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 18px;
+  width: 100%;
+  max-width: 1800px;
+  height: var(--battle-space);
+  padding: 8px 18px 0;
+  margin: auto;
+}
+.arena-screen .match {
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.arena-screen .match-toolbar {
+  gap: 12px;
+  min-height: 34px;
+  padding: 0 0 6px;
+  flex-wrap: wrap;
+}
+.arena-screen .battle-actions {
+  gap: 12px;
+}
+.arena-screen .battle-mode > strong {
+  font-size: 20px;
+  line-height: 1.1;
+}
+.arena-screen .battle-mode > span {
+  line-height: 1;
+}
+.arena-comms .main-chat .chat-messages {
+  min-height: 0;
+}
+.arena-screen .battle-actions .text-button {
+  font-size: 17px;
+}
+.arena-screen .scoreboard {
+  margin: 0;
+  gap: 10px;
+  grid-template-columns: 1fr 42px 1fr;
+}
+.arena-screen .player-heading {
+  min-height: 52px;
+  padding: 5px 10px;
+  gap: 9px;
+}
+.arena-screen .player-heading strong {
+  font-size: 21px;
+}
+.arena-screen .scoreboard .player-avatar {
+  width: 38px;
+  height: 38px;
+  flex-basis: 38px;
+}
+.arena-screen .your-score,
+.arena-screen .cpu-score {
+  font-size: 39px;
+}
+.arena-screen .battle-layout {
+  grid-template-columns: var(--hand-size) var(--board-size) var(--hand-size);
+  gap: 16px;
+  align-items: start;
+}
+.arena-screen .board-area {
+  width: var(--board-size);
+}
+.arena-screen .board {
+  width: var(--board-size);
+  height: var(--board-size);
+  aspect-ratio: 1;
+  padding: 5px;
+  gap: 4px;
+}
+.arena-screen .hand {
+  position: relative;
+  padding-top: 10px;
+}
+.arena-screen .hand-label {
+  margin-bottom: 5px;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+.arena-screen .hand-cards {
+  height: calc(var(--board-size) + 48px);
+}
+.arena-screen .hand-card,
+.arena-screen .opponent-card {
+  height: calc((var(--board-size) + 48px) * 0.3);
+  margin-bottom: calc((var(--board-size) + 48px) * -0.125);
+  width: 100%;
+}
+.arena-screen .hand-card:last-child,
+.arena-screen .opponent-card:last-child {
+  margin-bottom: 0;
+}
+.arena-screen .card-inspector {
+  position: absolute;
+  bottom: -22px;
+  margin: 0;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.arena-screen .card-inspector span {
+  display: none;
+}
+.arena-screen .turn-banner {
+  min-height: 30px;
+  padding: 6px;
+  font-size: 20px;
+}
+.turn-policy {
+  font: 12px/1.25 var(--sans);
+  color: #c4cfe2;
+  text-align: center;
+  margin: 3px 0 6px;
+  min-height: 15px;
+}
+.turn-policy.timeout-danger {
+  color: #ffd0c5;
+  background: #6d253b;
+  border: 1px solid #da8e8e;
+  padding: 3px;
+  font-weight: 700;
+}
+.arena-screen .board-bottom {
+  margin-top: 4px;
+  font-size: 8px;
+}
+.arena-screen .board .card-caption strong,
+.arena-screen .compact .card-caption strong {
+  font-size: clamp(14px, 1.35vw, 23px);
+}
+.arena-screen .board .card-values {
+  transform: scale(1);
+  top: 5px;
+  left: 4px;
+}
+.arena-screen .battle-message {
+  min-height: 32px;
+  margin: 0;
+  padding: 8px 12px;
+}
+.arena-screen .battle-message p {
+  font-size: 17px;
+  line-height: 1.1;
+  margin: 0;
+}
+.arena-screen .match-history {
+  margin: 0;
+  font-size: 12px;
+}
+.arena-screen .match-history[open] {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 14;
+  max-height: 200px;
+  overflow: auto;
+  background: #101c34;
+  padding: 12px;
+  border: 1px solid var(--line);
+}
+.arena-screen > .error-message:empty {
+  display: none;
+}
+.arena-comms {
+  background: linear-gradient(125deg, #213b6b, #111a36);
+  margin: 0;
+  padding: 12px;
+  max-width: none;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.arena-chat-tabs {
+  display: flex;
+  gap: 4px;
+  flex: none;
+  border-bottom: 1px solid #657999;
+  padding-bottom: 9px;
+  margin-bottom: 10px;
+}
+.arena-chat-tabs button {
+  flex: 1;
+  background: #11213d;
+  border: 1px solid #596e91;
+  padding: 7px 6px;
+  font: 19px var(--pixel);
+}
+.arena-chat-tabs button[aria-selected='true'] {
+  background: #d8c28a;
+  color: #101a31;
+  border-color: #e8d697;
+}
+.arena-comms .window-label {
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+.arena-comms > .chat-messages {
+  flex: 1;
+  min-height: 60px;
+  height: auto;
+}
+.arena-comms .chat-compose {
+  gap: 6px;
+  margin-top: 10px;
+  flex: none;
+}
+.arena-comms .chat-compose input {
+  font-size: 16px;
+  padding: 8px;
+  min-height: 38px;
+}
+.arena-comms .chat-compose .primary-button {
+  font-size: 19px;
+  padding: 7px 9px;
+}
+.arena-comms .chat-message {
+  padding: 9px;
+}
+.arena-comms .message-content {
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 7px;
+}
+.arena-comms .message-body {
+  grid-column: 2;
+}
+.arena-comms .main-chat {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.arena-comms .main-chat .channel-heading h2 {
+  display: none;
+}
+.arena-comms .chat-channel-tabs button {
+  font-size: 16px;
+  padding: 3px 7px;
+}
+.arena-comms .public-chat-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.arena-comms .main-chat .chat-messages {
+  height: auto;
+  max-height: none;
+  flex: 1;
+}
+.arena-comms .chat-user-list {
+  display: none;
+}
+.arena-comms .main-chat .chat-registration {
+  font-size: 12px;
+}
+.battle-chat-unavailable {
+  font-size: 14px;
+  color: var(--muted);
+}
+.battle-contacts {
+  overflow: auto;
+}
+.battle-contacts button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  padding: 10px;
+  border: 0;
+  border-bottom: 1px solid #53617a;
+  background: transparent;
+}
+.battle-contacts small {
+  display: block;
+  color: var(--muted);
+}
+.comms-mobile-toggle {
+  display: none;
+}
+.spectator-result {
+  text-align: center;
+  color: var(--gold);
+  font: 24px var(--pixel);
+  margin: 0;
+}
+.spectate-button {
+  display: inline-block;
+  text-align: center;
+}
+.spectator-wait {
+  padding: 30px;
+  margin-top: 20px;
+}
+/* Conversations stay beside play instead of trapping focus in a modal. */
+.messenger-drawer {
+  background: linear-gradient(125deg, #213b6b, #111a36);
+  position: fixed;
+  z-index: 65;
+  right: 18px;
+  bottom: 72px;
+  width: min(760px, calc(100vw - 36px));
+  height: min(630px, calc(100dvh - 150px));
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 14px 55px #0009;
+}
+.messenger-drawer .social-heading {
+  padding: 12px 16px;
+  margin: 0;
+  border-bottom: 1px solid #4a6080;
+}
+.messenger-drawer .social-heading h2 {
+  font-size: 25px;
+}
+.messenger-drawer .social-tabs {
+  padding: 8px 12px;
+  gap: 5px;
+  flex: none;
+}
+.messenger-drawer .social-tabs button {
+  padding: 6px 12px;
+  font-size: 19px;
+}
+.messenger-drawer > .error-message:empty {
+  display: none;
+}
+.messenger-drawer > section:not(.friend-chat) {
+  overflow: auto;
+  padding: 0 16px 16px;
+}
+.messenger-drawer .friend-chat {
+  margin: 0;
+  gap: 0;
+  grid-template-columns: 230px minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+.conversation-filter {
+  display: block;
+  padding: 10px;
+  position: sticky;
+  top: 0;
+  background: #12223f;
+  z-index: 2;
+}
+.conversation-filter input {
+  width: 100%;
+  font-size: 15px;
+  min-height: 35px;
+  padding: 7px;
+  border-radius: 4px;
+}
+.messenger-drawer .conversation-list {
+  max-height: none;
+  min-height: 0;
+  padding: 0;
+  background: #0d1b31;
+}
+.messenger-drawer .conversation-choice {
+  padding: 12px 9px;
+  gap: 9px;
+  border: 0;
+  border-bottom: 1px solid #354b6b;
+  background: transparent;
+  position: relative;
+}
+.messenger-drawer .conversation-choice.is-selected {
+  background: #294569;
+  box-shadow: inset 3px 0 var(--gold);
+}
+.messenger-drawer .conversation-choice strong {
+  font: 600 16px var(--sans);
+  display: block;
+}
+.messenger-drawer .conversation-choice small {
+  font-size: 13px;
+  max-width: 130px;
+}
+.messenger-drawer .conversation-choice time {
+  position: absolute;
+  right: 8px;
+  top: 9px;
+  font-size: 9px;
+  color: var(--muted);
+}
+.contact-avatar {
+  position: relative;
+  flex: none;
+}
+.contact-avatar .player-avatar {
+  width: 34px;
+  height: 34px;
+  flex-basis: 34px;
+}
+.contact-avatar.is-online:after {
+  content: '';
+  position: absolute;
+  right: -2px;
+  bottom: 0;
+  width: 9px;
+  height: 9px;
+  border: 2px solid #12213c;
+  border-radius: 50%;
+  background: #83d7a1;
+}
+.messenger-drawer .conversation-body {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px 12px;
+}
+.friend-conversation-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 0;
+  border-bottom: 1px solid #526789;
+}
+.friend-conversation-heading > .message-content {
+  flex: 1;
+}
+.friend-conversation-heading > .text-button {
+  font-size: 15px;
+}
+.messenger-drawer .conversation-presence {
+  margin: 4px 0 8px;
+  font-size: 12px;
+}
+.messenger-drawer .conversation-body .chat-messages {
+  flex: 1;
+  min-height: 70px;
+  height: auto;
+  max-height: none;
+  padding: 8px 3px;
+  background: transparent;
+  border: 0;
+}
+.messenger-drawer .private-message {
+  width: fit-content;
+  max-width: 92%;
+  margin: 0 auto 8px 0;
+  padding: 8px 11px;
+  border: 0;
+  border-radius: 3px 12px 12px 12px;
+  background: #243a59;
+}
+.messenger-drawer .private-message.is-own {
+  margin: 0 0 8px auto;
+  background: #354a66;
+  border-radius: 12px 3px 12px 12px;
+}
+.messenger-drawer .private-message .message-content {
+  display: block;
+}
+.messenger-drawer .private-message .player-avatar,
+.messenger-drawer .private-message .message-heading {
+  display: none;
+}
+.messenger-drawer .private-message p {
+  font: 16px/1.4 var(--sans);
+  margin: 0;
+}
+.messenger-drawer .private-message time {
+  display: block;
+  margin: 3px 0 0;
+  text-align: right;
+  font-size: 10px;
+}
+.messenger-drawer .chat-compose {
+  gap: 7px;
+  margin-top: 8px;
+}
+.messenger-drawer .chat-compose input {
+  font-size: 16px;
+  min-height: 41px;
+  padding: 8px;
+}
+.messenger-drawer .conversation-body > small:last-child {
+  display: none;
+}
+.conversation-empty {
+  display: grid;
+  place-content: center;
+  text-align: center;
+  flex: 1;
+  color: var(--muted);
+}
+.conversation-empty > span {
+  font-size: 42px;
+  color: var(--gold);
+}
+.conversation-back {
+  display: none;
+}
+.ladder-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 20px 0;
+}
+.ladder-tabs button {
+  font: 24px var(--pixel);
+  padding: 9px 26px;
+  border: 1px solid var(--line);
+  background: #142543;
+}
+.ladder-tabs button[aria-selected='true'] {
+  background: #d8c28a;
+  color: #12213b;
+  border-color: #ffe1a2;
+}
+.messenger-drawer .private-message .message-time {
+  position: static;
+}
+@media (max-width: 1000px) {
+  .arena-screen {
+    --board-size: min(
+      560px,
+      calc(var(--battle-space, 650px) - 210px),
+      calc((100vw - 100px) * 0.58)
+    );
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline: 12px;
+  }
+  .arena-comms {
+    position: fixed;
+    bottom: 9px;
+    left: 65px;
+    right: 205px;
+    height: 36px;
+    padding: 0;
+    z-index: 35;
+  }
+  .arena-comms > *:not(.comms-mobile-toggle) {
+    display: none;
+  }
+  .comms-mobile-toggle {
+    display: block;
+    border: 0;
+    background: transparent;
+    color: var(--gold);
+    font: 22px var(--pixel);
+    min-height: 34px;
+  }
+  .arena-comms.is-expanded {
+    height: min(460px, 65dvh);
+    left: 12px;
+    right: 12px;
+    bottom: 64px;
+    padding: 10px;
+    box-shadow: 0 0 0 100vmax #050b1680;
+  }
+  .arena-comms.is-expanded > * {
+    display: revert;
+  }
+  .arena-comms.is-expanded > .chat-messages {
+    display: block;
+  }
+  .arena-comms.is-expanded > .main-chat {
+    display: flex;
+  }
+  .arena-comms.is-expanded > .chat-compose {
+    display: flex;
+  }
+}
+@media (max-width: 680px) {
+  .system-bar {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 6px;
+  }
+  .system-brand {
+    grid-area: 1 / 1;
+    min-width: 0;
+  }
+  .system-brand strong {
+    font-size: 21px;
+  }
+  .system-brand small {
+    font-size: 10px;
+  }
+  .system-bar > nav {
+    grid-area: 2 / 1 / 3 / -1;
+    width: 100%;
+    min-width: 0;
+  }
+  .system-bar .system-controls {
+    grid-area: 1 / 2;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    gap: 4px;
+  }
+  .system-controls .player-navigation {
+    flex-basis: 100%;
+    width: 100%;
+    min-height: 18px;
+    justify-content: flex-end;
+    margin: 0;
+  }
+  .arena-screen {
+    --board-size: max(120px, min(calc(100vw - 32px), calc(var(--battle-space, 650px) - 345px)));
+    gap: 4px;
+    padding: 4px 10px 0;
+  }
+  .arena-screen .match {
+    gap: 5px;
+  }
+  .arena-screen .match-toolbar {
+    gap: 5px;
+    min-height: 26px;
+    padding: 0 0 3px;
+  }
+  .arena-screen .battle-mode {
+    display: none;
+  }
+  .arena-screen .rule-badges {
+    gap: 3px;
+  }
+  .arena-screen .rule-badges span {
+    padding: 1px 3px;
+    font-size: 9px;
+  }
+  .arena-screen .battle-actions {
+    gap: 9px;
+  }
+  .arena-screen .battle-actions .text-button {
+    font-size: 14px;
+  }
+  .arena-screen .scoreboard {
+    grid-template-columns: 1fr 27px 1fr;
+    gap: 5px;
+  }
+  .arena-screen .player-heading {
+    min-height: 43px;
+    gap: 6px;
+    padding: 4px;
+  }
+  .arena-screen .player-heading strong {
+    font-size: 17px;
+  }
+  .arena-screen .scoreboard .player-avatar {
+    width: 26px;
+    height: 26px;
+    flex-basis: 26px;
+  }
+  .arena-screen .player-heading small {
+    font-size: 7px;
+    letter-spacing: 0.5px;
+  }
+  .arena-screen .battle-title {
+    font-size: 9px;
+  }
+  .arena-screen .your-score,
+  .arena-screen .cpu-score {
+    font-size: 30px;
+  }
+  .arena-screen .battle-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'rival' 'board' 'player';
+    gap: 4px;
+  }
+  .arena-screen .player-hand {
+    grid-area: player;
+  }
+  .arena-screen .cpu-hand {
+    grid-area: rival;
+  }
+  .arena-screen .board-area {
+    grid-area: board;
+    justify-self: center;
+  }
+  .arena-screen .hand {
+    padding: 0;
+  }
+  .arena-screen .hand-label {
+    font-size: 8px;
+    margin: 0 0 2px;
+  }
+  .arena-screen .hand-cards {
+    height: 92px;
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    overflow: visible;
+  }
+  .arena-screen .hand-card,
+  .arena-screen .opponent-card {
+    height: 92px;
+    flex: 0 1 calc((100% - 20px) / 5);
+    width: calc((100% - 20px) / 5);
+    margin: 0;
+  }
+  .arena-screen .cpu-hand .hand-cards,
+  .arena-screen .opponent-card {
+    height: 43px;
+  }
+  .arena-screen .cpu-hand .card-caption {
+    display: none;
+  }
+  .arena-screen .cpu-hand .card-values {
+    transform: scale(0.65);
+  }
+  .arena-screen .card-inspector {
+    display: none;
+  }
+  .arena-screen .turn-banner {
+    min-height: 23px;
+    padding: 4px;
+    font-size: 17px;
+  }
+  .arena-screen .turn-policy {
+    font-size: 10px;
+    margin: 2px 0 3px;
+  }
+  .arena-screen .board .card-caption strong {
+    font-size: 15px;
+  }
+  .arena-screen .compact .card-caption strong {
+    font-size: 12px;
+  }
+  .arena-screen .compact .card-values {
+    transform: scale(0.75);
+  }
+  .arena-screen .battle-message {
+    min-height: 23px;
+    padding: 5px 7px;
+  }
+  .arena-screen .battle-message .window-label {
+    display: none;
+  }
+  .arena-screen .battle-message p {
+    font-size: 13px;
+  }
+  .arena-screen .match-history {
+    font-size: 10px;
+  }
+  .messenger-drawer {
+    inset: 80px 8px 68px;
+    width: auto;
+    height: auto;
+  }
+  .messenger-drawer .friend-chat {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .messenger-drawer .conversation-list {
+    border: 0;
+    max-height: none;
+  }
+  .messenger-drawer .friend-chat[data-active='true'] .conversation-list {
+    display: none;
+  }
+  .messenger-drawer .friend-chat[data-active='false'] .conversation-body {
+    display: none;
+  }
+  .conversation-back {
+    display: block;
+    font-size: 30px !important;
+  }
+  .messenger-drawer .conversation-choice small {
+    max-width: 220px;
+  }
+  .messenger-drawer .social-heading {
+    padding: 9px 12px;
+  }
+}

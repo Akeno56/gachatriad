@@ -72,7 +72,7 @@ it('forfeits a disconnected opponent at 120s even when it is not their turn and 
   );
   expect((await p.store.view(a.profile.id, id)).trade.pending).toBe(false);
 });
-it('allows reconnect before expiry but does not let a late reconnect or move avoid forfeiture', async () => {
+it('allows timely reconnects and enforces overdue-turn handling before accepting late moves', async () => {
   const { a, b, id } = await duel();
   await p.store.presence(b.profile.id, false);
   await ageDisconnect(id, 1, 60000);
@@ -96,19 +96,19 @@ it('allows reconnect before expiry but does not let a late reconnect or move avo
   const own = view.game!.turn === 0 ? next.a : next.b;
   await p.store.move(own.profile.id, next.id, move.cardId, move.cell, view.version);
   const done = await p.store.view(next.a.profile.id, next.id);
-  expect(done.status).toBe('complete');
-  expect(done.game!.history).toHaveLength(0);
-  expect(done.endReason).toMatch(/inactive/);
+  expect(done.status).toBe('playing');
+  expect(done.game!.history).toHaveLength(1);
+  expect(done.missedTurns?.[view.game!.turn]).toBe(1);
 });
 it('times out connected AFK players and abandoned drafts while keeping bots exempt', async () => {
   const { a, id } = await duel();
   const view = await p.store.view(a.profile.id, id);
-  expect(view.deadline! - Date.now()).toBeGreaterThan(118000);
+  expect(view.deadline! - Date.now()).toBeGreaterThan(58000);
   await p.db.read((sql) => sql('UPDATE matches SET deadline=$1 WHERE id=$2', [Date.now() - 1, id]));
   await p.store.tick();
   const done = await p.store.view(a.profile.id, id);
-  expect(done.winner).toBe(1 - view.game!.turn);
-  expect(done.game!.history).toHaveLength(0);
+  expect(done.winner).toBeNull();
+  expect(done.game!.history).toHaveLength(1);
   const draft = await duel('draft');
   await p.db.read((sql) =>
     sql('UPDATE matches SET activity_at=$1::jsonb WHERE id=$2', [

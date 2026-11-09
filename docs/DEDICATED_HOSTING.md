@@ -284,6 +284,18 @@ Visit your HTTPS address. Test guest creation, account login, a duel between two
 
 ## 6. Publish updates in one command
 
+### Test on your PC first
+
+Use **Start Test Server Control.cmd** for a separate PC test server panel at **http://127.0.0.1:3040**. Your VPS administration stays at **http://127.0.0.1:3030** through SSH. Test data is saved separately in ignored `.data-local/`, and the test backend uses port **3101**.
+
+In the test panel, **Start server → Start public link → Copy invitation link** keeps the GitHub Pages + Cloudflare workflow available. The default published game URL is `https://akeno56.github.io/gachatriad/`. GitHub Pages runs the frontend version last published there, connected to this PC's test backend.
+
+After later backend edits, click **Restart server** in the test panel. After frontend edits, rerun **Start Local Test.cmd** to rebuild the preview.
+
+To test unpublished frontend changes too, double-click **Start Local Test.cmd**. It rebuilds the latest local code, then opens the same test panel. Click **Start server → Open local game preview** to play at **http://127.0.0.1:3100**. Reopening this launcher refreshes only the PC test panel and server before rebuilding; it preserves the test save. The preview is pinned to the test backend even if an older browser connection was saved. The VPS and `gachatriad.com` are not updated by either launcher. Register test accounts and use this test panel's Moderation tools to appoint a test administrator.
+
+### Publish the tested patch
+
 On Windows, commit and push the new version as usual:
 
 ```powershell

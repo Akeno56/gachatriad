@@ -13,12 +13,19 @@ export class Moderation {
         isAdmin: boolean;
         suspended: boolean;
         reason: string;
+        ip: string | null;
+        network: string | null;
+        blocked: boolean;
+        allowShared: boolean;
       }>(
         `SELECT DISTINCT p.id,p.name,NOT coalesce(u."isAnonymous",false) AS registered,
       (ad.auth_user_id IS NOT NULL AND NOT coalesce(u."isAnonymous",false)) AS "isAdmin",
-      (s.auth_user_id IS NOT NULL) AS suspended,coalesce(s.reason,'') AS reason
+      (s.auth_user_id IS NOT NULL) AS suspended,coalesce(s.reason,'') AS reason,
+      net.ip,net.network,coalesce(n.blocked,false) AS blocked,coalesce(n.allow_shared,false) AS "allowShared"
       FROM profiles p JOIN profile_accounts a ON a.profile_id=p.id JOIN "user" u ON u.id=a.auth_user_id
       LEFT JOIN server_admins ad ON ad.auth_user_id=u.id LEFT JOIN server_suspensions s ON s.auth_user_id=u.id
+      LEFT JOIN LATERAL (SELECT ip,network FROM account_ips WHERE user_id=u.id ORDER BY last_seen DESC LIMIT 1) net ON true
+      LEFT JOIN account_networks n ON n.network=net.network
       WHERE NOT p.is_bot AND (p.name ILIKE $1 OR p.id ILIKE $1) ORDER BY p.name,p.id LIMIT 200`,
         [`%${search.slice(0, 100)}%`],
       ),

@@ -231,7 +231,7 @@ export class BotPopulation {
         }
         if (!enabled) continue;
         // All idle bots can join human tables; keep an exhibition pair and some spare opponents.
-        const lobbies = await this.store.lobbies();
+        const lobbies = await this.store.lobbies(true);
         const humanTable = lobbies.find(
           (l) =>
             l.status === 'waiting' &&

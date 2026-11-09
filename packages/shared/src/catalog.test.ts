@@ -56,12 +56,14 @@ it('provides fixed +1 Holo variants without exceeding A or adding duplicate-char
     });
     expect(HOLO_CARDS[i].element).toBe(CARDS[i].element);
     const variants = HOLO_VARIANTS.filter((card) => card.baseCardId === CARDS[i].id);
-    expect(variants).toHaveLength(CARDS[i].stats.filter((value) => value < 10).length);
+    expect(new Set(variants.map((c) => c.holoBonusSide)).size).toBe(
+      CARDS[i].stats.filter((value) => value < (CARDS[i].rarity <= 3 ? 8 : 10)).length,
+    );
     for (const variant of variants) {
       expect(variant.stats.reduce((s, n) => s + n, 0)).toBe(
         CARDS[i].stats.reduce((s, n) => s + n, 0) + 1,
       );
-      expect(variant.stats.every((value) => value <= 10)).toBe(true);
+      expect(variant.stats.every((value) => value <= (variant.rarity <= 3 ? 8 : 10))).toBe(true);
       expect(variant.stats.map((n, side) => n - CARDS[i].stats[side])).toEqual(
         [0, 1, 2, 3].map((side) => Number(side === variant.holoBonusSide)),
       );

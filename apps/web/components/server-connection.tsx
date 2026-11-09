@@ -8,6 +8,7 @@ import {
   serverURL,
   serverConfigured,
   STATIC_BUILD,
+  LOCAL_TEST_BUILD,
 } from '../lib/connection';
 export function ServerConnection({ children }: { children: React.ReactNode }) {
   const [blocked, setBlocked] = useState(STATIC_BUILD),
@@ -17,7 +18,7 @@ export function ServerConnection({ children }: { children: React.ReactNode }) {
     [busy, setBusy] = useState(false);
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
-    const incoming = new URLSearchParams(location.search).get('server');
+    const incoming = LOCAL_TEST_BUILD ? null : new URLSearchParams(location.search).get('server');
     setAddress(incoming || serverURL());
     setBlocked(!serverConfigured() || (!!incoming && incoming !== serverURL()));
     const show = () => {
