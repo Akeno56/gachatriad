@@ -43,6 +43,7 @@ function PlayerProfile() {
           profile.titleId,
           profile.rating,
           profile.draftRating,
+          profile.sharedDraftRating,
           profile.played,
           profile.wins,
           profile.losses,
@@ -223,6 +224,7 @@ function PlayerProfile() {
               {[
                 ['Constructed rating', player.rating],
                 ['Draft rating', player.draftRating],
+                ['Shared Draft rating', player.sharedDraftRating],
                 ['Games', player.played],
                 ['Wins', player.wins],
                 ['Losses', player.losses],

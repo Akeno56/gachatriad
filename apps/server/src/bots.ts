@@ -154,7 +154,7 @@ export class BotPopulation {
       }
     await this.store.db.read((sql) =>
       sql(
-        "UPDATE lobbies SET status='closed' WHERE mode IN('ranked','draft') AND status='waiting' AND host_id IN(SELECT id FROM profiles WHERE is_bot)",
+        "UPDATE lobbies SET status='closed' WHERE mode IN('ranked','draft','shared-draft') AND status='waiting' AND host_id IN(SELECT id FROM profiles WHERE is_bot)",
       ),
     );
     await this.store.db.read((sql) =>
@@ -198,6 +198,25 @@ export class BotPopulation {
           if (m.status === 'drafting' && !m.draftLocked) {
             for (let step = m.draftRevealed; step < m.draftPool.length; step++)
               await this.store.revealDraft(p.id, m.id, step);
+            if (m.sharedDraft) {
+              const latest = await this.store.view(p.id, m.id);
+              if (latest.sharedDraft?.turn === latest.seat) {
+                const legal = new Set(latest.sharedDraft.legal);
+                const pick = latest.draftPool
+                  .filter((card) => legal.has(card.id))
+                  .sort(
+                    (a, b) =>
+                      b.rarity - a.rarity ||
+                      b.stats.reduce((s, n) => s + n, 0) - a.stats.reduce((s, n) => s + n, 0),
+                  )[0];
+                if (pick) {
+                  await this.store.pickDraft(p.id, m.id, pick.id, latest.version);
+                  changed = true;
+                }
+              }
+              if (m.draftRevealed < m.draftPool.length) changed = true;
+              continue;
+            }
             await this.store.lockDraft(
               p.id,
               m.id,
@@ -240,7 +259,7 @@ export class BotPopulation {
             l.status === 'waiting' &&
             l.allowBots &&
             !l.inviteOnly &&
-            (!['ranked', 'draft'].includes(l.mode) || difficulty !== 'easy') &&
+            (!['ranked', 'draft', 'shared-draft'].includes(l.mode) || difficulty !== 'easy') &&
             !l.host.startsWith('[BOT]') &&
             Date.now() - Date.parse(l.createdAt) > 5000,
         );

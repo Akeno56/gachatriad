@@ -1,9 +1,11 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useSession } from './session';
 import { api } from '../lib/platform';
 import { connectionDiagnostics } from '../lib/client-diagnostics';
 import { LocaleView, NoTranslate, LocalizedDate } from './i18n';
+import { VERSION } from '../lib/release';
 interface Report {
   id: string;
   kind: string;
@@ -20,6 +22,7 @@ export function FeedbackPanel() {
     dialog = useRef<HTMLDialogElement>(null),
     pending = useRef<{ id: string; signature: string } | null>(null);
   const [open, setOpen] = useState(false),
+    [portalReady, setPortalReady] = useState(false),
     [inbox, setInbox] = useState(false),
     [reports, setReports] = useState<Report[]>([]),
     [status, setStatus] = useState('open'),
@@ -28,6 +31,7 @@ export function FeedbackPanel() {
     [error, setError] = useState(''),
     [sent, setSent] = useState(''),
     [diagnostics, setDiagnostics] = useState(true);
+  useEffect(() => setPortalReady(true), []);
   useEffect(() => {
     if (open) dialog.current?.showModal();
     else dialog.current?.close();
@@ -55,80 +59,177 @@ export function FeedbackPanel() {
       <button
         className="outline-button feedback-trigger"
         aria-label="Feedback and bug reports"
+        aria-haspopup="dialog"
+        aria-controls="feedback-dialog"
         onClick={() => setOpen(true)}
       >
-        <span aria-hidden="true">!</span>
-        <span>Feedback / Report a bug</span>
+        <svg
+          viewBox="0 0 20 20"
+          width="16"
+          height="16"
+          fill="none"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path d="M3 3h14v10H9l-4 4v-4H3Z" />
+          <path d="M6 6h8M6 9h5" />
+        </svg>
+        <span>Feedback</span>
       </button>
-      <dialog
-        ref={dialog}
-        className="game-dialog menu-window feedback-dialog"
-        onCancel={() => setOpen(false)}
-      >
-        <button className="dialog-close" aria-label="Close feedback" onClick={() => setOpen(false)}>
-          ×
-        </button>
-        <h2>Playtest feedback</h2>
-        {profile?.isAdmin && (
-          <div className="ladder-tabs">
-            <button aria-pressed={!inbox} onClick={() => setInbox(false)}>
-              Send feedback
-            </button>
-            <button aria-pressed={inbox} onClick={() => setInbox(true)}>
-              Reports inbox
-            </button>
-          </div>
-        )}
-        {inbox && profile?.isAdmin ? (
-          <>
-            <div className="feedback-filters">
-              <label>
-                Status
-                <select
-                  name="feedback-panel-select-1"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                >
-                  {['open', 'reviewing', 'resolved', 'dismissed', 'all'].map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button className="outline-button" onClick={() => setRevision((r) => r + 1)}>
-                Refresh
+      {portalReady &&
+        createPortal(
+          <LocaleView>
+            <dialog
+              id="feedback-dialog"
+              ref={dialog}
+              className="game-dialog menu-window feedback-dialog"
+              aria-labelledby="feedback-title"
+              onCancel={() => setOpen(false)}
+            >
+              <button
+                className="dialog-close"
+                aria-label="Close feedback"
+                onClick={() => setOpen(false)}
+              >
+                ×
               </button>
-            </div>
-            {!reports.length && <p>No reports in this view.</p>}
-            {reports.map((r) => (
-              <article className="feedback-report" key={r.id}>
-                <small>
-                  <NoTranslate>{r.player}</NoTranslate> ·{' '}
-                  <LocalizedDate value={r.created_at} format="datetime" /> · {r.kind}
-                </small>
-                <h3>
-                  <NoTranslate>{r.subject}</NoTranslate>
-                </h3>
-                <p>
-                  <NoTranslate>{r.details}</NoTranslate>
-                </p>
-                <details>
-                  <summary>Diagnostics</summary>
-                  <pre>{JSON.stringify(r.context, null, 2)}</pre>
-                </details>
+              <h2 id="feedback-title">Playtest feedback</h2>
+              {profile?.isAdmin && (
+                <div className="ladder-tabs">
+                  <button aria-pressed={!inbox} onClick={() => setInbox(false)}>
+                    Send feedback
+                  </button>
+                  <button aria-pressed={inbox} onClick={() => setInbox(true)}>
+                    Reports inbox
+                  </button>
+                </div>
+              )}
+              {inbox && profile?.isAdmin ? (
+                <>
+                  <div className="feedback-filters">
+                    <label>
+                      Status
+                      <select
+                        name="feedback-panel-select-1"
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value)}
+                      >
+                        {['open', 'reviewing', 'resolved', 'dismissed', 'all'].map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <button className="outline-button" onClick={() => setRevision((r) => r + 1)}>
+                      Refresh
+                    </button>
+                  </div>
+                  {!reports.length && <p>No reports in this view.</p>}
+                  {reports.map((r) => (
+                    <article className="feedback-report" key={r.id}>
+                      <small>
+                        <NoTranslate>{r.player}</NoTranslate> ·{' '}
+                        <LocalizedDate value={r.created_at} format="datetime" /> · {r.kind}
+                      </small>
+                      <h3>
+                        <NoTranslate>{r.subject}</NoTranslate>
+                      </h3>
+                      <p>
+                        <NoTranslate>{r.details}</NoTranslate>
+                      </p>
+                      <details>
+                        <summary>Diagnostics</summary>
+                        <pre>{JSON.stringify(r.context, null, 2)}</pre>
+                      </details>
+                      <form
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          setBusy(true);
+                          setError('');
+                          const values = new FormData(e.currentTarget);
+                          try {
+                            await api(`/admin/feedback/${r.id}`, {
+                              status: values.get('status'),
+                              note: values.get('note'),
+                            });
+                            setRevision((n) => n + 1);
+                          } catch (e) {
+                            setError((e as Error).message);
+                          } finally {
+                            setBusy(false);
+                          }
+                        }}
+                      >
+                        <select name="status" defaultValue={r.status} aria-label="Report status">
+                          {['open', 'reviewing', 'resolved', 'dismissed'].map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+                        <textarea
+                          name="note"
+                          aria-label="Private admin note"
+                          placeholder="Private admin note"
+                          maxLength={2000}
+                          defaultValue={r.admin_note}
+                        />
+                        <button disabled={busy} className="outline-button">
+                          Save report
+                        </button>
+                      </form>
+                    </article>
+                  ))}
+                </>
+              ) : sent ? (
+                <>
+                  <p role="status">Report received. Thank you for helping test the game.</p>
+                  <p>
+                    <NoTranslate>#{sent.slice(0, 8)}</NoTranslate>
+                  </p>
+                  <button
+                    className="outline-button"
+                    onClick={() => {
+                      setSent('');
+                      setError('');
+                    }}
+                  >
+                    Send another report
+                  </button>
+                </>
+              ) : (
                 <form
                   onSubmit={async (e) => {
                     e.preventDefault();
+                    if (busy || !profile) return;
                     setBusy(true);
                     setError('');
-                    const values = new FormData(e.currentTarget);
+                    const form = new FormData(e.currentTarget),
+                      body = {
+                        kind: form.get('kind'),
+                        subject: form.get('subject'),
+                        details: form.get('details'),
+                        context: diagnostics
+                          ? {
+                              page: location.pathname,
+                              version: VERSION,
+                              browser: navigator.userAgent,
+                              matchId: profile.activeMatchId ?? '',
+                              timings: connectionDiagnostics(),
+                            }
+                          : {},
+                      };
+                    const signature = JSON.stringify([body.kind, body.subject, body.details]);
+                    if (pending.current?.signature !== signature)
+                      pending.current = { id: crypto.randomUUID(), signature };
                     try {
-                      await api(`/admin/feedback/${r.id}`, {
-                        status: values.get('status'),
-                        note: values.get('note'),
+                      const receipt = await api<{ id: string }>('/feedback', {
+                        ...body,
+                        requestId: pending.current.id,
                       });
-                      setRevision((n) => n + 1);
+                      pending.current = null;
+                      setSent(receipt.id);
                     } catch (e) {
                       setError((e as Error).message);
                     } finally {
@@ -136,131 +237,58 @@ export function FeedbackPanel() {
                     }
                   }}
                 >
-                  <select name="status" defaultValue={r.status} aria-label="Report status">
-                    {['open', 'reviewing', 'resolved', 'dismissed'].map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                  <textarea
-                    name="note"
-                    aria-label="Private admin note"
-                    placeholder="Private admin note"
-                    maxLength={2000}
-                    defaultValue={r.admin_note}
-                  />
-                  <button disabled={busy} className="outline-button">
-                    Save report
+                  <p>Found a bug or have a suggestion? Send it directly to the playtest team.</p>
+                  <label>
+                    Type
+                    <select name="kind">
+                      <option value="bug">Bug report</option>
+                      <option value="feedback">Suggestion / feedback</option>
+                    </select>
+                  </label>
+                  <label>
+                    Title
+                    <input
+                      name="subject"
+                      required
+                      minLength={3}
+                      maxLength={120}
+                      placeholder="What happened?"
+                    />
+                  </label>
+                  <label>
+                    Details
+                    <textarea
+                      name="details"
+                      required
+                      minLength={10}
+                      maxLength={4000}
+                      rows={6}
+                      placeholder="What did you do, what happened, and what did you expect?"
+                    />
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      name="feedback-panel-input-2"
+                      type="checkbox"
+                      checked={diagnostics}
+                      onChange={(e) => setDiagnostics(e.target.checked)}
+                    />
+                    Include page, browser, connection timings and audio loading details
+                  </label>
+                  <p className="feedback-privacy">
+                    Do not include passwords or other private information. Reports are visible only
+                    to administrators.
+                  </p>
+                  <button className="primary-button" disabled={busy || !profile}>
+                    {busy ? 'Sending…' : 'Send report'}
                   </button>
                 </form>
-              </article>
-            ))}
-          </>
-        ) : sent ? (
-          <>
-            <p role="status">Report received. Thank you for helping test the game.</p>
-            <p>
-              <NoTranslate>#{sent.slice(0, 8)}</NoTranslate>
-            </p>
-            <button
-              className="outline-button"
-              onClick={() => {
-                setSent('');
-                setError('');
-              }}
-            >
-              Send another report
-            </button>
-          </>
-        ) : (
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              if (busy || !profile) return;
-              setBusy(true);
-              setError('');
-              const form = new FormData(e.currentTarget),
-                body = {
-                  kind: form.get('kind'),
-                  subject: form.get('subject'),
-                  details: form.get('details'),
-                  context: diagnostics
-                    ? {
-                        page: location.pathname,
-                        version: '0.1.2',
-                        browser: navigator.userAgent,
-                        matchId: profile.activeMatchId ?? '',
-                        timings: connectionDiagnostics(),
-                      }
-                    : {},
-                };
-              const signature = JSON.stringify([body.kind, body.subject, body.details]);
-              if (pending.current?.signature !== signature)
-                pending.current = { id: crypto.randomUUID(), signature };
-              try {
-                const receipt = await api<{ id: string }>('/feedback', {
-                  ...body,
-                  requestId: pending.current.id,
-                });
-                pending.current = null;
-                setSent(receipt.id);
-              } catch (e) {
-                setError((e as Error).message);
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            <p>Found a bug or have a suggestion? Send it directly to the playtest team.</p>
-            <label>
-              Type
-              <select name="kind">
-                <option value="bug">Bug report</option>
-                <option value="feedback">Suggestion / feedback</option>
-              </select>
-            </label>
-            <label>
-              Title
-              <input
-                name="subject"
-                required
-                minLength={3}
-                maxLength={120}
-                placeholder="What happened?"
-              />
-            </label>
-            <label>
-              Details
-              <textarea
-                name="details"
-                required
-                minLength={10}
-                maxLength={4000}
-                rows={6}
-                placeholder="What did you do, what happened, and what did you expect?"
-              />
-            </label>
-            <label className="checkbox-label">
-              <input
-                name="feedback-panel-input-2"
-                type="checkbox"
-                checked={diagnostics}
-                onChange={(e) => setDiagnostics(e.target.checked)}
-              />
-              Include page, browser, connection timings and audio loading details
-            </label>
-            <p className="feedback-privacy">
-              Do not include passwords or other private information. Reports are visible only to
-              administrators.
-            </p>
-            <button className="primary-button" disabled={busy || !profile}>
-              {busy ? 'Sending…' : 'Send report'}
-            </button>
-          </form>
+              )}
+              {error && <p role="alert">{error}</p>}
+            </dialog>
+          </LocaleView>,
+          document.body,
         )}
-        {error && <p role="alert">{error}</p>}
-      </dialog>
     </LocaleView>
   );
 }

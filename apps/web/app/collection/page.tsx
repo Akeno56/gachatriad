@@ -1,24 +1,29 @@
 'use client';
 import { LocaleView, NoTranslate } from '../../components/i18n';
 
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
+import Link from 'next/link';
 import { ALL_CARDS as CARDS, UNIVERSES } from '@gacha-triad/shared';
 import { validateDeck } from '@gacha-triad/engine';
 import { Card } from '../../components/card';
 import { useSession } from '../../components/session';
 import { api } from '../../lib/platform';
 import { DuplicateCards } from '../../components/duplicate-cards';
+import { useActionNotice } from '../../components/action-notice';
+import { useBrowseState, useBrowseScroll } from '../../components/browse-preferences';
+import { useDeckEditor, DeckLeaveWarning } from '../../components/deck-editor';
 export default function Collection() {
   const { profile, refresh, error: connectionError } = useSession();
-  const [deck, setDeck] = useState<string[]>([]),
-    [search, setSearch] = useState(''),
-    [universe, setUniverse] = useState('all'),
-    [sort, setSort] = useState('rarity-desc'),
+  const { deck, setDeck, dirty, saved, discard } = useDeckEditor(profile);
+  const notify = useActionNotice(),
+    saving = useRef(false);
+  const [search, setSearch] = useBrowseState<string>('collection', 'search', ''),
+    [universe, setUniverse] = useBrowseState<string>('collection', 'universe', 'all'),
+    [sort, setSort] = useBrowseState<string>('collection', 'sort', 'rarity-desc'),
     [message, setMessage] = useState(''),
-    [busy, setBusy] = useState(false);
-  useEffect(() => {
-    if (profile) setDeck(profile.deck);
-  }, [profile?.id, profile?.deck?.join('|')]);
+    [operation, setOperation] = useState<'save' | 'auto' | null>(null);
+  const busy = operation !== null;
+  useBrowseScroll('collection', !!profile);
   const selected = deck.map((id) => CARDS.find((c) => c.id === id)!).filter(Boolean),
     errors = [
       ...validateDeck(selected),
@@ -52,15 +57,25 @@ export default function Collection() {
       return result || a.name.localeCompare(b.name) || a.id.localeCompare(b.id);
     });
   async function save(auto = false) {
-    setBusy(true);
+    if (saving.current) return false;
+    saving.current = true;
+    setOperation(auto ? 'auto' : 'save');
+    setMessage('');
     try {
-      await api(auto ? '/deck/auto' : '/deck', auto ? {} : { cards: deck });
+      const result = await api<{ cards?: string[] }>(
+        auto ? '/deck/auto' : '/deck',
+        auto ? {} : { cards: deck },
+      );
+      saved(auto ? result.cards! : deck);
       await refresh();
-      setMessage(auto ? 'Your highest total rarity deck is ready.' : 'Deck saved.');
+      notify(auto ? 'Your highest total rarity deck is ready.' : 'Deck saved.');
+      return true;
     } catch (e) {
       setMessage((e as Error).message);
+      return false;
     } finally {
-      setBusy(false);
+      saving.current = false;
+      setOperation(null);
     }
   }
   return (
@@ -74,88 +89,121 @@ export default function Collection() {
         </p>
         <section className="menu-window saved-deck">
           <h2>Your deck · {deck.length}/5</h2>
+          {dirty && (
+            <span className="deck-unsaved" role="status">
+              Unsaved changes
+            </span>
+          )}
           <div className="deck-preview">
             {selected.map((card) => (
               <button
                 key={card.id}
                 aria-label={`Remove ${card.name}`}
-                onClick={() => setDeck((ids) => ids.filter((id) => id !== card.id))}
+                disabled={busy}
+                onClick={() => {
+                  setMessage('');
+                  setDeck((ids) => ids.filter((id) => id !== card.id));
+                }}
               >
                 <Card card={card} />
+                <span className="deck-slot-remove" aria-hidden="true">
+                  ×
+                </span>
               </button>
+            ))}
+            {Array.from({ length: Math.max(0, 5 - selected.length) }, (_, i) => (
+              <div className="deck-empty-slot" key={`empty-${i}`} aria-hidden="true">
+                <span>+</span>
+              </div>
             ))}
           </div>
           <p>{errors.join(' ') || 'Ready for battle.'}</p>
           <div className="result-actions">
             <button
               className="primary-button"
-              disabled={busy || errors.length > 0}
+              disabled={busy || !dirty || errors.length > 0}
+              aria-busy={operation === 'save'}
               onClick={() => save()}
             >
-              Save deck
+              {operation === 'save' ? 'Saving…' : 'Save deck'}
             </button>
             <button
               className="outline-button"
               title="Maximize total rarity from available owned cards, with variety among cards of the same rarity."
               disabled={busy || !profile}
+              aria-busy={operation === 'auto'}
               onClick={() => save(true)}
             >
-              Auto build
+              {operation === 'auto' ? 'Building…' : 'Auto build'}
             </button>
+            {dirty && (
+              <button
+                className="text-button"
+                disabled={busy}
+                onClick={() => {
+                  discard();
+                  setMessage('');
+                }}
+              >
+                Discard changes
+              </button>
+            )}
           </div>
         </section>
         <DuplicateCards />
-        <div className="catalog-filters">
-          <label>
-            Find a card
-            <input
-              name="page-input-1"
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </label>
-          <label>
-            Universe
-            <select
-              name="page-select-2"
-              aria-label="Universe"
-              value={universe}
-              onChange={(e) => setUniverse(e.target.value)}
-            >
-              <option value="all">All universes</option>
-              {UNIVERSES.map((u) => (
-                <option key={u.id} value={u.id}>
-                  <NoTranslate>{u.name}</NoTranslate>
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="collection-toolbar">
+          <div className="catalog-filters">
+            <label>
+              Find a card
+              <input
+                name="page-input-1"
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </label>
+            <label>
+              Universe
+              <select
+                name="page-select-2"
+                aria-label="Universe"
+                value={universe}
+                onChange={(e) => setUniverse(e.target.value)}
+              >
+                <option value="all">All universes</option>
+                {UNIVERSES.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    <NoTranslate>{u.name}</NoTranslate>
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="collection-sort">
+            <label>
+              Sort by
+              <select
+                name="page-select-3"
+                aria-label="Sort collection"
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+              >
+                <option value="rarity-desc">Rarity · highest first</option>
+                <option value="rarity-asc">Rarity · lowest first</option>
+                <option value="stats-desc">Total stats · highest first</option>
+                <option value="stats-asc">Total stats · lowest first</option>
+                <option value="universe">Universe · A–Z</option>
+                <option value="name-asc">Name · A–Z</option>
+                <option value="name-desc">Name · Z–A</option>
+              </select>
+            </label>
+          </div>
         </div>
-        <div className="collection-sort">
-          <label>
-            Sort by
-            <select
-              name="page-select-3"
-              aria-label="Sort collection"
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-            >
-              <option value="rarity-desc">Rarity · highest first</option>
-              <option value="rarity-asc">Rarity · lowest first</option>
-              <option value="stats-desc">Total stats · highest first</option>
-              <option value="stats-asc">Total stats · lowest first</option>
-              <option value="universe">Universe · A–Z</option>
-              <option value="name-asc">Name · A–Z</option>
-              <option value="name-desc">Name · Z–A</option>
-            </select>
-          </label>
-        </div>
-        <p role="status">
-          {owned.length} owned cards · {message}
+        <p role="status" className="collection-result-count">
+          {owned.length} owned cards
         </p>
         <p className="error-message" role="alert">
-          {connectionError}
+          {message || connectionError}
         </p>
         <div className="catalog-grid">
           {owned.map((card) => (
@@ -165,8 +213,9 @@ export default function Collection() {
                 aria-label={`${deck.includes(card.id) ? 'Remove' : 'Add'} ${card.name}`}
                 aria-pressed={deck.includes(card.id)}
                 disabled={
-                  !deck.includes(card.id) &&
-                  (deck.length === 5 || !profile?.inventory[card.id]?.available)
+                  busy ||
+                  (!deck.includes(card.id) &&
+                    (deck.length === 5 || !profile?.inventory[card.id]?.available))
                 }
                 onClick={() =>
                   setDeck((ids) =>
@@ -177,12 +226,43 @@ export default function Collection() {
                 <Card card={card} />
               </button>
               <p>
-                {profile?.inventory[card.id]?.quantity} owned ·{' '}
-                {profile?.inventory[card.id]?.available} available
+                {`${profile?.inventory[card.id]?.quantity ?? 0} owned · ${profile?.inventory[card.id]?.available ?? 0} available`}
               </p>
             </article>
           ))}
         </div>
+        {profile && !owned.length && (
+          <section className="menu-empty-state">
+            <h2>
+              {search || universe !== 'all'
+                ? 'No cards match these filters.'
+                : 'Your collection is empty.'}
+            </h2>
+            {search || universe !== 'all' ? (
+              <button
+                className="outline-button"
+                onClick={() => {
+                  setSearch('');
+                  setUniverse('all');
+                }}
+              >
+                Reset filters
+              </button>
+            ) : (
+              <Link className="outline-button" href="/boosters">
+                Open boosters
+              </Link>
+            )}
+          </section>
+        )}
+        <DeckLeaveWarning
+          dirty={dirty}
+          canSave={errors.length === 0}
+          busy={busy}
+          save={() => save()}
+          discard={discard}
+          error={message}
+        />
       </div>
     </LocaleView>
   );

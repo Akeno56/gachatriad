@@ -117,9 +117,9 @@ export function RulesContent() {
           <article>
             <h3>Ranked</h3>
             <p>
-              Closed hands, Same, Plus, Combo and Trade One. The winner selects one card from the
-              loser’s original five-card deck, including its unplayed card. A draw trades nothing.
-              Forfeiting still loses a card.
+              Closed hands, Same, Plus and Combo. Human matches change Elo, but never transfer
+              cards. Your collection and saved deck stay intact after a loss or forfeit, so you can
+              queue again immediately. Trade One remains an opt-in rule for custom games.
             </p>
             <p>
               The queue searches for humans. While waiting, you can choose a practice bot. Practice
@@ -129,14 +129,37 @@ export function RulesContent() {
           <article>
             <h3>Draft</h3>
             <p>
-              Three temporary boosters open automatically. Each contains three random cards, one 3★+
-              and one 4★+, with 5% Holo per card. Choose five of the fifteen cards within three
-              minutes; remaining picks are completed automatically at the deadline. Three Open,
-              Same, Plus and Combo; no trade. These cards never enter your collection.
+              Open three private temporary boosters, then choose five of your 15 cards within the
+              rarity limit. Your opponent has a separate pool. Battles use Three Open, Same, Plus
+              and Combo. Draft has its own Elo rating for human matches. No card trade; temporary
+              cards never enter your collection.
+            </p>
+          </article>
+          <article>
+            <h3>Shared Draft</h3>
+            <p>
+              Four temporary boosters form one shared pool of 20 different cards. Each booster
+              contains three random cards, one 3★+ and one 4★+, with 5% Holo per card. Shared pools
+              contain at least ten cards of 3★ or lower so both players can finish legal hands. Both
+              players finish opening, then alternate picks until each has five legal cards. Each
+              pick allows 45 seconds; one missed pick is chosen automatically, two consecutive
+              missed picks forfeit. Picks are public, so battles use All Open, Same, Plus and Combo.
+              The second picker starts the battle. No card trade; temporary cards never enter your
+              collection.
             </p>
             <p>
               The queue searches for humans. While waiting, you can choose a practice bot. Practice
               games never change Elo.
+            </p>
+          </article>
+          <article>
+            <h3>Daily Triad puzzle</h3>
+            <p>
+              Everyone receives the same endgame each UTC day. Force a win against the strongest
+              defense to earn 100 Stellar Prisms once per account. The leaderboard orders first
+              solves by fewest attempts, then total time from the first reveal, including retries.
+              Practice after solving does not improve the recorded result. Puzzle cards never affect
+              your collection, deck or Elo.
             </p>
           </article>
           <article>
@@ -173,8 +196,8 @@ export function RulesContent() {
           </li>
         </ul>
         <p className="rule-note">
-          Ranked and Draft use separate Season 0 ratings. Only games between human players change
-          Elo. Practice bots are labeled [BOT].
+          Ranked, Draft and Shared Draft each have their own Season 0 rating and leaderboard. Only
+          games between human players change Elo. Practice bots are labeled [BOT].
         </p>
       </div>
     </LocaleView>

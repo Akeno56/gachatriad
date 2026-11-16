@@ -34,11 +34,12 @@ test('shows public chat in Play, compact lobby checkboxes, and unselectable insp
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(overlay).toHaveCSS('animation-name', 'crt-scroll');
   await page.goto('/lobbies');
-  const check = page.getByLabel('Allow bots to join my lobby / queue', { exact: true });
+  await page.getByRole('button', { name: 'Create custom lobby', exact: true }).click();
+  const check = page.getByLabel('Allow bots to join my lobby', { exact: true });
   const size = (await check.boundingBox())!;
   expect(size.width).toBeLessThanOrEqual(22);
   expect(size.height).toBeLessThanOrEqual(22);
-  await page.getByText('Allow bots to join my lobby / queue', { exact: true }).click();
+  await page.getByText('Allow bots to join my lobby', { exact: true }).click();
   await expect(check).toBeChecked();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: info.outputPath('compact-checkbox.png'), fullPage: true });

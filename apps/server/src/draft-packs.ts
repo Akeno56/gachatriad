@@ -21,12 +21,12 @@ export function rollFinish(baseId: string, per10000: number, draw = randomInt) {
   });
   return variants.length ? variants[draw(variants.length)].id : baseId;
 }
-export function draftPool(): Card[] {
+export function draftPool(packs = 3): Card[] {
   // Three packs, five slots each; keep characters distinct so every offer can be selected.
   for (let attempt = 0; attempt < 100; attempt++) {
     const selected: Card[] = [],
       used = new Set<string>();
-    for (let slot = 0; slot < 15; slot++) {
+    for (let slot = 0; slot < packs * 5; slot++) {
       const weights =
         slot % 5 === 4
           ? ECONOMY.draftGuaranteedWeights
@@ -43,7 +43,9 @@ export function draftPool(): Card[] {
       const id = rollFinish(base.id, ECONOMY.draftHoloPer10000);
       selected.push(definitions.get(id)!);
     }
-    if (selected.length !== 15) continue;
+    if (selected.length !== packs * 5) continue;
+    // Both players must always be able to finish legal hands, even after denial picks.
+    if (packs === 4 && selected.filter((c) => c.rarity <= 3).length < 10) continue;
     try {
       buildBestDeck(selected);
       return selected;

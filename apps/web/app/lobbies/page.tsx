@@ -422,6 +422,7 @@ export default function Lobbies() {
                         row.id === profile?.waitingLobbyId ||
                         ((row.mode === 'ranked' ||
                           row.mode === 'draft' ||
+                          row.mode === 'shared-draft' ||
                           row.tradeRule === 'one') &&
                           !profile?.registered)
                       }

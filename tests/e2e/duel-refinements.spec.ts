@@ -9,7 +9,7 @@ import {
   type Card,
 } from '../../packages/engine/src/index';
 import type { MatchView } from '../../packages/shared/src/platform';
-import { openStarterPacks, openSettings } from './helpers';
+import { openStarterPacks, openSettings, navigateTo } from './helpers';
 const CARDS = JSON.parse(
   readFileSync(new URL('../../data/cards/catalog.json', import.meta.url), 'utf8'),
 ) as Card[];
@@ -182,7 +182,7 @@ test('displays adjusted Elemental values, previews buffs/debuffs and reminds pla
     await expect(page.getByTestId('cell-1')).toHaveClass(/elemental-preview-buff/);
     await expect(page.getByTestId('cell-2')).toHaveClass(/elemental-preview-penalty/);
     await page.screenshot({ path: info.outputPath('elemental-feedback.png'), fullPage: true });
-    await page.getByRole('link', { name: 'Collection', exact: true }).click();
+    await navigateTo(page, 'Collection');
     const reminder = page.locator('.active-battle-reminder');
     await expect(reminder).toBeVisible();
     const box = (await reminder.boundingBox())!,
@@ -191,7 +191,7 @@ test('displays adjusted Elemental values, previews buffs/debuffs and reminds pla
     expect(Math.abs(box.y + box.height / 2 - viewport.height / 2)).toBeLessThan(3);
     await reminder.getByRole('button', { name: 'Continue browsing' }).click();
     await expect(reminder).not.toBeVisible();
-    await page.getByRole('link', { name: 'Cards', exact: true }).click();
+    await navigateTo(page, 'Cards');
     await expect(reminder).toBeVisible();
     await reminder.getByRole('button', { name: 'Go back to the battle' }).click();
     await expect(page.locator('.board-cell')).toHaveCount(9);

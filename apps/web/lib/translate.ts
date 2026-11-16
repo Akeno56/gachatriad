@@ -6,9 +6,12 @@ const localizedSlots: Record<string, number[]> = {
   'Buy {0}s': [0],
   'Open {0} ({1} of {2} available)': [0],
   'Leave {0} queue': [0],
+  'Join {0} queue': [0],
   '{0} matchmaking queue': [0],
   '{0} chat messages': [0],
   '{0} element': [0],
+  '· Holo +1 {0}': [0],
+  '{0} bots percentage': [0],
 };
 const patterns = Object.entries(messages)
   .filter(([key]) => /\{\d+\}/.test(key))

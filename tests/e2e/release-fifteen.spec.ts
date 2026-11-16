@@ -112,7 +112,9 @@ test('shows Alpha branding and sorts Cards independently from universe filters',
 }, info) => {
   await page.goto('/cards');
   await expect(page.locator('.system-brand strong')).toHaveText('Gacha Triad');
-  await expect(page.locator('.system-brand small')).toHaveText('Alpha');
+  await expect(page.getByRole('button', { name: 'Read update notes' })).toHaveText(
+    /Alpha · 0\.1\.3/,
+  );
   await expect(page.locator('.system-brand img')).toHaveCount(0);
   await page.getByRole('combobox', { name: 'Universe', exact: true }).selectOption('star-rail');
   await page.getByRole('combobox', { name: 'Sort by', exact: true }).selectOption('stats');

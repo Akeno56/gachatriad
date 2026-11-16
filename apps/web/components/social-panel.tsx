@@ -148,8 +148,23 @@ export function SocialPanel() {
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-label={`Friends and private chat${notifications ? ` (${notifications} notifications)` : ''}`}
+          title="Friends & messages"
         >
-          Friends &amp; messages {notifications > 0 && <b>{notifications}</b>}
+          <svg
+            className="social-launcher-icon"
+            width="23"
+            height="23"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path d="M3 4h18v13H10l-5 4v-4H3Z" />
+            <path d="M7 8h10M7 12h7" />
+          </svg>
+          <span className="social-launcher-label">Friends &amp; messages</span>{' '}
+          {notifications > 0 && <b>{notifications}</b>}
         </button>
         {!open && toast}
         {open && (

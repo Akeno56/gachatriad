@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openStarterPacks, openSettings, startPractice } from './helpers';
+import { openStarterPacks, openSettings, startPractice, navigateTo } from './helpers';
 async function ready(page: Page) {
   await page.goto('/');
   await page.locator('.account-control').filter({ hasNotText: 'Connecting…' }).waitFor();
@@ -60,8 +60,9 @@ for (const preset of ['classic', 'standard', 'combo'])
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
-    if (info.project.name === 'desktop')
-      expect((await page.locator('.board').boundingBox())!.width).toBeGreaterThanOrEqual(620);
+    const board = (await page.locator('.board').boundingBox())!;
+    if (info.project.name === 'desktop') expect(board.width).toBeGreaterThanOrEqual(400);
+    expect(board.y + board.height).toBeLessThanOrEqual(page.viewportSize()!.height);
     await page.reload();
     await expect(page.locator('.board-cell')).toHaveCount(9);
     await playToEnd(page);
@@ -203,7 +204,7 @@ test('shows real lobbies, rule filters and a visible custom waiting room', async
   page,
 }, info) => {
   await ready(page);
-  await page.getByRole('link', { name: 'Lobbies', exact: true }).click();
+  await navigateTo(page, 'Lobbies');
   await page.getByRole('button', { name: 'Create custom lobby' }).click();
   const name = `QA ${info.project.name} ${Date.now()}`;
   await page.getByLabel('Lobby name').fill(name);

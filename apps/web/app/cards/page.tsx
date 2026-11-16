@@ -16,8 +16,11 @@ import { CardDetail } from '../../components/card-detail';
 import { useSession } from '../../components/session';
 import { ECONOMY } from '@gacha-triad/shared/platform';
 import { api } from '../../lib/platform';
+import { useActionNotice } from '../../components/action-notice';
+import { useBrowseState, useBrowseScroll } from '../../components/browse-preferences';
 export default function CardsPage() {
   const { profile, error, refresh } = useSession();
+  const notify = useActionNotice();
   const [purchase, setPurchase] = useState<CardData | null>(null),
     [buying, setBuying] = useState(false),
     [purchased, setPurchased] = useState(false),
@@ -29,14 +32,15 @@ export default function CardsPage() {
     else purchaseDialog.current?.close();
   }, [purchase]);
   const price = purchase ? ECONOMY.cardPrices[purchase.rarity - 1] : 0;
-  const [search, setSearch] = useState(''),
-    [universe, setUniverse] = useState('all'),
-    [ownership, setOwnership] = useState('all'),
-    [rarity, setRarity] = useState('all'),
-    [finish, setFinish] = useState('standard'),
-    [sort, setSort] = useState('name'),
-    [page, setPage] = useState(0),
+  const [search, setSearch] = useBrowseState<string>('cards', 'search', ''),
+    [universe, setUniverse] = useBrowseState<string>('cards', 'universe', 'all'),
+    [ownership, setOwnership] = useBrowseState<string>('cards', 'ownership', 'all'),
+    [rarity, setRarity] = useBrowseState<string>('cards', 'rarity', 'all'),
+    [finish, setFinish] = useBrowseState<string>('cards', 'finish', 'standard'),
+    [sort, setSort] = useBrowseState<string>('cards', 'sort', 'name'),
+    [page, setPage] = useBrowseState<number>('cards', 'page', 0),
     [detail, setDetail] = useState<CardData | null>(null);
+  useBrowseScroll('cards', !!profile);
   const ownedHolos = new Map<string, CardData[]>();
   for (const card of HOLO_VARIANTS)
     if ((profile?.inventory[card.id]?.quantity ?? 0) > 0) {
@@ -195,7 +199,7 @@ export default function CardsPage() {
         </p>
         <p
           className={purchased && !error ? 'card-purchase-notice' : 'error-message'}
-          role={purchased && !error ? 'status' : 'alert'}
+          role={purchased && !error ? undefined : 'alert'}
         >
           {message || error}
         </p>
@@ -309,6 +313,7 @@ export default function CardsPage() {
                       });
                       await refresh();
                       setPurchased(true);
+                      notify('Purchase complete.');
                       setMessage(`${purchase.name} added to your collection.`);
                       setPurchase(null);
                     } catch (e) {

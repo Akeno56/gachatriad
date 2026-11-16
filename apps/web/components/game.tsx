@@ -29,7 +29,9 @@ import { MatchmakingPanel } from './matchmaking-panel';
 import { MainChat } from './main-chat';
 import { CaptureCard } from './capture-card';
 import { DraftOpening } from './draft-opening';
+import { SharedDraft } from './shared-draft';
 import { BattleChat } from './battle-chat';
+import { VERSION } from '../lib/release';
 export function ruleNames(r: Rules) {
   return [
     r.allOpen ? 'All Open' : r.threeOpen ? 'Three Open' : 'Closed',
@@ -65,6 +67,8 @@ export function Game() {
   } = useCapturePresentation(receivedMatch, sound);
   const receivedRef = useRef(receivedMatch);
   receivedRef.current = receivedMatch;
+  const currentMatchId = useRef(matchId);
+  currentMatchId.current = matchId;
   useEffect(
     () => () => {
       const last = receivedRef.current;
@@ -106,12 +110,13 @@ export function Game() {
     async (id: string) => {
       try {
         const next = await api<MatchView>(`${watchingId ? '/spectate' : '/matches'}/${id}`);
+        if (currentMatchId.current !== id) return;
         setMatch((current) =>
           current?.id === id && current.version > next.version ? current : next,
         );
         setError('');
       } catch (e) {
-        setError((e as Error).message);
+        if (currentMatchId.current === id) setError((e as Error).message);
       }
     },
     [watchingId],
@@ -224,6 +229,7 @@ export function Game() {
     }
   }
   function menu() {
+    currentMatchId.current = null;
     setWatchingId(null);
     setMatch(null);
     setMatchId(null);
@@ -296,21 +302,26 @@ export function Game() {
         )}
         {!match ? (
           <>
-            <div className="game-title">
-              <h1>
-                <span>GACHA</span>TRIAD
-              </h1>
-            </div>
             <div className="title-layout">
-              <MatchmakingPanel
-                onMatch={setMatchId}
-                onRules={() => setDialog('rules')}
-                onTutorial={() => window.dispatchEvent(new Event('triad:show-tutorial'))}
-                onCombo={() => setDialog('combo')}
-              />
+              <div className="play-command-column">
+                <div className="game-title">
+                  <h1>
+                    <span>GACHA</span>TRIAD
+                  </h1>
+                </div>
+                <MatchmakingPanel
+                  onMatch={setMatchId}
+                  onRules={() => setDialog('rules')}
+                  onTutorial={() => window.dispatchEvent(new Event('triad:show-tutorial'))}
+                  onCombo={() => setDialog('combo')}
+                />
+              </div>
               <section className="title-party" aria-label="Your saved deck">
                 <div className="party-heading">
                   <span>YOUR DECK</span>
+                  <Link className="deck-edit-link" href="/collection">
+                    Edit deck <span aria-hidden="true">→</span>
+                  </Link>
                 </div>
                 <div className="title-roster">
                   {(profile
@@ -331,7 +342,7 @@ export function Game() {
               </section>
             </div>
             <div className="build-label">
-              {CARDS.filter((card) => !card.finish).length} CARDS · v0.1.2 Alpha{' '}
+              {CARDS.filter((card) => !card.finish).length} CARDS · v{VERSION} Alpha{' '}
               <Link href="/credits" className="credits-button">
                 Credits
               </Link>
@@ -341,7 +352,11 @@ export function Game() {
           <section className="match" aria-label="Triple Triad match">
             <div className="match-toolbar">
               <div className="battle-mode">
-                <span>{match.mode.toUpperCase()} BATTLE</span>
+                <span>
+                  {match.mode === 'shared-draft'
+                    ? 'SHARED DRAFT BATTLE'
+                    : `${match.mode.toUpperCase()} BATTLE`}
+                </span>
                 <strong>
                   {match.status === 'drafting'
                     ? 'Choose your hand'
@@ -399,7 +414,7 @@ export function Game() {
             {match.status === 'drafting' && match.spectator ? (
               <div className="menu-window spectator-wait">
                 <h2>Players are drafting</h2>
-                <p>The battle starts when both hands are ready. Draft choices stay private.</p>
+                <p>The battle starts when both hands are ready.</p>
               </div>
             ) : match.status === 'drafting' && !draftCeremonyDone && !match.draftLocked ? (
               <DraftOpening
@@ -407,6 +422,15 @@ export function Game() {
                 match={match}
                 onUpdate={updateDraft}
                 onComplete={completeDraftOpening}
+              />
+            ) : match.status === 'drafting' && match.sharedDraft ? (
+              <SharedDraft
+                match={match}
+                busy={busy}
+                now={clock}
+                onPick={(cardId) =>
+                  void action(`/matches/${match.id}/draft/pick`, { cardId, version: match.version })
+                }
               />
             ) : match.status === 'drafting' ? (
               <div className="draft-selection">

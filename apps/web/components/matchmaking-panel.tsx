@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from './session';
 import { api } from '../lib/platform';
-import { confirmRanked, confirmUnranked, confirmDraft } from './ranked-warning';
+import { confirmRanked, confirmUnranked, confirmDraft, confirmSharedDraft } from './ranked-warning';
 export function MatchmakingPanel({
   onMatch,
   onRules,
@@ -33,7 +33,7 @@ export function MatchmakingPanel({
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
-  async function queue(mode: 'casual' | 'ranked' | 'draft') {
+  async function queue(mode: 'casual' | 'ranked' | 'draft' | 'shared-draft') {
     if (lock.current) return;
     lock.current = true;
     setError('');
@@ -41,9 +41,11 @@ export function MatchmakingPanel({
       if (
         !(await (mode === 'ranked'
           ? confirmRanked(profile)
-          : mode === 'draft'
-            ? confirmDraft(profile)
-            : confirmUnranked(profile)))
+          : mode === 'shared-draft'
+            ? confirmSharedDraft(profile)
+            : mode === 'draft'
+              ? confirmDraft(profile)
+              : confirmUnranked(profile)))
       )
         return;
       setBusy(true);
@@ -84,37 +86,57 @@ export function MatchmakingPanel({
     <LocaleView>
       <section className="setup-panel menu-window matchmaking-panel" aria-label="Match setup">
         <h2 className="window-label">Play a game</h2>
-        {(['casual', 'ranked', 'draft'] as const).map((mode) => {
+        <Link className="daily-puzzle-link" href="/puzzle">
+          <strong>Daily Triad puzzle</strong>
+          <small>One shared challenge · Win 100 Stellar Prisms</small>
+        </Link>
+        {(['casual', 'ranked', 'draft', 'shared-draft'] as const).map((mode) => {
           const ranked = mode !== 'casual',
-            label = mode === 'draft' ? 'Draft (Ranked)' : ranked ? 'Ranked' : 'Unranked',
-            action = mode === 'draft' ? 'Start Draft (Ranked)' : `Start match (${label})`,
+            draft = mode === 'draft' || mode === 'shared-draft',
+            name = mode === 'shared-draft' ? 'Shared Draft' : 'Draft',
+            label = draft ? `${name} (Ranked)` : ranked ? 'Ranked' : 'Unranked',
+            action = draft ? `Start ${name} (Ranked)` : `Start match (${label})`,
             own = waiting?.mode === mode;
           return (
             <div className={`matchmaking-row ${own ? 'is-queued' : ''}`} key={mode}>
-              <button
-                className={
-                  ranked ? 'outline-button ranked-play-button' : 'primary-button start-button'
-                }
-                disabled={
-                  busy ||
-                  !profile ||
-                  !!profile.pendingTrade ||
-                  !!profile.activeMatchId ||
-                  !!profile.waitingLobbyId ||
-                  (mode !== 'draft' && profile.deck.length !== 5) ||
-                  (ranked && !profile.registered)
-                }
-                onClick={() => void queue(mode)}
-                aria-label={own ? `${label} matchmaking queue` : action}
-              >
-                {own ? (
-                  <span role="timer" aria-live="off">
-                    In queue for : {elapsed}
+              {own ? (
+                <div
+                  className="queue-status"
+                  role="group"
+                  aria-label={`${label} matchmaking queue`}
+                >
+                  <span className="queue-mode">{label}</span>
+                  <span className="queue-elapsed" role="timer" aria-live="off">
+                    <span className="sr-only">In queue for : </span>
+                    {elapsed}
                   </span>
-                ) : (
-                  action
-                )}
-              </button>
+                  <small>Searching for an opponent…</small>
+                </div>
+              ) : (
+                <button
+                  className={
+                    ranked ? 'outline-button ranked-play-button' : 'primary-button start-button'
+                  }
+                  disabled={
+                    busy ||
+                    !profile ||
+                    !!profile.pendingTrade ||
+                    !!profile.activeMatchId ||
+                    !!profile.waitingLobbyId ||
+                    (!draft && profile.deck.length !== 5) ||
+                    (ranked && !profile.registered)
+                  }
+                  onClick={() => void queue(mode)}
+                  aria-label={action}
+                >
+                  <>
+                    <span className="command-copy">
+                      <strong>{draft ? name : label}</strong>
+                      <small>{draft ? 'Ranked' : 'Start match'}</small>
+                    </span>
+                  </>
+                </button>
+              )}
               {own && (
                 <button
                   className="queue-cancel"
@@ -140,7 +162,7 @@ export function MatchmakingPanel({
         <Link className="outline-button lobby-shortcut" href="/lobbies">
           Browse lobbies
         </Link>
-        {waiting && !['casual', 'ranked', 'draft'].includes(waiting.mode) && (
+        {waiting && !['casual', 'ranked', 'draft', 'shared-draft'].includes(waiting.mode) && (
           <p className="waiting-other-lobby">
             {waiting.invited ? 'Waiting for your invited opponent.' : 'You have a waiting lobby.'}{' '}
             <button
@@ -186,7 +208,6 @@ export function MatchmakingPanel({
             Bot games use the same Ranked or Draft rules and never change Elo. A human opponent can
             still match first.
           </p>
-          {waiting?.mode === 'ranked' && <p>Trade One still applies: losing can cost one card.</p>}
           <div className="result-actions">
             <button
               className="primary-button"

@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { openStarterPacks } from './helpers';
+import { openStarterPacks, openNavigation } from './helpers';
 import dictionary from '../../apps/web/lib/translations-fr.json' with { type: 'json' };
 async function french(page: Page) {
   await page.getByRole('button', { name: 'Language: English', exact: true }).click();
@@ -13,7 +13,10 @@ test('saves French, localizes onboarding and keeps card and rule names intact', 
   await page.goto('/cards');
   await expect(page.locator('.account-control')).toHaveText('Login/Register');
   await french(page);
+  await openNavigation(page);
   await expect(page.getByRole('link', { name: 'Cartes', exact: true })).toBeVisible();
+  if (await page.getByRole('button', { name: 'Menu', exact: true }).isVisible())
+    await page.keyboard.press('Escape');
   await expect(page.locator('.account-control')).toHaveText('Connexion / Inscription');
   const lang = (await page.locator('.language-selector').boundingBox())!,
     wallet = await page.locator('.wallet').boundingBox(),

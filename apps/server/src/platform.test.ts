@@ -126,11 +126,16 @@ it('buys Standard cards at server prices atomically and deduplicates retries', a
     ),
   ).toEqual([]);
 });
-it('keeps both Ranked players blocked until Trade One settles and reports the pending result', async () => {
+it('keeps both custom Trade One players blocked until settlement and reports the pending result', async () => {
   const a = await user(true),
     b = await user(true);
-  const lobby = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'ranked', allowBots: false });
-  const joined = await ok<{ matchId: string }>(b, '/lobbies', { mode: 'ranked' });
+  const lobby = await ok<{ lobbyId: string }>(a, '/lobbies', {
+    mode: 'custom',
+    tradeRule: 'one',
+    rules: { allOpen: false, same: true, plus: true, combo: true },
+    allowBots: false,
+  });
+  const joined = await ok<{ matchId: string }>(b, `/lobbies/${lobby.lobbyId}/join`, {});
   const result = await ok<MatchView>(b, `/matches/${joined.matchId}/resign`, {});
   for (const [c, canClaim] of [
     [a, true],
@@ -330,7 +335,12 @@ it('enables Same, Plus and Combo in new unranked and Draft games without Trade O
       mode === 'draft' ? { mode } : {},
     );
     const match = await ok<MatchView>(a, `/matches/${joined.matchId}`);
-    expect(match.rules).toMatchObject({ threeOpen: true, same: true, plus: true, combo: true });
+    expect(match.rules).toMatchObject({
+      threeOpen: true,
+      same: true,
+      plus: true,
+      combo: true,
+    });
     expect(match.trade.rule).toBe('none');
     await ok(a, `/matches/${joined.matchId}/resign`, {});
   }
@@ -850,8 +860,12 @@ it('keeps Draft, Roulette and unranked queues separate and prevents guest ranked
 it('settles Trade One exactly once with permanent inventory changes, even on forfeit', async () => {
   const a = await user(true),
     b = await user(true);
-  const l = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'ranked' });
-  const { matchId } = await ok<{ matchId: string }>(b, '/lobbies', { mode: 'ranked' });
+  const l = await ok<{ lobbyId: string }>(a, '/lobbies', {
+    mode: 'custom',
+    tradeRule: 'one',
+    rules: { allOpen: false, same: true, plus: true, combo: true },
+  });
+  const { matchId } = await ok<{ matchId: string }>(b, `/lobbies/${l.lobbyId}/join`, {});
   const started = await ok<MatchView>(a, `/matches/${matchId}`);
   expect(started.rules).toMatchObject({ same: true, plus: true, combo: true, allOpen: false });
   expect(started.game!.hands[1].every((c) => c.card === null)).toBe(true);
@@ -877,14 +891,14 @@ it('settles Trade One exactly once with permanent inventory changes, even on for
   );
   expect(achievement?.unlockedAt).toBeTruthy();
 });
-it('locks only offered Draft cards and completes a full server-authoritative game', async () => {
+it('picks only offered shared Draft cards and completes a full server-authoritative game', async () => {
   const a = await user(true),
     b = await user(true);
-  const { lobbyId } = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'draft' });
-  const { matchId } = await ok<{ matchId: string }>(b, '/lobbies', { mode: 'draft' });
+  const { lobbyId } = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'shared-draft' });
+  const { matchId } = await ok<{ matchId: string }>(b, '/lobbies', { mode: 'shared-draft' });
   for (const c of [a, b]) {
     const m = await ok<MatchView>(c, `/matches/${matchId}`);
-    expect(m.draftPool).toHaveLength(15);
+    expect(m.draftPool).toHaveLength(20);
     expect(m.game).toBeNull();
     expect(
       (
@@ -896,12 +910,18 @@ it('locks only offered Draft cards and completes a full server-authoritative gam
     expect((await request(c, `/matches/${matchId}/draft/reveal`, { step: 2 })).statusCode).toBe(
       409,
     );
-    for (let step = 0; step < 15; step++) await ok(c, `/matches/${matchId}/draft/reveal`, { step });
+    for (let step = 0; step < 20; step++) await ok(c, `/matches/${matchId}/draft/reveal`, { step });
     const replay = await ok<MatchView>(c, `/matches/${matchId}/draft/reveal`, { step: 0 });
-    expect(replay.draftRevealed).toBe(15);
+    expect(replay.draftRevealed).toBe(20);
     expect(replay.draftPool).toEqual(m.draftPool);
-    await ok(c, `/matches/${matchId}/draft`, {
-      cards: randomDeck(m.draftPool, seededRandom(123)).map((c) => c.id),
+  }
+  for (let pick = 0; pick < 10; pick++) {
+    const m = await ok<MatchView>(a, `/matches/${matchId}`),
+      actor = m.sharedDraft!.turn === 0 ? a : b;
+    const v = await ok<MatchView>(actor, `/matches/${matchId}`);
+    await ok(actor, `/matches/${matchId}/draft/pick`, {
+      cardId: v.sharedDraft!.legal[0],
+      version: v.version,
     });
   }
   for (let i = 0; i < 9; i++) {
@@ -1125,14 +1145,14 @@ it('keeps Holo ownership separate, accepts it in a deck and trades the exact fin
   await ok(a, `/matches/${solo.matchId}/resign`, {});
   const offer = await ok<{ id: string }>(a, '/trades', {
     offered: holo,
-    wanted: b.profile.deck[1],
+    wanted: b.profile.deck.find((id) => id !== base && id !== holo)!,
   });
   await ok(b, `/trades/${offer.id}/accept`, {});
   const pa = await ok<ProfileView>(a, '/profile'),
     pb = await ok<ProfileView>(b, '/profile');
   expect(pa.inventory[holo]).toBeUndefined();
   expect(pa.inventory[base].quantity).toBe(1);
-  expect(pb.inventory[holo].quantity).toBe(1);
+  expect(pb.inventory[holo].quantity).toBe((b.profile.inventory[holo]?.quantity ?? 0) + 1);
 });
 it('replaces new-account cards with three private, replay-safe starter boosters and preserves conversion', async () => {
   const a = await user(false, false),
@@ -1325,7 +1345,7 @@ it('prunes traded last copies from saved decks and prompts for a five-card deck'
   const a = await user(true),
     b = await user(true),
     give = a.profile.deck[0],
-    want = b.profile.deck[0];
+    want = b.profile.deck.find((id) => id !== give)!;
   await platform.db.read((sql) =>
     sql('UPDATE inventory SET quantity=1 WHERE profile_id=$1 AND card_id=$2', [a.profile.id, give]),
   );
@@ -1505,7 +1525,8 @@ it('guards first ranked entry, equips earned titles, exposes match avatars and l
   await platform.db.read((sql) =>
     sql('UPDATE profiles SET ranked_acknowledged=false WHERE id=$1', [a.profile.id]),
   );
-  expect((await request(a, '/lobbies', { mode: 'ranked' })).statusCode).toBe(428);
+  const initial = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'ranked' });
+  await ok(a, `/lobbies/${initial.lobbyId}`, undefined, 'DELETE');
   expect((await request(a, '/ranked/acknowledge', {})).statusCode).toBe(400);
   await ok(a, '/ranked/acknowledge', { acknowledged: true });
   await ok(a, '/profile/avatar', { cardId: a.profile.deck[0] });
@@ -1515,7 +1536,7 @@ it('guards first ranked entry, equips earned titles, exposes match avatars and l
   const match = await ok<MatchView>(a, `/matches/${joined.matchId}`);
   expect(match.players[0].avatar?.id).toBe(a.profile.deck[0]);
   await ok(b, `/matches/${joined.matchId}/resign`, {});
-  await ok(a, `/matches/${joined.matchId}/claim`, { cardId: b.profile.deck[0] });
+  expect((await ok<MatchView>(a, `/matches/${joined.matchId}`)).trade.pending).toBe(false);
   await ok(a, '/profile/title', { titleId: 'card-player' });
   expect((await platform.store.playerProfile(a.profile.id)).title).toBe('Card Player');
   const ladder = await ok<import('@gacha-triad/shared/social').LadderEntry[]>(a, '/ladder');

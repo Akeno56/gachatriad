@@ -1,0 +1,57 @@
+# 0.1.3 candidate audit — 16 November 2026
+
+The audit covers the local working-tree candidate, not a claim that the public site already runs these fixes. All account, inventory, moderation and game mutations used disposable local databases. The production checks were unauthenticated and read-only. No deployment, account reset or production configuration change was performed.
+
+## Findings fixed
+
+- **Battle refresh traffic could exhaust the API rate limit.** One automatic profile revision also refreshes match, chat and social data. The previous 250 ms battle interval produced 900 browser API requests in 80 seconds during frequent world notifications, including HTTP 429 responses. Automatic battle refreshes now have a one-second minimum interval. The same workload produced 304 requests, no failed responses and no browser script errors. Explicit player actions still update immediately. A regression test checks the request budget during a notification burst.
+- **Artwork inspection overlapped the battle log.** The selected-card inspection button was positioned outside its hand container and was hidden on phones. It now has reserved space on both layouts and remains clickable.
+- **Phone chat was too short for three ordinary titled messages.** The compact history height squeezed the first message out of view. Mobile public chat now has enough height for the normal three-message preview.
+- **A delayed match response could reopen a finished battle after returning to the menu.** Reproduced by holding a local match response until after the menu opened. Match loads now discard responses and errors for a match that is no longer selected.
+- **Narrow profiles overflowed.** At 320 px, administrator tabs extended beyond the page and a long player name wrapped into a very tall column beside its portrait. Tabs now wrap, and small profiles stack a smaller portrait above the name. Tables retain their own horizontal scrolling.
+- **Album names were squeezed by Buy buttons.** Card metadata now uses the full card width, with the purchase action below it. Longer names and universe names wrap instead of being cut off.
+- **Preference restoration could overwrite new input.** Filters selected while the profile was connecting could reset when account preferences loaded. Restoration now preserves input made during connection, while keeping saved preferences scoped to the account and server. Scroll restoration also avoids forcing a player back to the top after they have already scrolled.
+- **French coverage had gaps.** Added missing messages and accessibility labels, corrected the multi-card Trade Up sentence, localized administrator history and result labels, and removed duplicate dictionary keys. Player/card names and the established rule names remain unchanged.
+
+The audit also corrected a randomized exchange-test fixture which could accidentally offer the same card on both sides, and updated browser expectations for the current navigation, album footer and rated-match security rules. Rated rematches remain disabled; players use matchmaking for the next rated game.
+
+## Verification
+
+| Area                       | Evidence                                                                                                                                                                                                                                                                                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Unit and integration suite | 33 files, 175 tests passed. Includes authentication, authorization, socket identity, origin checks, rate limits, account/IP policy, admin access, economy and game rules.                                                                                                                                                                                    |
+| Browser workflows          | Full 132-case run: 125 passed, six failures and one intentional duplicate bot-test skip. The six failures were corrected or their stale/racy expectations updated; all 12 focused corrective checks passed, including two new delayed-response cases. All non-skipped scenarios have passing results across the full and focused runs.                       |
+| English/French layouts     | 96 captures: 12 pages × 2 languages × widths 1366, 768, 390 and 320 px. Final measurements found no page-width overflow, no clipped visible heading/button/label text, no browser script errors and no failed local requests. Accessibility-only hidden labels are excluded from clipping checks. Representative full-size captures were visually inspected. |
+| Translation review         | Source scan reviewed 687 unique multiword UI phrases. Remaining unchanged phrases are proper names, shared rule names, numeric templates or text with the same spelling in French. Dynamic translation tests preserve player names. This is not a professional linguistic certification.                                                                     |
+| Assets                     | Manifest validation passed for 2,144 asset references, including 855 portraits; no validation errors.                                                                                                                                                                                                                                                        |
+| Thirty-bot endurance       | 15 minutes on an isolated disk-backed database: 3,190 requests, zero failures, overall p95 117 ms. No sustained database queue or rising memory trend was observed during this run.                                                                                                                                                                          |
+| Busy browser battle        | Before: 900 requests/80 s and rate-limit responses. After: 304 requests/80 s, zero failures, p95 171 ms while other local checks also ran. These are local measurements, not a guarantee of WAN latency.                                                                                                                                                     |
+| Production build and types | Production-preview and standalone hosted-export builds passed. Engine/shared/server/browser-test TypeScript checks passed; the export build also checked web types. Formatting and `git diff --check` passed.                                                                                                                                                |
+| Dependencies               | `pnpm audit --prod --json`: zero known advisories among 249 production/optional dependencies at audit time.                                                                                                                                                                                                                                                  |
+
+The actual standalone export also passed 26 browser checks across the initial run and focused reruns: 24 passed initially, and two French button-locator expectations were corrected and passed on rerun. The final single/bulk Trade Up and French quantity-wording rerun passed on both desktop and mobile. Eight additional text-layout captures after the last grammar correction had zero overflow, clipped text, script errors or failed requests.
+
+The exported tree contained no private-file paths and no matches for the one known local authentication secret available for comparison across 132 text bundle/export files. Production OAuth secret values were not available to this scan.
+
+## Security review
+
+The automated checks exercise rejection of forged admin grants, unsigned or mismatched socket identities, unauthorized review/control access, hostile origins, spoofed IP headers, invalid operations and excessive requests. Game results, roles, inventory and currency remain server-authoritative. Changing browser objects does not grant server permissions. Reviewed application rendering uses React text or `textContent` for user content; feedback markup remains text. SQL inputs use bound parameters, and API request bodies have a size limit.
+
+OAuth account linking remains explicit: the configuration disables implicit linking, so an existing account should first sign in normally and connect Google/Discord from its profile. Provider secrets remain server-side. Real Google/Discord consent and callback completion require a separate live-account check; the audit did not use or request operator credentials.
+
+Read-only checks of `https://gachatriad.com` observed:
+
+- `.env`, `.git/config`, `.data/auth-secret` and `/api/local-control/status`: HTTP 404.
+- Unauthenticated profile, bot-control and admin-feedback API requests: HTTP 401.
+- Frame denial, MIME-sniffing protection and a no-referrer policy were present.
+- HTTP/2 delivered both sampled portraits in full. The menu MP3 returned all 3,587,973 bytes with HTTP 200 in about 1.97 s; the previously problematic one-byte range returned HTTP 206 with one byte in about 155 ms. No protocol errors were observed in this sample. A concurrent health request took about 1.23 s, so this sample does not establish uniformly low network latency.
+
+The current public response has no HSTS or Content Security Policy header. These are recommended deployment-hardening follow-ups, especially a tested CSP compatible with the static Next.js output and supported external game-server connections. See the [Next.js CSP guidance](https://nextjs.org/docs/app/guides/content-security-policy) and [HSTS documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Strict-Transport-Security). They are not evidence of an exploit by themselves. VPS OS packages, SSH/firewall configuration, TLS renewal, backups and production secret permissions were outside this application-only audit.
+
+## Limits and release follow-up
+
+No audit proves zero bugs or zero security vulnerabilities. Browser coverage uses Chromium desktop and phone emulation, not physical Safari/Android devices. The local endurance run lasted 15 minutes; it cannot rule out an intermittent problem appearing after an hour on a particular Wi-Fi network. The refresh fix addresses a reproduced request-budget failure; it does not establish the cause of every earlier network slowdown.
+
+Before broad public sharing, complete real Google/Discord sign-in and explicit account-linking checks, a physical-phone game, and a long session over the affected network. Confirm production backup/update/restore procedures and consider staged CSP/HSTS hardening. Email verification and a self-service email password-reset flow are not configured and remain product limitations.
+
+Raw local evidence is under `.cache/audit013-*` (the complete export layout measurements are in `.cache/audit013-layout96.json`), with endurance samples in `.cache/session-soak-7pDDtZ/results.json`. These temporary artifacts are not part of the repository. The permanent regression tests are in `tests/e2e/release-011.spec.ts`, `tests/e2e/release-012.spec.ts` and `tests/e2e/release-013.spec.ts`.

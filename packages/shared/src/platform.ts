@@ -1,11 +1,23 @@
 import type { Card, GameState, Player, Rules } from '@gacha-triad/engine';
 import type { BattleIdentity, TitleView } from './social';
-export type Mode = 'solo' | 'casual' | 'custom' | 'ranked' | 'draft' | 'roulette';
+export type Mode = 'solo' | 'casual' | 'custom' | 'ranked' | 'draft' | 'shared-draft' | 'roulette';
+export const isDraftMode = (mode: string) => mode === 'draft' || mode === 'shared-draft';
+export const isRatedMode = (mode: string) => mode === 'ranked' || isDraftMode(mode);
+export const modeRatingField = (mode: string) =>
+  mode === 'shared-draft' ? 'shared_draft_rating' : mode === 'draft' ? 'draft_rating' : 'rating';
 export interface HandCard {
   slotId: string;
   card: Card | null;
 }
 export interface MatchView {
+  sharedDraft?: {
+    first: Player;
+    turn: Player | null;
+    picks: readonly [readonly Card[], readonly Card[]];
+    available: readonly string[];
+    legal: readonly string[];
+    ready: readonly [boolean, boolean];
+  };
   spectator?: boolean;
   missedTurns?: readonly [number, number];
   chatAvailable: boolean;
@@ -83,6 +95,7 @@ export interface ProfileView {
   registered: boolean;
   rating: number;
   draftRating: number;
+  sharedDraftRating: number;
   played: number;
   wins: number;
   losses: number;
@@ -257,6 +270,7 @@ export interface PlayerProfileView {
   joinedAt: string;
   rating: number;
   draftRating: number;
+  sharedDraftRating: number;
   played: number;
   wins: number;
   losses: number;

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openStarterPacks } from './helpers';
+import { openStarterPacks, navigateTo } from './helpers';
 test('populates labeled bots, joins a real bot duel, preserves guest progress and trades', async ({
   page,
 }, info) => {
@@ -70,7 +70,7 @@ test('populates labeled bots, joins a real bot duel, preserves guest progress an
   await expect(page.locator('.trade-offer')).toHaveCount(1);
   await page.getByRole('button', { name: 'Cancel offer', exact: true }).click();
   await expect(page.locator('.trade-offer')).toHaveCount(0);
-  await page.getByRole('link', { name: 'Collection', exact: true }).click();
+  await navigateTo(page, 'Collection');
   await page.getByRole('button', { name: 'Auto build', exact: true }).click();
   await expect(page.locator('.saved-deck')).toContainText('Ready for battle.');
   await page.getByRole('link', { name: 'Achievements', exact: true }).click();

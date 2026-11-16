@@ -82,7 +82,10 @@ test('buys a currency sale and completes a card exchange through Market', async 
       offered = seller.profile.deck[1],
       wanted = buyer.profile.deck.find((id) => id !== offered)!;
     await seller.page.goto('/market');
+    const menu = seller.page.getByRole('button', { name: 'Menu', exact: true });
+    if (await menu.isVisible()) await menu.click();
     await expect(seller.page.getByRole('link', { name: 'Market', exact: true })).toBeVisible();
+    if (await menu.isVisible()) await menu.click();
     await seller.page.getByText('Post an offer', { exact: true }).click();
     await seller.page
       .getByRole('combobox', { name: 'Offer type', exact: true })
@@ -110,6 +113,7 @@ test('buys a currency sale and completes a card exchange through Market', async 
     await buyer.page
       .getByRole('combobox', { name: 'Listing type', exact: true })
       .selectOption('sale');
+    await buyer.page.locator('.market-filter-panel summary').click();
     await buyer.page.getByLabel('Minimum price', { exact: true }).fill('236');
     await buyer.page.getByLabel('Maximum price', { exact: true }).fill('236');
     await expect(buyer.page.locator('.trade-offer')).toHaveCount(1);
@@ -183,6 +187,51 @@ test('bounds background refresh traffic and does not rerun admin history for wor
     await target.context.close();
   }
 });
+test('keeps busy battle refreshes within the API request budget', async ({ browser }) => {
+  test.setTimeout(60000);
+  const a = await player(browser),
+    b = await player(browser);
+  try {
+    await platform.store.createLobby(a.profile, { mode: 'casual', allowBots: false });
+    const { matchId } = await platform.store.createLobby(b.profile, {
+      mode: 'casual',
+      allowBots: false,
+    });
+    await a.page.goto(`/?match=${matchId}`);
+    await expect(a.page.locator('.board-cell')).toHaveCount(9);
+    await a.page.waitForTimeout(1500);
+    let profiles = 0,
+      reads = 0;
+    const failures: number[] = [];
+    a.page.on('request', (request) => {
+      const path = new URL(request.url()).pathname;
+      if (path === '/api/profile') profiles++;
+      if (path.startsWith('/api/') && request.method() === 'GET') reads++;
+    });
+    a.page.on('response', (response) => {
+      if (new URL(response.url()).pathname.startsWith('/api/') && response.status() >= 400)
+        failures.push(response.status());
+    });
+    for (let i = 0; i < 100; i++) {
+      const response = await platform.app.inject({
+        method: 'POST',
+        url: '/api/profile/avatar',
+        headers: { authorization: `Bearer ${b.token}` },
+        payload: { cardId: null },
+      });
+      expect(response.statusCode, response.body).toBe(200);
+      await a.page.waitForTimeout(100);
+    }
+    expect(profiles).toBeGreaterThan(2);
+    expect(profiles).toBeLessThanOrEqual(13);
+    expect(reads).toBeLessThanOrEqual(52);
+    expect(failures).toEqual([]);
+  } finally {
+    await a.context.close();
+    await b.context.close();
+  }
+});
+
 test('shows the exact Ranked rating delta and Season 0 W/L at the result', async ({
   browser,
 }, info) => {

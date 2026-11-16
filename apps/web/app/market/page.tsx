@@ -10,34 +10,59 @@ import { LocalBots } from '../../components/local-bots';
 import { Card } from '../../components/card';
 import { api } from '../../lib/platform';
 import { MainChat } from '../../components/main-chat';
+import { useActionNotice } from '../../components/action-notice';
+import { useBrowseState, useBrowseScroll } from '../../components/browse-preferences';
 export default function Market() {
   const { profile, revision, refresh, error: connectionError, openAccount } = useSession();
+  const notify = useActionNotice(),
+    actionLock = useRef(false);
   const [offers, setOffers] = useState<TradeOfferView[]>([]),
+    [loadedFor, setLoadedFor] = useState(''),
     [offered, setOffered] = useState(''),
     [wanted, setWanted] = useState(''),
     [payment, setPayment] = useState('exchange'),
     [price, setPrice] = useState('236'),
-    [listingType, setListingType] = useState('all'),
-    [minPrice, setMinPrice] = useState(''),
-    [maxPrice, setMaxPrice] = useState(''),
-    [search, setSearch] = useState(''),
-    [filter, setFilter] = useState('all'),
-    [finish, setFinish] = useState('all'),
-    [rarity, setRarity] = useState('all'),
-    [wantedRarity, setWantedRarity] = useState('all'),
-    [universe, setUniverse] = useState('all'),
-    [sort, setSort] = useState('newest'),
-    [onlyMissing, setOnlyMissing] = useState(false),
-    [onlyDuplicates, setOnlyDuplicates] = useState(false),
+    [listingType, setListingType] = useBrowseState<string>('market', 'listingType', 'all'),
+    [minPrice, setMinPrice] = useBrowseState<string>('market', 'minPrice', ''),
+    [maxPrice, setMaxPrice] = useBrowseState<string>('market', 'maxPrice', ''),
+    [search, setSearch] = useBrowseState<string>('market', 'search', ''),
+    [filter, setFilter] = useBrowseState<string>('market', 'filter', 'all'),
+    [finish, setFinish] = useBrowseState<string>('market', 'finish', 'all'),
+    [rarity, setRarity] = useBrowseState<string>('market', 'rarity', 'all'),
+    [wantedRarity, setWantedRarity] = useBrowseState<string>('market', 'wantedRarity', 'all'),
+    [universe, setUniverse] = useBrowseState<string>('market', 'universe', 'all'),
+    [sort, setSort] = useBrowseState<string>('market', 'sort', 'newest'),
+    [onlyMissing, setOnlyMissing] = useBrowseState<boolean>('market', 'onlyMissing', false),
+    [onlyDuplicates, setOnlyDuplicates] = useBrowseState<boolean>(
+      'market',
+      'onlyDuplicates',
+      false,
+    ),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
+    [workingPath, setWorkingPath] = useState(''),
     [selected, setSelected] = useState<TradeOfferView | null>(null);
   useEffect(() => {
+    let active = true;
     if (profile)
       void api<TradeOfferView[]>('/trades?includeSales=true')
-        .then((rows) => setOffers(rows.map((o) => ({ ...o, price: o.price ?? null }))))
-        .catch((e) => setError(e.message));
+        .then((rows) => {
+          if (active) {
+            setOffers(rows.map((o) => ({ ...o, price: o.price ?? null })));
+            setLoadedFor(profile.id);
+          }
+        })
+        .catch((e) => {
+          if (active) {
+            setError(e.message);
+            setLoadedFor(profile.id);
+          }
+        });
+    return () => {
+      active = false;
+    };
   }, [profile?.id, revision]);
+  useBrowseScroll('market', loadedFor === profile?.id);
   const confirmRef = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     if (selected) confirmRef.current?.showModal();
@@ -96,17 +121,41 @@ export default function Market() {
                     ? a.offered.name.localeCompare(b.offered.name)
                     : Date.parse(b.createdAt) - Date.parse(a.createdAt),
       );
+  const advancedFilterCount = [
+    minPrice,
+    maxPrice,
+    finish !== 'all',
+    rarity !== 'all',
+    wantedRarity !== 'all',
+    universe !== 'all',
+    onlyMissing,
+    onlyDuplicates,
+  ].filter(Boolean).length;
   async function run(path: string, body?: unknown, method?: string) {
+    if (actionLock.current) return;
+    actionLock.current = true;
     setBusy(true);
+    setWorkingPath(path);
     try {
       await api(path, body, method);
       await refresh();
       setError('');
       setSelected(null);
+      notify(
+        method === 'DELETE'
+          ? 'Offer cancelled.'
+          : path.endsWith('/accept')
+            ? selected?.price !== null
+              ? 'Purchase complete.'
+              : 'Exchange complete.'
+            : 'Offer posted.',
+      );
     } catch (e) {
       setError((e as Error).message);
     } finally {
+      actionLock.current = false;
       setBusy(false);
+      setWorkingPath('');
     }
   }
   return (
@@ -219,7 +268,7 @@ export default function Market() {
               )}
             </div>
             <button className="primary-button" disabled={busy || !profile?.registered}>
-              Post offer
+              {workingPath === '/trades' ? 'Posting…' : 'Post offer'}
             </button>
             {profile && !profile.registered && (
               <p className="eligibility-note">
@@ -228,44 +277,7 @@ export default function Market() {
             )}
           </form>
         </details>
-        <div className="market-filters">
-          <label>
-            Listing type
-            <select
-              name="page-select-5"
-              aria-label="Listing type"
-              value={listingType}
-              onChange={(e) => setListingType(e.target.value)}
-            >
-              <option value="all">All listings</option>
-              <option value="sale">Currency sales</option>
-              <option value="exchange">Card exchanges</option>
-            </select>
-          </label>
-          <label>
-            Minimum price
-            <input
-              name="page-input-6"
-              aria-label="Minimum price"
-              type="number"
-              min="1"
-              max="1000000"
-              value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
-            />
-          </label>
-          <label>
-            Maximum price
-            <input
-              name="page-input-7"
-              aria-label="Maximum price"
-              type="number"
-              min="1"
-              max="1000000"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-            />
-          </label>
+        <div className="market-filters market-primary-filters">
           <label>
             Find an offer
             <input
@@ -289,64 +301,16 @@ export default function Market() {
             </select>
           </label>
           <label>
-            Finish
+            Listing type
             <select
-              name="page-select-10"
-              aria-label="Finish"
-              value={finish}
-              onChange={(e) => setFinish(e.target.value)}
+              name="page-select-5"
+              aria-label="Listing type"
+              value={listingType}
+              onChange={(e) => setListingType(e.target.value)}
             >
-              <option value="all">All finishes</option>
-              <option value="standard">Standard</option>
-              <option value="holo">Holographic</option>
-            </select>
-          </label>
-          <label>
-            Offered rarity
-            <select
-              name="page-select-11"
-              aria-label="Offered rarity"
-              value={rarity}
-              onChange={(e) => setRarity(e.target.value)}
-            >
-              <option value="all">All rarities</option>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <option value={n} key={n}>
-                  {n}★
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Requested rarity
-            <select
-              name="page-select-12"
-              aria-label="Requested rarity"
-              value={wantedRarity}
-              onChange={(e) => setWantedRarity(e.target.value)}
-            >
-              <option value="all">All rarities</option>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <option value={n} key={n}>
-                  {n}★
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Universe
-            <select
-              name="page-select-13"
-              aria-label="Universe"
-              value={universe}
-              onChange={(e) => setUniverse(e.target.value)}
-            >
-              <option value="all">All universes</option>
-              {UNIVERSES.map((u) => (
-                <option value={u.id} key={u.id}>
-                  <NoTranslate>{u.name}</NoTranslate>
-                </option>
-              ))}
+              <option value="all">All listings</option>
+              <option value="sale">Currency sales</option>
+              <option value="exchange">Card exchanges</option>
             </select>
           </label>
           <label>
@@ -367,27 +331,124 @@ export default function Market() {
             </select>
           </label>
         </div>
-        <div className="market-collection-filters">
-          <label>
-            <input
-              name="page-input-15"
-              type="checkbox"
-              checked={onlyMissing}
-              disabled={!profile}
-              onChange={(e) => setOnlyMissing(e.target.checked)}
-            />
-            Cards I don’t own
-          </label>
-          <label>
-            <input
-              name="page-input-16"
-              type="checkbox"
-              checked={onlyDuplicates}
-              disabled={!profile}
-              onChange={(e) => setOnlyDuplicates(e.target.checked)}
-            />
-            Give only my duplicates
-          </label>
+        <div className="market-filter-tools">
+          <details className="market-filter-panel">
+            <summary>
+              More filters{' '}
+              {advancedFilterCount > 0 && (
+                <span className="filter-count">{advancedFilterCount}</span>
+              )}
+            </summary>
+            <div className="market-filters market-advanced-filters">
+              <label>
+                Minimum price
+                <input
+                  name="page-input-6"
+                  aria-label="Minimum price"
+                  type="number"
+                  min="1"
+                  max="1000000"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                />
+              </label>
+              <label>
+                Maximum price
+                <input
+                  name="page-input-7"
+                  aria-label="Maximum price"
+                  type="number"
+                  min="1"
+                  max="1000000"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                />
+              </label>
+              <label>
+                Finish
+                <select
+                  name="page-select-10"
+                  aria-label="Finish"
+                  value={finish}
+                  onChange={(e) => setFinish(e.target.value)}
+                >
+                  <option value="all">All finishes</option>
+                  <option value="standard">Standard</option>
+                  <option value="holo">Holographic</option>
+                </select>
+              </label>
+              <label>
+                Offered rarity
+                <select
+                  name="page-select-11"
+                  aria-label="Offered rarity"
+                  value={rarity}
+                  onChange={(e) => setRarity(e.target.value)}
+                >
+                  <option value="all">All rarities</option>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <option value={n} key={n}>
+                      {n}★
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Requested rarity
+                <select
+                  name="page-select-12"
+                  aria-label="Requested rarity"
+                  value={wantedRarity}
+                  onChange={(e) => setWantedRarity(e.target.value)}
+                >
+                  <option value="all">All rarities</option>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <option value={n} key={n}>
+                      {n}★
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Universe
+                <select
+                  name="page-select-13"
+                  aria-label="Universe"
+                  value={universe}
+                  onChange={(e) => setUniverse(e.target.value)}
+                >
+                  <option value="all">All universes</option>
+                  {UNIVERSES.map((u) => (
+                    <option value={u.id} key={u.id}>
+                      <NoTranslate>{u.name}</NoTranslate>
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="market-collection-filters">
+              <label>
+                <input
+                  name="page-input-15"
+                  type="checkbox"
+                  checked={onlyMissing}
+                  disabled={!profile}
+                  onChange={(e) => setOnlyMissing(e.target.checked)}
+                />
+                Cards I don’t own
+              </label>
+              <label>
+                <input
+                  name="page-input-16"
+                  type="checkbox"
+                  checked={onlyDuplicates}
+                  disabled={!profile}
+                  onChange={(e) => setOnlyDuplicates(e.target.checked)}
+                />
+                Give only my duplicates
+              </label>
+            </div>
+          </details>
           <button
             className="text-button"
             onClick={() => {
@@ -409,13 +470,13 @@ export default function Market() {
           </button>
         </div>
         <p className="market-count" role="status">
-          {visible.length} matching offers
+          {loadedFor === profile?.id ? `${visible.length} matching offers` : 'Loading offers…'}
         </p>
         <p className="error-message" role="alert">
           {error || connectionError}
         </p>
         <div className="trade-grid">
-          {visible.map((o) => (
+          {(loadedFor === profile?.id ? visible : []).map((o) => (
             <article className="menu-window trade-offer" key={o.id}>
               <h2>
                 <Link href={`/profile?id=${o.ownerId}`}>{o.owner}</Link>
@@ -444,7 +505,7 @@ export default function Market() {
                   disabled={busy}
                   onClick={() => run(`/trades/${o.id}`, undefined, 'DELETE')}
                 >
-                  Cancel offer
+                  {workingPath === `/trades/${o.id}` ? 'Working…' : 'Cancel offer'}
                 </button>
               ) : (
                 <button
@@ -470,8 +531,11 @@ export default function Market() {
             </article>
           ))}
         </div>
-        {!visible.length && (
-          <p className="empty-search">No offers match. Adjust your filters or post an offer.</p>
+        {loadedFor === profile?.id && !error && !connectionError && !visible.length && (
+          <section className="menu-empty-state">
+            <h2>No offers match these filters.</h2>
+            <p>Try different filters or post an offer.</p>
+          </section>
         )}
         {selected && (
           <dialog
@@ -508,7 +572,11 @@ export default function Market() {
                 disabled={busy}
                 onClick={() => run(`/trades/${selected.id}/accept`, {})}
               >
-                {selected.price !== null ? 'Confirm purchase' : 'Confirm exchange'}
+                {busy
+                  ? 'Working…'
+                  : selected.price !== null
+                    ? 'Confirm purchase'
+                    : 'Confirm exchange'}
               </button>
             </div>
           </dialog>

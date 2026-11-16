@@ -61,15 +61,11 @@ it('forfeits a disconnected opponent at 120s even when it is not their turn and 
   const done = await p.store.view(a.profile.id, id);
   expect(done.winner).toBe(1 - seat);
   expect(done.endReason).toMatch(/disconnected/);
-  expect(done.trade.pending).toBe(true);
+  expect(done.trade.pending).toBe(false);
   const before = await p.store.profile(a.actor);
   await p.store.tick();
   expect((await p.store.profile(a.actor)).played).toBe(before.played);
-  await p.store.claimCard(
-    done.winner === 0 ? a.profile.id : b.profile.id,
-    id,
-    done.trade.choices[0].id,
-  );
+  expect(done.trade.rule).toBe('none');
   expect((await p.store.view(a.profile.id, id)).trade.pending).toBe(false);
 });
 it('allows timely reconnects and enforces overdue-turn handling before accepting late moves', async () => {

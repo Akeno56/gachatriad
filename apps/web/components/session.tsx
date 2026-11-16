@@ -96,7 +96,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const automatic = useRef<ReturnType<typeof refreshScheduler> | null>(null);
   useEffect(() => {
     const scheduler = refreshScheduler(refresh, {
-      interval: () => (inMatch.current ? 250 : 2000),
+      // Each revision also refreshes match, chat and social data. A 250 ms
+      // interval can exhaust the shared IP budget during a busy battle.
+      interval: () => (inMatch.current ? 1000 : 2000),
       visible: () => !document.hidden,
     });
     automatic.current = scheduler;
@@ -231,7 +233,7 @@ export function AccountMenu() {
             <>
               <p>
                 <NoTranslate>{profile.name}</NoTranslate> · Rating {profile.rating} · Draft{' '}
-                {profile.draftRating}
+                {profile.draftRating} · Shared Draft {profile.sharedDraftRating}
               </p>
               <button className="outline-button" disabled={pending} onClick={() => void logout()}>
                 Logout

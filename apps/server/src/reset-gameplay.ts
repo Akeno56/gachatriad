@@ -4,10 +4,10 @@ export async function resetGameplay(store: GameStore, version = 'v0.12-holo-star
   return store.db.tx(async (sql) => {
     if ((await sql('SELECT 1 FROM gameplay_resets WHERE version=$1', [version])).length)
       return { applied: false };
-    await sql(`TRUNCATE TABLE duel_invitations,friend_messages,friendships,chat_messages,battle_messages,chat_moderation_state,
+    await sql(`TRUNCATE TABLE daily_puzzle_runs,duel_invitations,friend_messages,friendships,chat_messages,battle_messages,chat_moderation_state,
       trade_offers,inventory_ledger,achievement_unlocks,lobbies,match_ratings,matches,inventory,
       prism_ledger,booster_purchases,booster_packs,duplicate_actions,card_purchases,admin_grants,moderation_log`);
-    await sql(`UPDATE profiles SET rating=1000,draft_rating=1000,peak_rating=1000,
+    await sql(`UPDATE profiles SET rating=1000,draft_rating=1000,shared_draft_rating=1000,peak_rating=1000,
       wins=0,losses=0,draws=0,played=0,captures=0,same_captures=0,plus_captures=0,
       combo_captures=0,best_combo=0,perfect_wins=0,trade_wins=0,prisms=0,
       default_deck='[]',avatar_card=NULL,selected_title=NULL,best_ranked_position=NULL,

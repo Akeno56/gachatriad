@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openStarterPacks, openSettings } from './helpers';
+import { openStarterPacks, openSettings, openNavigation } from './helpers';
 test('requires the first-duel tutorial, accepts the rulebook, and remembers completion', async ({
   page,
 }) => {
@@ -22,6 +22,7 @@ test('requires the first-duel tutorial, accepts the rulebook, and remembers comp
     page.getByRole('navigation').getByRole('link', { name: 'Credits', exact: true }),
   ).toHaveCount(0);
   await expect(page.locator('.credits-button')).toBeVisible();
+  await openNavigation(page);
   await expect(page.getByRole('link', { name: 'Collection', exact: true })).toBeVisible();
   await page.reload();
   await expect(tutorial).toHaveCount(0);
@@ -78,6 +79,7 @@ test('explains guest trading, filters offers and opens registration from the not
   await page.getByLabel('Show', { exact: true }).selectOption('available');
   await expect(page.locator('.trade-offer')).toHaveCount(0);
   await page.getByRole('button', { name: 'Reset filters' }).click();
+  await page.locator('.market-filter-panel summary').click();
   await page.getByLabel('Offered rarity', { exact: true }).selectOption('5');
   const cards = page.locator('.trade-pair>div:first-child .playing-card');
   for (let i = 0; i < (await cards.count()); i++)

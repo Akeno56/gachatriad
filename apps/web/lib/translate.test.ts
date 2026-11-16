@@ -38,4 +38,21 @@ describe('French game text', () => {
       'Hello, this is my own chat message',
     );
   });
+  it('distinguishes the two Draft queues in French', () => {
+    expect(translate('Draft', 'fr')).toBe('Draft');
+    expect(translate('Shared Draft', 'fr')).toBe('Draft partagé');
+    expect(translate('Join Shared Draft queue', 'fr')).toBe('Rejoindre la file Draft partagé');
+    expect(translate('Leave Shared Draft (Ranked) queue', 'fr')).toContain('Draft partagé');
+    expect(translate('Pick Robin', 'fr')).toBe('Choisir Robin');
+  });
+  it('localizes audit findings without translating player names or rules', () => {
+    expect(translate("Plus's table", 'fr')).toBe('Table de Plus');
+    expect(translate('Aha wins', 'fr')).toBe('Aha gagne');
+    expect(translate('12 matching offers', 'fr')).toBe('12 offres correspondantes');
+    expect(translate('Not enough Stellar Prisms.', 'fr')).toBe('Pas assez de Prismes stellaires.');
+    expect(translate('· Holo +1 Right', 'fr')).toBe('· Holo +1 Droite');
+    expect(translate('Battle chat channels', 'fr')).toBe('Canaux de discussion en partie');
+    expect(translate('1 owned', 'fr')).toBe('1 possédée');
+    expect(translate('1 owned · 3 available', 'fr')).toBe('Possédées : 1 · Disponibles : 3');
+  });
 });

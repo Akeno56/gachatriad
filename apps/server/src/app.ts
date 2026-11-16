@@ -20,6 +20,7 @@ import { AccountSecurity } from './account-security';
 import { PlayerReview } from './player-review';
 import { socialProviders } from './social-auth';
 import { Feedback } from './feedback';
+import { DailyPuzzles } from './daily-puzzle';
 export async function createPlatform(
   root: string,
   options: { memory?: boolean; timers?: boolean; logger?: boolean } = {},
@@ -39,6 +40,7 @@ export async function createPlatform(
   const store = new GameStore(db, (await auth.$context).secret);
   await store.migrate(root);
   const feedback = new Feedback(db, (await auth.$context).secret);
+  const puzzles = new DailyPuzzles(db, (await auth.$context).secret);
   const review = new PlayerReview(db);
   if (process.env.TRIAD_LOCAL_TEST === 'true')
     await security.action('127.0.0.1', 'allow-shared', 'Isolated PC test save');
@@ -419,7 +421,7 @@ export async function createPlatform(
   app.post('/api/ranked/acknowledge', async (req) => {
     const p = await profile(req);
     if (!p.registered) throw new GameError('Register before entering ranked.', 403);
-    if (body(req).acknowledged !== true) throw new GameError('Acknowledge the Trade One warning.');
+    if (body(req).acknowledged !== true) throw new GameError('Acknowledge the Ranked rules.');
     await store.acknowledgeRanked(p.id);
     return { ok: true };
   });
@@ -721,7 +723,7 @@ export async function createPlatform(
     const [lobby] = await db.read((sql) =>
       sql<{ mode: string }>('SELECT mode FROM lobbies WHERE id=$1', [id(req)]),
     );
-    if (lobby && ['ranked', 'draft'].includes(lobby.mode))
+    if (lobby && ['ranked', 'draft', 'shared-draft'].includes(lobby.mode))
       throw new GameError('Rated matches are queue only. Join matchmaking.', 403);
     const result = await store.joinLobby(await profile(req), id(req));
     notify();
@@ -769,6 +771,28 @@ export async function createPlatform(
     notify();
     return store.view(p.id, id(req));
   });
+  app.post('/api/matches/:id/draft/pick', async (req) => {
+    const p = await profile(req);
+    await store.pickDraft(p.id, id(req), body(req).cardId, body(req).version);
+    notify();
+    return store.view(p.id, id(req));
+  });
+  app.get('/api/puzzles/daily', async (req) => {
+    const { actor, requested } = await sessionActor(req),
+      p = await store.identity(actor, requested);
+    return puzzles.view(p.id, p.registered, actor.id);
+  });
+  for (const action of ['start', 'move', 'claim'] as const)
+    app.post(
+      `/api/puzzles/daily/${action}`,
+      { config: { rateLimit: { max: 60, timeWindow: '1 minute' } } },
+      async (req) => {
+        const { actor, requested } = await sessionActor(req),
+          p = await store.identity(actor, requested);
+        const result = await puzzles[action](p.id, p.registered, body(req), actor.id);
+        return result;
+      },
+    );
   app.post('/api/matches/:id/draft/reveal', async (req) => {
     const p = await profile(req);
     await store.revealDraft(p.id, id(req), body(req).step);
@@ -847,5 +871,18 @@ export async function createPlatform(
       release();
     }
   });
-  return { app, store, db, auth, bots, trades, moderation, guests, social, security, review };
+  return {
+    app,
+    store,
+    db,
+    auth,
+    bots,
+    trades,
+    moderation,
+    guests,
+    social,
+    security,
+    review,
+    puzzles,
+  };
 }

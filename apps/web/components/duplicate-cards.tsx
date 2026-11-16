@@ -231,14 +231,11 @@ export function DuplicateCards() {
               <>
                 <p>{total} spare copies will be consumed.</p>
                 <p>
-                  {quote.kind === 'recycle' ? (
-                    <>You receive {prisms} Stellar Prisms.</>
-                  ) : (
-                    <>
-                      You receive {total / 5} random{' '}
-                      {(definitions.get(quote.cards[0]?.cardId)?.rarity ?? 0) + 1}★ cards.
-                    </>
-                  )}
+                  {quote.kind === 'recycle'
+                    ? `You receive ${prisms} Stellar Prisms.`
+                    : total === 5
+                      ? `You receive one random ${(definitions.get(quote.cards[0]?.cardId)?.rarity ?? 0) + 1}★ card.`
+                      : `You receive ${total / 5} random ${(definitions.get(quote.cards[0]?.cardId)?.rarity ?? 0) + 1}★ cards.`}
                 </p>
                 {quote.cards.some((c) => definitions.get(c.cardId)?.finish === 'holo') && (
                   <p className="deck-warning">This selection includes Holographic copies.</p>

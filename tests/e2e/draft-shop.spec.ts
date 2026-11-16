@@ -1,11 +1,11 @@
 import { test, expect, type Page, type BrowserContext } from '@playwright/test';
 import { buildBestDeck } from '../../packages/engine/src/index';
 import type { MatchView, ProfileView } from '../../packages/shared/src/platform';
-import { openStarterPacks } from './helpers';
+import { openStarterPacks, navigateTo } from './helpers';
 let counter = 0;
 async function player(page: Page, starters = true) {
   await page.context().setExtraHTTPHeaders({
-    'x-forwarded-for': `10.91.${Math.floor(++counter / 200)}.${(counter % 200) + 1}`,
+    'x-forwarded-for': `10.91.${test.info().workerIndex + 1}.${(++counter % 200) + 1}`,
   });
   await page.goto('/boosters');
   await expect(page.locator('.account-control')).toHaveText('Login/Register');
@@ -40,6 +40,7 @@ async function second(page: Page): Promise<{ context: BrowserContext; page: Page
 }
 async function clean(page: Page) {
   const p = await profile(page);
+  if (p.waitingLobbyId) await page.request.delete(`/api/lobbies/${p.waitingLobbyId}`);
   const id = p.activeMatchId ?? p.pendingTrade?.matchId;
   if (!id) return;
   if (p.activeMatchId) await page.request.post(`/api/matches/${id}/resign`, { data: {} });
@@ -49,7 +50,7 @@ async function clean(page: Page) {
       data: { cardId: m.trade.choices[0].id },
     });
 }
-test('keeps the Buy button beside card metadata without adding a row', async ({ page }, info) => {
+test('gives card metadata room above an aligned Buy button', async ({ page }, info) => {
   await page.goto('/cards');
   await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
   const card = page.locator('.catalog-grid article').first(),
@@ -59,8 +60,8 @@ test('keeps the Buy button beside card metadata without adding a row', async ({ 
   const b = (await button.boundingBox())!,
     m = (await meta.boundingBox())!,
     art = (await card.locator('.card-inspect').boundingBox())!;
-  expect(Math.abs(b.y - m.y)).toBeLessThan(3);
-  expect(b.x).toBeGreaterThanOrEqual(m.x + m.width);
+  expect(b.y).toBeGreaterThanOrEqual(m.y + m.height);
+  expect(Math.abs(b.x - m.x)).toBeLessThan(3);
   expect(b.x + b.width).toBeLessThanOrEqual(art.x + art.width + 1);
   expect(b.height).toBeLessThanOrEqual(38);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -123,14 +124,14 @@ test('shows three titled messages and defaults each public chat to its page chan
         expect(Math.abs(time.y + time.height / 2 - body.y - body.height / 2)).toBeLessThan(4);
       }
     }
-    await page.getByRole('link', { name: 'Lobbies', exact: true }).click();
+    await navigateTo(page, 'Lobbies');
     await expect(page.getByRole('tab', { name: 'Lobbies', exact: true })).toHaveAttribute(
       'aria-selected',
       'true',
     );
     await page.getByRole('tab', { name: 'General', exact: true }).click();
     await visibleThree();
-    await page.getByRole('link', { name: 'Market', exact: true }).click();
+    await navigateTo(page, 'Market');
     await expect(page.getByRole('tab', { name: 'Trade', exact: true })).toHaveAttribute(
       'aria-selected',
       'true',
@@ -171,7 +172,10 @@ test('automatically opens three temporary Draft boosters, resumes on reload and 
       mode: 'draft',
       allowBots: false,
     });
-    const joined = await post<{ matchId: string }>(b.page, `/lobbies/${lobby.lobbyId}/join`);
+    const joined = await post<{ matchId: string }>(b.page, '/lobbies', {
+      mode: 'draft',
+      allowBots: false,
+    });
     const m: MatchView = await (await b.page.request.get(`/api/matches/${joined.matchId}`)).json();
     for (let step = 0; step < 15; step++)
       await post(b.page, `/matches/${m.id}/draft/reveal`, { step });
@@ -216,9 +220,10 @@ test('automatically opens three temporary Draft boosters, resumes on reload and 
           .boundingBox())!;
         const cog = (await page.locator('.settings-cog').boundingBox())!;
         expect(lock.x).toBeGreaterThan(cog.x + cog.width);
-        expect(
-          await page.evaluate(() => document.documentElement.scrollHeight),
-        ).toBeLessThanOrEqual(viewport.height);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+          true,
+        );
+        expect((await page.locator('.arena-comms').boundingBox())!.width).toBeLessThanOrEqual(561);
       }
     }
     const final: MatchView = await (await page.request.get(`/api/matches/${m.id}`)).json();
@@ -241,7 +246,7 @@ test('automatically opens three temporary Draft boosters, resumes on reload and 
     await b.context.close();
   }
 });
-test('prompts for unresolved Ranked stakes, blocks the loser and starts a consensual rematch', async ({
+test('keeps the deck after a Ranked loss and requeues through matchmaking', async ({
   page,
 }, info) => {
   test.setTimeout(90000);
@@ -250,45 +255,38 @@ test('prompts for unresolved Ranked stakes, blocks the loser and starts a consen
   try {
     await player(b.page);
     for (const p of [page, b.page]) await post(p, '/ranked/acknowledge', { acknowledged: true });
+    const before = await profile(b.page);
     const lobby = await post<{ lobbyId: string }>(page, '/lobbies', {
       mode: 'ranked',
       allowBots: false,
     });
-    const joined = await post<{ matchId: string }>(b.page, `/lobbies/${lobby.lobbyId}/join`);
+    const joined = await post<{ matchId: string }>(b.page, '/lobbies', {
+      mode: 'ranked',
+      allowBots: false,
+    });
     await post(b.page, `/matches/${joined.matchId}/resign`);
     await page.goto(`/?match=${joined.matchId}`);
     await expect(page.getByRole('button', { name: 'Rematch', exact: true })).toBeDisabled();
-    await page.getByRole('button', { name: 'Review board', exact: true }).click();
-    await page.getByRole('link', { name: 'Cards', exact: true }).click();
-    const guard = page.locator('.active-battle-reminder');
-    await expect(guard).toContainText('Choose your Trade One card first');
-    await page.keyboard.press('Escape');
-    await expect(guard).toBeVisible();
-    await expect(guard.getByRole('button', { name: 'Continue browsing', exact: true })).toHaveCount(
-      0,
+    await expect(page.locator('.result-settlement')).toContainText('NO CARD TRADE');
+    await expect(page.getByRole('button', { name: /^Claim / })).toHaveCount(0);
+    const after = await profile(b.page);
+    expect(after.deck).toEqual(before.deck);
+    expect(after.inventory).toEqual(before.inventory);
+    expect(after.pendingTrade).toBeNull();
+    await expect(page.getByRole('button', { name: 'Rematch', exact: true })).toHaveAttribute(
+      'title',
+      'Rated matches use matchmaking. Join the queue for your next game.',
     );
-    await b.page.goto('/lobbies');
-    await expect(b.page.locator('.active-battle-reminder')).toContainText(
-      'Trade One is awaiting selection',
-    );
-    await b.page.getByRole('button', { name: 'Continue browsing', exact: true }).click();
-    for (const button of await b.page.locator('.queue-option').all())
-      await expect(button).toBeDisabled();
-    expect((await b.page.request.post('/api/solo', { data: {} })).status()).toBe(409);
-    await page.getByRole('button', { name: 'Return to card selection', exact: true }).click();
-    await page
-      .getByRole('button', { name: /^Claim / })
-      .first()
-      .click();
-    await expect(page.getByRole('button', { name: 'Rematch', exact: true })).toBeEnabled();
-    await post(b.page, '/deck/auto');
-    await page.getByRole('button', { name: 'Rematch', exact: true }).click();
-    await expect(
-      page.getByRole('button', { name: 'Rematch requested', exact: true }),
-    ).toBeDisabled();
-    await b.page.goto(`/?match=${joined.matchId}`);
-    await expect(b.page.getByRole('button', { name: 'Accept rematch', exact: true })).toBeVisible();
-    await b.page.getByRole('button', { name: 'Accept rematch', exact: true }).click();
+    expect(
+      (await page.request.post(`/api/matches/${joined.matchId}/rematch`, { data: {} })).status(),
+    ).toBe(409);
+    await post(page, '/lobbies', { mode: 'ranked', allowBots: false });
+    const next = await post<{ matchId: string }>(b.page, '/lobbies', {
+      mode: 'ranked',
+      allowBots: false,
+    });
+    await page.goto(`/?match=${next.matchId}`);
+    await b.page.goto(`/?match=${next.matchId}`);
     for (const p of [page, b.page]) await expect(p.locator('.board-cell')).toHaveCount(9);
     const aProfile = await profile(page),
       bProfile = await profile(b.page);

@@ -117,7 +117,7 @@ test('welcomes a new player with centered starters, then automatically reveals a
     );
   }
 });
-test('fits the two purchasable booster types on desktop and uses the supplied logo in the sticky header', async ({
+test('fits the two purchasable booster types and keeps branding accessible in the sticky header', async ({
   page,
 }, info) => {
   if (info.project.name === 'desktop') await page.setViewportSize({ width: 1366, height: 768 });
@@ -144,7 +144,8 @@ test('fits the two purchasable booster types on desktop and uses the supplied lo
   await page.goto('/cards');
   await page.evaluate(() => scrollTo(0, 700));
   await expect.poll(async () => (await page.locator('.system-bar').boundingBox())!.y).toBe(0);
-  await expect(page.locator('.system-brand img')).toHaveAttribute('src', /triad-logo.webp/);
+  await expect(page.getByRole('link', { name: 'Gacha Triad home' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Read update notes' })).toBeVisible();
   await expect(page.locator('link[rel="icon"]').first()).toHaveAttribute('href', /triad-logo.webp/);
 });
 test('remembers hidden rules separately and provides a ranked Draft queue', async ({ page }) => {
@@ -172,6 +173,7 @@ test('remembers hidden rules separately and provides a ranked Draft queue', asyn
   const draft = page.getByRole('dialog', { name: 'Draft rules · Ranked' });
   await expect(draft).toContainText('temporary');
   await draft.getByRole('button', { name: 'Join Draft queue' }).click();
+  await expect(page.getByRole('button', { name: 'Leave Draft (Ranked) queue' })).toBeVisible();
   const profile = await (await page.request.get('/api/profile')).json();
   expect(profile.waitingLobby.mode).toBe('draft');
   await page.getByRole('button', { name: 'Leave Draft (Ranked) queue' }).click();

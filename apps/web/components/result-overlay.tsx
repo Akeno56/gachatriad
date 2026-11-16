@@ -66,11 +66,16 @@ export function ResultOverlay({
               )}
             </p>
             <small>
-              Season {match.ratedResult.season} · {match.mode === 'draft' ? 'Draft' : 'Ranked'}
+              Season {match.ratedResult.season} ·{' '}
+              {match.mode === 'shared-draft'
+                ? 'Shared Draft'
+                : match.mode === 'draft'
+                  ? 'Draft'
+                  : 'Ranked'}
             </small>
           </section>
         )}
-        {(match.mode === 'ranked' || match.mode === 'draft') && !match.ratingApplies && (
+        {['ranked', 'draft', 'shared-draft'].includes(match.mode) && !match.ratingApplies && (
           <p>No Elo change.</p>
         )}
         <section className="result-settlement" aria-label="Match settlement">

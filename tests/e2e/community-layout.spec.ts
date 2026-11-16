@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openStarterPacks, openSettings } from './helpers';
+import { openStarterPacks, openSettings, navigateTo } from './helpers';
 test('fits the home chat beside setup, shares channel selection with Lobbies and docks settings', async ({
   page,
 }, info) => {
@@ -33,7 +33,7 @@ test('fits the home chat beside setup, shares channel selection with Lobbies and
   );
   await page.screenshot({ path: info.outputPath('home-channel-layout.png'), fullPage: true });
   await chat.getByRole('tab', { name: 'Trade', exact: true }).click();
-  await page.getByRole('link', { name: 'Lobbies', exact: true }).click();
+  await navigateTo(page, 'Lobbies');
   await expect(page.locator('.main-chat')).toHaveClass(/chat-compact/);
   await expect(page.getByRole('tab', { name: 'Lobbies', exact: true })).toHaveAttribute(
     'aria-selected',

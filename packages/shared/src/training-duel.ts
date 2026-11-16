@@ -164,12 +164,12 @@ export const TRAINING_STEPS: TrainingStep[] = [
     title: 'Trade One: choose one card',
     kind: 'trade',
     before: states[9],
-    text: 'Ranked uses Closed hands, Same, Plus, Combo and Trade One. The winner takes one card from the loser’s original five-card deck, including the unplayed card—even after a forfeit. A draw trades nothing. Try selecting one training card below. Real players must resolve this selection before starting another game; losing your last copy can leave an empty deck slot.',
+    text: 'Ranked uses Closed hands, Same, Plus and Combo without card loss. Trade One is an opt-in custom rule: the winner takes one card from the loser’s original five-card deck, even after a forfeit. A draw trades nothing. Try selecting one training card below. Custom Trade One players must resolve this selection before starting another game; ordinary Ranked never removes a card from your deck.',
   },
   {
     title: 'Random, Draft and your next duel',
     kind: 'random',
     before: states[9],
-    text: 'Random draws a legal hand from your available owned collection. Try a random training hand below. Draft instead opens three temporary boosters and lets you choose five of fifteen cards; none enters your collection. Roulette draws compatible rules; custom lobbies show their rules before joining. Normal completed duels pay 50/25/10 Stellar Prisms for a win/draw/loss; this lesson awards nothing. Your next step is Unranked matchmaking.',
+    text: 'Random draws a legal hand from your available owned collection. Try a random training hand below. Draft lets you choose five cards from three private boosters. Shared Draft opens four shared boosters: players alternate picking five cards each from the same 20-card pool, then battle with All Open. Both modes have separate Elo ratings and leaderboards. Temporary cards never enter your collection. Roulette draws compatible rules; custom lobbies show their rules before joining. Normal completed duels pay 50/25/10 Stellar Prisms for a win/draw/loss; this lesson awards nothing. Your next step is Unranked matchmaking.',
   },
 ];

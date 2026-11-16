@@ -19,6 +19,8 @@ export function DraftOpening({
 }) {
   const initial = useRef(match),
     play = useGameAudio();
+  const fast = useRef(false);
+  const [skipping, setSkipping] = useState(false);
   const [position, setPosition] = useState(
       Math.min(match.draftRevealed, match.draftPool.length - 1),
     ),
@@ -39,20 +41,20 @@ export function DraftOpening({
           setPosition(step);
           if (step % 5 === 0) {
             setPhase('pack');
-            await wait(750);
+            if (!fast.current) await wait(750);
           }
-          await preloadArtwork(next.draftPool[step]);
+          if (!fast.current) await preloadArtwork(next.draftPool[step]);
           if (!active) return;
           next = await api<MatchView>(`/matches/${source.id}/draft/reveal`, { step });
           if (!active) return;
           onUpdate(next);
           setPhase('reveal');
-          play(next.draftPool[step].rarity >= 4 ? 'victory' : 'capture');
-          await wait(1100);
+          if (!fast.current) play(next.draftPool[step].rarity >= 4 ? 'victory' : 'capture');
+          if (!fast.current) await wait(1100);
           if (!active) return;
           if (step % 5 === 4) {
             setPhase('spread');
-            await wait(900);
+            if (!fast.current) await wait(900);
           }
           step = Math.max(step, next.draftRevealed - 1);
         }
@@ -81,8 +83,23 @@ export function DraftOpening({
             {(position % 5) + 1}/5
           </p>
         </header>
-        <div className="draft-pack-track" aria-label="Three temporary boosters">
-          {[0, 1, 2].map((n) => (
+        {match.sharedDraft && (
+          <button
+            className="outline-button"
+            disabled={skipping}
+            onClick={() => {
+              fast.current = true;
+              setSkipping(true);
+            }}
+          >
+            {skipping ? 'Opening…' : 'Skip opening animation'}
+          </button>
+        )}
+        <div
+          className="draft-pack-track"
+          aria-label={match.sharedDraft ? 'Four shared boosters' : 'Three temporary boosters'}
+        >
+          {Array.from({ length: Math.ceil(match.draftPool.length / 5) }, (_, n) => n).map((n) => (
             <span key={n} className={n === pack ? 'is-current' : n < pack ? 'is-opened' : ''}>
               {n < pack ? '✓' : n + 1}
             </span>
@@ -111,10 +128,17 @@ export function DraftOpening({
           ) : null}
         </div>
         <p>Temporary cards · 5% Holo · Each booster: three random cards, one 3★+, one 4★+.</p>
-        <small>
-          Random: 50/27/17/5/1% · 3★+: 80/17/3% · 4★+: 85/15%. Choose your five-card deck after all
-          three boosters.
-        </small>
+        {match.sharedDraft ? (
+          <small>
+            Four boosters form one shared pool. Take turns picking five cards each. Picks are
+            public; battles use All Open. Temporary cards never enter your collection.
+          </small>
+        ) : (
+          <small>
+            Random: 50/27/17/5/1% · 3★+: 80/17/3% · 4★+: 85/15%. Choose your five-card deck after
+            all three boosters.
+          </small>
+        )}
         {error && (
           <div role="alert">
             <p>{error}</p>

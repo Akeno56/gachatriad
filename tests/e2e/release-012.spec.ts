@@ -87,11 +87,36 @@ test('bulk Trade Up gives four rewards in one confirmation and leaves the last c
     await c.page.getByText('Duplicate cards · Recycle & Trade Up', { exact: true }).click();
     await c.page.getByRole('button', { name: 'Trade Up ×4', exact: true }).click();
     await expect(c.page.locator('.duplicate-dialog')).toContainText('20 spare copies');
+    await expect(c.page.locator('.duplicate-dialog')).toContainText(
+      'You receive 4 random 2★ cards.',
+    );
     await c.page.getByRole('button', { name: 'Confirm', exact: true }).click();
     await expect(c.page.getByRole('heading', { name: 'Trade Up complete' })).toBeVisible();
     await expect(c.page.locator('.duplicate-rewards .playing-card')).toHaveCount(4);
     expect((await platform.store.profile(c.actor)).inventory[card.id].quantity).toBe(1);
     await c.page.screenshot({ path: info.outputPath('batch-trade-up.png'), fullPage: true });
+    await platform.db.read((sql) =>
+      sql('UPDATE inventory SET quantity=6 WHERE profile_id=$1 AND card_id=$2', [
+        c.profile.id,
+        card.id,
+      ]),
+    );
+    await c.page.reload();
+    const single = c.page.getByRole('button', { name: 'Trade Up ×1', exact: true });
+    if (!(await single.isVisible()))
+      await c.page.getByText('Duplicate cards · Recycle & Trade Up', { exact: true }).click();
+    await single.click();
+    await expect(c.page.locator('.duplicate-dialog')).toContainText(
+      'You receive one random 2★ card.',
+    );
+    await c.page.keyboard.press('Escape');
+    await c.page.getByRole('button', { name: 'Language: English', exact: true }).click();
+    await c.page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
+    await c.page.getByRole('button', { name: 'Fusion ×1', exact: true }).click();
+    await expect(c.page.locator('.duplicate-dialog')).toContainText(
+      'Vous recevez une carte 2★ aléatoire.',
+    );
+    await expect(c.page.locator('.catalog-grid')).toContainText('Possédées : 1 · Disponibles : 1');
   } finally {
     await c.context.close();
   }

@@ -40,12 +40,21 @@ export default function Ladder() {
           <button role="tab" aria-selected={mode === 'draft'} onClick={() => setMode('draft')}>
             Draft
           </button>
+          <button
+            role="tab"
+            aria-selected={mode === 'shared-draft'}
+            onClick={() => setMode('shared-draft')}
+          >
+            Shared Draft
+          </button>
         </div>
         <p role="alert">{error}</p>
         <div
           className="menu-window ladder-table"
           role="tabpanel"
-          aria-label={mode === 'ranked' ? 'Ranked' : 'Draft'}
+          aria-label={
+            mode === 'ranked' ? 'Ranked' : mode === 'shared-draft' ? 'Shared Draft' : 'Draft'
+          }
         >
           <table>
             <thead>

@@ -1,5 +1,14 @@
 import { expect, type Page } from '@playwright/test';
 import { PRESETS } from '../../packages/engine/src/index';
+export async function openNavigation(page: Page) {
+  const menu = page.getByRole('button', { name: 'Menu', exact: true });
+  if ((await menu.isVisible()) && (await menu.getAttribute('aria-expanded')) !== 'true')
+    await menu.click();
+}
+export async function navigateTo(page: Page, name: string) {
+  await openNavigation(page);
+  await page.locator('#main-navigation').getByRole('link', { name, exact: true }).click();
+}
 export async function startPractice(page: Page, preset = 'classic') {
   const response = await page.request.post('/api/solo', {
     data: { difficulty: 'easy', rules: PRESETS.find((p) => p.id === preset)!.rules },

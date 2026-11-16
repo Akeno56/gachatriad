@@ -163,7 +163,8 @@ it('guards admin instant wins and review data; test wins preserve Elo and curren
     expect((await p.store.profile(a.actor)).rating).toBe(a.profile.rating);
     if (mode === 'ranked') {
       const result = await p.store.view(a.profile.id, next.matchId!);
-      await p.store.claimCard(a.profile.id, next.matchId!, result.trade.choices[0].id);
+      expect(result.trade.pending).toBe(false);
+      expect(result.trade.rule).toBe('none');
     }
   }
   for (const suffix of ['history', 'collection']) {

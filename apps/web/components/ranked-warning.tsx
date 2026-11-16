@@ -5,8 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { ProfileView } from '@gacha-triad/shared/platform';
 import { useSession } from './session';
 import { api } from '../lib/platform';
-type QueueMode = 'casual' | 'ranked' | 'draft';
-const preferenceKey = (id: string, mode: QueueMode) => `triad-hide-rules:${id}:${mode}:v12`;
+type QueueMode = 'casual' | 'ranked' | 'draft' | 'shared-draft';
+const preferenceKey = (id: string, mode: QueueMode) => `triad-hide-rules:${id}:${mode}:v14`;
 type Request = { mode: QueueMode; resolve: (allow: boolean) => void };
 function confirm(mode: QueueMode, profile: ProfileView | null): Promise<boolean> {
   if (!profile || (mode !== 'casual' && !profile.registered)) return Promise.resolve(false);
@@ -25,10 +25,12 @@ function confirm(mode: QueueMode, profile: ProfileView | null): Promise<boolean>
 }
 export const confirmRanked = (profile: ProfileView | null) => confirm('ranked', profile);
 export const confirmDraft = (profile: ProfileView | null) => confirm('draft', profile);
+export const confirmSharedDraft = (profile: ProfileView | null) => confirm('shared-draft', profile);
 export const confirmUnranked = (profile: ProfileView | null) => confirm('casual', profile);
 export function RankedWarning() {
   const { profile, refresh } = useSession(),
     ref = useRef<HTMLDialogElement>(null),
+    heading = useRef<HTMLHeadingElement>(null),
     pending = useRef<Request | null>(null);
   const [mode, setMode] = useState<QueueMode | null>(null),
     [busy, setBusy] = useState(false),
@@ -49,7 +51,11 @@ export function RankedWarning() {
     };
   }, []);
   useEffect(() => {
-    if (mode) ref.current?.showModal();
+    if (mode) {
+      ref.current?.showModal();
+      heading.current?.focus({ preventScroll: true });
+      if (ref.current) ref.current.scrollTop = 0;
+    }
   }, [mode]);
   function close(allow: boolean) {
     pending.current?.resolve(allow);
@@ -59,7 +65,8 @@ export function RankedWarning() {
   }
   if (!mode) return null;
   const ranked = mode === 'ranked',
-    draft = mode === 'draft';
+    draft = mode === 'draft',
+    shared = mode === 'shared-draft';
   return (
     <LocaleView>
       <dialog
@@ -68,31 +75,48 @@ export function RankedWarning() {
         aria-labelledby="queue-rules-title"
         onCancel={() => close(false)}
       >
-        <h2 id="queue-rules-title">
-          {ranked ? 'Ranked rules · Trade One' : draft ? 'Draft rules · Ranked' : 'Unranked rules'}
+        <h2 id="queue-rules-title" ref={heading} tabIndex={-1}>
+          {ranked
+            ? 'Ranked rules · No card loss'
+            : shared
+              ? 'Shared Draft rules · Ranked'
+              : draft
+                ? 'Draft rules · Ranked'
+                : 'Unranked rules'}
         </h2>
         <p>
-          <strong>{ranked ? 'Closed hands' : 'Three Open'}</strong> · Same · Plus · Combo
+          <strong>{ranked ? 'Closed hands' : shared ? 'All Open' : 'Three Open'}</strong> · Same ·
+          Plus · Combo
         </p>
         <p>
           {ranked
             ? 'Your hand stays hidden until cards are played.'
-            : 'Three randomly chosen cards from each starting hand are visible to the opponent.'}{' '}
+            : shared
+              ? 'Draft picks are public, so both complete hands stay visible in battle.'
+              : 'Three randomly chosen cards from each starting hand are visible to the opponent.'}{' '}
           Same matches touching numbers; Plus matches sums; both can start Combo chains.
         </p>
-        {draft ? (
+        {shared ? (
           <p>
-            Three temporary boosters open automatically. Choose five of fifteen cards within the
-            deck rarity limit. Draft rating changes only against human players; no card trade. Each
-            booster guarantees a 3★+ and a 4★+ card, with 5% Holo. Your temporary cards never enter
-            your collection.
+            Four temporary boosters form one shared pool of 20 different cards. Both players finish
+            opening, then take turns picking five cards each within the rarity limit. Each pick
+            allows 45 seconds. Shared Draft rating changes only against human players. No card
+            trade; temporary cards never enter your collection. Each booster guarantees a 3★+ and a
+            4★+ card, with 5% Holo. Shared pools contain at least ten cards of 3★ or lower so both
+            players can finish legal hands.
+          </p>
+        ) : draft ? (
+          <p>
+            Open three private temporary boosters, then choose five of your 15 cards within the
+            rarity limit. Your opponent has a separate pool. Draft has its own Elo rating for human
+            matches. No card trade; temporary cards never enter your collection.
           </p>
         ) : ranked ? (
           <>
             <p>
-              <strong>If you lose, your opponent takes one card from your played deck.</strong>{' '}
-              Trade One also applies on a forfeit. A draw transfers no cards. Losing your last copy
-              can leave a deck slot empty.
+              <strong>No card loss in Ranked.</strong> Win or lose, your collection and saved deck
+              stay intact. Trade One remains available in custom games when both players choose to
+              stake cards.
             </p>
             <p>
               The queue searches for human players. You can choose a practice bot while waiting;
@@ -146,7 +170,7 @@ export function RankedWarning() {
               }
             }}
           >
-            {`Join ${ranked ? 'Ranked' : draft ? 'Draft' : 'Unranked'} queue`}
+            {`Join ${ranked ? 'Ranked' : shared ? 'Shared Draft' : draft ? 'Draft' : 'Unranked'} queue`}
           </button>
           <button className="outline-button" disabled={busy} onClick={() => close(false)}>
             Cancel

@@ -108,7 +108,7 @@ test('remembers the Allow bots preference when creating another custom lobby', a
   await page.request.post('/api/tutorial/complete', { data: {} });
   await page.goto('/lobbies');
   await page.getByRole('button', { name: 'Create custom lobby' }).click();
-  const bots = page.getByLabel('Allow bots to join my lobby / queue', { exact: true });
+  const bots = page.getByLabel('Allow bots to join my lobby', { exact: true });
   await bots.check();
   await page.reload();
   await page.getByRole('button', { name: 'Create custom lobby' }).click();
