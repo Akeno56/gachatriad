@@ -1,41 +1,29 @@
-import {
-  applyMove,
-  createGame,
-  STANDARD,
-  type Card,
-  type GameState,
-  type Move,
-  type Stats,
-} from '@gacha-triad/engine';
+import { applyMove, createGame, STANDARD, type GameState, type Move } from '@gacha-triad/engine';
+import { CARDS } from './index';
 export type ExampleRule = 'same' | 'plus' | 'combo';
-function diagramCard(id: string, stats: Stats): Card {
-  return {
-    id,
-    characterId: id,
-    universeId: 'tutorial',
-    name: id,
-    rarity: 1,
-    stats,
-    set: 'Rulebook',
-    enabled: true,
-  };
-}
-/** Numeric teaching diagrams, resolved through the same engine as actual duels. */
+const card = (id: string) => {
+  const found = CARDS.find((item) => item.id === id);
+  if (!found) throw new Error(`Missing rulebook card: ${id}`);
+  return found;
+};
+/** Authored real-card examples, resolved through the same engine as actual duels. */
 export function ruleExample(rule: ExampleRule) {
   const same = rule === 'same',
     combo = rule === 'combo';
-  const placed = diagramCard('Your card', same ? [4, 7, 1, 1] : [3, 5, 1, 1]);
-  const north = diagramCard('North', [1, 1, same ? 4 : 6, 1]);
-  const east = diagramCard('East', [1, 1, 8, same ? 7 : 4]);
-  const corner = diagramCard('Corner', [2, 1, 1, 1]);
-  const yours = [placed, ...[0, 1, 2, 3].map((i) => diagramCard(`Blue ${i}`, [1, 1, 1, 1]))];
-  const theirs = [
-    north,
-    east,
-    corner,
-    diagramCard('Red 3', [1, 1, 1, 1]),
-    diagramCard('Red 4', [1, 1, 1, 1]),
+  const placed = card(same ? 'epic-seven:alencia' : 'star-rail:asta');
+  const north = card(same ? 'genshin:clorinde' : 'genshin:chongyun');
+  const east = card(same ? 'genshin:traveler-electro' : 'genshin:xiao');
+  const corner = card('genshin:dori');
+  const yours = [
+    placed,
+    ...[
+      'genshin:amber',
+      'star-rail:march-7th',
+      'zenless:billy-kid',
+      'wuthering-waves:yangyang',
+    ].map(card),
   ];
+  const theirs = [north, east, corner, card('genshin:lisa'), card('genshin:kirara')];
   const moves: Move[] = [
     { player: 0, cardId: yours[1].id, cell: 6 },
     { player: 1, cardId: north.id, cell: 1 },

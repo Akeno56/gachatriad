@@ -2,7 +2,8 @@
 import { LocaleView } from './i18n';
 
 import { useEffect, useState } from 'react';
-import { assetPath } from '../lib/connection';
+import { STARTER_DECK, CPU_DECK } from '@gacha-triad/shared';
+import { Card } from './card';
 const modes = ['All Open', 'Three Open', 'Closed'] as const;
 export function VisibilityExample() {
   const [step, setStep] = useState(0);
@@ -24,7 +25,7 @@ export function VisibilityExample() {
           <div key={row} className="visibility-hand">
             <span>{label}</span>
             <div>
-              {[0, 1, 2, 3, 4].map((n) => {
+              {(row === 0 ? STARTER_DECK : CPU_DECK).map((card, n) => {
                 const shown = row === 0 || step === 0 || (step === 1 && [0, 2, 4].includes(n));
                 return (
                   <div
@@ -32,15 +33,7 @@ export function VisibilityExample() {
                     className={`visibility-mini ${shown ? 'is-revealed' : 'is-hidden'}`}
                     aria-label={`${label}, card ${n + 1}: ${shown ? 'visible' : 'hidden'}`}
                   >
-                    {shown ? (
-                      <>
-                        <b>{n + 3}</b>
-                        <span>◆</span>
-                        <b>{7 - n}</b>
-                      </>
-                    ) : (
-                      <img src={assetPath('/assets/ui/triad-logo.webp')} alt="Card back" />
-                    )}
+                    <Card card={card} hidden={!shown} owner={row === 0 ? 0 : 1} compact />
                   </div>
                 );
               })}

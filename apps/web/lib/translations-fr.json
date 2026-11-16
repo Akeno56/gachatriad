@@ -1487,5 +1487,14 @@
   "Force a win · Same · Plus · Combo · All Open.": "Forcez la victoire · Same · Plus · Combo · All Open.",
   "One 5★ and one 4★, or two 4★ without a 5★.": "Une 5★ et une 4★, ou deux 4★ sans 5★.",
   "Draft rules": "Règles du Draft",
-  "Rarity limit": "Limite rareté"
+  "Rarity limit": "Limite rareté",
+  "Skip": "Passer",
+  "Optional custom rule: Trade One": "Règle personnalisée facultative : Trade One",
+  "Optional practice: choose a card from the rival’s original deck.": "Exercice facultatif : choisissez une carte du deck initial de l’adversaire.",
+  "Closed hands, Same, Plus and Combo. No card loss.": "Mains Closed, Same, Plus et Combo. Aucune perte de carte.",
+  "The rival’s Ice card has left 2 + 1 = 3. Your Fire card’s printed right 3 would only tie on a neutral cell. Place it on the Fire cell: right 3 + 1 = 4 now beats 3 and captures the rival. All four values gain +1 on a matching cell; a different affinity, or no affinity, loses 1. Same, Plus, ordinary and Combo captures all use the adjusted values displayed on the cards.": "La carte Glace adverse a une valeur gauche de 2 + 1 = 3. La valeur droite imprimée de votre carte Feu, 3, ne ferait qu’égaler ce 3 sur une case neutre. Posez-la sur la case Feu : 3 + 1 = 4 bat maintenant 3 et capture la carte adverse. Les quatre valeurs gagnent +1 sur une case de même élément ; une affinité différente ou absente fait perdre 1. Same, Plus, les captures ordinaires et Combo utilisent toutes les valeurs ajustées affichées sur les cartes.",
+  "Ranked, Draft and Shared Draft never take cards from your collection. Trade One applies only when you choose it in a custom game: the winner takes one card from the loser’s original deck, even after a forfeit. Draws trade nothing. This optional practice shows that custom rule; you can continue without choosing a card. A real Trade One match must settle the transfer before another game.": "Le Classé, le Draft et le Draft partagé ne retirent jamais de cartes de votre collection. Trade One s’applique uniquement si vous choisissez cette règle en partie personnalisée : le gagnant prend une carte du deck initial du perdant, même après un abandon. Une égalité ne transfère rien. Cet exercice facultatif illustre cette règle ; vous pouvez continuer sans choisir de carte. Une vraie partie Trade One doit régler le transfert avant une nouvelle partie.",
+  "Printed: 2 / 3 / 1 / 2": "Valeurs imprimées : 2 / 3 / 1 / 2",
+  "Matching Fire: 3 / 4 / 2 / 3": "Feu correspondant : 3 / 4 / 2 / 3",
+  "Different or no affinity: 1 / 2 / 0 / 1": "Affinité différente ou absente : 1 / 2 / 0 / 1"
 }

@@ -21,13 +21,16 @@ export function AutomaticBoosterOpening({
     play = useGameAudio();
   const dialog = useRef<HTMLDialogElement>(null),
     source = useRef(packs),
-    task = useRef<Promise<BoosterView[]> | null>(null);
+    task = useRef<Promise<BoosterView[]> | null>(null),
+    skipRequested = useRef(false),
+    wake = useRef<(() => void) | null>(null);
   const [results, setResults] = useState<BoosterView[]>(
       packs.every((p) => p.openedAt) ? packs : [],
     ),
     [phase, setPhase] = useState(packs.every((p) => p.openedAt) ? 'summary' : 'pack'),
     [position, setPosition] = useState(0),
     [error, setError] = useState(''),
+    [skipping, setSkipping] = useState(false),
     [retry, setRetry] = useState(0);
   const sessionKey = `triad-opening:${profile?.id}`;
   useEffect(() => {
@@ -36,7 +39,18 @@ export function AutomaticBoosterOpening({
   useEffect(() => {
     if (source.current.every((p) => p.openedAt)) return;
     let active = true;
-    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => {
+        const finish = () => {
+          wake.current = null;
+          resolve();
+        };
+        const timer = setTimeout(finish, ms);
+        wake.current = () => {
+          clearTimeout(timer);
+          finish();
+        };
+      });
     async function run() {
       setError('');
       try {
@@ -57,21 +71,26 @@ export function AutomaticBoosterOpening({
         setResults(opened);
         await refresh();
         const cards = opened.flatMap((p) => p.cards);
-        for (const card of cards) void preloadArtwork(card);
+        if (!skipRequested.current) for (const card of cards) void preloadArtwork(card);
         for (let i = start; i < cards.length; i++) {
           if (!active) return;
+          if (skipRequested.current) break;
           if (i === start || i % 5 === 0) {
             setPosition(i);
             setPhase('pack');
             await wait(750);
           }
+          if (!active) return;
+          if (skipRequested.current) break;
           await preloadArtwork(cards[i]);
           if (!active) return;
+          if (skipRequested.current) break;
           setPosition(i);
           setPhase('reveal');
           play(cards[i].rarity >= 4 || cards[i].finish === 'holo' ? 'victory' : 'capture');
           await wait(1450);
           if (!active) return;
+          if (skipRequested.current) break;
           sessionStorage.setItem(sessionKey, JSON.stringify({ ids, next: i + 1 }));
           if (i % 5 === 4) {
             setPhase('spread');
@@ -91,12 +110,22 @@ export function AutomaticBoosterOpening({
     void run();
     return () => {
       active = false;
+      wake.current?.();
     };
   }, [retry, refresh, play, sessionKey]);
   function close() {
     if (!results.length && !error) return;
     sessionStorage.removeItem(sessionKey);
     onClose();
+  }
+  function skip() {
+    skipRequested.current = true;
+    setSkipping(true);
+    wake.current?.();
+    if (results.length) {
+      sessionStorage.removeItem(sessionKey);
+      setPhase('summary');
+    }
   }
   const currentPack =
     results[Math.floor(position / 5)] ?? packs[Math.floor(position / 5)] ?? packs[0];
@@ -146,14 +175,26 @@ export function AutomaticBoosterOpening({
                 : `Automatic opening · Booster ${Math.floor(position / 5) + 1}/${packs.length} · Card ${(position % 5) + 1}/5`}
             </span>
           </div>
-          <button
-            className="text-button"
-            aria-label="Close booster opening"
-            disabled={!results.length && !error}
-            onClick={close}
-          >
-            Close ×
-          </button>
+          <div className="pack-opening-actions">
+            {phase !== 'summary' && (
+              <button
+                className="outline-button"
+                aria-label="Skip opening animation"
+                disabled={skipping || !!error}
+                onClick={skip}
+              >
+                {skipping ? 'Opening…' : 'Skip'}
+              </button>
+            )}
+            <button
+              className="text-button"
+              aria-label="Close booster opening"
+              disabled={!results.length && !error}
+              onClick={close}
+            >
+              Close ×
+            </button>
+          </div>
         </header>
         {error && (
           <div role="alert">

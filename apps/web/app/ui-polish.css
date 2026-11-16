@@ -17,10 +17,15 @@
   display: flex;
   flex-direction: column;
 }
+.catalog-page .catalog-grid {
+  row-gap: 12px;
+}
 .catalog-page .album-card-footer {
   flex: 1;
   flex-direction: column;
   align-items: stretch;
+  gap: 4px;
+  padding-top: 5px;
 }
 .catalog-page .album-card-info h2,
 .catalog-page .album-card-info p {
@@ -29,11 +34,11 @@
   overflow-wrap: anywhere;
 }
 .catalog-page .album-card-info h2 {
-  min-height: 2.3em;
+  min-height: 0;
   line-height: 1.15;
 }
 .catalog-page .album-card-info p {
-  min-height: 2.4em;
+  min-height: 0;
   line-height: 1.2;
 }
 .catalog-page .card-buy-button {
@@ -183,7 +188,7 @@ textarea:hover {
 /* The title, command menu, deck and chat form one compact game lobby. */
 .title-screen.play-page {
   max-width: 1240px;
-  padding: 24px 28px 20px;
+  padding: 24px 28px 72px;
 }
 .title-screen .game-title {
   margin: 0 0 26px;
@@ -306,9 +311,63 @@ textarea:hover {
 }
 .title-screen .main-chat .chat-messages,
 .title-screen .main-chat .chat-user-list {
-  height: 180px;
-  min-height: 180px;
-  max-height: 180px;
+  height: max(436px, calc(100dvh - 600px));
+  min-height: 436px;
+  max-height: none;
+}
+@media (min-width: 681px) {
+  .title-screen .main-chat .chat-message {
+    padding-block: 4px;
+  }
+  .title-screen .main-chat .message-heading > a {
+    line-height: 1.1;
+  }
+  .title-screen .main-chat .message-title {
+    line-height: 1.2;
+  }
+}
+/* Native scrolling, with the square bevels used by the game's menu windows. */
+.main-chat .chat-messages,
+.main-chat .chat-user-list > div {
+  scrollbar-color: #829ac0 #0d1932;
+  scrollbar-width: thin;
+}
+@supports selector(::-webkit-scrollbar) {
+  .main-chat .chat-messages,
+  .main-chat .chat-user-list > div {
+    scrollbar-color: auto;
+    scrollbar-width: auto;
+  }
+}
+.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-button {
+  display: none;
+}
+.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-track {
+  background: #0d1932;
+  border-left: 1px solid #7187a7;
+  box-shadow: inset 2px 0 #050d20;
+}
+.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-thumb {
+  min-height: 36px;
+  border: 2px solid #0d1932;
+  border-radius: 0;
+  background: #4b6792;
+  box-shadow:
+    inset 1px 1px #a9bbd7,
+    inset -1px -1px #263b60;
+}
+.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-thumb:hover {
+  background: #b09a64;
+  box-shadow:
+    inset 1px 1px #f3d789,
+    inset -1px -1px #66522d;
+}
+.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-thumb:active {
+  background: #d8c28a;
 }
 .title-screen .build-label {
   margin: 20px 0 0;

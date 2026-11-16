@@ -19,6 +19,18 @@
   margin: 0 0 5px;
   color: var(--gold);
 }
+.pack-opening-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px 12px;
+}
+.pack-opening-actions .outline-button {
+  min-height: 34px;
+  padding: 5px 12px;
+  font: 20px/1 var(--pixel);
+}
 .pack-opening-header span {
   font-size: 15px;
   color: #afbdd6;

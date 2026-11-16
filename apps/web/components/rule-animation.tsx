@@ -3,6 +3,7 @@ import { LocaleView } from './i18n';
 
 import { useEffect, useMemo, useState } from 'react';
 import { ruleExample, type ExampleRule } from '@gacha-triad/shared/rule-examples';
+import { Card } from './card';
 export function RuleAnimation({ rule }: { rule: ExampleRule }) {
   const example = useMemo(() => ruleExample(rule), [rule]);
   const [step, setStep] = useState(0),
@@ -59,29 +60,15 @@ export function RuleAnimation({ rule }: { rule: ExampleRule }) {
                 {card ? (
                   <div
                     className="demo-card"
+                    data-card-id={card.id}
                     aria-label={`${cell === 4 ? 'Placed' : item?.card.name} card: top ${card.stats[0]}, right ${card.stats[1]}, bottom ${card.stats[2]}, left ${card.stats[3]}. ${owner === 0 ? 'Blue' : 'Red'}`}
                   >
-                    {card.stats.map((n, i) => (
-                      <span
-                        key={i}
-                        className={`demo-value side-${i} ${step === 2 && ((cell === 4 && i < 2) || (cell === 1 && i === 2) || (cell === 5 && i === 3)) ? 'is-touching' : ''}`}
-                      >
-                        {n}
-                      </span>
-                    ))}
-                    <b>
-                      {cell === 4
-                        ? 'YOU'
-                        : flipped
-                          ? capture?.reason === 'combo'
-                            ? 'COMBO'
-                            : rule === 'same'
-                              ? 'SAME'
-                              : 'PLUS'
-                          : owner === 0
-                            ? '◆'
-                            : '◇'}
-                    </b>
+                    <Card card={card} owner={owner} compact />
+                    {flipped && (
+                      <b>
+                        {capture?.reason === 'combo' ? 'COMBO' : rule === 'same' ? 'SAME' : 'PLUS'}
+                      </b>
+                    )}
                   </div>
                 ) : (
                   <span className="demo-empty">{cell === 4 ? '↓' : '·'}</span>

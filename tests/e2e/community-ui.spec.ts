@@ -52,6 +52,9 @@ test('automatically loops Same, Plus and Combo at half speed without playback co
   await page.clock.pauseAt(new Date('2026-11-08T10:00:01Z'));
   await page.goto('/rules');
   await expect(page.locator('.rule-animation:not(.visibility-example)')).toHaveCount(3);
+  await expect(page.locator('.demo-same .demo-card')).toHaveCount(4);
+  await expect(page.locator('.demo-same .demo-card .card-art img')).toHaveCount(4);
+  await expect(page.locator('.visibility-mini.is-revealed .card-art img')).toHaveCount(10);
   await expect(page.locator('.rule-animation button')).toHaveCount(0);
   await page.clock.runFor(3900);
   await expect(page.locator('.visibility-example')).toHaveAttribute('data-visibility', '0');
@@ -63,9 +66,14 @@ test('automatically loops Same, Plus and Combo at half speed without playback co
   await expect(page.locator('.visibility-mini.is-revealed')).toHaveCount(8);
   for (const demo of await page.locator('.rule-animation:not(.visibility-example)').all())
     await expect(demo).toHaveAttribute('data-step', '1');
+  await expect(
+    page.locator('.demo-same .demo-card[data-card-id="epic-seven:alencia"]'),
+  ).toBeVisible();
+  await expect(page.locator('.demo-plus .demo-card[data-card-id="star-rail:asta"]')).toBeVisible();
   await page.clock.runFor(3000);
   for (const demo of await page.locator('.rule-animation:not(.visibility-example)').all())
     await expect(demo).toHaveAttribute('data-step', '2');
+  await page.locator('.demo-same').screenshot({ path: info.outputPath('same-real-cards.png') });
   await page.clock.runFor(4000);
   await expect(page.locator('.visibility-example')).toHaveAttribute('data-visibility', '2');
   await expect(page.locator('.visibility-mini.is-revealed')).toHaveCount(5);
@@ -77,6 +85,7 @@ test('automatically loops Same, Plus and Combo at half speed without playback co
   await expect(page.locator('.demo-combo')).toHaveAttribute('data-step', '4');
   expect(await page.locator('.demo-combo .demo-cell[data-owner="0"]').count()).toBe(7);
   await page.screenshot({ path: info.outputPath('rule-animations.png'), fullPage: true });
+  await page.locator('.demo-combo').screenshot({ path: info.outputPath('combo-real-cards.png') });
   await page.clock.runFor(4000);
   await expect(page.locator('.demo-combo')).toHaveAttribute('data-step', '0');
 });

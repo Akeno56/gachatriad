@@ -28,3 +28,17 @@ it('replays Same and Plus independently through the real engine', () => {
     expect(step.after!.history.at(-1)!.captures.every((c) => c.reason === reason)).toBe(true);
   }
 });
+it('requires the matching Fire bonus to capture in the Elemental lesson', () => {
+  const step = TRAINING_STEPS.find((step) => step.title === 'Elemental: +1 or −1')!;
+  for (const element of [null, 'ice'] as const) {
+    const cells = [...step.before.cellElements!];
+    cells[7] = element;
+    const result = applyMove({ ...step.before, cellElements: cells }, step.move!);
+    expect(result.board[8]?.owner).toBe(1);
+    expect(result.history.at(-1)!.captures).toEqual([]);
+  }
+  expect(step.after!.board[8]?.owner).toBe(0);
+  expect(step.after!.history.at(-1)!.captures).toEqual([
+    { cell: 8, from: 1, to: 0, reason: 'standard' },
+  ]);
+});

@@ -13,13 +13,13 @@ const blueStats: Stats[] = [
   [2, 2, 2, 6],
   [1, 1, 1, 1],
   [4, 5, 1, 6],
-  [1, 3, 1, 1],
+  [2, 3, 1, 2],
 ];
 const redStats: Stats[] = [
   [1, 3, 4, 1],
   [5, 6, 3, 1],
   [7, 1, 7, 7],
-  [1, 1, 1, 1],
+  [1, 1, 1, 2],
   [1, 1, 1, 1],
 ];
 const teach = (card: Card, stats: Stats, seat: number, index: number): Card => ({
@@ -152,7 +152,7 @@ export const TRAINING_STEPS: TrainingStep[] = [
     before: states[8],
     after: states[9],
     move: TRAINING_MOVES[8],
-    text: 'The rival has played on the Ice cell. Select your Fire card and place it on the Fire cell: all four values gain +1. A different affinity, or no affinity, would lose 1 instead. Neutral cells do nothing. Same, Plus, ordinary and Combo captures all use the adjusted values displayed on the cards.',
+    text: 'The rival’s Ice card has left 2 + 1 = 3. Your Fire card’s printed right 3 would only tie on a neutral cell. Place it on the Fire cell: right 3 + 1 = 4 now beats 3 and captures the rival. All four values gain +1 on a matching cell; a different affinity, or no affinity, loses 1. Same, Plus, ordinary and Combo captures all use the adjusted values displayed on the cards.',
   },
   {
     title: 'Count the result',
@@ -161,10 +161,10 @@ export const TRAINING_STEPS: TrainingStep[] = [
     text: 'The board is full. Count cards you control plus the card left in your hand, if any. The total is always ten: more than five wins, 5–5 draws. Blue wins this lesson 9–1. Unranked uses Three Open, Same, Plus and Combo, with no card trade.',
   },
   {
-    title: 'Trade One: choose one card',
+    title: 'Optional custom rule: Trade One',
     kind: 'trade',
     before: states[9],
-    text: 'Ranked uses Closed hands, Same, Plus and Combo without card loss. Trade One is an opt-in custom rule: the winner takes one card from the loser’s original five-card deck, even after a forfeit. A draw trades nothing. Try selecting one training card below. Custom Trade One players must resolve this selection before starting another game; ordinary Ranked never removes a card from your deck.',
+    text: 'Ranked, Draft and Shared Draft never take cards from your collection. Trade One applies only when you choose it in a custom game: the winner takes one card from the loser’s original deck, even after a forfeit. Draws trade nothing. This optional practice shows that custom rule; you can continue without choosing a card. A real Trade One match must settle the transfer before another game.',
   },
   {
     title: 'Random, Draft and your next duel',

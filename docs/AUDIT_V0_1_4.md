@@ -33,6 +33,14 @@ Desktop checks cover 1920×900, 1728×852, 1366×768 and 1280×720 at normal zoo
 
 Shared Draft checks verify that all 20 cards and confirmation controls remain visible beside chat, sorting retains the selected card, inspection can open and close without losing the selection, and chat messages can be sent and read. Picked-card values are anchored at the bottom-right above the caption fade, scoped to picked previews. Available pool cards remain bright while the opponent chooses. Narrow mobile chat uses the expandable drawer. The viewport-only puzzle check is intentionally excluded from the mobile project, where the page uses a touch-friendly scrolling layout.
 
+## Home, navigation and learning follow-up
+
+The home-chat and Cards layouts were reviewed in English and French at 1920×1080, 1440×900, 1280×720, 390×844 and 320×844. The desktop log fits at least eight standard short messages with equipped titles. Shorter windows may scroll the home page; bottom padding keeps the composer and credits accessible above the floating controls. Public-chat and online-list scrollbars use square, beveled native tracks. Catalog artwork stays 270 px high on desktop and 230 px at the checked phone widths; metadata and row spacing are tighter, with wrapping names preserved.
+
+Navigation regression coverage checks all ten primary/player destinations with exported trailing-slash URLs and a French reload. Booster checks cover skipping before the batch response and during a French card reveal: the summary waits for saved results, the animation does not restart, and inventory gains exactly ten plus five cards from two batch requests, without a currency change. Rulebook examples use unchanged catalog cards in legal decks and replay Same, Plus and Combo through the engine. Elemental teaching values now produce no capture on neutral or mismatched placement cells, and exactly one ordinary capture on the matching Fire cell. The custom Trade One practice is optional; mobile tutorial coverage continues without selecting a card.
+
+The follow-up unit/server run passed **189 tests across 34 files**, plus 12 targeted desktop/mobile functional browser checks and two visual workflows covering the dimensions above. Workspace type checks, the static export and formatting checks passed. Logs and screenshots for this pass are retained under ignored `.cache/home014-*` and `.cache/release014-e2e-results`.
+
 ## Performance
 
 A 60-second isolated local run with **30 populated bots** and six clients made **348 HTTP requests**, including the new puzzle endpoint:

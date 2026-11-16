@@ -21,7 +21,11 @@ test('teaches a complete practice duel without changing real progress', async ({
       await choice.click();
       await tutorial.locator('.training-target').click();
     }
-    if (step === 13)
+    if (step === 13) {
+      await expect(tutorial).toContainText('Optional custom rule: Trade One');
+      await expect(tutorial.getByRole('button', { name: /Continue tutorial/ })).toBeEnabled();
+    }
+    if (step === 13 && info.project.name === 'desktop')
       await tutorial
         .getByRole('button', { name: /^Practice taking/ })
         .first()

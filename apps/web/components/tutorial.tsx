@@ -83,8 +83,7 @@ export function FirstDuelTutorial() {
   }, [step, visible, lesson.kind, play]);
   if (!visible) return null;
   const ready = !['play', 'rival'].includes(lesson.kind) || done;
-  const canContinue =
-    ready && (lesson.kind !== 'trade' || !!claimed) && (lesson.kind !== 'random' || drawn);
+  const canContinue = ready && (lesson.kind !== 'random' || drawn);
   async function finish() {
     if (busy) return;
     setBusy(true);
@@ -239,16 +238,16 @@ export function FirstDuelTutorial() {
             )}
             {step === 11 && (
               <div className="training-element-note">
-                <p>Printed: 1 / 3 / 1 / 1</p>
-                <p>Matching Fire: 2 / 4 / 2 / 2</p>
-                <p>Different or no affinity: 0 / 2 / 0 / 0</p>
+                <p>Printed: 2 / 3 / 1 / 2</p>
+                <p>Matching Fire: 3 / 4 / 2 / 3</p>
+                <p>Different or no affinity: 1 / 2 / 0 / 1</p>
               </div>
             )}
           </section>
         </div>
         {lesson.kind === 'trade' && (
           <div className="training-trade">
-            <p>Choose one training card from the rival’s original deck:</p>
+            <p>Optional practice: choose a card from the rival’s original deck.</p>
             <div>
               {TRAINING_HANDS[1].map((card) => (
                 <button

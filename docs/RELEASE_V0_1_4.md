@@ -26,6 +26,10 @@ Migration 019 also removes stakes from waiting and active Ranked games. Already 
 
 ## Interface and deployment
 
+The home chat now shows at least eight standard one-line desktop messages and grows on taller windows, with a square, beveled scrollbar shared by public chat. Cards keep their artwork size while using less space for metadata and between rows. Navigation highlights the current page consistently on trailing-slash static-export URLs.
+
+Normal booster openings offer Skip to show the saved batch results without waiting for each animation. Rulebook animations use real catalog cards and current values, with the compared values highlighted. The Elemental tutorial now needs its matching Fire bonus to win the demonstrated card; neutral and mismatched cells fail. Trade One is presented as an optional custom-game rule, and its practice selection can be skipped.
+
 The preview follow-up moves the puzzle's hands, controls and leaderboard beside a closely fitted board frame. Its reward badge and instructions use less space. Shared Draft has a persistent desktop chat column, four sorting options and selected-card inspection. Repeated Draft instructions are available in a rules dropdown. Picked-card summaries place values at the bottom-right above the fade, with the name kept separate; shared-pool cards retain their usual layout. Card values remain large; the layouts reclaim space from interface panels and margins first.
 
 The home page links to the daily puzzle and offers both Draft queues. Queue notices, the rulebook, tutorial, profiles, results and English/French text distinguish the formats. Desktop and mobile layouts retain the FF/pixel theme. This release also includes the uncommitted 0.1.3 interface improvements documented in [RELEASE_V0_1_3.md](RELEASE_V0_1_3.md).

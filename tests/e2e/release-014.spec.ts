@@ -93,6 +93,119 @@ async function french(page: Page) {
   await page.getByRole('button', { name: 'Language: English' }).click();
   await page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
 }
+test('highlights the current navigation page with exported trailing-slash URLs', async ({
+  browser,
+}) => {
+  const c = await player(browser);
+  try {
+    for (const route of [
+      '/',
+      '/cards',
+      '/lobbies',
+      '/collection',
+      '/market',
+      '/boosters',
+      '/ladder',
+      '/rules',
+      '/profile',
+      '/achievements',
+    ]) {
+      await c.page.goto(route === '/' ? '/' : `${route}/`);
+      const active = c.page.locator('.system-bar a[aria-current="page"]');
+      await expect(active).toHaveCount(1);
+      await expect(active).toHaveAttribute('href', route === '/' ? '/' : `${route}/`);
+    }
+    await french(c.page);
+    await c.page.reload();
+    await expect(c.page.locator('.system-bar a[aria-current="page"]')).toHaveAttribute(
+      'href',
+      '/achievements/',
+    );
+  } finally {
+    await c.context.close();
+  }
+});
+
+test('skips booster animations while waiting for the saved batch and grants its cards only once', async ({
+  browser,
+}, info) => {
+  const c = await player(browser);
+  let release = () => {};
+  try {
+    await platform.store.economy.grant(
+      c.profile.id,
+      'boosters',
+      2,
+      crypto.randomUUID(),
+      'test-fixture',
+    );
+    const before = await platform.store.profile(c.actor);
+    let calls = 0;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await c.page.route('**/api/boosters/open-batch', async (route) => {
+      calls++;
+      await gate;
+      await route.continue();
+    });
+    await c.page.goto('/boosters');
+    await c.page.getByRole('button', { name: 'Open 2 packs', exact: true }).click();
+    const opening = c.page.locator('.automatic-opening');
+    await opening.getByRole('button', { name: 'Skip opening animation', exact: true }).click();
+    await expect(
+      opening.getByRole('button', { name: 'Skip opening animation', exact: true }),
+    ).toBeDisabled();
+    await expect(opening).not.toHaveAttribute('data-phase', 'summary');
+    release();
+    await expect(opening).toHaveAttribute('data-phase', 'summary');
+    await expect(opening.locator('h2')).toHaveText('10 cards added');
+    expect(calls).toBe(1);
+    await c.page.waitForTimeout(1800);
+    await expect(opening).toHaveAttribute('data-phase', 'summary');
+    await c.page.screenshot({
+      path: info.outputPath('skipped-booster-results.png'),
+      fullPage: true,
+    });
+    await opening.getByRole('button', { name: 'Continue', exact: true }).click();
+    await c.page.reload();
+    const after = await platform.store.profile(c.actor);
+    const quantity = (inventory: typeof after.inventory) =>
+      Object.values(inventory).reduce((total, card) => total + card.quantity, 0);
+    expect(quantity(after.inventory) - quantity(before.inventory)).toBe(10);
+    expect(after.prisms).toBe(before.prisms);
+    await expect(c.page.locator('.automatic-opening')).toHaveCount(0);
+    expect(calls).toBe(1);
+    await platform.store.economy.grant(
+      c.profile.id,
+      'boosters',
+      1,
+      crypto.randomUUID(),
+      'test-fixture',
+    );
+    await c.page.reload();
+    await french(c.page);
+    await c.page.locator('.booster-type-tile .primary-button').first().click();
+    await expect(opening).toHaveAttribute('data-phase', 'reveal');
+    await opening
+      .getByRole('button', { name: 'Passer l’animation d’ouverture', exact: true })
+      .click();
+    await expect(opening).toHaveAttribute('data-phase', 'summary', { timeout: 1000 });
+    await c.page.screenshot({
+      path: info.outputPath('skipped-booster-results-fr.png'),
+      fullPage: true,
+    });
+    await opening.locator('.result-actions .primary-button').click();
+    const final = await platform.store.profile(c.actor);
+    expect(quantity(final.inventory) - quantity(before.inventory)).toBe(15);
+    expect(final.prisms).toBe(before.prisms);
+    expect(calls).toBe(2);
+  } finally {
+    release();
+    await c.context.close();
+  }
+});
+
 test('keeps a saved server connection stable across page reloads', async ({ browser }) => {
   const c = await player(browser),
     errors: string[] = [];

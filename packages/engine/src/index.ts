@@ -112,7 +112,7 @@ export const PRESETS = [
   {
     id: 'ranked',
     name: 'Ranked · Same / Plus / Combo',
-    description: 'Closed hands. Trade One in ranked PvP.',
+    description: 'Closed hands, Same, Plus and Combo. No card loss.',
     rules: { ...STANDARD, same: true, plus: true, combo: true },
   },
   {

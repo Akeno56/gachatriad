@@ -22,7 +22,8 @@ const MusicSceneContext = createContext<(scene: MusicScene) => void>(() => {});
 export const useGameAudio = () => useContext(AudioContext);
 export const useMusicScene = () => useContext(MusicSceneContext);
 export function GameShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  // Static exports use trailing slashes; navigation targets omit them.
+  const pathname = usePathname().replace(/\/+$/, '') || '/';
   const audio = useRef<RetroAudio | null>(null);
   const musicWanted = useRef(true);
   const [music, setMusic] = useState(true);
