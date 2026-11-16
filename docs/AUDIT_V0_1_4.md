@@ -27,6 +27,12 @@ Verified against the standalone static export using isolated local servers and t
 - Visual inspection corrected inherited Draft card heights that left blank space below portraits, floating-button overlap with confirmation, and initial scroll position in long French rules dialogs.
 - The translation source scan reviewed the current interface dictionary, with no duplicate dictionary keys. Remaining unchanged phrases are names, rule names, French labels or dynamic/numeric templates. New puzzle and Draft messages have English/French entries; card and player names are preserved.
 
+## Preview layout follow-up
+
+Desktop checks cover 1920×900, 1728×852, 1366×768 and 1280×720 at normal zoom in English and French. Measurements verify the board, hands, controls and leaderboard remain in the viewport, with no document scrolling. The board's horizontal frame gutters are at most 18 px, the reward badge is at most 44 px high, and rendered card-value spans remain at least 20 px high. A populated leaderboard scrolls within its own panel.
+
+Shared Draft checks verify that all 20 cards and confirmation controls remain visible beside chat, sorting retains the selected card, inspection can open and close without losing the selection, and chat messages can be sent and read. Picked-card values are anchored at the bottom-right above the caption fade, scoped to picked previews. Available pool cards remain bright while the opponent chooses. Narrow mobile chat uses the expandable drawer. The viewport-only puzzle check is intentionally excluded from the mobile project, where the page uses a touch-friendly scrolling layout.
+
 ## Performance
 
 A 60-second isolated local run with **30 populated bots** and six clients made **348 HTTP requests**, including the new puzzle endpoint:

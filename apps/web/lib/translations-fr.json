@@ -1478,5 +1478,14 @@
   "Random draws a legal hand from your available owned collection. Try a random training hand below. Draft lets you choose five cards from three private boosters. Shared Draft opens four shared boosters: players alternate picking five cards each from the same 20-card pool, then battle with All Open. Both modes have separate Elo ratings and leaderboards. Temporary cards never enter your collection. Roulette draws compatible rules; custom lobbies show their rules before joining. Normal completed duels pay 50/25/10 Stellar Prisms for a win/draw/loss; this lesson awards nothing. Your next step is Unranked matchmaking.": "Random choisit une main légale dans votre collection disponible. Essayez une main d’entraînement aléatoire ci-dessous. Le Draft vous laisse choisir cinq cartes parmi trois boosters privés. Le Draft partagé ouvre quatre boosters communs : les joueurs choisissent chacun cinq cartes à tour de rôle dans la même réserve de 20 cartes, puis jouent avec All Open. Chaque mode possède son Elo et son classement. Ces cartes temporaires ne rejoignent jamais votre collection. Roulette tire des règles compatibles ; les salons personnalisés affichent leurs règles avant de les rejoindre. Les duels terminés normalement rapportent 50/25/10 Prismes stellaires pour une victoire/un nul/une défaite ; cette leçon ne rapporte rien. Essayez ensuite une partie non classée.",
   "· Shared Draft": "· Draft partagé",
   "Four temporary boosters form one shared pool of 20 different cards. Both players finish opening, then take turns picking five cards each within the rarity limit. Each pick allows 45 seconds. Shared Draft rating changes only against human players. No card trade; temporary cards never enter your collection. Each booster guarantees a 3★+ and a 4★+ card, with 5% Holo. Shared pools contain at least ten cards of 3★ or lower so both players can finish legal hands.": "Quatre boosters temporaires forment une réserve commune de 20 cartes différentes. Les deux joueurs terminent l’ouverture, puis choisissent à tour de rôle cinq cartes chacun dans la limite de rareté. Chaque choix dispose de 45 secondes. Le classement du Draft partagé évolue uniquement contre des joueurs humains. Aucun transfert ; ces cartes ne rejoignent jamais votre collection. Chaque booster garantit une 3★+ et une 4★+, avec 5 % de Holo. Les réserves partagées contiennent au moins dix cartes de 3★ ou moins pour permettre aux deux joueurs de terminer une main valide.",
-  "unlocked": "débloqués"
+  "unlocked": "débloqués",
+  "Booster order": "Ordre des boosters",
+  "{0} cards available": "{0} cartes disponibles",
+  "No cards remaining.": "Aucune carte restante.",
+  "Fewest attempts first, then time to the first solve.": "Moins d’essais, puis temps jusqu’à la première réussite.",
+  "Inspect selected card": "Examiner la carte choisie",
+  "Force a win · Same · Plus · Combo · All Open.": "Forcez la victoire · Same · Plus · Combo · All Open.",
+  "One 5★ and one 4★, or two 4★ without a 5★.": "Une 5★ et une 4★, ou deux 4★ sans 5★.",
+  "Draft rules": "Règles du Draft",
+  "Rarity limit": "Limite rareté"
 }

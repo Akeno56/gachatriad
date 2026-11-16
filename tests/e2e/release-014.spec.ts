@@ -163,7 +163,7 @@ test('solves the daily puzzle through the UI, saves one reward and shows the Fre
       );
       await c.page.getByTestId(`puzzle-cell-${move.cell}`).click();
       expect((await response).status()).toBe(200);
-      await expect(c.page.locator('.puzzle-table [role="status"]')).toHaveText(
+      await expect(c.page.locator('.puzzle-turn-status')).toHaveText(
         step === 0 ? 'Choose a card from your hand.' : 'Puzzle solved!',
       );
     }
@@ -275,6 +275,271 @@ test('offers both ranked Draft queues, handles shared picks and displays separat
     await expect(a.page.locator('#queue-rules-title')).toBeInViewport();
     await fits(a.page);
     await a.page.screenshot({ path: info.outputPath('shared-draft-rules-fr.png'), fullPage: true });
+  } finally {
+    await a.context.close();
+    await b.context.close();
+  }
+});
+
+test('fits the puzzle board, both hands and a scrolling leaderboard at desktop zoom', async ({
+  browser,
+}, info) => {
+  test.skip(
+    info.project.name === 'mobile',
+    'Desktop viewport budget; mobile workflows are covered separately.',
+  );
+  test.setTimeout(90000);
+  const c = await player(browser);
+  const errors: string[] = [];
+  c.page.on('pageerror', (error) => errors.push(error.message));
+  try {
+    await c.page.goto('/puzzle');
+    await c.page.getByRole('button', { name: 'Reveal today’s puzzle', exact: true }).click();
+    await expect(c.page.locator('.puzzle-board button')).toHaveCount(9);
+    const current = await platform.puzzles.view(c.profile.id, true, c.actor.id);
+    await platform.db.tx(async (sql) => {
+      for (let n = 0; n < 18; n++) {
+        const id = `layout-puzzle-${c.profile.id}-${n}`;
+        await sql("INSERT INTO profiles(id,name,default_deck) VALUES($1,$2,'[]')", [
+          id,
+          `Leaderboard long player ${n}`,
+        ]);
+        await sql(
+          'INSERT INTO daily_puzzle_runs(day,profile_id,state,solved_at,solve_attempts,elapsed_ms,rewarded) VALUES($1,$2,$3::jsonb,now(),1,$4,true)',
+          [current.day, id, JSON.stringify(current.state), 1000 + n * 137],
+        );
+      }
+    });
+    await c.page.getByRole('button', { name: 'Refresh leaderboard', exact: true }).click();
+    await expect(c.page.locator('.puzzle-leaderboard tbody tr')).toHaveCount(
+      current.leaderboard.length + 18,
+    );
+    for (const lang of ['en', 'fr']) {
+      if (lang === 'fr') await french(c.page);
+      for (const [width, height] of [
+        [1920, 900],
+        [1728, 852],
+        [1366, 768],
+        [1280, 720],
+      ]) {
+        await c.page.setViewportSize({ width, height });
+        await c.page.evaluate(() => scrollTo(0, 0));
+        const boxes = await c.page
+          .locator('.puzzle-table, .puzzle-reserves, .puzzle-outcome, .puzzle-leaderboard')
+          .evaluateAll((elements) =>
+            elements.map((el) => ({
+              cls: el.className,
+              x: el.getBoundingClientRect().x,
+              y: el.getBoundingClientRect().y,
+              right: el.getBoundingClientRect().right,
+              bottom: el.getBoundingClientRect().bottom,
+            })),
+          );
+        for (const box of boxes) {
+          expect(box.bottom, JSON.stringify({ width, height, box })).toBeLessThanOrEqual(
+            height - 40,
+          );
+          expect(box.y).toBeGreaterThanOrEqual(0);
+        }
+        expect(boxes[1].x).toBeGreaterThanOrEqual(boxes[0].right);
+        const board = (await c.page.locator('.puzzle-board').boundingBox())!,
+          table = (await c.page.locator('.puzzle-table').boundingBox())!;
+        expect(board.x - table.x).toBeLessThanOrEqual(18);
+        expect(table.x + table.width - board.x - board.width).toBeLessThanOrEqual(18);
+        expect((await c.page.locator('.puzzle-reward').boundingBox())!.height).toBeLessThanOrEqual(
+          44,
+        );
+        expect(
+          await c.page
+            .locator('.puzzle-board .value')
+            .evaluateAll((values) =>
+              Math.min(...values.map((value) => value.getBoundingClientRect().height)),
+            ),
+        ).toBeGreaterThanOrEqual(20);
+        expect(
+          await c.page.locator('.puzzle-leaderboard-scroll').evaluate((el) => el.clientHeight),
+        ).toBeGreaterThanOrEqual(65);
+        expect(
+          await c.page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 2),
+        ).toBe(true);
+        await fits(c.page);
+        await c.page.screenshot({
+          path: info.outputPath(`puzzle-fit-${width}-${height}-${lang}.png`),
+        });
+      }
+    }
+    expect(
+      await c.page
+        .locator('.puzzle-leaderboard-scroll')
+        .evaluate((el) => el.scrollHeight > el.clientHeight),
+    ).toBe(true);
+    await c.page.locator('.puzzle-hand').first().locator('button').first().click();
+    await expect(c.page.locator('.puzzle-board .is-legal').first()).toBeEnabled();
+    expect(errors).toEqual([]);
+  } finally {
+    await c.context.close();
+  }
+});
+
+test('fits Shared Draft beside usable chat and preserves picks when sorting', async ({
+  browser,
+}, info) => {
+  test.setTimeout(90000);
+  const a = await player(browser),
+    b = await player(browser),
+    errors: string[] = [];
+  a.page.on('pageerror', (error) => errors.push(error.message));
+  try {
+    await platform.store.createLobby(a.profile, { mode: 'shared-draft' });
+    const { matchId } = await platform.store.createLobby(b.profile, { mode: 'shared-draft' });
+    for (const c of [a, b])
+      for (let step = 0; step < 20; step++)
+        await platform.store.revealDraft(c.profile.id, matchId!, step);
+    await platform.db.read((sql) =>
+      sql('UPDATE matches SET shared_draft=$1::jsonb WHERE id=$2', [
+        JSON.stringify({ first: 0 }),
+        matchId,
+      ]),
+    );
+    await platform.social.postBattle(
+      await platform.store.identity(b.actor),
+      matchId!,
+      'I will draft another option. Which card do you want?',
+      crypto.randomUUID(),
+    );
+    await a.page.goto(`/?match=${matchId}`);
+    await expect(a.page.locator('.shared-pool button')).toHaveCount(20);
+    const first = a.page.locator('.shared-pool button:enabled').first(),
+      id = await first.getAttribute('data-card-id');
+    await first.click();
+    const sort = a.page.getByLabel('Order draft cards', { exact: true });
+    for (const option of ['rarity', 'stats']) {
+      await sort.selectOption(option);
+      const numbers = await a.page
+        .locator('.shared-pool button')
+        .evaluateAll(
+          (items, attr) => items.map((item) => Number(item.getAttribute(attr))),
+          option === 'rarity' ? 'data-rarity' : 'data-total',
+        );
+      expect(numbers).toEqual([...numbers].sort((x, y) => y - x));
+      await expect(a.page.locator(`.shared-pool button[data-card-id="${id}"]`)).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+    }
+    await sort.selectOption('name');
+    await a.page.getByRole('button', { name: 'Inspect selected card', exact: true }).click();
+    await expect(a.page.locator('.card-detail[open]')).toBeVisible();
+    await a.page.keyboard.press('Escape');
+    const names = await a.page
+      .locator('.shared-pool button')
+      .evaluateAll((items) => items.map((item) => item.getAttribute('data-card-name')!));
+    expect(names).toEqual([...names].sort((x, y) => x.localeCompare(y, 'en')));
+    await a.page.getByRole('button', { name: 'Confirm pick', exact: true }).click();
+    await expect(a.page.locator(`.shared-pool button[data-card-id="${id}"]`)).toBeDisabled();
+    if (info.project.name === 'mobile') await a.page.locator('.comms-mobile-toggle').click();
+    await expect(a.page.locator('.arena-comms [role="log"]')).toContainText(
+      'I will draft another option.',
+    );
+    await a.page
+      .locator('#battle-chat-message')
+      .fill('You can take that card. I will choose the next one.');
+    await a.page.locator('.arena-comms .chat-compose button').click();
+    await expect(a.page.locator('.arena-comms [role="log"]')).toContainText(
+      'You can take that card.',
+    );
+    if (info.project.name === 'mobile') {
+      await a.page.locator('.comms-mobile-toggle').click();
+      await french(a.page);
+      await a.page.setViewportSize({ width: 320, height: 844 });
+      await fits(a.page);
+      await a.page.locator('.comms-mobile-toggle').click();
+      await expect(a.page.locator('#battle-chat-message')).toBeVisible();
+      const compose = await a.page.locator('.arena-comms .chat-compose').boundingBox();
+      expect(compose!.y + compose!.height).toBeLessThanOrEqual(844 - 50);
+      await a.page.screenshot({ path: info.outputPath('shared-chat-mobile-fr.png') });
+      expect(errors).toEqual([]);
+      return;
+    }
+    for (const lang of ['en', 'fr']) {
+      if (lang === 'fr') await french(a.page);
+      for (const [width, height] of [
+        [1920, 900],
+        [1728, 852],
+        [1366, 768],
+        [1280, 720],
+      ]) {
+        await a.page.setViewportSize({ width, height });
+        await expect
+          .poll(() =>
+            a.page.evaluate(() => {
+              const bar = document.querySelector('.system-bar')!.getBoundingClientRect().height;
+              return Math.abs(
+                parseFloat(document.documentElement.style.getPropertyValue('--battle-space')) -
+                  (innerHeight - bar - 56),
+              );
+            }),
+          )
+          .toBeLessThan(1);
+        await a.page.evaluate(() => scrollTo(0, 0));
+        const boxes = await a.page.evaluate(() =>
+          ['.match', '.arena-comms', '.shared-pick-confirm'].map((selector) => {
+            const box = document.querySelector(selector)!.getBoundingClientRect();
+            return { x: box.x, right: box.right, y: box.y, bottom: box.bottom };
+          }),
+        );
+        expect(boxes[1].x).toBeGreaterThanOrEqual(boxes[0].right);
+        for (const box of boxes)
+          expect(box.bottom, JSON.stringify({ width, height, box })).toBeLessThanOrEqual(
+            height - 40,
+          );
+        expect(
+          await a.page
+            .locator('.shared-pool .value')
+            .evaluateAll((values) =>
+              Math.min(...values.map((value) => value.getBoundingClientRect().height)),
+            ),
+        ).toBeGreaterThanOrEqual(20);
+        const pickedSlot = await a.page
+            .locator('.shared-hand-slot:has(.playing-card)')
+            .first()
+            .boundingBox(),
+          pickedValues = await a.page
+            .locator('.shared-hand-slot .card-values')
+            .first()
+            .boundingBox();
+        expect(pickedValues!.x + pickedValues!.width / 2).toBeGreaterThan(
+          pickedSlot!.x + pickedSlot!.width / 2,
+        );
+        expect(
+          pickedSlot!.x + pickedSlot!.width - pickedValues!.x - pickedValues!.width,
+        ).toBeLessThanOrEqual(8);
+        expect(pickedValues!.y).toBeGreaterThan(pickedSlot!.y + 25);
+        expect(pickedValues!.x + pickedValues!.width).toBeLessThanOrEqual(
+          pickedSlot!.x + pickedSlot!.width,
+        );
+        expect(
+          await a.page
+            .locator('.shared-hand-slot .card-values')
+            .first()
+            .evaluate((el) => getComputedStyle(el).zIndex),
+        ).toBe('4');
+        const pool = await a.page.locator('.shared-pool').boundingBox();
+        for (const button of await a.page.locator('.shared-pool button').all()) {
+          const box = (await button.boundingBox())!;
+          expect(box.y).toBeGreaterThanOrEqual(pool!.y - 1);
+          expect(box.y + box.height).toBeLessThanOrEqual(pool!.y + pool!.height + 1);
+        }
+        expect(
+          await a.page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 2),
+        ).toBe(true);
+        await fits(a.page);
+        await a.page.screenshot({
+          path: info.outputPath(`shared-fit-${width}-${height}-${lang}.png`),
+        });
+      }
+    }
+    expect(errors).toEqual([]);
   } finally {
     await a.context.close();
     await b.context.close();

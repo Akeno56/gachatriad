@@ -152,7 +152,7 @@ export function Game() {
       );
   }, [matchId, watchingId]);
   useEffect(() => {
-    if (!match?.game) return;
+    if (!match?.game && !(match?.mode === 'shared-draft' && match.status === 'drafting')) return;
     document.body.classList.add('in-battle');
     window.scrollTo(0, 0);
     const measure = () => {
@@ -170,7 +170,7 @@ export function Game() {
       window.removeEventListener('resize', measure);
       window.visualViewport?.removeEventListener('resize', measure);
     };
-  }, [match?.id, !!match?.game]);
+  }, [match?.id, !!match?.game, match?.mode, match?.status]);
   useEffect(() => {
     const timer = setInterval(() => setClock(Date.now()), 1000);
     return () => clearInterval(timer);
@@ -289,7 +289,7 @@ export function Game() {
   return (
     <LocaleView>
       <div
-        className={`play-page ${match ? 'battle-screen' : 'title-screen'} ${match?.spectator ? 'spectator-screen' : ''} ${match?.game ? 'arena-screen' : ''}`}
+        className={`play-page ${match ? 'battle-screen' : 'title-screen'} ${match?.spectator ? 'spectator-screen' : ''} ${match?.game ? 'arena-screen' : ''} ${match?.mode === 'shared-draft' && match.status === 'drafting' ? 'shared-draft-screen' : ''}`}
       >
         {callout && (
           <div
@@ -426,6 +426,7 @@ export function Game() {
             ) : match.status === 'drafting' && match.sharedDraft ? (
               <SharedDraft
                 match={match}
+                onInspect={inspect}
                 busy={busy}
                 now={clock}
                 onPick={(cardId) =>

@@ -26,6 +26,8 @@ Migration 019 also removes stakes from waiting and active Ranked games. Already 
 
 ## Interface and deployment
 
+The preview follow-up moves the puzzle's hands, controls and leaderboard beside a closely fitted board frame. Its reward badge and instructions use less space. Shared Draft has a persistent desktop chat column, four sorting options and selected-card inspection. Repeated Draft instructions are available in a rules dropdown. Picked-card summaries place values at the bottom-right above the fade, with the name kept separate; shared-pool cards retain their usual layout. Card values remain large; the layouts reclaim space from interface panels and margins first.
+
 The home page links to the daily puzzle and offers both Draft queues. Queue notices, the rulebook, tutorial, profiles, results and English/French text distinguish the formats. Desktop and mobile layouts retain the FF/pixel theme. This release also includes the uncommitted 0.1.3 interface improvements documented in [RELEASE_V0_1_3.md](RELEASE_V0_1_3.md).
 
 Migration 019 runs through the existing server migration path. Back up persistent server data before a normal deployment. There is no account, inventory or existing rating reset. Build the hosted site with the normal production origin, and deploy frontend and server together so the new routes and profile field are available.

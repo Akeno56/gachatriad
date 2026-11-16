@@ -453,3 +453,725 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+/* Desktop play surfaces use available height, without scaling the entire UI. */
+.puzzle-sidebar {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.puzzle-reserves {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.puzzle-reserve {
+  padding: 10px;
+  min-width: 0;
+}
+.puzzle-reserve h2 {
+  font: 22px/1.1 var(--pixel);
+  margin: 0;
+}
+.puzzle-reserve .puzzle-hand {
+  margin: 8px 0 0;
+  gap: 8px;
+}
+.puzzle-reserve .puzzle-hand > p {
+  font: 14px var(--sans);
+  color: var(--muted);
+}
+.puzzle-intro-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.puzzle-intro-layout .puzzle-leaderboard {
+  margin-top: 0;
+  max-height: 60dvh;
+}
+.puzzle-board-space {
+  min-width: 0;
+}
+.puzzle-sidebar .puzzle-outcome {
+  padding: 12px;
+  gap: 8px;
+}
+.puzzle-sidebar .puzzle-outcome h2 {
+  font: 23px/1.1 var(--pixel);
+}
+.puzzle-sidebar .puzzle-outcome small {
+  font: 12px/1.25 var(--sans);
+}
+.puzzle-sidebar .puzzle-outcome .text-button {
+  padding: 4px;
+}
+.puzzle-sidebar .puzzle-leaderboard {
+  margin: 0;
+  padding: 12px;
+}
+.puzzle-leaderboard h2 {
+  font: 24px/1.1 var(--pixel);
+  margin: 0 0 4px;
+}
+.puzzle-leaderboard > p {
+  font: 13px/1.3 var(--sans);
+  margin: 4px 0 8px;
+}
+.shared-pool-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+}
+.shared-pool-controls > span {
+  font: 13px var(--sans);
+  color: var(--muted);
+}
+.shared-pool-controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 14px var(--sans);
+}
+.shared-pool-controls select {
+  width: 235px;
+  min-height: 32px;
+  padding: 4px 8px;
+  font: 18px var(--pixel);
+}
+@media (min-width: 1101px) {
+  .content-page.puzzle-page {
+    width: calc(100% - 40px);
+    max-width: 1600px;
+    margin: 12px auto;
+    padding: 16px;
+  }
+  .puzzle-page:has(.puzzle-play-layout) {
+    height: calc(100dvh - 150px);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .puzzle-page > .error-message:empty {
+    display: none;
+  }
+  .puzzle-heading {
+    gap: 12px;
+    flex: none;
+  }
+  .puzzle-heading h1 {
+    font-size: 32px;
+    margin: 4px 0;
+  }
+  .puzzle-heading .page-description {
+    margin: 4px 0;
+    font-size: 14px;
+    line-height: 1.25;
+  }
+  .puzzle-reward {
+    padding: 8px 14px;
+    gap: 3px;
+    font-size: 14px;
+  }
+  .puzzle-reward strong {
+    font-size: 26px;
+  }
+  .puzzle-reward small {
+    font-size: 12px;
+  }
+  .puzzle-meta {
+    margin: 0;
+    gap: 8px;
+    flex: none;
+    font-size: 13px;
+  }
+  .puzzle-meta button {
+    padding-block: 2px;
+    font-size: 18px;
+  }
+  .puzzle-play-layout {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(350px, 1.05fr);
+    align-items: stretch;
+    gap: 14px;
+  }
+  .puzzle-table {
+    padding: 10px;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .puzzle-score {
+    font-size: 24px;
+  }
+  .puzzle-table > p {
+    margin: 4px 0 8px;
+    min-height: 18px;
+    font-size: 14px;
+  }
+  .puzzle-board-space {
+    flex: 1;
+    min-height: 0;
+    container-type: size;
+    display: grid;
+    place-items: center;
+  }
+  .puzzle-board {
+    width: min(100cqw, calc(100cqh * 0.75));
+    max-width: none;
+    gap: 4px;
+  }
+  .puzzle-sidebar {
+    min-height: 0;
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+  .puzzle-reserve h2 {
+    font-size: 20px;
+  }
+  .puzzle-reserve .puzzle-hand > button,
+  .puzzle-reserve .puzzle-hand > div {
+    width: clamp(72px, 10dvh, 110px);
+    height: auto;
+    aspect-ratio: 3/4;
+  }
+  .puzzle-reserve .card-caption strong {
+    font-size: 12px;
+  }
+  .puzzle-reserve .card-values {
+    transform: scale(0.6);
+  }
+  .puzzle-leaderboard {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .puzzle-leaderboard-scroll {
+    flex: 1;
+    min-height: 0;
+  }
+  .puzzle-leaderboard th,
+  .puzzle-leaderboard td {
+    padding: 5px 7px;
+    font-size: 13px;
+  }
+  .puzzle-leaderboard th {
+    position: sticky;
+    top: 0;
+    background: #17294c;
+  }
+  .battle-screen.shared-draft-screen {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(260px, 20vw, 320px);
+    grid-template-rows: minmax(0, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 1880px;
+    height: var(--battle-space, calc(100dvh - 140px));
+    padding: 8px 16px 0;
+  }
+  .shared-draft-screen > .match {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    gap: 8px;
+  }
+  .shared-draft-screen .match-toolbar {
+    padding-bottom: 6px;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex: none;
+  }
+  .shared-draft-screen .battle-mode > strong {
+    font-size: 20px;
+  }
+  .shared-draft-screen .battle-actions .text-button {
+    font-size: 17px;
+  }
+  .shared-draft-screen > .error-message:empty {
+    display: none;
+  }
+  .shared-draft-screen .shared-draft-selection {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
+    gap: 8px;
+  }
+  .shared-draft-screen .shared-draft-heading {
+    padding: 10px 12px;
+    gap: 12px;
+  }
+  .shared-draft-screen .shared-draft-heading h1 {
+    font-size: 28px;
+    margin: 3px 0;
+  }
+  .shared-draft-screen .shared-draft-heading p {
+    margin: 3px 0;
+    font-size: 14px;
+    line-height: 1.2;
+  }
+  .shared-draft-screen .shared-draft-heading small {
+    font-size: 12px;
+    line-height: 1.2;
+  }
+  .shared-draft-screen .shared-draft-heading .eyebrow {
+    font-size: 9px;
+  }
+  .shared-draft-screen .shared-pick-status {
+    min-width: 160px;
+    padding: 8px;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+  .shared-draft-screen .shared-pick-status strong {
+    font-size: 19px;
+  }
+  .shared-draft-screen .shared-hands {
+    margin: 0;
+    gap: 12px;
+  }
+  .shared-draft-screen .shared-hands h2 {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  .shared-draft-screen .shared-hand-slot {
+    height: 58px;
+  }
+  .shared-draft-screen .shared-hand-slot .card-values {
+    transform: scale(0.38);
+  }
+  .shared-draft-screen .shared-pool-controls {
+    margin: 0;
+  }
+  .shared-draft-screen .shared-pool.draft-grid {
+    min-height: 0;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    gap: 8px;
+    align-items: center;
+    justify-items: center;
+    container-type: size;
+  }
+  .shared-draft-screen .shared-pool.draft-grid .draft-card {
+    width: min(100%, calc((100cqh - 52px) * 0.375 + 4px));
+    height: auto;
+    grid-template-rows: auto 18px;
+  }
+  .shared-draft-screen .shared-pool.draft-grid .draft-card .card-values {
+    transform: scale(0.55);
+  }
+  .shared-draft-screen .shared-pool.draft-grid .draft-card .card-caption strong {
+    font-size: 12px;
+  }
+  .shared-draft-screen .shared-pick-confirm {
+    position: static;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .shared-draft-screen .shared-pick-confirm .primary-button {
+    min-height: 34px;
+    padding: 6px 14px;
+    font-size: 20px;
+  }
+  .shared-draft-screen .shared-draft-policy {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.25;
+  }
+  .battle-screen.shared-draft-screen .arena-comms {
+    position: static;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    min-height: 0;
+  }
+  .battle-screen.shared-draft-screen .arena-comms .main-chat .chat-messages {
+    min-height: 0;
+  }
+  .shared-draft-screen .draft-opening {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
+}
+@media (max-width: 1100px) {
+  .puzzle-play-layout,
+  .puzzle-intro-layout {
+    grid-template-columns: 1fr;
+  }
+  .puzzle-board {
+    width: 100%;
+  }
+  .shared-pool.draft-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .battle-screen.shared-draft-screen .arena-comms {
+    position: fixed;
+    bottom: 9px;
+    left: 65px;
+    right: 65px;
+    height: 36px;
+    width: auto;
+    padding: 0;
+    margin: 0;
+    z-index: 35;
+  }
+  .shared-draft-screen .arena-comms > *:not(.comms-mobile-toggle) {
+    display: none;
+  }
+  .shared-draft-screen .comms-mobile-toggle {
+    display: block;
+    min-height: 34px;
+    border: 0;
+    background: transparent;
+    color: var(--gold);
+    font: 22px var(--pixel);
+  }
+  .battle-screen.shared-draft-screen .arena-comms.is-expanded {
+    height: min(460px, 65dvh);
+    left: 12px;
+    right: 12px;
+    bottom: 64px;
+    padding: 10px;
+  }
+  .shared-draft-screen .arena-comms.is-expanded > * {
+    display: revert;
+  }
+  .shared-draft-screen .arena-comms.is-expanded > .chat-messages {
+    display: block;
+  }
+  .shared-draft-screen .arena-comms.is-expanded > .main-chat,
+  .shared-draft-screen .arena-comms.is-expanded > .chat-compose {
+    display: flex;
+  }
+}
+@media (max-width: 680px) {
+  .puzzle-reserves {
+    grid-template-columns: 1fr;
+  }
+  .shared-pool-controls {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .shared-pool-controls label {
+    justify-content: space-between;
+  }
+  .shared-pool-controls select {
+    width: min(235px, 65%);
+  }
+  .shared-pool.draft-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1101px) {
+  .puzzle-heading .eyebrow {
+    display: none;
+  }
+  .puzzle-heading h1 {
+    margin: 0;
+  }
+  .puzzle-reward {
+    grid-template-columns: auto auto;
+    gap: 3px 8px;
+    padding: 8px 10px;
+  }
+  .puzzle-reward strong {
+    grid-row: 1/3;
+  }
+  .puzzle-reward > span,
+  .puzzle-reward > small {
+    text-align: left;
+  }
+}
+@media (min-width: 1101px) and (max-height: 800px) {
+  .puzzle-sidebar {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: 'hands controls' 'hands ladder';
+  }
+  .puzzle-reserves {
+    grid-area: hands;
+    grid-template-columns: 1fr;
+    align-content: start;
+  }
+  .puzzle-outcome {
+    grid-area: controls;
+  }
+  .puzzle-sidebar .puzzle-leaderboard {
+    grid-area: ladder;
+  }
+}
+.shared-selected-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.shared-selected-card .text-button {
+  font-size: 17px;
+  min-height: 28px;
+  padding: 2px 6px;
+}
+/* Reclaim chrome and gutters before reducing card size. */
+.puzzle-reset-note {
+  margin-left: 12px;
+  font: 12px var(--sans);
+  color: var(--muted);
+}
+.shared-rule-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+.shared-draft-help {
+  position: relative;
+  font: 17px var(--pixel);
+}
+.shared-draft-help > summary {
+  cursor: pointer;
+  color: var(--gold);
+  padding: 4px 0;
+}
+.shared-draft-help > div {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: min(430px, calc(100vw - 60px));
+  max-height: 50dvh;
+  overflow: auto;
+  background: #132440;
+  border: 1px solid #90a3bd;
+  padding: 12px;
+  box-shadow: 3px 4px #0009;
+  z-index: 25;
+}
+.shared-draft-help p {
+  font: 14px/1.35 var(--sans);
+  margin: 0 0 8px;
+}
+.shared-draft-help p:last-child {
+  margin-bottom: 0;
+}
+.shared-draft-heading:has(.shared-draft-help[open]) {
+  position: relative;
+  z-index: 12;
+}
+@media (min-width: 1101px) {
+  .content-page.puzzle-page {
+    padding: 12px;
+    margin: 8px auto;
+  }
+  .puzzle-page:has(.puzzle-play-layout) {
+    height: calc(100dvh - 136px);
+    gap: 8px;
+  }
+  .puzzle-heading > div:first-child {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 2px 14px;
+  }
+  .puzzle-heading .page-description {
+    margin: 0;
+    font-size: 13px;
+  }
+  .puzzle-heading h1 {
+    font-size: 30px;
+  }
+  .puzzle-reward {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 8px;
+    padding: 5px 8px;
+    border: 1px solid #7a8fae;
+    background: #142542;
+    box-shadow: none;
+  }
+  .puzzle-reward strong {
+    font-size: 25px;
+  }
+  .puzzle-reward > span {
+    font-size: 12px;
+  }
+  .puzzle-play-layout {
+    container-type: size;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+  }
+  .puzzle-table {
+    width: min(47cqw, calc((100cqh - 78px) * 0.75 + 24px));
+  }
+  .puzzle-sidebar {
+    grid-template-columns: minmax(250px, 0.9fr) minmax(260px, 1.1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: 'hands controls' 'hands ladder';
+    gap: 10px;
+  }
+  .puzzle-reserves {
+    grid-area: hands;
+    grid-template-columns: 1fr;
+    align-content: start;
+    gap: 10px;
+  }
+  .puzzle-outcome {
+    grid-area: controls;
+  }
+  .puzzle-sidebar .puzzle-outcome:not(.is-solved) > h2 {
+    display: none;
+  }
+  .puzzle-sidebar .puzzle-outcome {
+    padding: 8px;
+    gap: 6px;
+  }
+  .puzzle-sidebar .puzzle-leaderboard {
+    grid-area: ladder;
+  }
+  .puzzle-reserve .puzzle-hand > button,
+  .puzzle-reserve .puzzle-hand > div {
+    width: 110px;
+    height: 150px;
+  }
+  .puzzle-reserve .card-values {
+    transform: scale(0.8);
+  }
+  .puzzle-reserve .card-caption strong {
+    font-size: 15px;
+  }
+  .battle-screen.shared-draft-screen {
+    max-width: none;
+    grid-template-columns: minmax(0, 1fr) clamp(245px, 18vw, 300px);
+    padding: 6px 10px 0;
+    gap: 12px;
+  }
+  .shared-draft-screen > .match {
+    gap: 6px;
+  }
+  .shared-draft-screen .shared-draft-selection {
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    gap: 6px;
+  }
+  .shared-draft-screen .shared-draft-heading {
+    padding: 5px 8px;
+    gap: 10px;
+  }
+  .shared-draft-screen .shared-draft-heading h1.sr-only {
+    margin: 0;
+  }
+  .shared-draft-screen .shared-draft-heading small {
+    font-size: 13px;
+  }
+  .shared-draft-screen .shared-pick-status {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 8px;
+  }
+  .shared-draft-screen .shared-pick-status > span {
+    font-size: 17px;
+  }
+  .shared-draft-screen .shared-pool-controls {
+    flex: none;
+  }
+  .shared-draft-screen .shared-pool-controls > span,
+  .shared-draft-screen .shared-pool-controls label > span {
+    display: none;
+  }
+  .shared-draft-screen .shared-hand-slot {
+    height: 72px;
+  }
+  .shared-draft-screen .shared-hand-slot .card-values {
+    transform: scale(0.6);
+  }
+  .shared-draft-screen .shared-pool.draft-grid {
+    gap: 6px;
+  }
+  .shared-draft-screen .shared-pool.draft-grid .draft-card {
+    width: min(100%, calc((100cqh - 50px) * 0.375 + 4px));
+  }
+  .shared-draft-screen .shared-pool.draft-grid .draft-card .card-values {
+    transform: scale(0.8);
+  }
+  .shared-draft-screen .shared-pool.draft-grid .draft-card .card-caption strong {
+    font-size: 15px;
+  }
+}
+@media (max-width: 1100px) {
+  .shared-draft-heading {
+    flex-wrap: wrap;
+  }
+  .shared-draft-help > div {
+    position: static;
+    margin-top: 8px;
+    width: auto;
+  }
+  .puzzle-reset-note {
+    display: block;
+    margin: 3px 0 0;
+  }
+}
+.puzzle-meta .puzzle-score {
+  font-size: 22px;
+  gap: 8px;
+  white-space: nowrap;
+}
+.puzzle-turn-status {
+  margin: 0;
+  font: 14px/1.2 var(--sans);
+}
+@media (min-width: 1101px) {
+  .puzzle-table {
+    width: min(47cqw, calc((100cqh - 24px) * 0.75 + 24px));
+  }
+}
+/* Keep available values readable while waiting for the other player's pick. */
+.shared-pool .draft-card:disabled {
+  opacity: 1;
+}
+.shared-pool .draft-card.is-taken {
+  opacity: 0.22;
+}
+/* Picked-card summaries keep names and values in separate, readable areas. */
+.shared-hand-slot .card-values {
+  top: auto;
+  left: auto;
+  right: 3px;
+  bottom: 3px;
+  z-index: 4;
+  transform: scale(0.8);
+  transform-origin: bottom right;
+}
+.shared-hand-slot .card-caption {
+  top: 0;
+  bottom: auto;
+  padding: 2px 4px;
+  background: linear-gradient(180deg, #10213bec 70%, transparent);
+}
+.shared-hand-slot .card-stars {
+  font-size: 6px;
+  margin-bottom: 1px;
+}
+.shared-hand-slot .card-set {
+  display: none;
+}
+@media (min-width: 1101px) {
+  .shared-draft-screen .shared-hand-slot {
+    height: 90px;
+  }
+  .shared-draft-screen .shared-hand-slot .card-values {
+    transform: scale(0.8);
+  }
+}
+@media (max-width: 1100px) {
+  .shared-hands .shared-hand-slot {
+    height: 90px;
+  }
+}

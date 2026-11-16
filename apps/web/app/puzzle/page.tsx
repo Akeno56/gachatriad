@@ -98,6 +98,41 @@ export default function PuzzlePage() {
     result = state?.status === 'complete' ? winner(state) : null;
   const score = state ? scores(state) : [5, 5];
   const remaining = view ? Math.max(0, Math.ceil((Date.parse(view.resetsAt) - now) / 1000)) : 0;
+  const leaderboard = view && (
+    <section className="menu-window puzzle-leaderboard">
+      <h2>Today’s leaderboard</h2>
+      <p>Fewest attempts first, then time to the first solve.</p>
+      <div className="puzzle-leaderboard-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Attempts</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {view.leaderboard.map((entry) => (
+              <tr key={entry.playerId} className={entry.playerId === profile?.id ? 'is-you' : ''}>
+                <td>{entry.rank}</td>
+                <td>
+                  <Link href={`/profile?id=${entry.playerId}`}>
+                    <NoTranslate>{entry.name}</NoTranslate>
+                  </Link>
+                </td>
+                <td>{entry.attempts}</td>
+                <td>
+                  <NoTranslate>{`${Math.floor(entry.elapsedMs / 60000)}:${String(Math.floor(entry.elapsedMs / 1000) % 60).padStart(2, '0')}`}</NoTranslate>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {!view.leaderboard.length && <p>No solves yet. Be the first!</p>}
+    </section>
+  );
   return (
     <LocaleView>
       <div className="content-page puzzle-page">
@@ -105,15 +140,11 @@ export default function PuzzlePage() {
           <div>
             <div className="eyebrow">THE DAILY CHALLENGE</div>
             <h1>Daily Triad puzzle</h1>
-            <p className="page-description">
-              Find the move that forces a win against the strongest defense. Same · Plus · Combo ·
-              All Open.
-            </p>
+            <p className="page-description">Force a win · Same · Plus · Combo · All Open.</p>
           </div>
           <div className="puzzle-reward menu-window">
             <strong>◇ {view?.reward ?? 100}</strong>
             <span>{view?.rewarded ? 'Reward claimed' : 'First solve reward'}</span>
-            <small>Resets at 00:00 UTC</small>
           </div>
         </header>
         <p className="error-message" role="alert">
@@ -127,41 +158,16 @@ export default function PuzzlePage() {
               <span>
                 <NoTranslate>{view.day}</NoTranslate> ·{' '}
                 {`${Math.floor(remaining / 3600)}:${String(Math.floor(remaining / 60) % 60).padStart(2, '0')}:${String(remaining % 60).padStart(2, '0')}`}
+                <small className="puzzle-reset-note">Resets at 00:00 UTC</small>
               </span>
-              <span>Attempts: {view.attempts}</span>
-              <button className="text-button" disabled={busy} onClick={reload}>
-                Refresh leaderboard
-              </button>
-            </div>
-            {!state ? (
-              <section className="menu-window puzzle-start">
-                <h2>Win the endgame</h2>
-                <p>
-                  Everyone plays the same position today. You have two cards and three empty spaces.
-                  The opponent responds with its best defense.
-                </p>
-                <p>
-                  Your timer starts when you reveal the board. The leaderboard ranks first solves by
-                  fewest attempts, then total time since the first reveal, including retries.
-                  Practising after solving cannot improve this result.
-                </p>
-                <button
-                  className="primary-button"
-                  disabled={busy}
-                  onClick={() => void act('start', { requestId: crypto.randomUUID() })}
-                >
-                  {busy ? 'Starting…' : 'Reveal today’s puzzle'}
-                </button>
-              </section>
-            ) : (
-              <div className="puzzle-play-layout">
-                <section className="menu-window puzzle-table" aria-label="Daily puzzle board">
+              {state && (
+                <>
                   <div className="puzzle-score">
                     <strong>You {score[0]}</strong>
                     <span>—</span>
                     <strong>Opponent {score[1]}</strong>
                   </div>
-                  <p role="status">
+                  <p id="puzzle-turn-status" className="puzzle-turn-status" role="status">
                     {state.status === 'complete'
                       ? result === 0
                         ? 'Puzzle solved!'
@@ -170,143 +176,149 @@ export default function PuzzlePage() {
                         ? 'Choose an empty space.'
                         : 'Choose a card from your hand.'}
                   </p>
-                  <div className="puzzle-board">
-                    {state.board.map((placed, cell) => (
-                      <button
-                        className={`puzzle-cell ${!placed && selected ? 'is-legal' : ''}`}
-                        data-testid={`puzzle-cell-${cell}`}
-                        key={cell}
-                        disabled={busy || !!placed || state.status === 'complete' || !selected}
-                        aria-label={
-                          placed ? `Occupied cell ${cell + 1}` : `Place card in cell ${cell + 1}`
-                        }
-                        onClick={() => {
-                          if (selected)
-                            void act('move', { cardId: selected, cell, version: view.version });
-                        }}
-                      >
-                        {placed ? (
-                          <Card card={placed.card} owner={placed.owner} />
-                        ) : (
-                          <span>
-                            {String.fromCharCode(65 + Math.floor(cell / 3))}
-                            {(cell % 3) + 1}
-                          </span>
-                        )}
-                      </button>
-                    ))}
+                </>
+              )}
+              <span>Attempts: {view.attempts}</span>
+              <button className="text-button" disabled={busy} onClick={reload}>
+                Refresh leaderboard
+              </button>
+            </div>
+            {!state ? (
+              <div className="puzzle-intro-layout">
+                <section className="menu-window puzzle-start">
+                  <h2>Win the endgame</h2>
+                  <p>
+                    Everyone plays the same position today. You have two cards and three empty
+                    spaces. The opponent responds with its best defense.
+                  </p>
+                  <p>
+                    Your timer starts when you reveal the board. The leaderboard ranks first solves
+                    by fewest attempts, then total time since the first reveal, including retries.
+                    Practising after solving cannot improve this result.
+                  </p>
+                  <button
+                    className="primary-button"
+                    disabled={busy}
+                    onClick={() => void act('start', { requestId: crypto.randomUUID() })}
+                  >
+                    {busy ? 'Starting…' : 'Reveal today’s puzzle'}
+                  </button>
+                </section>
+                {leaderboard}
+              </div>
+            ) : (
+              <div className="puzzle-play-layout">
+                <section
+                  className="menu-window puzzle-table"
+                  aria-label="Daily puzzle board"
+                  aria-describedby="puzzle-turn-status"
+                >
+                  <div className="puzzle-board-space">
+                    <div className="puzzle-board">
+                      {state.board.map((placed, cell) => (
+                        <button
+                          className={`puzzle-cell ${!placed && selected ? 'is-legal' : ''}`}
+                          data-testid={`puzzle-cell-${cell}`}
+                          key={cell}
+                          disabled={busy || !!placed || state.status === 'complete' || !selected}
+                          aria-label={
+                            placed ? `Occupied cell ${cell + 1}` : `Place card in cell ${cell + 1}`
+                          }
+                          onClick={() => {
+                            if (selected)
+                              void act('move', { cardId: selected, cell, version: view.version });
+                          }}
+                        >
+                          {placed ? (
+                            <Card card={placed.card} owner={placed.owner} />
+                          ) : (
+                            <span>
+                              {String.fromCharCode(65 + Math.floor(cell / 3))}
+                              {(cell % 3) + 1}
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="puzzle-hand" aria-label="Your puzzle hand">
-                    {state.hands[0].map((card) => (
-                      <button
-                        key={card.id}
-                        disabled={busy || state.status === 'complete'}
-                        aria-label={`Select ${card.name}`}
-                        aria-pressed={selected === card.id}
-                        onClick={() => setSelected(card.id)}
-                      >
-                        <Card card={card} owner={0} />
-                      </button>
-                    ))}
-                  </div>
-                  {state.status === 'playing' && (
-                    <details>
-                      <summary>Opponent’s remaining cards</summary>
-                      <div className="puzzle-hand">
+                </section>
+                <aside className="puzzle-sidebar">
+                  <div className="puzzle-reserves">
+                    <section className="menu-window puzzle-reserve">
+                      <h2>Your puzzle hand</h2>
+                      <div className="puzzle-hand" aria-label="Your puzzle hand">
+                        {state.hands[0].map((card) => (
+                          <button
+                            key={card.id}
+                            disabled={busy || state.status === 'complete'}
+                            aria-label={`Select ${card.name}`}
+                            aria-pressed={selected === card.id}
+                            onClick={() => setSelected(card.id)}
+                          >
+                            <Card card={card} owner={0} />
+                          </button>
+                        ))}
+                        {!state.hands[0].length && <p>No cards remaining.</p>}
+                      </div>
+                    </section>
+                    <section className="menu-window puzzle-reserve">
+                      <h2>Opponent’s remaining cards</h2>
+                      <div className="puzzle-hand" aria-label="Opponent’s remaining cards">
                         {state.hands[1].map((card) => (
                           <div key={card.id}>
                             <Card card={card} owner={1} />
                           </div>
                         ))}
+                        {!state.hands[1].length && <p>No cards remaining.</p>}
                       </div>
-                    </details>
-                  )}
-                </section>
-                <aside className="puzzle-outcome menu-window">
-                  <h2>{view.solved ? 'Today’s puzzle completed' : 'Your challenge'}</h2>
-                  <p>
-                    Win the position. Temporary puzzle cards never affect your deck, collection or
-                    Elo.
-                  </p>
-                  {view.solved && (
-                    <p>
-                      {view.rewarded
-                        ? 'Today’s reward has been claimed.'
-                        : 'Your solve is saved. Sign in to claim today’s reward and join the leaderboard.'}
-                    </p>
-                  )}
-                  {view.solved && !view.rewarded && (
-                    <button
-                      className="primary-button"
-                      disabled={busy}
-                      onClick={() => (view.registered ? void act('claim') : openAccount())}
-                    >
-                      {view.registered ? 'Claim 100 Stellar Prisms' : 'Sign in to claim reward'}
-                    </button>
-                  )}
-                  <button
-                    className="outline-button"
-                    disabled={busy}
-                    onClick={() =>
-                      void act('start', { restart: true, requestId: crypto.randomUUID() })
-                    }
+                    </section>
+                  </div>
+                  <section
+                    className={`puzzle-outcome menu-window ${view.solved ? 'is-solved' : ''}`}
                   >
-                    {view.solved
-                      ? 'Practise again'
-                      : state.status === 'complete'
-                        ? 'Try again'
-                        : 'Restart attempt'}
-                  </button>
-                  {!view.solved && (
-                    <small>
-                      Restarting counts as another attempt. The original timer keeps running.
-                    </small>
-                  )}
-                  <Link className="text-button" href="/">
-                    Back to the tavern
-                  </Link>
+                    <h2>{view.solved ? 'Today’s puzzle completed' : 'Your challenge'}</h2>
+                    {view.solved && (
+                      <p>
+                        {view.rewarded
+                          ? 'Today’s reward has been claimed.'
+                          : 'Your solve is saved. Sign in to claim today’s reward and join the leaderboard.'}
+                      </p>
+                    )}
+                    {view.solved && !view.rewarded && (
+                      <button
+                        className="primary-button"
+                        disabled={busy}
+                        onClick={() => (view.registered ? void act('claim') : openAccount())}
+                      >
+                        {view.registered ? 'Claim 100 Stellar Prisms' : 'Sign in to claim reward'}
+                      </button>
+                    )}
+                    <button
+                      className="outline-button"
+                      disabled={busy}
+                      onClick={() =>
+                        void act('start', { restart: true, requestId: crypto.randomUUID() })
+                      }
+                    >
+                      {view.solved
+                        ? 'Practise again'
+                        : state.status === 'complete'
+                          ? 'Try again'
+                          : 'Restart attempt'}
+                    </button>
+                    {!view.solved && (
+                      <small>
+                        Restarting counts as another attempt. The original timer keeps running.
+                      </small>
+                    )}
+                    <Link className="text-button" href="/">
+                      Back to the tavern
+                    </Link>
+                  </section>
+                  {leaderboard}
                 </aside>
               </div>
             )}
-            <section className="menu-window puzzle-leaderboard">
-              <h2>Today’s leaderboard</h2>
-              <p>
-                Fewest attempts first, then time to the first solve. One reward per account per UTC
-                day. Registered players only.
-              </p>
-              <div className="puzzle-leaderboard-scroll">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Rank</th>
-                      <th>Player</th>
-                      <th>Attempts</th>
-                      <th>Time</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {view.leaderboard.map((entry) => (
-                      <tr
-                        key={entry.playerId}
-                        className={entry.playerId === profile?.id ? 'is-you' : ''}
-                      >
-                        <td>{entry.rank}</td>
-                        <td>
-                          <Link href={`/profile?id=${entry.playerId}`}>
-                            <NoTranslate>{entry.name}</NoTranslate>
-                          </Link>
-                        </td>
-                        <td>{entry.attempts}</td>
-                        <td>
-                          <NoTranslate>{`${Math.floor(entry.elapsedMs / 60000)}:${String(Math.floor(entry.elapsedMs / 1000) % 60).padStart(2, '0')}`}</NoTranslate>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {!view.leaderboard.length && <p>No solves yet. Be the first!</p>}
-            </section>
           </>
         )}
       </div>
