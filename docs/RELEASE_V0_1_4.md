@@ -26,7 +26,7 @@ Migration 019 also removes stakes from waiting and active Ranked games. Already 
 
 ## Interface and deployment
 
-The home chat now shows at least eight standard one-line desktop messages and grows on taller windows, with a square, beveled scrollbar shared by public chat. Cards keep their artwork size while using less space for metadata and between rows. Navigation highlights the current page consistently on trailing-slash static-export URLs.
+The home chat fills the available desktop height below the deck, including space for the composer, guest sign-in notice and bottom controls. The message log scrolls internally; taller windows display more messages without forcing eight rows into shorter windows. Public chat uses a square, beveled scrollbar. Cards keep their artwork size while using less space for metadata and between rows. Navigation highlights the current page consistently on trailing-slash static-export URLs.
 
 Normal booster openings offer Skip to show the saved batch results without waiting for each animation. Rulebook animations use real catalog cards and current values, with the compared values highlighted. The Elemental tutorial now needs its matching Fire bonus to win the demonstrated card; neutral and mismatched cells fail. Trade One is presented as an optional custom-game rule, and its practice selection can be skipped.
 

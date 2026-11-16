@@ -20,10 +20,10 @@ test('fits the home chat beside setup, shares channel selection with Lobbies and
   expect(cb.y).toBeGreaterThanOrEqual(db.y + db.height - 2);
   if (info.project.name === 'desktop') {
     expect(cb.x).toBeGreaterThan(sb.x + sb.width);
-    // The home chat reserves eight ordinary messages; shorter windows may scroll.
-    expect(
-      await chat.locator('.chat-messages').evaluate((el) => el.clientHeight),
-    ).toBeGreaterThanOrEqual(436);
+    await expect
+      .poll(async () => (await chat.boundingBox())!.y + (await chat.boundingBox())!.height)
+      .toBeLessThanOrEqual(824);
+    await expect(chat.locator('.chat-compose')).toBeInViewport({ ratio: 1 });
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const credits = page.getByRole('link', { name: 'Credits', exact: true });

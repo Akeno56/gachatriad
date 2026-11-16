@@ -10,7 +10,13 @@ import { Avatar } from './avatar';
 import { api } from '../lib/platform';
 import { appPath } from '../lib/connection';
 const labels = { general: 'General', trade: 'Trade', lobbies: 'Lobbies' };
-export function ChannelChat({ compact = false }: { compact?: boolean }) {
+export function ChannelChat({
+  compact = false,
+  fitViewport = false,
+}: {
+  compact?: boolean;
+  fitViewport?: boolean;
+}) {
   const { data, error: loadError, channel, setChannel } = useSocial(),
     { profile, refresh, openAccount } = useSession();
   const [drafts, setDrafts] = useState<Record<string, string>>({}),
@@ -19,9 +25,45 @@ export function ChannelChat({ compact = false }: { compact?: boolean }) {
   const message = drafts[channel] ?? '',
     onlinePlayers = data.onlinePlayers ?? [],
     messages = data.chat.filter((m) => (m.channel ?? 'general') === channel);
-  const list = useRef<HTMLDivElement>(null),
+  const root = useRef<HTMLElement>(null),
+    list = useRef<HTMLDivElement>(null),
     sticky = useRef(true),
     pending = useRef<{ text: string; channel: string; id: string } | null>(null);
+  useEffect(() => {
+    const element = root.current;
+    if (!fitViewport || !element) return;
+    let frame = 0;
+    const measure = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        // Use the document position so scrolling the page cannot grow the chat.
+        const top = element.getBoundingClientRect().top + window.scrollY;
+        const height = Math.max(
+          180,
+          Math.floor((window.visualViewport?.height ?? innerHeight) - top - 76),
+        );
+        element.style.setProperty('--home-chat-space', `${height}px`);
+      });
+    };
+    const observer = new ResizeObserver(measure);
+    for (const target of [
+      element.closest('.play-page'),
+      element.parentElement,
+      document.querySelector('.system-bar'),
+    ]) {
+      if (target) observer.observe(target);
+    }
+    window.addEventListener('resize', measure);
+    window.visualViewport?.addEventListener('resize', measure);
+    measure();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+      window.visualViewport?.removeEventListener('resize', measure);
+      element.style.removeProperty('--home-chat-space');
+    };
+  }, [fitViewport]);
   useEffect(() => {
     setDrafts({});
     setError('');
@@ -37,7 +79,8 @@ export function ChannelChat({ compact = false }: { compact?: boolean }) {
   return (
     <LocaleView>
       <section
-        className={`menu-window main-chat ${compact ? 'chat-compact' : ''}`}
+        ref={root}
+        className={`menu-window main-chat ${compact ? 'chat-compact' : ''} ${fitViewport ? 'chat-fits-viewport' : ''}`}
         aria-labelledby="main-chat-title"
       >
         <div className="channel-heading">

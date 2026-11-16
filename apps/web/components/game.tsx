@@ -338,7 +338,7 @@ export function Game() {
                     </button>
                   ))}
                 </div>
-                <MainChat />
+                <MainChat fitViewport />
               </section>
             </div>
             <div className="build-label">

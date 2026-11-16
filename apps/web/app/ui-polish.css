@@ -188,7 +188,7 @@ textarea:hover {
 /* The title, command menu, deck and chat form one compact game lobby. */
 .title-screen.play-page {
   max-width: 1240px;
-  padding: 24px 28px 72px;
+  padding: 24px 28px 20px;
 }
 .title-screen .game-title {
   margin: 0 0 26px;
@@ -311,9 +311,36 @@ textarea:hover {
 }
 .title-screen .main-chat .chat-messages,
 .title-screen .main-chat .chat-user-list {
-  height: max(436px, calc(100dvh - 600px));
-  min-height: 436px;
-  max-height: none;
+  height: 360px;
+  min-height: 360px;
+  max-height: 360px;
+}
+@media (min-width: 1001px) {
+  .title-screen .chat-fits-viewport {
+    display: flex;
+    flex-direction: column;
+    height: var(--home-chat-space, calc(100dvh - 480px));
+    min-height: 0;
+  }
+  .title-screen .chat-fits-viewport .public-chat-body {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .title-screen .chat-fits-viewport .chat-messages,
+  .title-screen .chat-fits-viewport .chat-user-list {
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+  }
+  .title-screen .chat-fits-viewport .chat-user-list > div {
+    min-height: 0;
+  }
+  .title-screen
+    .chat-fits-viewport
+    :is(.channel-heading, .chat-compose, .chat-registration, .error-message) {
+    flex: none;
+  }
 }
 @media (min-width: 681px) {
   .title-screen .main-chat .chat-message {

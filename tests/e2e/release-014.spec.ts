@@ -24,21 +24,23 @@ test.beforeAll(async () => {
 test.afterAll(async () => {
   await platform?.app.close();
 });
-async function player(browser: Browser) {
+async function player(browser: Browser, registered = true) {
   const n = ++serial;
   const r = await platform.app.inject({
     method: 'POST',
-    url: '/api/auth/sign-up/email',
+    url: registered ? '/api/auth/sign-up/email' : '/api/auth/sign-in/anonymous',
     remoteAddress: `198.19.14.${n}`,
     headers: { origin: 'http://127.0.0.1:3000' },
-    payload: {
-      name: `Release tester ${n}`,
-      email: `release014-${n}@test.invalid`,
-      password: 'isolated-release014-password',
-    },
+    payload: registered
+      ? {
+          name: `Release tester ${n}`,
+          email: `release014-${n}@test.invalid`,
+          password: 'isolated-release014-password',
+        }
+      : {},
   });
   expect(r.statusCode, r.body).toBe(200);
-  const actor = { ...r.json().user, isAnonymous: false },
+  const actor = { ...r.json().user, isAnonymous: !registered },
     token = String(r.headers['set-auth-token']);
   let profile = await platform.store.profile(actor);
   for (const pack of await platform.store.economy.list(profile.id))
@@ -89,6 +91,85 @@ async function player(browser: Browser) {
 async function fits(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 }
+test('keeps the complete home chat and composer inside the desktop viewport for guests and accounts', async ({
+  browser,
+}, info) => {
+  test.skip(info.project.name === 'mobile', 'The narrow home layout scrolls normally.');
+  test.setTimeout(90000);
+  for (const registered of [true, false]) {
+    const c = await player(browser, registered);
+    const errors: string[] = [];
+    c.page.on('pageerror', (error) => errors.push(error.message));
+    try {
+      await c.page.route('**/api/social', async (route) => {
+        const response = await route.fetch();
+        const data = await response.json();
+        data.chat = Array.from({ length: 16 }, (_, n) => ({
+          id: `viewport-chat-${n}`,
+          playerId: c.profile.id,
+          name: 'Tavern player',
+          title: 'Challenger',
+          avatar: c.cards[0],
+          body: `Short message ${n + 1}.`,
+          channel: 'general',
+          createdAt: new Date().toISOString(),
+        }));
+        await route.fulfill({ response, json: data });
+      });
+      await c.page.goto('/');
+      const chat = c.page.locator('.title-screen .main-chat');
+      await expect(chat.locator('.chat-message')).toHaveCount(16);
+      for (const language of ['en', 'fr']) {
+        if (language === 'fr') await french(c.page);
+        for (const [width, height] of [
+          [1894, 926],
+          [1920, 1080],
+          [1440, 900],
+          [1366, 768],
+          [1280, 720],
+        ]) {
+          await c.page.setViewportSize({ width, height });
+          await c.page.evaluate(() => scrollTo(0, 0));
+          await expect
+            .poll(async () => {
+              const box = (await chat.boundingBox())!;
+              return Math.abs(box.y + box.height - height + 76);
+            })
+            .toBeLessThan(2);
+          await expect(chat).toBeInViewport({ ratio: 1 });
+          await expect(chat.locator('.chat-compose')).toBeInViewport({ ratio: 1 });
+          const submit = chat.locator('.chat-compose button');
+          expect(
+            await submit.evaluate((el) => {
+              const box = el.getBoundingClientRect();
+              const target = document.elementFromPoint(
+                box.x + box.width / 2,
+                box.y + box.height / 2,
+              );
+              return target === el || (!!target && el.contains(target));
+            }),
+          ).toBe(true);
+          const log = chat.locator('.chat-messages');
+          expect(await log.evaluate((el) => el.clientHeight)).toBeGreaterThanOrEqual(100);
+          await log.evaluate((el) => {
+            el.scrollTop = el.scrollHeight;
+          });
+          expect(await log.evaluate((el) => el.scrollTop > 0)).toBe(true);
+          await fits(c.page);
+          await c.page.screenshot({
+            path: info.outputPath(
+              `home-fit-${registered ? 'account' : 'guest'}-${width}-${height}-${language}.png`,
+            ),
+          });
+        }
+      }
+      expect(errors).toEqual([]);
+    } finally {
+      await c.context.close();
+    }
+  }
+});
+
 async function french(page: Page) {
   await page.getByRole('button', { name: 'Language: English' }).click();
   await page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
