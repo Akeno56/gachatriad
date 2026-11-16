@@ -93,6 +93,24 @@ async function french(page: Page) {
   await page.getByRole('button', { name: 'Language: English' }).click();
   await page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
 }
+test('keeps a saved server connection stable across page reloads', async ({ browser }) => {
+  const c = await player(browser),
+    errors: string[] = [];
+  c.page.on('pageerror', (error) => errors.push(error.message));
+  try {
+    for (let n = 0; n < 2; n++) {
+      if (n === 0) await c.page.goto('/puzzle');
+      else await c.page.reload();
+      await expect(c.page.locator('.account-control')).toHaveText('Logout');
+      await expect(
+        c.page.getByRole('button', { name: 'Reveal today’s puzzle', exact: true }),
+      ).toBeEnabled();
+    }
+    expect(errors).toEqual([]);
+  } finally {
+    await c.context.close();
+  }
+});
 test('aligns the three profile ratings in English and narrow French', async ({ browser }, info) => {
   const c = await player(browser);
   try {

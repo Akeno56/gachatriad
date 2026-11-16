@@ -48,4 +48,6 @@ These are short local measurements. They do not reproduce the earlier Wi-Fi/HTTP
 
 Logs and the latest browser artifacts are retained under ignored `.cache/release014-*`. The final complete regression run passed **188 checks across 34 files**. Two stateful/randomized fixtures were hardened during verification: requeue checks now clean up their waiting lobby, and the Holo exchange fixture avoids requesting the base card it asserts unchanged.
 
-Workspace type checks, the standalone hosted build and the earlier GitHub Pages build passed. Formatting and whitespace checks passed before handoff. No production data was modified; no commit, push or deployment was performed.
+Workspace type checks, the standalone hosted build and the earlier GitHub Pages build passed. Formatting and whitespace checks passed before handoff. The implementation was subsequently committed and published to GitHub Pages at the user's request, using the separate PC test backend. No production data or VPS deployment was changed.
+
+The public Pages check exposed an account-button hydration mismatch when a browser had a saved server address: exported HTML showed Login/Register while the first browser render showed Connecting. The initial label now uses build-time configuration, then reads the saved connection after mounting. A saved-connection/reload regression and the public preview smoke check cover this case.

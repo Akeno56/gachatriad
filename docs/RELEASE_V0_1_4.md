@@ -30,4 +30,4 @@ The home page links to the daily puzzle and offers both Draft queues. Queue noti
 
 Migration 019 runs through the existing server migration path. Back up persistent server data before a normal deployment. There is no account, inventory or existing rating reset. Build the hosted site with the normal production origin, and deploy frontend and server together so the new routes and profile field are available.
 
-Validation results are recorded in [AUDIT_V0_1_4.md](AUDIT_V0_1_4.md). These changes have not been committed, pushed or deployed by Codex.
+Validation results are recorded in [AUDIT_V0_1_4.md](AUDIT_V0_1_4.md). The GitHub Pages preview is published separately from the VPS; see [PREVIEW_V0_1_4.md](PREVIEW_V0_1_4.md). Production has not been deployed by Codex.

@@ -13,6 +13,7 @@ import {
   sessionToken,
   profileKey,
   clearToken,
+  STATIC_BUILD,
 } from '../lib/connection';
 const Context = createContext<{
   profile: ProfileView | null;
@@ -160,6 +161,9 @@ export function AccountMenu() {
     [message, setMessage] = useState(''),
     [pending, setPending] = useState(false);
   const ref = useRef<HTMLDialogElement>(null);
+  // Saved server addresses exist only in the browser. Match exported HTML first.
+  const [configured, setConfigured] = useState(!STATIC_BUILD || !!process.env.NEXT_PUBLIC_API_URL);
+  useEffect(() => setConfigured(serverConfigured()), []);
   useEffect(() => {
     if (open) ref.current?.showModal();
     else ref.current?.close();
@@ -210,7 +214,7 @@ export function AccountMenu() {
         >
           {profile?.registered
             ? 'Logout'
-            : !profile && serverConfigured() && !error
+            : !profile && configured && !error
               ? 'Connecting…'
               : 'Login/Register'}
         </button>
