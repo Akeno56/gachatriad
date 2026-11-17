@@ -20,6 +20,14 @@ Results group the outcome, player identities, score, reward and rating change. P
 
 Queue again leaves the settled result before entering the same queue. Custom games keep their rematch action. Pending Trade One transfers block queueing and returning to the tavern until settlement; review-board access remains available. The server retains all eligibility and settlement checks. No new reward, rating or inventory rules are introduced.
 
+## Spectating
+
+Spectators have a prominent exit above the score. A completed public match opens a summary with both players, the winner or draw, score, rules, saved starting decks and the exact recorded Elo change for each player. The large lobby-return action stays visible while the decks scroll. Closing the summary allows board review and reopening match details.
+
+The summary uses a compact header on taller desktop screens and a side column on short, wide screens. Both desktop deck rows retain their card dimensions; phones scroll the deck lists within the dialog while keeping the lobby-return action visible.
+
+The spectator API exposes starting decks only after completion and retains its public-lobby authorization check. Draft pools, live hidden hands and participant settlement actions remain private. Elo comes from the match audit, so later games cannot change the displayed result. Unrated matches report no Elo change; an older backend reports unavailable details rather than inventing data.
+
 ## Deployment
 
-This frontend release uses existing API routes and requires no new database migration or environment variables. The normal hosted updater still deploys frontend and backend together and preserves production data. GitHub Pages testing is separate from the production VPS.
+The completed spectator summary extends the existing spectator API response. Deploy frontend and backend together to provide its saved decks and Elo audits. No database migration or new environment variables are required. The normal hosted updater preserves production data. GitHub Pages testing is separate from the production VPS.

@@ -270,6 +270,123 @@ async function finishWith(matchId: string, target: 0 | 'draw') {
   }
 }
 
+test('gives spectators a central exit and opens saved match details after the live finish', async ({
+  browser,
+}, info) => {
+  const a = await player(browser),
+    b = await player(browser),
+    watcher = await player(browser, false);
+  try {
+    for (const c of [a, b]) await platform.store.acknowledgeRanked(c.profile.id);
+    await platform.store.createLobby(a.profile, { mode: 'ranked', allowBots: false });
+    const { matchId } = await platform.store.createLobby(b.profile, {
+      mode: 'ranked',
+      allowBots: false,
+    });
+    await watcher.page.goto(`/?spectate=${matchId}`);
+    await expect(watcher.page.locator('.spectator-screen .board-cell')).toHaveCount(9);
+    await expect(watcher.page.locator('.spectator-summary')).toHaveCount(0);
+    await expect(watcher.page.locator('.spectator-screen .card-back')).toHaveCount(10);
+    const exit = watcher.page.locator('.spectator-exit');
+    await expect(exit).toBeInViewport({ ratio: 1 });
+    await watcher.page.screenshot({ path: info.outputPath('spectator-live-exit.png') });
+    const exitBox = (await exit.boundingBox())!,
+      score = (await watcher.page.locator('.scoreboard').boundingBox())!;
+    expect(exitBox.y + exitBox.height).toBeLessThanOrEqual(score.y);
+    expect(Math.abs(exitBox.x + exitBox.width / 2 - score.x - score.width / 2)).toBeLessThan(3);
+    await exit.click();
+    await expect(watcher.page).toHaveURL(/\/lobbies\/?$/);
+    await watcher.page.goto(`/?spectate=${matchId}`);
+    await expect(watcher.page.locator('.board-cell')).toHaveCount(9);
+    await platform.store.resign(b.profile.id, matchId!);
+    const result = watcher.page.locator('.spectator-summary[open]');
+    await expect(result).toBeVisible();
+    await expect(result.locator('#spectator-result-title')).toBeFocused();
+    await expect(result.locator('.spectator-winner')).toContainText(a.profile.name);
+    await expect(result.locator('.spectator-deck-cards .playing-card')).toHaveCount(10);
+    if (info.project.name === 'desktop') {
+      for (const height of [900, 720]) {
+        await watcher.page.setViewportSize({ width: 1366, height });
+        await expect
+          .poll(() =>
+            result
+              .locator('.spectator-starting-decks')
+              .evaluate((el) => el.scrollHeight - el.clientHeight),
+          )
+          .toBeLessThanOrEqual(2);
+        const close = (await result.locator('.dialog-close').boundingBox())!;
+        const rating = (await result.locator('.spectator-rating').first().boundingBox())!;
+        expect(rating.y >= close.y + close.height || rating.x + rating.width <= close.x).toBe(true);
+      }
+      await watcher.page.setViewportSize({ width: 1366, height: 900 });
+    }
+    await expect(result.locator('.spectator-rating').nth(0)).toContainText('+16 Elo');
+    await expect(result.locator('.spectator-rating').nth(1)).toContainText('-16 Elo');
+    await expect(result.locator('.rule-badges')).toContainText('Closed');
+    await expect(
+      result.getByRole('button', { name: 'Back to lobbies', exact: true }),
+    ).toBeInViewport({ ratio: 1 });
+    await fits(watcher.page);
+    await watcher.page.screenshot({ path: info.outputPath('spectator-result-en.png') });
+    await result.getByRole('button', { name: 'Review board', exact: true }).click();
+    await expect(result).toHaveCount(0);
+    await watcher.page.getByRole('button', { name: 'Match details', exact: true }).click();
+    await expect(result).toBeVisible();
+    await watcher.context.addInitScript(() => localStorage.setItem('triad-language', 'fr'));
+    if (info.project.name === 'mobile')
+      await watcher.page.setViewportSize({ width: 320, height: 844 });
+    else await watcher.page.setViewportSize({ width: 1280, height: 720 });
+    await watcher.page.reload();
+    await expect(result).toBeVisible();
+    await expect(result.getByText('Deck de départ', { exact: true })).toHaveCount(2);
+    await fits(watcher.page);
+    const back = result.getByRole('button', { name: 'Retour aux salons', exact: true });
+    await expect(back).toBeInViewport({ ratio: 1 });
+    await watcher.page.screenshot({ path: info.outputPath('spectator-result-fr.png') });
+    await back.click();
+    await expect(watcher.page).toHaveURL(/\/lobbies\/?$/);
+    expect((await platform.store.profile(watcher.actor)).activeMatchId).toBeNull();
+  } finally {
+    await a.context.close();
+    await b.context.close();
+    await watcher.context.close();
+  }
+});
+
+test('shows spectators a draw with no Elo change and both original decks', async ({
+  browser,
+}, info) => {
+  const a = await player(browser),
+    b = await player(browser),
+    watcher = await player(browser, false);
+  try {
+    const { lobbyId } = await platform.store.createLobby(a.profile, {
+      mode: 'custom',
+      rules: { allOpen: false },
+      allowBots: false,
+    });
+    const { matchId } = await platform.store.joinLobby(b.profile, lobbyId!);
+    await finishWith(matchId!, 'draw');
+    await watcher.page.goto(`/?spectate=${matchId}`);
+    const result = watcher.page.locator('.spectator-summary[open]');
+    await expect(result.locator('.spectator-winner')).toHaveText('Draw');
+    await expect(result.locator('.spectator-deck-cards .playing-card')).toHaveCount(10);
+    await expect(result.locator('.spectator-rating')).toHaveText([
+      'No Elo change.',
+      'No Elo change.',
+    ]);
+    await expect(result.locator('.spectator-final-score')).toContainText('5 — 5');
+    await expect(
+      result.getByRole('button', { name: 'Back to lobbies', exact: true }),
+    ).toBeInViewport({ ratio: 1 });
+    await watcher.page.screenshot({ path: info.outputPath('spectator-draw.png') });
+  } finally {
+    await a.context.close();
+    await b.context.close();
+    await watcher.context.close();
+  }
+});
+
 test('shows saved win and draw rewards and returns to the tavern without awarding twice', async ({
   browser,
 }, info) => {

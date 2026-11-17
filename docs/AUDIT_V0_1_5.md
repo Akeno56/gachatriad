@@ -4,7 +4,7 @@ This release changes the tavern home, shared controls and match results. It uses
 
 ## Automated checks
 
-- All 191 unit/server tests pass across 35 files, including two match-highlight tests against an actual engine replay.
+- All 192 unit/server tests pass across 35 files, including match-highlight checks against an actual engine replay and completed spectator-summary privacy checks.
 - Workspace type checks and the standalone hosted static export pass.
 - The final targeted browser run passes 19 scenarios; one desktop-only viewport scenario is intentionally skipped in the mobile project.
 - Browser scenarios use isolated test accounts and local servers. New test contexts block production requests.
@@ -14,6 +14,8 @@ This release changes the tavern home, shared controls and match results. It uses
 - Keyboard checks exercise arrow/Home/End tabs, dialog initial focus and focus restoration, and Escape dismissing a tooltip without closing its modal.
 - The relocated rulebook Combo lesson retains its two-sided capture animation and game effect preferences. Existing rule animations and Shared Draft layout/chat/sorting remain covered.
 - Daily notice requests are bounded independently of profile polling. Translation scanning finds no missing new prose or duplicate dictionary keys; remaining new unchanged templates are numeric Elo text and the Trade One rule name.
+
+The spectator follow-up verifies a central exit before completion, automatic result presentation, both saved five-card decks, both exact Elo deltas, draw/unrated outcomes, reopening after board review, lobby return and narrow French layouts. Both deck rows fit without vertical clipping at desktop heights of 900px and 720px, and the close button clears the Elo text. Server checks preserve hidden live hands and private-lobby authorization after completion. They also verify that later rating changes do not rewrite an earlier match's displayed Elo outcome.
 
 ## Visual review and limits
 

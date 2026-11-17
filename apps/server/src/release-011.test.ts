@@ -202,6 +202,10 @@ it('keeps Season 0 Ranked and Draft records separate and exposes the exact store
     draws: 0,
   });
   expect((await p.store.view('', matchId!, true, true)).ratedResult).toBeNull();
+  expect((await p.store.view('', matchId!, true, true)).spectatorResult?.ratings).toEqual([
+    { before: 1000, after: 1016, delta: 16 },
+    { before: 1000, after: 984, delta: -16 },
+  ]);
   expect(win.trade.pending).toBe(false);
   await p.store.createLobby(a.profile, { mode: 'draft', allowBots: false });
   const draft = await p.store.createLobby(b.profile, { mode: 'draft', allowBots: false });
@@ -216,4 +220,8 @@ it('keeps Season 0 Ranked and Draft records separate and exposes the exact store
     wins: 1,
     losses: 0,
   });
+  expect((await p.store.view('', matchId!, true, true)).spectatorResult?.ratings).toEqual([
+    { before: 1000, after: 1016, delta: 16 },
+    { before: 1000, after: 984, delta: -16 },
+  ]);
 });

@@ -845,7 +845,33 @@ export class GameStore {
           ...record,
         };
       }
+      let spectatorResult: MatchView['spectatorResult'] = null;
+      if (spectator && m.status === 'complete') {
+        const audits = await sql<{
+          profile_id: string;
+          before_rating: number;
+          after_rating: number;
+        }>('SELECT profile_id,before_rating,after_rating FROM match_ratings WHERE match_id=$1', [
+          m.id,
+        ]);
+        const rating = (id: string | null) => {
+          const audit = audits.find((row) => row.profile_id === id);
+          return audit
+            ? {
+                before: audit.before_rating,
+                after: audit.after_rating,
+                delta: audit.after_rating - audit.before_rating,
+              }
+            : null;
+        };
+        spectatorResult = {
+          season: m.season,
+          decks: [cards(m.decks[0]), cards(m.decks[1])],
+          ratings: [rating(m.player0), rating(m.player1)],
+        };
+      }
       return {
+        spectatorResult,
         sharedDraft:
           !spectator && m.shared_draft && m.status === 'drafting' && m.pools
             ? {

@@ -22,6 +22,8 @@ import { RulesContent } from './rules-content';
 import { useGameAudio, useMusicScene } from './game-shell';
 import { ElementIcon } from './element-icon';
 import { ResultOverlay } from './result-overlay';
+import { SpectatorResult } from './spectator-result';
+import { Button } from './ui';
 import { Avatar } from './avatar';
 import { TavernHome } from './tavern-home';
 import { CaptureCard } from './capture-card';
@@ -353,6 +355,15 @@ export function Game() {
                 ))}
                 {match.trade.rule === 'one' && <span>Trade One</span>}
               </div>
+              {match.spectator && (
+                <Button
+                  className="spectator-exit"
+                  variant="primary"
+                  onClick={() => location.assign(appPath('/lobbies'))}
+                >
+                  Back to lobbies
+                </Button>
+              )}
               <div className="battle-actions">
                 {profile?.isAdmin && !match.spectator && match.status !== 'complete' && (
                   <button
@@ -373,22 +384,14 @@ export function Game() {
                 <button className="text-button" onClick={() => setDialog('rules')}>
                   How to play
                 </button>
-                <button
-                  className="text-button"
-                  onClick={() =>
-                    match.spectator
-                      ? location.assign(appPath('/lobbies'))
-                      : match.status === 'complete'
-                        ? menu()
-                        : setDialog('exit')
-                  }
-                >
-                  {match.spectator
-                    ? 'Back to lobbies'
-                    : match.status === 'complete'
-                      ? 'Return to menu'
-                      : 'Leave match'}
-                </button>
+                {!match.spectator && (
+                  <button
+                    className="text-button"
+                    onClick={() => (match.status === 'complete' ? menu() : setDialog('exit'))}
+                  >
+                    {match.status === 'complete' ? 'Return to menu' : 'Leave match'}
+                  </button>
+                )}
               </div>
             </div>
             {match.status === 'drafting' && match.spectator ? (
@@ -532,10 +535,14 @@ export function Game() {
                         )}
                         <small>
                           {game.turn === other && match.status === 'playing'
-                            ? 'OPPONENT’S TURN'
-                            : match.mode === 'solo'
-                              ? 'CPU'
-                              : 'OPPONENT'}
+                            ? match.spectator
+                              ? 'PLAYING'
+                              : 'OPPONENT’S TURN'
+                            : match.spectator
+                              ? 'CHALLENGER'
+                              : match.mode === 'solo'
+                                ? 'CPU'
+                                : 'OPPONENT'}
                         </small>
                       </div>
                     </div>
@@ -628,12 +635,12 @@ export function Game() {
                             : '0 seconds: auto-play once. Miss your next turn: defeat.'}
                         </p>
                       )}
-                      {!match.spectator && match.status === 'complete' && !resultOpen && (
+                      {match.status === 'complete' && !resultOpen && (
                         <button
                           className="outline-button reopen-result"
                           onClick={() => setResultOpen(true)}
                         >
-                          View result
+                          {match.spectator ? 'Match details' : 'View result'}
                         </button>
                       )}
                       <div
@@ -701,7 +708,12 @@ export function Game() {
                     </div>
                     <div className="hand cpu-hand">
                       <div className="hand-label">
-                        OPPONENT <span>{opponent.length}/5</span>
+                        {match.spectator ? (
+                          <NoTranslate>{match.names[other]}</NoTranslate>
+                        ) : (
+                          'OPPONENT'
+                        )}{' '}
+                        <span>{opponent.length}/5</span>
                       </div>
                       <div className="hand-cards">
                         {opponent.map(({ slotId, card }) => (
@@ -730,7 +742,9 @@ export function Game() {
                     <p role="log" aria-live="polite">
                       {latest
                         ? `${match.names[latest.move.player]} played ${CARDS.find((c) => c.id === latest.move.cardId)?.name ?? 'a card'}. ${latest.captures.length} captured${latest.captures.some((c) => c.reason === 'combo') ? ' — Combo!' : ''}.`
-                        : 'Select a card, then choose an empty space.'}
+                        : match.spectator
+                          ? 'Watching a public match.'
+                          : 'Select a card, then choose an empty space.'}
                     </p>
                   </div>
                   <details className="match-history">
@@ -772,9 +786,7 @@ export function Game() {
           onCancel={() => setDialog(null)}
         >
           <div className="dialog-header">
-            <h2 id="dialog-title">
-              {dialog === 'rules' ? 'How to play' : 'Leave this match?'}
-            </h2>
+            <h2 id="dialog-title">{dialog === 'rules' ? 'How to play' : 'Leave this match?'}</h2>
             <button
               className="close-button"
               aria-label="Close dialog"
@@ -812,6 +824,13 @@ export function Game() {
           ) : null}
         </dialog>
         <CardDetail card={detail} modifier={detailModifier} onClose={() => setDetail(null)} />
+        {match?.spectator && match.status === 'complete' && !resolving && resultOpen && (
+          <SpectatorResult
+            match={match}
+            onClose={() => setResultOpen(false)}
+            onReturn={() => location.assign(appPath('/lobbies'))}
+          />
+        )}
         {!match?.spectator && match?.status === 'complete' && !resolving && resultOpen && (
           <ResultOverlay
             match={match}

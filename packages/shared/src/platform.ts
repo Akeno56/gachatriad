@@ -19,6 +19,14 @@ export interface MatchView {
     ready: readonly [boolean, boolean];
   };
   spectator?: boolean;
+  spectatorResult?: {
+    season: number;
+    decks: readonly [readonly Card[], readonly Card[]];
+    ratings: readonly [
+      { before: number; after: number; delta: number } | null,
+      { before: number; after: number; delta: number } | null,
+    ];
+  } | null;
   missedTurns?: readonly [number, number];
   chatAvailable: boolean;
   ratingApplies: boolean;

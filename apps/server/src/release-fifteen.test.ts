@@ -93,6 +93,7 @@ it('redacts both hands for spectators and never exposes private draft pools or s
     });
     const view = await p.store.view(watcher.id, id, true);
     expect(view.spectator).toBe(true);
+    expect(view.spectatorResult).toBeNull();
     expect(view.draftPool).toEqual([]);
     expect(view.trade.choices).toEqual([]);
     expect(view.trade.canClaim).toBe(false);
@@ -133,6 +134,24 @@ it('keeps invitation-only matches private while allowing the host low-detail mon
     result.json().game.hands.every((h: { card: unknown }[]) => h.every((c) => c.card === null)),
   ).toBe(true);
   await p.store.resign(a.id, id);
+  await expect(p.store.view(watcher.id, id, true)).rejects.toThrow(/spectators/);
+});
+it('reveals only the saved starting decks after a public match ends, without spectator settlement actions', async () => {
+  const { a, b, watcher, id } = await duel({ ...STANDARD });
+  const first = await p.store.view(a.id, id);
+  const second = await p.store.view(b.id, id);
+  await play(id, a.id, b.id);
+  expect((await p.store.view(watcher.id, id, true)).spectatorResult).toBeNull();
+  await p.store.resign(b.id, id);
+  const result = await p.store.view(watcher.id, id, true);
+  expect(result.spectatorResult?.decks.map((deck) => deck.map((card) => card.id))).toEqual([
+    first.game!.hands[0].map((slot) => slot.card!.id),
+    second.game!.hands[1].map((slot) => slot.card!.id),
+  ]);
+  expect(result.spectatorResult?.ratings).toEqual([null, null]);
+  expect(result.trade.choices).toEqual([]);
+  expect(result.trade.canClaim).toBe(false);
+  expect(result.rematch.matchId).toBeNull();
 });
 it('does not expose either player draft pool to spectators', async () => {
   const a = await player(),

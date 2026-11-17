@@ -1538,5 +1538,16 @@
   "Queue again directly from a settled result, or return to the tavern.": "Relancez une recherche après le règlement du duel ou retournez à la taverne.",
   "Try a chain capture yourself.": "Essayez de réaliser une capture en chaîne.",
   "Open Combo lesson": "Ouvrir la leçon Combo",
-  "Temporary cards never enter your collection.": "Les cartes temporaires ne rejoignent jamais votre collection."
+  "Temporary cards never enter your collection.": "Les cartes temporaires ne rejoignent jamais votre collection.",
+  "SPECTATOR RESULT ·": "RÉSULTAT OBSERVÉ ·",
+  "won the match": "a remporté le match",
+  "Starting deck": "Deck de départ",
+  "Close match details": "Fermer les détails du match",
+  "Match details": "Détails du match",
+  "Elo details unavailable.": "Les détails de l’Elo sont indisponibles.",
+  "Starting deck details unavailable.": "Les détails du deck de départ sont indisponibles.",
+  "No hand was locked before this match ended.": "Aucune main n’a été validée avant la fin de ce match.",
+  "{0} starting deck": "Deck de départ de {0}",
+  "Match complete": "Match terminé",
+  "Watching a public match.": "Observation d’un match public."
 }
