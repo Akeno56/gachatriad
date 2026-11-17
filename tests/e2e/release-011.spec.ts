@@ -307,9 +307,11 @@ test('uses custom presets in Lobbies and fits more readable cards in the compact
     expect(boxes[0].height).toBeLessThanOrEqual(mobile ? 232 : 272);
     await page.screenshot({ path: info.outputPath('compact-cards.png'), fullPage: true });
     await page.goto('/collection');
+    await expect(page.locator('.saved-deck')).toHaveCount(0);
+    await expect(page.locator('.catalog-grid .playing-card').first()).toBeVisible();
     expect(
-      (await page.locator('.deck-preview .playing-card').first().boundingBox())!.height,
-    ).toBeLessThanOrEqual(182);
+      (await page.locator('.catalog-grid .playing-card').first().boundingBox())!.height,
+    ).toBeLessThanOrEqual(mobile ? 232 : 272);
     await page.screenshot({ path: info.outputPath('compact-collection.png'), fullPage: true });
     await page.goto('/boosters');
     await expect(page.locator('.booster-tile-art').first()).toBeVisible();

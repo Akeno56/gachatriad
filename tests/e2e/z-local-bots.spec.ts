@@ -70,9 +70,10 @@ test('populates labeled bots, joins a real bot duel, preserves guest progress an
   await expect(page.locator('.trade-offer')).toHaveCount(1);
   await page.getByRole('button', { name: 'Cancel offer', exact: true }).click();
   await expect(page.locator('.trade-offer')).toHaveCount(0);
-  await navigateTo(page, 'Collection');
+  await navigateTo(page, 'Decks');
   await page.getByRole('button', { name: 'Auto build', exact: true }).click();
-  await expect(page.locator('.saved-deck')).toContainText('Ready for battle.');
+  await page.getByRole('button', { name: 'Save & use', exact: true }).click();
+  await expect(page.locator('.builder-hand-status')).toContainText('Active deck');
   await page.getByRole('link', { name: 'Achievements', exact: true }).click();
   await expect(
     page.locator('.achievement.is-unlocked').filter({ hasText: 'Card Player' }),

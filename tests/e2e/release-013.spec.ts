@@ -99,35 +99,35 @@ test('protects unsaved decks, recovers after reload, and discards only when requ
   const c = await player(browser);
   try {
     await c.page.goto('/cards');
-    await c.page.goto('/collection');
-    await expect(c.page.locator('.deck-preview button')).toHaveCount(5);
-    await c.page.locator('.deck-preview button').first().click();
-    await expect(c.page.locator('.deck-unsaved')).toBeVisible();
+    await c.page.goto('/decks');
+    await expect(c.page.locator('.builder-hand-slots .playing-card')).toHaveCount(5);
+    await c.page.locator('.builder-remove-card').first().click();
+    await expect(c.page.locator('.builder-hand-status')).toContainText('Unsaved changes');
     await navigate(c.page, '/cards');
     const warning = c.page.getByRole('dialog', { name: 'Unsaved deck changes' });
     await expect(warning).toBeVisible();
     await expect(
       warning.getByRole('button', { name: 'Save and leave', exact: true }),
-    ).toBeDisabled();
+    ).toBeEnabled();
     await warning.getByRole('button', { name: 'Keep editing', exact: true }).click();
-    await expect(c.page).toHaveURL(/collection/);
+    await expect(c.page).toHaveURL(/decks/);
     await c.page.reload();
-    await expect(c.page.locator('.deck-preview button')).toHaveCount(4);
-    await expect(c.page.locator('.deck-unsaved')).toBeVisible();
+    await expect(c.page.locator('.builder-hand-slots .playing-card')).toHaveCount(4);
+    await expect(c.page.locator('.builder-hand-status')).toContainText('Unsaved changes');
     expect((await platform.store.profile(c.actor)).deck).toEqual(c.profile.deck);
     await c.page.goBack();
     await expect(c.page).toHaveURL(/cards/);
     await c.page.goForward();
-    await expect(c.page.locator('.deck-preview button')).toHaveCount(4);
-    await expect(c.page.locator('.deck-unsaved')).toBeVisible();
+    await expect(c.page.locator('.builder-hand-slots .playing-card')).toHaveCount(4);
+    await expect(c.page.locator('.builder-hand-status')).toContainText('Unsaved changes');
     await navigate(c.page, '/cards');
     await expect(warning).toBeVisible();
     await c.page.screenshot({ path: info.outputPath('unsaved-deck.png'), caret: 'initial' });
     await warning.getByRole('button', { name: 'Discard changes', exact: true }).click();
     await expect(c.page).toHaveURL(/cards/);
-    await navigate(c.page, '/collection');
-    await expect(c.page.locator('.deck-preview button')).toHaveCount(5);
-    await expect(c.page.locator('.deck-unsaved')).toHaveCount(0);
+    await navigate(c.page, '/decks');
+    await expect(c.page.locator('.builder-hand-slots .playing-card')).toHaveCount(5);
+    await expect(c.page.locator('.builder-hand-status')).not.toContainText('Unsaved changes');
   } finally {
     await c.context.close();
   }
@@ -135,33 +135,38 @@ test('protects unsaved decks, recovers after reload, and discards only when requ
 test('keeps a failed save in the editor, then saves once before leaving', async ({ browser }) => {
   const c = await player(browser);
   try {
-    await c.page.goto('/collection');
-    await expect(c.page.locator('.deck-preview button')).toHaveCount(5);
-    await c.page.locator('.deck-preview button').first().click();
+    await c.page.goto('/decks');
+    await expect(c.page.locator('.builder-hand-slots .playing-card')).toHaveCount(5);
+    await c.page.locator('.builder-remove-card').first().click();
+    await c.page.getByRole('searchbox', { name: 'Find a card', exact: true }).fill(c.cards[5].name);
     await c.page
-      .locator('.catalog-grid')
-      .getByRole('button', { name: `Add ${c.cards[5].name}`, exact: true })
+      .locator('.builder-card-library article')
+      .filter({
+        has: c.page.getByRole('button', { name: `Inspect ${c.cards[5].name}`, exact: true }),
+      })
+      .getByRole('button', { name: 'Add to deck', exact: true })
       .click();
     await navigate(c.page, '/cards');
     const warning = c.page.getByRole('dialog', { name: 'Unsaved deck changes' });
-    await c.page.route('**/api/deck', (route) => route.abort());
+    await c.page.route('**/api/deck-loadouts', (route) => route.abort());
     await warning.getByRole('button', { name: 'Save and leave', exact: true }).click();
     await expect(warning.getByRole('alert')).not.toBeEmpty();
-    await expect(c.page).toHaveURL(/collection/);
+    await expect(c.page).toHaveURL(/decks/);
     expect((await platform.store.profile(c.actor)).deck).toEqual(c.profile.deck);
-    await c.page.unroute('**/api/deck');
+    await c.page.unroute('**/api/deck-loadouts');
     let saves = 0;
     c.page.on('request', (request) => {
-      if (request.method() === 'POST' && request.url().endsWith('/api/deck')) saves++;
+      if (request.method() === 'POST' && request.url().endsWith('/api/deck-loadouts')) saves++;
     });
     await warning.getByRole('button', { name: 'Save and leave', exact: true }).click();
     await expect(c.page).toHaveURL(/cards/);
-    await expect(c.page.locator('.action-notice')).toContainText('Deck saved.');
     expect(saves).toBe(1);
-    expect((await platform.store.profile(c.actor)).deck).toEqual([
-      ...c.profile.deck.slice(1),
-      c.cards[5].id,
-    ]);
+    expect((await platform.store.profile(c.actor)).deck).toEqual(c.profile.deck);
+    const result = await platform.app.inject({
+      url: '/api/deck-loadouts',
+      headers: { authorization: `Bearer ${c.token}` },
+    });
+    expect(result.json().loadouts[0].cards).toEqual([...c.profile.deck.slice(1), c.cards[5].id]);
   } finally {
     await c.context.close();
   }

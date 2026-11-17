@@ -104,6 +104,116 @@ async function french(page: Page) {
   await page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
 }
 
+for (const choice of ['Save and leave', 'Discard changes']) {
+  test(`Pages navigation returns home after ${choice}`, async ({ browser }) => {
+    const c = await player(browser);
+    const base = process.env.PREVIEW_BASE_PATH ?? '';
+    try {
+      await c.page.goto(`${base}/decks/`);
+      const name = c.page.getByRole('textbox', { name: 'Loadout name', exact: true });
+      await expect(name).toBeEnabled();
+      await name.fill('Navigation regression');
+      await c.page.getByRole('link', { name: 'Back to play', exact: true }).click();
+      const warning = c.page.getByRole('dialog', { name: 'Unsaved deck changes' });
+      await expect(warning).toBeVisible();
+      await warning.getByRole('button', { name: choice, exact: true }).click();
+      await expect(c.page.locator('.tavern-sign')).toBeVisible();
+      expect(new URL(c.page.url()).pathname).toBe(`${base}/`);
+      expect((await c.page.reload())!.status()).toBe(200);
+      await expect(c.page.locator('.tavern-sign')).toBeVisible();
+      expect((await platform.store.profile(c.actor)).deck).toEqual(c.profile.deck);
+      const saved = (
+        await platform.app.inject({
+          url: '/api/deck-loadouts',
+          headers: { authorization: `Bearer ${c.token}` },
+        })
+      ).json().loadouts;
+      expect(saved).toHaveLength(choice === 'Save and leave' ? 1 : 0);
+    } finally {
+      await c.context.close();
+    }
+  });
+}
+
+test('workshop help stays inside its scroll panel in English and French', async ({
+  browser,
+}, info) => {
+  const c = await player(browser);
+  try {
+    await c.page.goto(`${process.env.PREVIEW_BASE_PATH ?? ''}/decks/`);
+    await expect(c.page.getByRole('textbox', { name: 'Loadout name', exact: true })).toBeEnabled();
+    await c.page.getByRole('tab', { name: 'Deck outlook', exact: true }).click();
+    for (const language of ['en', 'fr']) {
+      if (language === 'fr') {
+        await french(c.page);
+        if (info.project.name === 'mobile')
+          await c.page.setViewportSize({ width: 320, height: 844 });
+      }
+      const trigger = c.page.locator('.builder-outlook .ui-help-trigger');
+      await trigger.focus();
+      if (info.project.name === 'desktop') await trigger.hover();
+      const tooltip = c.page.locator('.builder-outlook [role=tooltip]');
+      await expect(tooltip).toBeVisible();
+      const tip = (await tooltip.boundingBox())!,
+        button = (await trigger.boundingBox())!,
+        panel = (await c.page.locator('.builder-outlook').boundingBox())!;
+      expect(tip.y).toBeGreaterThan(button.y + button.height);
+      expect(tip.x).toBeGreaterThanOrEqual(panel.x);
+      expect(tip.x + tip.width).toBeLessThanOrEqual(panel.x + panel.width);
+      expect(tip.y + tip.height).toBeLessThanOrEqual(panel.y + panel.height);
+      await fits(c.page);
+      await c.page.screenshot({
+        path: info.outputPath(`workshop-help-${language}.png`),
+        fullPage: true,
+      });
+      await c.page.keyboard.press('Escape');
+      await expect(tooltip).toBeHidden();
+    }
+  } finally {
+    await c.context.close();
+  }
+});
+
+test('Collection inventory opens card details without editing the active deck', async ({
+  browser,
+}, info) => {
+  const c = await player(browser);
+  try {
+    await c.page.goto(`${process.env.PREVIEW_BASE_PATH ?? ''}/collection/`);
+    await expect(c.page.locator('.catalog-grid article').first()).toBeVisible();
+    await expect(
+      c.page.locator('.saved-deck, .deck-preview, .collection-workshop-shortcut'),
+    ).toHaveCount(0);
+    await expect(c.page.getByRole('button', { name: 'Save deck', exact: true })).toHaveCount(0);
+    await expect(
+      c.page.getByRole('link', { name: 'Open deck workshop', exact: true }),
+    ).toBeVisible();
+    await c.page.getByRole('searchbox', { name: 'Find a card', exact: true }).fill(c.cards[0].name);
+    const card = c.page
+      .locator('.catalog-grid')
+      .getByRole('button', { name: `Inspect ${c.cards[0].name}`, exact: true });
+    await expect(card).toBeEnabled();
+    await card.click();
+    await expect(c.page.getByRole('dialog', { name: c.cards[0].name, exact: true })).toBeVisible();
+    await c.page.getByRole('button', { name: 'Close card detail', exact: true }).click();
+    expect((await platform.store.profile(c.actor)).deck).toEqual(c.profile.deck);
+    await french(c.page);
+    if (info.project.name === 'mobile') await c.page.setViewportSize({ width: 320, height: 844 });
+    await fits(c.page);
+    await c.page.evaluate(() => scrollTo(0, 0));
+    await expect(c.page.locator('.collection-page-heading')).toBeInViewport({ ratio: 1 });
+    await c.page.screenshot({
+      path: info.outputPath('collection-inventory-fr.png'),
+      fullPage: true,
+    });
+    await c.page.getByRole('link', { name: 'Ouvrir l’atelier de decks', exact: true }).click();
+    await expect(c.page.locator('.builder-page-heading h1')).toHaveText('Atelier de decks');
+    await expect(c.page.locator('.deck-leave-dialog[open]')).toHaveCount(0);
+  } finally {
+    await c.context.close();
+  }
+});
+
 test('saves, replaces, copies and activates named decks without changing inventory', async ({
   browser,
 }, info) => {

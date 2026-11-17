@@ -1,64 +1,9 @@
 'use client';
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { ProfileView } from '@gacha-triad/shared/platform';
-import { ALL_CARDS } from '@gacha-triad/shared';
-import { browseKey } from './browse-preferences';
 import { LocaleView } from './i18n';
-const known = new Set(ALL_CARDS.map((card) => card.id));
-const valid = (value: unknown): value is string[] =>
-  Array.isArray(value) &&
-  value.length <= 5 &&
-  value.every((id) => typeof id === 'string' && known.has(id)) &&
-  new Set(value).size === value.length;
-export function useDeckEditor(profile: ProfileView | null) {
-  const key = profile ? browseKey('deck-draft', profile.id) : '';
-  const serverDeck = profile?.deck ?? [],
-    signature = serverDeck.join('|');
-  const [state, setState] = useState({ owner: '', cards: [] as string[], base: [] as string[] });
-  useEffect(() => {
-    if (!key) return;
-    setState((current) => {
-      if (current.owner === key)
-        return {
-          owner: key,
-          cards: current.cards.join('|') === current.base.join('|') ? serverDeck : current.cards,
-          base: serverDeck,
-        };
-      try {
-        const saved = JSON.parse(sessionStorage.getItem(key) ?? 'null');
-        if (valid(saved?.cards)) return { owner: key, cards: saved.cards, base: serverDeck };
-      } catch {}
-      return { owner: key, cards: serverDeck, base: serverDeck };
-    });
-  }, [key, signature]);
-  const deck = state.owner === key ? state.cards : serverDeck;
-  const dirty = !!profile && state.owner === key && deck.join('|') !== state.base.join('|');
-  useEffect(() => {
-    if (!key || state.owner !== key) return;
-    try {
-      if (dirty) sessionStorage.setItem(key, JSON.stringify({ cards: deck }));
-      else sessionStorage.removeItem(key);
-    } catch {}
-  }, [key, state, dirty]);
-  const setDeck: Dispatch<SetStateAction<string[]>> = (next) =>
-    setState((current) => ({
-      owner: key,
-      base: current.owner === key ? current.base : serverDeck,
-      cards:
-        typeof next === 'function'
-          ? next(current.owner === key ? current.cards : serverDeck)
-          : next,
-    }));
-  const saved = (cards: string[]) => setState({ owner: key, cards, base: cards });
-  const discard = () => {
-    saved(serverDeck);
-    try {
-      sessionStorage.removeItem(key);
-    } catch {}
-  };
-  return { deck, setDeck, dirty, saved, discard };
-}
+import { APP_BASE } from '../lib/connection';
+import { routeWithinBase } from '../lib/navigation';
 export function DeckLeaveWarning({
   dirty,
   canSave,
@@ -132,8 +77,9 @@ export function DeckLeaveWarning({
     leaving.current = true;
     const target = new URL(destination);
     setDestination(null);
-    if (target.origin === location.origin)
-      router.push(target.pathname + target.search + target.hash);
+    const route = routeWithinBase(target.pathname, APP_BASE);
+    if (target.origin === location.origin && route !== null)
+      router.push(route + target.search + target.hash);
     else location.assign(target.href);
   }
   return (

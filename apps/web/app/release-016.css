@@ -496,6 +496,27 @@
   overflow: auto;
   padding: 12px 14px;
 }
+.deck-workspace .ui-tooltip {
+  top: calc(100% + 8px);
+  bottom: auto;
+}
+.collection-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.collection-page-heading h1 {
+  margin: 0;
+  color: var(--gold);
+  font: 42px/1 var(--pixel);
+}
+.collection-page-heading .outline-button {
+  min-height: 34px;
+  padding: 5px 12px;
+  font-size: 21px;
+}
 .deck-outlook-summary {
   font: 13px/1.4 var(--sans);
   color: #c6d4e8;
@@ -593,23 +614,6 @@
 }
 .builder-confirm-dialog h2:focus {
   outline: none;
-}
-.collection-workshop-shortcut {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 12px 16px;
-  margin: 12px 0;
-}
-.collection-workshop-shortcut p {
-  margin: 4px 0;
-  color: #b0c6e6;
-}
-.collection-workshop-shortcut .primary-button {
-  flex: none;
-  font-size: 22px;
-  padding: 8px 18px;
 }
 @media (min-width: 1001px) and (max-height: 800px) {
   .deck-workspace .builder-hand-slots {
@@ -811,9 +815,5 @@
   }
   .builder-empty-results {
     padding: 8px;
-  }
-  .collection-workshop-shortcut {
-    flex-direction: column;
-    align-items: stretch;
   }
 }
