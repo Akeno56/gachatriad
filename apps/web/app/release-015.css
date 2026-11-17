@@ -288,7 +288,17 @@
   color: #cad6e8;
 }
 .result-v15 .rated-result {
+  position: relative;
   margin: 0;
+}
+.result-v15 .rated-result .result-section-label {
+  min-height: 22px;
+  padding-inline: 22px;
+}
+.result-v15 .rated-result .ui-help {
+  position: absolute;
+  top: 8px;
+  right: 8px;
 }
 .result-v15 .rated-result p {
   margin: 4px 0;
