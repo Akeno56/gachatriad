@@ -6,16 +6,15 @@ import { useEffect, useRef, useState } from 'react';
 import { useSession } from './session';
 import { api } from '../lib/platform';
 import { confirmRanked, confirmUnranked, confirmDraft, confirmSharedDraft } from './ranked-warning';
+import { Button, GameDialog } from './ui';
 export function MatchmakingPanel({
   onMatch,
   onRules,
   onTutorial,
-  onCombo,
 }: {
   onMatch: (id: string) => void;
   onRules: () => void;
   onTutorial: () => void;
-  onCombo: () => void;
 }) {
   const { profile, refresh } = useSession();
   const [busy, setBusy] = useState(false),
@@ -23,12 +22,7 @@ export function MatchmakingPanel({
     [error, setError] = useState(''),
     [now, setNow] = useState(Date.now());
   const lock = useRef(false),
-    waiting = profile?.waitingLobby,
-    practiceDialog = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    if (practice) practiceDialog.current?.showModal();
-    else practiceDialog.current?.close();
-  }, [practice]);
+    waiting = profile?.waitingLobby;
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
@@ -86,10 +80,6 @@ export function MatchmakingPanel({
     <LocaleView>
       <section className="setup-panel menu-window matchmaking-panel" aria-label="Match setup">
         <h2 className="window-label">Play a game</h2>
-        <Link className="daily-puzzle-link" href="/puzzle">
-          <strong>Daily Triad puzzle</strong>
-          <small>One shared challenge · Win 100 Stellar Prisms</small>
-        </Link>
         {(['casual', 'ranked', 'draft', 'shared-draft'] as const).map((mode) => {
           const ranked = mode !== 'casual',
             draft = mode === 'draft' || mode === 'shared-draft',
@@ -113,10 +103,9 @@ export function MatchmakingPanel({
                   <small>Searching for an opponent…</small>
                 </div>
               ) : (
-                <button
-                  className={
-                    ranked ? 'outline-button ranked-play-button' : 'primary-button start-button'
-                  }
+                <Button
+                  variant={ranked ? 'outline' : 'primary'}
+                  className={ranked ? 'ranked-play-button' : 'start-button'}
                   disabled={
                     busy ||
                     !profile ||
@@ -135,7 +124,7 @@ export function MatchmakingPanel({
                       <small>{draft ? 'Ranked' : 'Start match'}</small>
                     </span>
                   </>
-                </button>
+                </Button>
               )}
               {own && (
                 <button
@@ -191,19 +180,17 @@ export function MatchmakingPanel({
           <button className="text-button" onClick={onRules}>
             Rulebook
           </button>
-          <button className="text-button" onClick={onCombo}>
-            Combo lesson
-          </button>
         </div>
         <p className="error-message" role="alert">
           {error}
         </p>
-        <dialog
-          ref={practiceDialog}
-          className="game-dialog menu-window"
-          onCancel={() => setPractice(false)}
+        <GameDialog
+          open={practice}
+          onClose={() => setPractice(false)}
+          labelledBy="practice-title"
+          dismissible={!busy}
         >
-          <h2>Practice with a bot?</h2>
+          <h2 id="practice-title">Practice with a bot?</h2>
           <p>
             Bot games use the same Ranked or Draft rules and never change Elo. A human opponent can
             still match first.
@@ -234,7 +221,7 @@ export function MatchmakingPanel({
               Keep waiting for a player
             </button>
           </div>
-        </dialog>
+        </GameDialog>
       </section>
     </LocaleView>
   );

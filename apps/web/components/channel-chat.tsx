@@ -1,7 +1,8 @@
 'use client';
 import { LocaleView, NoTranslate } from './i18n';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { Tabs } from './ui';
 import { CHAT_CHANNELS } from '@gacha-triad/shared/social';
 import { useSocial } from './social-state';
 import { useSession } from './session';
@@ -19,6 +20,7 @@ export function ChannelChat({
 }) {
   const { data, error: loadError, channel, setChannel } = useSocial(),
     { profile, refresh, openAccount } = useSession();
+  const panelId = useId();
   const [drafts, setDrafts] = useState<Record<string, string>>({}),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
@@ -87,20 +89,21 @@ export function ChannelChat({
           <h2 id="main-chat-title" className="window-label">
             Main chat
           </h2>
-          <div className="chat-channel-tabs" role="tablist" aria-label="Public chat channels">
-            {CHAT_CHANNELS.map((c) => (
-              <button
-                key={c}
-                role="tab"
-                aria-selected={c === channel}
-                onClick={() => setChannel(c)}
-              >
-                {labels[c]}
-              </button>
-            ))}
-          </div>
+          <Tabs
+            className="chat-channel-tabs"
+            label="Public chat channels"
+            panelId={panelId}
+            items={CHAT_CHANNELS.map((value) => ({ value, label: labels[value] }))}
+            value={channel}
+            onChange={(value) => setChannel(value as typeof channel)}
+          />
         </div>
-        <div className="public-chat-body">
+        <div
+          className="public-chat-body"
+          id={panelId}
+          role="tabpanel"
+          aria-label={`${labels[channel]} chat messages`}
+        >
           <div
             className="chat-messages"
             ref={list}

@@ -249,11 +249,11 @@ test('shows the exact Ranked rating delta and Season 0 W/L at the result', async
     const win = a.page.getByRole('region', { name: 'Season result', exact: true }),
       loss = b.page.getByRole('region', { name: 'Season result', exact: true });
     await expect(win).toContainText('1016');
-    await expect(win).toContainText('(+16)');
+    await expect(win).toContainText('+16 Elo');
     await expect(win).toContainText('1W 0L');
     await expect(win).toContainText('Season 0');
     await expect(loss).toContainText('984');
-    await expect(loss).toContainText('(-16)');
+    await expect(loss).toContainText('-16 Elo');
     await expect(loss).toContainText('0W 1L');
     await a.page.screenshot({ path: info.outputPath('season-zero-result.png') });
     await a.page.evaluate(() => localStorage.setItem('triad-language', 'fr'));
@@ -261,7 +261,9 @@ test('shows the exact Ranked rating delta and Season 0 W/L at the result', async
     await expect(a.page.locator('.rated-result')).toContainText('1V 0D');
     await expect(a.page.locator('.rated-result')).toContainText('Saison 0');
     const result = await platform.store.view(a.profile.id, matchId!);
-    await platform.store.claimCard(a.profile.id, matchId!, result.trade.choices[0].id);
+    expect(result.trade.rule).toBe('none');
+    expect(result.trade.canClaim).toBe(false);
+    expect(result.trade.pending).toBe(false);
   } finally {
     await a.context.close();
     await b.context.close();

@@ -1,17 +1,11 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useRef, useState } from 'react';
 import { LocaleView } from './i18n';
+import { GameDialog, Button } from './ui';
 import { VERSION } from '../lib/release';
 export function ReleaseNotes() {
-  const [open, setOpen] = useState(false),
-    [ready, setReady] = useState(false);
-  const dialog = useRef<HTMLDialogElement>(null);
-  useEffect(() => setReady(true), []);
-  useEffect(() => {
-    if (open) dialog.current?.showModal();
-    else dialog.current?.close();
-  }, [open]);
+  const [open, setOpen] = useState(false);
+  const heading = useRef<HTMLHeadingElement>(null);
   return (
     <LocaleView>
       <button
@@ -22,40 +16,28 @@ export function ReleaseNotes() {
       >
         Alpha · {VERSION}
       </button>
-      {ready &&
-        createPortal(
-          <LocaleView>
-            <dialog
-              ref={dialog}
-              className="game-dialog menu-window release-notes"
-              aria-labelledby="release-title"
-              onCancel={() => setOpen(false)}
-            >
-              <button
-                className="dialog-close"
-                aria-label="Close update notes"
-                onClick={() => setOpen(false)}
-              >
-                ×
-              </button>
-              <div className="eyebrow">Alpha · {VERSION}</div>
-              <h2 id="release-title">What’s new</h2>
-              <ul>
-                <li>Daily Triad puzzle with a 100-Prism reward and daily leaderboard.</li>
-                <li>
-                  Shared Draft: four shared boosters, alternating picks and its own ranked
-                  leaderboard. The original Draft stays available.
-                </li>
-                <li>Ranked without card loss. Keep your deck and queue again.</li>
-                <li>Trade One remains available in opt-in custom games.</li>
-              </ul>
-              <button className="outline-button" onClick={() => setOpen(false)}>
-                Back to the game
-              </button>
-            </dialog>
-          </LocaleView>,
-          document.body,
-        )}
+      <GameDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        labelledBy="release-title"
+        className="release-notes"
+        initialFocus={heading}
+        closeLabel="Close update notes"
+      >
+        <div className="eyebrow">Alpha · {VERSION}</div>
+        <h2 id="release-title" ref={heading} tabIndex={-1}>
+          What’s new
+        </h2>
+        <ul>
+          <li>The card tavern: your deck, daily notices and community chat in one place.</li>
+          <li>
+            A shared FF-style control system with consistent buttons, fields, tabs and dialogs.
+          </li>
+          <li>Clearer duel results with rewards, rating changes and match highlights.</li>
+          <li>Queue again directly from a settled result, or return to the tavern.</li>
+        </ul>
+        <Button onClick={() => setOpen(false)}>Back to the game</Button>
+      </GameDialog>
     </LocaleView>
   );
 }

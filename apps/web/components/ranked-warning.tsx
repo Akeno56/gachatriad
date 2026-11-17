@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ProfileView } from '@gacha-triad/shared/platform';
 import { useSession } from './session';
 import { api } from '../lib/platform';
+import { GameDialog } from './ui';
 type QueueMode = 'casual' | 'ranked' | 'draft' | 'shared-draft';
 const preferenceKey = (id: string, mode: QueueMode) => `triad-hide-rules:${id}:${mode}:v14`;
 type Request = { mode: QueueMode; resolve: (allow: boolean) => void };
@@ -29,7 +30,6 @@ export const confirmSharedDraft = (profile: ProfileView | null) => confirm('shar
 export const confirmUnranked = (profile: ProfileView | null) => confirm('casual', profile);
 export function RankedWarning() {
   const { profile, refresh } = useSession(),
-    ref = useRef<HTMLDialogElement>(null),
     heading = useRef<HTMLHeadingElement>(null),
     pending = useRef<Request | null>(null);
   const [mode, setMode] = useState<QueueMode | null>(null),
@@ -50,17 +50,9 @@ export function RankedWarning() {
       pending.current?.resolve(false);
     };
   }, []);
-  useEffect(() => {
-    if (mode) {
-      ref.current?.showModal();
-      heading.current?.focus({ preventScroll: true });
-      if (ref.current) ref.current.scrollTop = 0;
-    }
-  }, [mode]);
   function close(allow: boolean) {
     pending.current?.resolve(allow);
     pending.current = null;
-    ref.current?.close();
     setMode(null);
   }
   if (!mode) return null;
@@ -69,11 +61,14 @@ export function RankedWarning() {
     shared = mode === 'shared-draft';
   return (
     <LocaleView>
-      <dialog
-        ref={ref}
-        className={`game-dialog menu-window mode-rules-dialog ${ranked ? 'ranked-warning' : ''}`}
-        aria-labelledby="queue-rules-title"
-        onCancel={() => close(false)}
+      <GameDialog
+        key={mode}
+        open
+        labelledBy="queue-rules-title"
+        initialFocus={heading}
+        onClose={() => close(false)}
+        dismissible={!busy}
+        className={`mode-rules-dialog ${ranked ? 'ranked-warning' : ''}`}
       >
         <h2 id="queue-rules-title" ref={heading} tabIndex={-1}>
           {ranked
@@ -176,7 +171,7 @@ export function RankedWarning() {
             Cancel
           </button>
         </div>
-      </dialog>
+      </GameDialog>
     </LocaleView>
   );
 }

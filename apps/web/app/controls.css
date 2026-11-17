@@ -1,0 +1,212 @@
+/* The shared FF menu controls. Layout-specific sizing stays with each screen. */
+:root {
+  --ui-edge: #8da2c2;
+  --ui-edge-light: #c2d1e8;
+  --ui-surface: #142542;
+  --ui-surface-raised: #29416b;
+  --ui-gold: #e0ca91;
+  --ui-focus: #ffe19b;
+  --ui-control-height: 38px;
+  --ui-control-shadow: inset 0 0 0 1px #0a142a, inset 0 2px #ffffff12, 0 2px #0007;
+}
+:where(.primary-button, .outline-button) {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--ui-control-height);
+  border-radius: 0;
+  font: 22px/1.1 var(--pixel);
+  text-align: center;
+}
+.primary-button {
+  border-color: #f2dfa8;
+  background: linear-gradient(#e4d29b, #b89b58);
+  color: #17213a;
+  box-shadow: var(--ui-control-shadow);
+}
+.primary-button:hover:not(:disabled) {
+  background: linear-gradient(#f0e0b0, #d0b36f);
+}
+.outline-button {
+  border-color: var(--ui-edge);
+  background: linear-gradient(#2c446d, #192b4c);
+  box-shadow: var(--ui-control-shadow);
+}
+.outline-button:hover:not(:disabled) {
+  border-color: var(--ui-gold);
+  background: linear-gradient(#3c5782, #263c60);
+}
+:where(.primary-button, .outline-button):active:not(:disabled) {
+  translate: 0 1px;
+  box-shadow: inset 0 2px 4px #0006;
+}
+:where(.primary-button, .outline-button, .text-button)[aria-busy='true'] {
+  cursor: progress;
+}
+:where(.primary-button, .outline-button):disabled {
+  opacity: 0.48;
+  filter: none;
+}
+.text-button {
+  border-radius: 0;
+}
+.text-button:hover:not(:disabled) {
+  color: var(--ui-focus);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+:where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--ui-focus);
+  outline-offset: 3px;
+}
+:where(input, select, textarea):not([type='range']):not([type='checkbox']):not([type='radio']) {
+  border-radius: 0;
+  border-color: var(--ui-edge);
+  color: var(--text);
+  box-shadow: inset 0 2px #0005;
+}
+:where(input, select, textarea):disabled {
+  opacity: 0.55;
+}
+:where(input, select, textarea)[aria-invalid='true'] {
+  border-color: var(--rose);
+}
+input:is([type='checkbox'], [type='radio']) {
+  accent-color: var(--ui-gold);
+}
+select:not([multiple]) {
+  background-position: right 10px center;
+  padding-right: 32px;
+}
+.ui-tabs {
+  display: flex;
+  gap: 5px;
+  min-width: 0;
+}
+.ui-tabs > button {
+  min-width: 0;
+  min-height: 34px;
+  border: 1px solid var(--ui-edge);
+  border-radius: 0;
+  background: #12233f;
+  color: #ced9e9;
+  padding: 5px 12px;
+  font: 20px/1 var(--pixel);
+  box-shadow: inset 0 1px #ffffff0c;
+}
+.ui-tabs > button:hover:not(:disabled) {
+  border-color: var(--ui-gold);
+  background: #263d61;
+}
+.ui-tabs > button[aria-selected='true'] {
+  background: var(--ui-gold);
+  border-color: #f3dfa9;
+  color: #14213b;
+  box-shadow: inset 0 -2px #a28a50;
+}
+.ui-tabs > button:disabled {
+  opacity: 0.5;
+}
+.ui-dialog {
+  max-width: min(680px, calc(100vw - 28px));
+  max-height: calc(100dvh - 36px);
+  padding: 28px 26px 24px;
+  overscroll-behavior: contain;
+  border-radius: 0;
+}
+.ui-dialog > h2 {
+  padding-right: 30px;
+}
+.ui-dialog .dialog-close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--ui-edge);
+  background: #12233fe8;
+  font: 25px/1 var(--pixel);
+  z-index: 5;
+}
+.ui-dialog .dialog-close:hover:not(:disabled) {
+  color: var(--ui-focus);
+  border-color: var(--ui-focus);
+}
+.game-dialog::backdrop {
+  background: #040916c9;
+  backdrop-filter: blur(3px);
+}
+.ui-help {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  font: 14px/1.3 var(--sans);
+  text-align: left;
+  letter-spacing: 0;
+}
+.ui-help-trigger {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #8599b9;
+  background: #152844;
+  color: #d4c18e;
+  font: 18px/1 var(--pixel);
+}
+.ui-tooltip {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  width: min(260px, calc(100vw - 32px));
+  padding: 10px 12px;
+  border: 1px solid #a0b1cb;
+  background: #122443;
+  box-shadow:
+    inset 0 0 0 2px #294571,
+    3px 3px #0008;
+  color: #edf0df;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 30;
+}
+.ui-help:not([data-dismissed]):is(:hover, :focus-within) .ui-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+.ui-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: ui-turn 700ms steps(4) infinite;
+}
+@keyframes ui-turn {
+  to {
+    rotate: 360deg;
+  }
+}
+@media (max-width: 680px) {
+  .ui-dialog {
+    padding: 24px 16px 18px;
+    max-height: calc(100dvh - 24px);
+  }
+  .ui-tabs > button {
+    min-height: 38px;
+    padding-inline: 9px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-spinner {
+    animation: none;
+  }
+  :where(.primary-button, .outline-button, .text-button, .ui-tabs > button) {
+    transition: none;
+  }
+}

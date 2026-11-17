@@ -1,7 +1,6 @@
 'use client';
 import { LocaleView, NoTranslate } from './i18n';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   displayValue,
@@ -11,7 +10,7 @@ import {
   type Card as CardData,
   type Rules,
 } from '@gacha-triad/engine';
-import { ALL_CARDS as CARDS, STARTER_DECK } from '@gacha-triad/shared';
+import { ALL_CARDS as CARDS } from '@gacha-triad/shared';
 import type { MatchView } from '@gacha-triad/shared/platform';
 import { api } from '../lib/platform';
 import { useCapturePresentation } from './use-capture-presentation';
@@ -20,18 +19,15 @@ import { useSession } from './session';
 import { Card } from './card';
 import { CardDetail } from './card-detail';
 import { RulesContent } from './rules-content';
-import { ComboLesson } from './combo-lesson';
 import { useGameAudio, useMusicScene } from './game-shell';
 import { ElementIcon } from './element-icon';
 import { ResultOverlay } from './result-overlay';
 import { Avatar } from './avatar';
-import { MatchmakingPanel } from './matchmaking-panel';
-import { MainChat } from './main-chat';
+import { TavernHome } from './tavern-home';
 import { CaptureCard } from './capture-card';
 import { DraftOpening } from './draft-opening';
 import { SharedDraft } from './shared-draft';
 import { BattleChat } from './battle-chat';
-import { VERSION } from '../lib/release';
 export function ruleNames(r: Rules) {
   return [
     r.allOpen ? 'All Open' : r.threeOpen ? 'Three Open' : 'Closed',
@@ -54,7 +50,7 @@ export function Game() {
     [busy, setBusy] = useState(false),
     [detail, setDetail] = useState<CardData | null>(null),
     [detailModifier, setDetailModifier] = useState(0),
-    [dialog, setDialog] = useState<'rules' | 'combo' | 'exit' | null>(null),
+    [dialog, setDialog] = useState<'rules' | 'exit' | null>(null),
     [draft, setDraft] = useState<string[]>([]),
     [clock, setClock] = useState(Date.now());
   const sound = useGameAudio();
@@ -237,6 +233,31 @@ export function Game() {
     setDraft([]);
     history.replaceState(history.state, '', appPath('/'));
   }
+  const resultAction = useRef(false);
+  async function leaveResult(requeue = false) {
+    if (!match || match.trade.pending || resultAction.current) return;
+    resultAction.current = true;
+    setBusy(true);
+    setError('');
+    try {
+      await api(`/matches/${match.id}/leave`, {});
+      const next = requeue
+        ? await api<{ matchId: string | null }>('/lobbies', {
+            mode: match.mode,
+            allowBots: match.mode === 'casual' || match.mode === 'roulette',
+          })
+        : null;
+      menu();
+      if (next?.matchId) setMatchId(next.matchId);
+      await refresh();
+    } catch (e) {
+      setError((e as Error).message);
+      await refresh();
+    } finally {
+      resultAction.current = false;
+      setBusy(false);
+    }
+  }
   function place(cell: number) {
     if (!match || match.spectator || !game || game.turn !== seat || busy || resolving) return;
     if (!selected) {
@@ -301,53 +322,12 @@ export function Game() {
           </div>
         )}
         {!match ? (
-          <>
-            <div className="title-layout">
-              <div className="play-command-column">
-                <div className="game-title">
-                  <h1>
-                    <span>GACHA</span>TRIAD
-                  </h1>
-                </div>
-                <MatchmakingPanel
-                  onMatch={setMatchId}
-                  onRules={() => setDialog('rules')}
-                  onTutorial={() => window.dispatchEvent(new Event('triad:show-tutorial'))}
-                  onCombo={() => setDialog('combo')}
-                />
-              </div>
-              <section className="title-party" aria-label="Your saved deck">
-                <div className="party-heading">
-                  <span>YOUR DECK</span>
-                  <Link className="deck-edit-link" href="/collection">
-                    Edit deck <span aria-hidden="true">→</span>
-                  </Link>
-                </div>
-                <div className="title-roster">
-                  {(profile
-                    ? profile.deck.map((id) => CARDS.find((c) => c.id === id)!).filter(Boolean)
-                    : STARTER_DECK
-                  ).map((card, i) => (
-                    <button
-                      className={`title-card title-card-${i}`}
-                      key={card.id}
-                      onClick={() => inspect(card)}
-                      aria-label={`Inspect ${card.name}`}
-                    >
-                      <Card card={card} owner={0} />
-                    </button>
-                  ))}
-                </div>
-                <MainChat fitViewport />
-              </section>
-            </div>
-            <div className="build-label">
-              {CARDS.filter((card) => !card.finish).length} CARDS · v{VERSION} Alpha{' '}
-              <Link href="/credits" className="credits-button">
-                Credits
-              </Link>
-            </div>
-          </>
+          <TavernHome
+            onMatch={setMatchId}
+            onRules={() => setDialog('rules')}
+            onTutorial={() => window.dispatchEvent(new Event('triad:show-tutorial'))}
+            onInspect={inspect}
+          />
         ) : (
           <section className="match" aria-label="Triple Triad match">
             <div className="match-toolbar">
@@ -787,17 +767,13 @@ export function Game() {
         </p>
         <dialog
           ref={dialogRef}
-          className={`game-dialog ${dialog === 'combo' ? 'combo-dialog' : ''}`}
+          className="game-dialog"
           aria-labelledby="dialog-title"
           onCancel={() => setDialog(null)}
         >
           <div className="dialog-header">
             <h2 id="dialog-title">
-              {dialog === 'rules'
-                ? 'How to play'
-                : dialog === 'combo'
-                  ? 'The Combo lesson'
-                  : 'Leave this match?'}
+              {dialog === 'rules' ? 'How to play' : 'Leave this match?'}
             </h2>
             <button
               className="close-button"
@@ -809,8 +785,6 @@ export function Game() {
           </div>
           {dialog === 'rules' ? (
             <RulesContent />
-          ) : dialog === 'combo' ? (
-            <ComboLesson />
           ) : dialog === 'exit' ? (
             <>
               <p>
@@ -844,6 +818,8 @@ export function Game() {
             busy={busy}
             onClose={() => setResultOpen(false)}
             onPlayAgain={start}
+            onQueueAgain={() => void leaveResult(true)}
+            onReturnToTavern={() => void leaveResult()}
             onClaim={(cardId) => action(`/matches/${match.id}/claim`, { cardId })}
             onRematch={() => action(`/matches/${match.id}/rematch`, {})}
             onCancelRematch={() => action(`/matches/${match.id}/rematch`, { cancel: true })}

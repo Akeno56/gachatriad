@@ -288,7 +288,7 @@ test('shows release notes and all navigation destinations on mobile in French', 
     await c.page
       .getByRole('button', { name: 'Lire les notes de mise à jour', exact: true })
       .click();
-    await expect(c.page.getByRole('dialog', { name: 'Nouveautés' })).toContainText('0.1.4');
+    await expect(c.page.getByRole('dialog', { name: 'Nouveautés' })).toContainText('0.1.5');
     await c.page.getByRole('button', { name: 'Retour au jeu', exact: true }).click();
     const menu = c.page.getByRole('button', { name: 'Menu', exact: true });
     if (await menu.isVisible()) {

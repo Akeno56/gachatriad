@@ -151,11 +151,8 @@ test('waits for artwork and advances automatically without manual reveal control
 
 test('uses genuine old/new owner faces for Plus and Combo captures', async ({ page }, info) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/cards');
-  await openStarterPacks(page);
-  await page.request.post('/api/tutorial/complete', { data: {} });
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Combo lesson', exact: true }).click();
+  await page.goto('/rules');
+  await page.getByRole('button', { name: 'Open Combo lesson', exact: true }).click();
   await page.getByTestId('lesson-cell-1').click();
   const scenes = page.locator('.combo-lesson .capture-flip-scene');
   await expect(scenes).toHaveCount(4);

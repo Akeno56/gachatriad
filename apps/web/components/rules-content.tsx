@@ -1,7 +1,13 @@
+'use client';
+import { useRef, useState } from 'react';
 import { LocaleView } from './i18n';
 import { RuleAnimation } from './rule-animation';
 import { VisibilityExample } from './visibility-example';
+import { ComboLesson } from './combo-lesson';
+import { Button, GameDialog } from './ui';
 export function RulesContent() {
+  const [practice, setPractice] = useState(false);
+  const heading = useRef<HTMLHeadingElement>(null);
   return (
     <LocaleView>
       <div className="rules-content">
@@ -92,6 +98,22 @@ export function RulesContent() {
           Same and Plus check the board before any cards change ownership. Special captures resolve
           first, then ordinary captures, then Combo chains.
         </p>
+        <div className="rule-practice-link">
+          <span>Try a chain capture yourself.</span>
+          <Button onClick={() => setPractice(true)}>Open Combo lesson</Button>
+        </div>
+        <GameDialog
+          open={practice}
+          onClose={() => setPractice(false)}
+          labelledBy="combo-practice-title"
+          className="combo-dialog"
+          initialFocus={heading}
+        >
+          <h2 id="combo-practice-title" ref={heading} tabIndex={-1}>
+            The Combo lesson
+          </h2>
+          <ComboLesson />
+        </GameDialog>
         <h2 className="special-heading">Modes and card transfers</h2>
         <article className="elemental-rule">
           <h3>Elemental</h3>

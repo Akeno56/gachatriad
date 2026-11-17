@@ -9,6 +9,7 @@ import { ChannelChat } from './channel-chat';
 import { useSocial, openFriendChat } from './social-state';
 import { Avatar } from './avatar';
 import { NoTranslate } from './i18n';
+import { Tabs } from './ui';
 interface BattleMessage {
   id: string;
   senderId: string;
@@ -64,17 +65,17 @@ export function BattleChat({ match }: { match: MatchView }) {
         >
           Chat {expanded ? '▾' : '▴'}
         </button>
-        <div className="arena-chat-tabs" role="tablist" aria-label="Battle chat channels">
-          <button role="tab" aria-selected={tab === 'battle'} onClick={() => setTab('battle')}>
-            Battle
-          </button>
-          <button role="tab" aria-selected={tab === 'general'} onClick={() => setTab('general')}>
-            General
-          </button>
-          <button role="tab" aria-selected={tab === 'friends'} onClick={() => setTab('friends')}>
-            Friends
-          </button>
-        </div>
+        <Tabs
+          className="arena-chat-tabs"
+          label="Battle chat channels"
+          items={[
+            { value: 'battle', label: 'Battle' },
+            { value: 'general', label: 'General' },
+            { value: 'friends', label: 'Friends' },
+          ]}
+          value={tab}
+          onChange={setTab}
+        />
         {tab === 'general' ? (
           <ChannelChat compact />
         ) : tab === 'friends' ? (

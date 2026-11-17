@@ -2,13 +2,15 @@
 import { LocaleView, NoTranslate } from '../../components/i18n';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
+import { Tabs } from '../../components/ui';
 import type { LadderEntry } from '@gacha-triad/shared/social';
 import { useSession } from '../../components/session';
 import { Avatar } from '../../components/avatar';
 import { api } from '../../lib/platform';
 export default function Ladder() {
   const { profile, revision } = useSession();
+  const panelId = useId();
   const [mode, setMode] = useState('ranked'),
     [rows, setRows] = useState<LadderEntry[]>([]),
     [error, setError] = useState('');
@@ -33,24 +35,22 @@ export default function Ladder() {
     <LocaleView>
       <div className="content-page ladder-page">
         <h1>Ladder</h1>
-        <div className="ladder-tabs" role="tablist" aria-label="Leaderboard">
-          <button role="tab" aria-selected={mode === 'ranked'} onClick={() => setMode('ranked')}>
-            Ranked
-          </button>
-          <button role="tab" aria-selected={mode === 'draft'} onClick={() => setMode('draft')}>
-            Draft
-          </button>
-          <button
-            role="tab"
-            aria-selected={mode === 'shared-draft'}
-            onClick={() => setMode('shared-draft')}
-          >
-            Shared Draft
-          </button>
-        </div>
+        <Tabs
+          className="ladder-tabs"
+          label="Leaderboard"
+          panelId={panelId}
+          items={[
+            { value: 'ranked', label: 'Ranked' },
+            { value: 'draft', label: 'Draft' },
+            { value: 'shared-draft', label: 'Shared Draft' },
+          ]}
+          value={mode}
+          onChange={setMode}
+        />
         <p role="alert">{error}</p>
         <div
           className="menu-window ladder-table"
+          id={panelId}
           role="tabpanel"
           aria-label={
             mode === 'ranked' ? 'Ranked' : mode === 'shared-draft' ? 'Shared Draft' : 'Draft'
