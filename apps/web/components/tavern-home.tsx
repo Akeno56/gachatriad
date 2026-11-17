@@ -162,7 +162,7 @@ export function TavernHome({
                 </strong>
               </span>
             </div>
-            <Link className="deck-edit-link" href="/collection">
+            <Link className="deck-edit-link" href="/decks">
               Edit deck <span aria-hidden="true">→</span>
             </Link>
           </div>
@@ -178,7 +178,7 @@ export function TavernHome({
               </button>
             ))}
             {!deck.length && (
-              <Link className="tavern-empty-deck outline-button" href="/collection">
+              <Link className="tavern-empty-deck outline-button" href="/decks">
                 Build your first deck
               </Link>
             )}

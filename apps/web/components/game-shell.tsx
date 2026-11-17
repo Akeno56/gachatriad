@@ -220,6 +220,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                       { href: '/cards', label: 'Cards' },
                       { href: '/lobbies', label: 'Lobbies' },
                       { href: '/collection', label: 'Collection' },
+                      { href: '/decks', label: 'Decks' },
                       { href: '/market', label: 'Market' },
                       { href: '/boosters', label: 'Boosters' },
                       { href: '/ladder', label: 'Ladder' },

@@ -17,3 +17,11 @@ This is the agreed sequence after 0.1.4. Public GitHub Pages testing precedes ea
 - Standard buttons, native fields/selects, tabs, dialogs and help tips share the same theme and focus/disabled/loading states. Tabs support arrows and Home/End; dialogs support Escape and restore focus.
 - Results show the server-awarded Prisms and actual Elo change, with capture highlights derived from the match history. Settled matches can requeue directly. Trade One must settle before another game.
 - Win, loss, draw, practice and custom Trade One cases remain clear. The release does not change rewards, rating formulas, matchmaking policies or saved player data.
+
+## 0.1.6 acceptance criteria
+
+- Save, rename, copy, delete and explicitly activate private named loadouts. Preserve existing active hands and inventories. Prevent unauthorized access and stale overwrites.
+- Retain incomplete or unavailable alternatives for later editing. Recheck deck legality and current ownership/availability when activating; protect queued matchmaking from a deck switch.
+- Keep the hand readable beside a filtered collection on desktop, with usable phone layouts. Provide explicit replacement, inspection, Undo and unsaved-work recovery.
+- Show real directional coverage, weak/high side counts and corner placement guidance. Include actual Holographic values without claiming a predicted win rate.
+- Support English/French and validate the new migration, recovery paths, keyboard controls and public testing build before production deployment.

@@ -191,6 +191,7 @@ export class GameStore {
       '017_market_season.sql',
       '018_playtest_feedback.sql',
       '019_shared_draft_daily_puzzle.sql',
+      '020_deck_loadouts.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -290,6 +291,7 @@ export class GameStore {
       if (pruned) {
         p.default_deck = pruned.default_deck;
         p.avatar_card = pruned.avatar_card;
+        p.active_loadout_id = pruned.active_loadout_id;
       }
       const owned = await sql<{ card_id: string; quantity: number; reserved: number }>(
         'SELECT * FROM inventory WHERE profile_id=$1 AND quantity>0',
@@ -349,6 +351,7 @@ export class GameStore {
           ]),
         ),
         deck: p.default_deck,
+        activeLoadoutId: typeof p.active_loadout_id === 'string' ? p.active_loadout_id : null,
         activeMatchId: active[0]?.id ?? null,
         pendingTrade: pendingTrade
           ? {
@@ -444,7 +447,7 @@ export class GameStore {
       const pool = await this.available(sql, id);
       if (deck.some((c) => !pool.some((p) => p.id === c.id)))
         throw new GameError('You do not have an available copy of every selected card.');
-      await sql('UPDATE profiles SET default_deck=$1::jsonb WHERE id=$2', [
+      await sql('UPDATE profiles SET default_deck=$1::jsonb,active_loadout_id=NULL WHERE id=$2', [
         JSON.stringify(ids),
         id,
       ]);
@@ -461,7 +464,7 @@ export class GameStore {
           428,
         );
       }
-      await sql('UPDATE profiles SET default_deck=$1::jsonb WHERE id=$2', [
+      await sql('UPDATE profiles SET default_deck=$1::jsonb,active_loadout_id=NULL WHERE id=$2', [
         JSON.stringify(next),
         id,
       ]);

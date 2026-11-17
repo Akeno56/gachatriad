@@ -29,12 +29,9 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>The card tavern: your deck, daily notices and community chat in one place.</li>
-          <li>
-            A shared FF-style control system with consistent buttons, fields, tabs and dialogs.
-          </li>
-          <li>Clearer duel results with rewards, rating changes and match highlights.</li>
-          <li>Queue again directly from a settled result, or return to the tavern.</li>
+          <li>Named loadouts: save, rename, copy and switch between your own decks.</li>
+          <li>A dedicated deck workshop with search, side sorting, replacements and undo.</li>
+          <li>Read your deck’s strengths, weak sides and corner placement options.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

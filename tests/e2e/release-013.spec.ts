@@ -288,12 +288,12 @@ test('shows release notes and all navigation destinations on mobile in French', 
     await c.page
       .getByRole('button', { name: 'Lire les notes de mise à jour', exact: true })
       .click();
-    await expect(c.page.getByRole('dialog', { name: 'Nouveautés' })).toContainText('0.1.5');
+    await expect(c.page.getByRole('dialog', { name: 'Nouveautés' })).toContainText('0.1.6');
     await c.page.getByRole('button', { name: 'Retour au jeu', exact: true }).click();
     const menu = c.page.getByRole('button', { name: 'Menu', exact: true });
     if (await menu.isVisible()) {
       await menu.click();
-      await expect(c.page.locator('#main-navigation a:visible')).toHaveCount(8);
+      await expect(c.page.locator('#main-navigation a:visible')).toHaveCount(9);
       const social = (await c.page.locator('.social-launcher').boundingBox())!;
       expect(social.width).toBe(46);
       await c.page.screenshot({

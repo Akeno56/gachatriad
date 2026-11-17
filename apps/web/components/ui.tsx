@@ -56,42 +56,44 @@ export function Tabs({
 }) {
   const root = useRef<HTMLDivElement>(null);
   return (
-    <div ref={root} className={`ui-tabs ${className}`} role="tablist" aria-label={label}>
-      {items.map((item) => (
-        <button
-          key={item.value}
-          type="button"
-          role="tab"
-          aria-selected={value === item.value}
-          aria-controls={panelId}
-          tabIndex={value === item.value ? 0 : -1}
-          disabled={item.disabled}
-          onClick={() => onChange(item.value)}
-          onKeyDown={(event) => {
-            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-            event.preventDefault();
-            const enabled = items.filter((item) => !item.disabled);
-            const index = enabled.findIndex((item) => item.value === value);
-            const next =
-              event.key === 'Home'
-                ? enabled[0]
-                : event.key === 'End'
-                  ? enabled.at(-1)
-                  : enabled[
-                      (index + (event.key === 'ArrowRight' ? 1 : -1) + enabled.length) %
-                        enabled.length
-                    ];
-            if (!next) return;
-            onChange(next.value);
-            root.current
-              ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
-              [items.indexOf(next)]?.focus();
-          }}
-        >
-          {item.label}
-        </button>
-      ))}
-    </div>
+    <LocaleView>
+      <div ref={root} className={`ui-tabs ${className}`} role="tablist" aria-label={label}>
+        {items.map((item) => (
+          <button
+            key={item.value}
+            type="button"
+            role="tab"
+            aria-selected={value === item.value}
+            aria-controls={panelId}
+            tabIndex={value === item.value ? 0 : -1}
+            disabled={item.disabled}
+            onClick={() => onChange(item.value)}
+            onKeyDown={(event) => {
+              if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+              event.preventDefault();
+              const enabled = items.filter((item) => !item.disabled);
+              const index = enabled.findIndex((item) => item.value === value);
+              const next =
+                event.key === 'Home'
+                  ? enabled[0]
+                  : event.key === 'End'
+                    ? enabled.at(-1)
+                    : enabled[
+                        (index + (event.key === 'ArrowRight' ? 1 : -1) + enabled.length) %
+                          enabled.length
+                      ];
+              if (!next) return;
+              onChange(next.value);
+              root.current
+                ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+                [items.indexOf(next)]?.focus();
+            }}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+    </LocaleView>
   );
 }
 
@@ -99,32 +101,34 @@ export function HelpTip({ label, children }: { label: string; children: ReactNod
   const id = useId();
   const [dismissed, setDismissed] = useState(false);
   return (
-    <span
-      className="ui-help"
-      data-dismissed={dismissed || undefined}
-      onPointerEnter={() => setDismissed(false)}
-    >
-      <button
-        type="button"
-        className="ui-help-trigger"
-        aria-label={label}
-        aria-describedby={id}
-        onFocus={() => setDismissed(false)}
-        onBlur={() => setDismissed(false)}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') {
-            event.preventDefault();
-            event.stopPropagation();
-            setDismissed(true);
-          }
-        }}
+    <LocaleView>
+      <span
+        className="ui-help"
+        data-dismissed={dismissed || undefined}
+        onPointerEnter={() => setDismissed(false)}
       >
-        ?
-      </button>
-      <span id={id} role="tooltip" className="ui-tooltip">
-        {children}
+        <button
+          type="button"
+          className="ui-help-trigger"
+          aria-label={label}
+          aria-describedby={id}
+          onFocus={() => setDismissed(false)}
+          onBlur={() => setDismissed(false)}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              event.preventDefault();
+              event.stopPropagation();
+              setDismissed(true);
+            }
+          }}
+        >
+          ?
+        </button>
+        <span id={id} role="tooltip" className="ui-tooltip">
+          {children}
+        </span>
       </span>
-    </span>
+    </LocaleView>
   );
 }
 

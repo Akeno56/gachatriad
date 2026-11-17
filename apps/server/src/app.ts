@@ -21,6 +21,7 @@ import { PlayerReview } from './player-review';
 import { socialProviders } from './social-auth';
 import { Feedback } from './feedback';
 import { DailyPuzzles } from './daily-puzzle';
+import { DeckLoadouts } from './deck-loadouts';
 export async function createPlatform(
   root: string,
   options: { memory?: boolean; timers?: boolean; logger?: boolean } = {},
@@ -41,6 +42,7 @@ export async function createPlatform(
   await store.migrate(root);
   const feedback = new Feedback(db, (await auth.$context).secret);
   const puzzles = new DailyPuzzles(db, (await auth.$context).secret);
+  const loadouts = new DeckLoadouts(db);
   const review = new PlayerReview(db);
   if (process.env.TRIAD_LOCAL_TEST === 'true')
     await security.action('127.0.0.1', 'allow-shared', 'Isolated PC test save');
@@ -675,6 +677,27 @@ export async function createPlatform(
     await trades.cancel(await profile(req), id(req));
     notify();
     return { ok: true };
+  });
+  app.get('/api/deck-loadouts', async (req) => loadouts.list((await profile(req)).id));
+  app.post('/api/deck-loadouts', async (req) => {
+    const result = await loadouts.save((await profile(req)).id, body(req));
+    notify();
+    return result;
+  });
+  app.post('/api/deck-loadouts/:id', async (req) => {
+    const result = await loadouts.save((await profile(req)).id, body(req), id(req));
+    notify();
+    return result;
+  });
+  app.post('/api/deck-loadouts/:id/activate', async (req) => {
+    const result = await loadouts.activate((await profile(req)).id, id(req), body(req).revision);
+    notify();
+    return result;
+  });
+  app.delete('/api/deck-loadouts/:id', async (req) => {
+    const result = await loadouts.remove((await profile(req)).id, id(req), body(req).revision);
+    notify();
+    return result;
   });
   app.post('/api/deck', async (req) => {
     const p = await profile(req);

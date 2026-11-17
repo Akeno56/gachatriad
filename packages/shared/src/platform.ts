@@ -90,6 +90,7 @@ export interface LobbyView {
   createdAt: string;
 }
 export interface ProfileView {
+  activeLoadoutId?: string | null;
   rankedAcknowledged: boolean;
   titleId: string | null;
   isAdmin: boolean;
@@ -121,6 +122,18 @@ export interface ProfileView {
     allowBots?: boolean;
   } | null;
   profiles: { id: string; name: string }[];
+}
+export interface DeckLoadout {
+  id: string;
+  name: string;
+  cards: string[];
+  revision: number;
+  updatedAt: string;
+}
+export interface DeckLoadoutsView {
+  loadouts: DeckLoadout[];
+  activeId: string | null;
+  limit: number;
 }
 export const ECONOMY = {
   currency: 'Stellar Prisms',

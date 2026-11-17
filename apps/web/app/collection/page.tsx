@@ -87,6 +87,15 @@ export default function Collection() {
           Five unique cards. One 5★ and one 4★, or up to two 4★ without a 5★. Cards staked in
           another match remain locked until settlement.
         </p>
+        <section className="menu-window collection-workshop-shortcut">
+          <div>
+            <strong>Deck workshop</strong>
+            <p>Save named loadouts, compare side coverage and prepare your next hand.</p>
+          </div>
+          <Link className="primary-button" href="/decks">
+            Open deck workshop
+          </Link>
+        </section>
         <section className="menu-window saved-deck">
           <h2>Your deck · {deck.length}/5</h2>
           {dirty && (
