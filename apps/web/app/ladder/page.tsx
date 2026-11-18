@@ -8,6 +8,7 @@ import type { LadderEntry } from '@gacha-triad/shared/social';
 import { useSession } from '../../components/session';
 import { Avatar } from '../../components/avatar';
 import { api } from '../../lib/platform';
+import { SeasonBanner } from '../../components/season-banner';
 export default function Ladder() {
   const { profile, revision } = useSession();
   const panelId = useId();
@@ -35,6 +36,7 @@ export default function Ladder() {
     <LocaleView>
       <div className="content-page ladder-page">
         <h1>Ladder</h1>
+        <SeasonBanner />
         <Tabs
           className="ladder-tabs"
           label="Leaderboard"

@@ -29,9 +29,9 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>Named loadouts: save, rename, copy and switch between your own decks.</li>
-          <li>A dedicated deck workshop with search, side sorting, replacements and undo.</li>
-          <li>Read your deck’s strengths, weak sides and corner placement options.</li>
+          <li>Flexible weekly objectives: complete any three activities for 150 Prisms.</li>
+          <li>A player journey journal to explore the game at your own pace.</li>
+          <li>Season 0: The First Gathering, with separate records for all three rated formats.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

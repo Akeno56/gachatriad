@@ -1,3 +1,4 @@
+import { VERSION } from '../../apps/web/lib/release';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { mkdtemp } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -286,19 +287,19 @@ test('shows release notes and all navigation destinations on mobile in French', 
 }, info) => {
   const c = await player(browser);
   try {
-    await c.page.goto('/');
+    await c.page.goto(`${process.env.PREVIEW_BASE_PATH ?? ''}/`);
     await expect(c.page.locator('.title-card')).toHaveCount(5);
     await c.page.getByRole('button', { name: 'Language: English', exact: true }).click();
     await c.page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
     await c.page
       .getByRole('button', { name: 'Lire les notes de mise à jour', exact: true })
       .click();
-    await expect(c.page.getByRole('dialog', { name: 'Nouveautés' })).toContainText('0.1.6');
+    await expect(c.page.getByRole('dialog', { name: 'Nouveautés' })).toContainText(VERSION);
     await c.page.getByRole('button', { name: 'Retour au jeu', exact: true }).click();
     const menu = c.page.getByRole('button', { name: 'Menu', exact: true });
     if (await menu.isVisible()) {
       await menu.click();
-      await expect(c.page.locator('#main-navigation a:visible')).toHaveCount(9);
+      await expect(c.page.locator('#main-navigation a:visible')).toHaveCount(10);
       const social = (await c.page.locator('.social-launcher').boundingBox())!;
       expect(social.width).toBe(46);
       await c.page.screenshot({

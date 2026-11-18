@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { modeRatingField } from '@gacha-triad/shared/platform';
+import { CURRENT_SEASON } from '@gacha-triad/shared/journey';
 import { ALL_CARDS } from '@gacha-triad/shared';
 import { CHAT_CHANNELS, type ChatChannel } from '@gacha-triad/shared/social';
 import type {
@@ -505,10 +506,12 @@ export class Social {
       LEFT JOIN server_suspensions s ON s.auth_user_id=u.id
       JOIN matches m ON (m.player0=p.id OR m.player1=p.id) AND m.mode=$1 AND m.status='complete'
       AND coalesce(m.end_reason,'')<>'admin test result'
+      AND m.season=$2
+      JOIN match_ratings mr ON mr.match_id=m.id AND mr.profile_id=p.id
       AND NOT EXISTS(SELECT 1 FROM profiles bot WHERE bot.is_bot AND bot.id IN(m.player0,m.player1))
       WHERE NOT p.is_bot AND NOT coalesce(u."isAnonymous",false) AND s.auth_user_id IS NULL
       GROUP BY p.id ORDER BY p.${rating} DESC,count(m.id) DESC,p.name,p.id LIMIT 100`,
-          [kind],
+          [kind, CURRENT_SEASON.id],
         )
       ).map((p, index) => ({
         ...identity(p),

@@ -16,6 +16,7 @@ import { MatchmakingPanel } from './matchmaking-panel';
 import { HelpTip, Button } from './ui';
 import { api } from '../lib/platform';
 import { VERSION } from '../lib/release';
+import { CURRENT_SEASON } from '@gacha-triad/shared/journey';
 
 export function TavernHome({
   onMatch,
@@ -156,7 +157,11 @@ export function TavernHome({
             <div className="tavern-welcome">
               <Avatar card={portrait} name={profile.name} />
               <span>
-                <small>Welcome to the tavern</small>
+                <small>
+                  <Link className="tavern-journey-link" href="/journey">
+                    Season {CURRENT_SEASON.id} · <span>Your journey</span> →
+                  </Link>
+                </small>
                 <strong>
                   <NoTranslate>{profile.name}</NoTranslate>
                 </strong>

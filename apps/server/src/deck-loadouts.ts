@@ -4,6 +4,7 @@ import { validateDeck } from '@gacha-triad/engine';
 import type { DeckLoadout, DeckLoadoutsView } from '@gacha-triad/shared/platform';
 import type { Database, Sql } from './database';
 import { GameError } from './errors';
+import { weekWindow } from './journey';
 
 const byId = new Map(ALL_CARDS.map((card) => [card.id, card]));
 const limit = 12;
@@ -114,6 +115,16 @@ export class DeckLoadouts {
           'UPDATE profiles SET active_loadout_id=NULL WHERE id=$1 AND active_loadout_id=$2',
           [profileId, id],
         );
+      if (cards.length === 5) {
+        await sql(
+          "INSERT INTO journey_stamps(profile_id,chapter) VALUES($1,'deck') ON CONFLICT DO NOTHING",
+          [profileId],
+        );
+        await sql(
+          'INSERT INTO journey_deck_weeks(profile_id,week_start) VALUES($1,$2::date) ON CONFLICT DO NOTHING',
+          [profileId, weekWindow().week],
+        );
+      }
       return view(row);
     });
   }

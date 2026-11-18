@@ -192,6 +192,7 @@ export class GameStore {
       '018_playtest_feedback.sql',
       '019_shared_draft_daily_puzzle.sql',
       '020_deck_loadouts.sql',
+      '021_player_journey.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>

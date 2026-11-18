@@ -223,6 +223,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                       { href: '/decks', label: 'Decks' },
                       { href: '/market', label: 'Market' },
                       { href: '/boosters', label: 'Boosters' },
+                      { href: '/journey', label: 'Journal' },
                       { href: '/ladder', label: 'Ladder' },
                       { href: '/rules', label: 'Rulebook' },
                     ].map((item) => (

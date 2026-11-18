@@ -8,7 +8,7 @@ This is the agreed sequence after 0.1.4. Public GitHub Pages testing precedes ea
 | 0.1.6 | Build your decks    | Named deck loadouts; dedicated deckbuilding workspace; strength/weakness view. |
 | 0.1.7 | Your player journey | Flexible weekly objectives; journey journal; stronger season identity.         |
 | 0.1.8 | Learn and improve   | Saved match replays; distinctive bot personalities.                            |
-| 0.1.9 | Your identity       | Configurable public profiles; portrait frames.                                 |
+| 0.1.9 | Your identity       | Configurable public profiles; portrait frames; achievements UI/visual rework.  |
 
 ## 0.1.5 acceptance criteria
 
@@ -25,3 +25,11 @@ This is the agreed sequence after 0.1.4. Public GitHub Pages testing precedes ea
 - Keep the hand readable beside a filtered collection on desktop, with usable phone layouts. Provide explicit replacement, inspection, Undo and unsaved-work recovery.
 - Show real directional coverage, weak/high side counts and corner placement guidance. Include actual Holographic values without claiming a predicted win rate.
 - Support English/French and validate the new migration, recovery paths, keyboard controls and public testing build before production deployment.
+
+## 0.1.7 acceptance criteria
+
+- Complete any three of six weekly objectives for 150 Prisms, once per account and UTC week. Wins, streaks and collection loss are never required. Guests can progress and register before claiming.
+- Count real server records only, including practice and bots for full duels; exclude forfeits, timeouts and administrative test results. Reset Monday at 00:00 UTC, and reject stale-week claims. Repeated requests cannot pay twice.
+- Provide a persistent journey journal with optional next steps across tutorial, boosters, decks, duels, puzzles, drafting, duplicate management and card exchanges. Keep completed chapters after deleting a loadout.
+- Give Season 0 the identity “The First Gathering” and show separate actual rated results for Ranked, Draft and Shared Draft. Do not invent an end date, reset ratings or introduce collection loss.
+- Keep the home chat and card values readable, avoid extra polling on profile revisions, and verify English/French desktop and phone layouts. Achievements visual changes remain scheduled for 0.1.9.

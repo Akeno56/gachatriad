@@ -8,6 +8,7 @@
     "./combo-lesson": "./src/combo-lesson.ts",
     "./platform": "./src/platform.ts",
     "./puzzle": "./src/puzzle.ts",
+    "./journey": "./src/journey.ts",
     "./social": "./src/social.ts",
     "./rule-examples": "./src/rule-examples.ts",
     "./training-duel": "./src/training-duel.ts"

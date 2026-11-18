@@ -1,0 +1,446 @@
+.journey-page {
+  max-width: 1240px;
+  padding-bottom: 90px;
+}
+.journey-page-heading,
+.journey-intro,
+.journey-season-record > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.journey-page-heading {
+  margin-bottom: 16px;
+}
+.journey-page-heading h1 {
+  margin: 4px 0 0;
+  font: 38px/1.05 var(--pixel);
+  color: var(--gold);
+}
+.journey-page-heading > a {
+  flex: none;
+}
+.journey-intro {
+  margin: 12px 0;
+}
+.journey-intro p {
+  margin: 0;
+  color: #b9cbe6;
+}
+.journey-intro .text-button {
+  font-size: 19px;
+  flex: none;
+}
+.season-banner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 16px;
+  border-color: #b9a573;
+  background: linear-gradient(110deg, #293f6a, #142241 70%);
+}
+.season-seal {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  flex: none;
+  font: 74px/1 var(--pixel);
+  color: #cdbb8d;
+}
+.season-seal b {
+  position: absolute;
+  font: 28px/1 var(--pixel);
+}
+.season-copy {
+  min-width: 0;
+  flex: 1;
+}
+.season-banner h2 {
+  margin: 4px 0;
+  font: 30px/1 var(--pixel);
+  color: #f0ddb0;
+}
+.season-banner p {
+  margin: 4px 0;
+  color: #ccd5e6;
+}
+.season-banner small {
+  color: #a3b5d1;
+  font-size: 12px;
+}
+.season-banner > a {
+  flex: none;
+  font-size: 19px;
+}
+.journey-page #journey-panel {
+  margin-top: 16px;
+}
+.weekly-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 18px 20px;
+}
+.weekly-summary h2,
+.journal-summary h2,
+.journey-season-record h2 {
+  font: 30px/1 var(--pixel);
+  color: #e7d6a4;
+  margin: 5px 0 8px;
+}
+.weekly-summary p {
+  margin: 8px 0;
+}
+.weekly-summary small,
+.journey-note {
+  color: #acbfdb;
+  font: 13px/1.45 var(--sans);
+}
+.weekly-reward {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  min-width: 210px;
+  flex: none;
+  padding-left: 24px;
+  border-left: 1px solid #8ba1c04d;
+}
+.weekly-reward > strong {
+  color: #edcf83;
+  font: 32px/1 var(--pixel);
+}
+.weekly-reward > span {
+  color: #b9cbe5;
+  font-size: 13px;
+}
+.weekly-reward .weekly-count {
+  color: #e8e6df;
+  margin: 6px 0;
+}
+.weekly-reward .primary-button {
+  font-size: 21px;
+  min-height: 36px;
+}
+.weekly-claimed,
+.objective-footer > span {
+  color: #a1dcb5;
+}
+.weekly-objectives {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.weekly-objective {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.objective-heading {
+  display: flex;
+  gap: 10px;
+  align-items: start;
+}
+.objective-heading h3 {
+  font: 24px/1 var(--pixel);
+  margin: 1px 0;
+  color: #ebd9a8;
+  flex: 1;
+}
+.objective-number {
+  font: 21px/1 var(--pixel);
+  color: #9db6da;
+}
+.objective-heading > b {
+  white-space: nowrap;
+  font: 20px/1 var(--pixel);
+  color: #b9cbe5;
+}
+.weekly-objective p {
+  flex: 1;
+  color: #bccce3;
+  font: 14px/1.45 var(--sans);
+  margin: 12px 0;
+}
+.weekly-objective progress {
+  display: block;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border: 1px solid #8296b5;
+  background: #0e1930;
+  color: #bca465;
+}
+.weekly-objective progress::-webkit-progress-bar {
+  background: #0e1930;
+}
+.weekly-objective progress::-webkit-progress-value {
+  background: #c0a66c;
+}
+.weekly-objective progress::-moz-progress-bar {
+  background: #c0a66c;
+}
+.weekly-objective.is-complete {
+  border-color: #88b49c;
+}
+.weekly-objective.is-complete progress::-webkit-progress-value {
+  background: #8cb99c;
+}
+.weekly-objective.is-complete progress::-moz-progress-bar {
+  background: #8cb99c;
+}
+.objective-footer {
+  margin-top: 8px;
+  min-height: 26px;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  font: 18px/1 var(--pixel);
+}
+.objective-footer a {
+  padding: 3px 0;
+  font-size: 19px;
+}
+.journal-summary {
+  margin: 20px 0;
+}
+.journal-summary p {
+  color: #c1cee2;
+}
+.journal-chapters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
+  padding: 0;
+  gap: 12px;
+}
+.journal-chapter {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 8px 10px;
+  padding: 16px;
+  align-items: start;
+}
+.chapter-marker {
+  font: 25px/1 var(--pixel);
+  color: #afc5e5;
+  padding-top: 5px;
+}
+.journal-chapter.is-complete .chapter-marker {
+  color: #a1dcb5;
+}
+.journal-chapter small {
+  font-size: 12px;
+  color: #bba676;
+}
+.journal-chapter h3 {
+  font: 25px/1 var(--pixel);
+  color: #e5dbbe;
+  margin: 5px 0;
+}
+.journal-chapter p {
+  font-size: 14px;
+  color: #becce2;
+  margin: 6px 0;
+}
+.journal-chapter > a,
+.journal-chapter > button {
+  grid-column: 2;
+  justify-self: start;
+  font-size: 19px;
+  min-height: 32px;
+  padding: 5px 12px;
+}
+.journey-season-record {
+  padding: 18px 20px;
+  margin-top: 28px;
+  scroll-margin-top: 90px;
+}
+.journey-season-record header > a {
+  font-size: 19px;
+}
+.season-records {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 14px 0;
+}
+.season-records article {
+  border: 1px solid #7289ad;
+  padding: 14px;
+  background: #0d193480;
+}
+.season-records h3 {
+  margin: 0 0 8px;
+  font: 24px/1 var(--pixel);
+}
+.season-records article > strong {
+  font: 32px/1 var(--pixel);
+  color: #e4cf94;
+}
+.season-records strong small {
+  font-size: 17px;
+}
+.season-records p {
+  margin: 8px 0 12px;
+  color: #aebfda;
+  font-size: 13px;
+}
+.season-records dl {
+  display: flex;
+  gap: 20px;
+  margin: 0;
+}
+.season-records dt {
+  font-size: 12px;
+  color: #aebfda;
+}
+.season-records dd {
+  margin: 3px 0 0;
+  font: 22px/1 var(--pixel);
+}
+.journey-notice {
+  color: #b1dfbf;
+}
+.journey-error {
+  padding: 12px;
+  border: 1px solid #cd8e87;
+  margin: 12px 0;
+  color: #edc0b6;
+}
+.tavern-welcome .tavern-journey-link {
+  font: inherit;
+  color: #c5b581;
+  text-decoration: none;
+}
+.tavern-journey-link:hover {
+  text-decoration: underline;
+}
+.ladder-page .season-banner {
+  margin: 16px 0 20px;
+}
+@media (min-width: 1201px) and (max-width: 1450px) {
+  .system-bar {
+    column-gap: 12px;
+    padding-inline: 20px;
+  }
+  .system-bar > nav a {
+    padding-inline: 7px;
+  }
+  .system-bar .player-navigation {
+    gap: 2px;
+  }
+  .system-bar .player-navigation a {
+    padding-inline: 6px;
+  }
+}
+@media (max-width: 1000px) {
+  .weekly-objectives {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .season-banner {
+    flex-wrap: wrap;
+  }
+  .season-banner > a {
+    margin-left: 82px;
+  }
+}
+@media (max-width: 600px) {
+  .journey-page {
+    padding-inline: 12px;
+  }
+  .journey-page-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .journey-page-heading h1 {
+    font-size: 30px;
+  }
+  .journey-page-heading > a {
+    justify-self: end;
+    font-size: 19px;
+    padding: 6px 10px;
+  }
+  .season-banner {
+    padding: 12px;
+    gap: 10px;
+  }
+  .season-seal {
+    width: 40px;
+    height: 48px;
+    font-size: 62px;
+  }
+  .season-seal b {
+    font-size: 22px;
+  }
+  .season-banner h2 {
+    font-size: 26px;
+  }
+  .season-banner p {
+    font-size: 13px;
+  }
+  .season-banner > a {
+    flex: 1 1 100%;
+    min-width: 0;
+    margin-left: 0;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+  .journey-intro {
+    display: block;
+  }
+  .journey-intro p {
+    font-size: 14px;
+  }
+  .journey-intro .text-button {
+    display: block;
+    margin-top: 8px;
+    padding-inline: 0;
+    white-space: normal;
+    text-align: left;
+    font-size: 17px;
+  }
+  .weekly-summary {
+    display: block;
+    padding: 14px;
+  }
+  .weekly-summary p {
+    font-size: 14px;
+  }
+  .weekly-reward {
+    border-left: 0;
+    border-top: 1px solid #8ba1c04d;
+    padding: 12px 0 0;
+    margin-top: 12px;
+    min-width: 0;
+  }
+  .weekly-reward > button {
+    max-width: 100%;
+    white-space: normal;
+  }
+  .weekly-objectives,
+  .journal-chapters,
+  .season-records {
+    grid-template-columns: 1fr;
+  }
+  .weekly-objective {
+    padding: 14px;
+  }
+  .journey-season-record {
+    padding: 14px;
+    scroll-margin-top: 190px;
+  }
+  .journey-season-record > header {
+    display: block;
+  }
+  .season-records dl {
+    gap: 28px;
+  }
+}

@@ -22,6 +22,7 @@ import { socialProviders } from './social-auth';
 import { Feedback } from './feedback';
 import { DailyPuzzles } from './daily-puzzle';
 import { DeckLoadouts } from './deck-loadouts';
+import { PlayerJourney } from './journey';
 export async function createPlatform(
   root: string,
   options: { memory?: boolean; timers?: boolean; logger?: boolean } = {},
@@ -43,6 +44,7 @@ export async function createPlatform(
   const feedback = new Feedback(db, (await auth.$context).secret);
   const puzzles = new DailyPuzzles(db, (await auth.$context).secret);
   const loadouts = new DeckLoadouts(db);
+  const journey = new PlayerJourney(db);
   const review = new PlayerReview(db);
   if (process.env.TRIAD_LOCAL_TEST === 'true')
     await security.action('127.0.0.1', 'allow-shared', 'Isolated PC test save');
@@ -579,6 +581,18 @@ export async function createPlatform(
     return store.lobbies();
   });
   app.get('/api/achievements', async (req) => store.achievements((await profile(req)).id));
+  app.get('/api/journey', async (req) => {
+    const { actor, requested } = await sessionActor(req);
+    const p = await store.identity(actor, requested);
+    return journey.view(p.id, actor.id, p.registered);
+  });
+  app.post('/api/journey/weekly/claim', async (req) => {
+    const { actor, requested } = await sessionActor(req);
+    const p = await store.identity(actor, requested);
+    const result = await journey.claim(p.id, actor.id, p.registered, body(req).week);
+    notify();
+    return result;
+  });
   app.get('/api/local-bots', async (req) => {
     if (!(await profile(req)).isAdmin) throw new GameError('Administrator access required.', 403);
     return bots.status();
