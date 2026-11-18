@@ -159,7 +159,7 @@ export function TavernHome({
               <span>
                 <small>
                   <Link className="tavern-journey-link" href="/journey">
-                    Season {CURRENT_SEASON.id} · <span>Your journey</span> →
+                    Season {CURRENT_SEASON.id} · <span>Journal</span> →
                   </Link>
                 </small>
                 <strong>

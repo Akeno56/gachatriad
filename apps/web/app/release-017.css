@@ -22,11 +22,8 @@
   flex: none;
 }
 .journey-intro {
+  justify-content: flex-end;
   margin: 12px 0;
-}
-.journey-intro p {
-  margin: 0;
-  color: #b9cbe6;
 }
 .journey-intro .text-button {
   font-size: 19px;
@@ -63,14 +60,6 @@
   font: 30px/1 var(--pixel);
   color: #f0ddb0;
 }
-.season-banner p {
-  margin: 4px 0;
-  color: #ccd5e6;
-}
-.season-banner small {
-  color: #a3b5d1;
-  font-size: 12px;
-}
 .season-banner > a {
   flex: none;
   font-size: 19px;
@@ -86,7 +75,6 @@
   padding: 18px 20px;
 }
 .weekly-summary h2,
-.journal-summary h2,
 .journey-season-record h2 {
   font: 30px/1 var(--pixel);
   color: #e7d6a4;
@@ -95,8 +83,7 @@
 .weekly-summary p {
   margin: 8px 0;
 }
-.weekly-summary small,
-.journey-note {
+.weekly-summary small {
   color: #acbfdb;
   font: 13px/1.45 var(--sans);
 }
@@ -382,9 +369,6 @@
   .season-banner h2 {
     font-size: 26px;
   }
-  .season-banner p {
-    font-size: 13px;
-  }
   .season-banner > a {
     flex: 1 1 100%;
     min-width: 0;
@@ -395,9 +379,6 @@
   }
   .journey-intro {
     display: block;
-  }
-  .journey-intro p {
-    font-size: 14px;
   }
   .journey-intro .text-button {
     display: block;

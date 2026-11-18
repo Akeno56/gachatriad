@@ -12,8 +12,6 @@ export function SeasonBanner() {
         <div className="season-copy">
           <div className="eyebrow">Season {CURRENT_SEASON.id} · Alpha</div>
           <h2>{CURRENT_SEASON.name}</h2>
-          <p>{CURRENT_SEASON.description}</p>
-          <small>Open-ended alpha season · No end date announced</small>
         </div>
         <Link className="outline-button" href="/journey#season">
           Your season record <span aria-hidden="true">→</span>

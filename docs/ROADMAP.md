@@ -2,6 +2,8 @@
 
 This is the agreed sequence after 0.1.4. Public GitHub Pages testing precedes each production update. Features retain the FF/pixel style and support English/French, mouse-first interaction and narrow screens.
 
+Player-facing copy stays short and functional in both languages. Avoid promotional slogans, reassurance and repeated rule explanations in page bodies.
+
 | Patch | Theme               | Features                                                                       |
 | ----- | ------------------- | ------------------------------------------------------------------------------ |
 | 0.1.5 | The card tavern     | Tavern home; shared controls; clearer match results.                           |

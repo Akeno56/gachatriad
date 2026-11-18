@@ -136,7 +136,7 @@ test('links the tavern to readable weekly objectives and a persistent bilingual 
     ).toBeDisabled();
     await expect(c.page.locator('.season-banner')).toContainText('The First Gathering');
     await c.page.screenshot({ path: info.outputPath('weekly-en.png'), fullPage: true });
-    await c.page.getByRole('tab', { name: 'Your journey', exact: true }).click();
+    await c.page.getByRole('tab', { name: 'Progress', exact: true }).click();
     await expect(c.page.locator('.journal-chapter')).toHaveCount(8);
     await expect(c.page.locator('.journal-chapter.is-complete')).toHaveCount(2);
     const saved = await platform.app.inject({
@@ -156,7 +156,7 @@ test('links the tavern to readable weekly objectives and a persistent bilingual 
     await expect(c.page.locator('.journal-chapter.is-complete')).toHaveCount(3);
     await french(c.page);
     if (info.project.name === 'mobile') await c.page.setViewportSize({ width: 320, height: 844 });
-    await expect(c.page.locator('.journey-page-heading h1')).toHaveText('Le journal du voyageur');
+    await expect(c.page.locator('.journey-page-heading h1')).toHaveText('Journal');
     await fits(c.page);
     const banner = (await c.page.locator('.season-banner').boundingBox())!;
     const seasonLink = (await c.page.locator('.season-banner > a').boundingBox())!;
@@ -164,7 +164,7 @@ test('links the tavern to readable weekly objectives and a persistent bilingual 
     expect(seasonLink.x + seasonLink.width).toBeLessThanOrEqual(banner.x + banner.width);
     await c.page.evaluate(() => scrollTo(0, 0));
     await c.page.screenshot({ path: info.outputPath('journal-fr.png'), fullPage: true });
-    await c.page.getByRole('tab', { name: 'Votre parcours', exact: true }).focus();
+    await c.page.getByRole('tab', { name: 'Progression', exact: true }).focus();
     await c.page.keyboard.press('Home');
     await expect(c.page.getByRole('tab', { name: 'Cette semaine', exact: true })).toHaveAttribute(
       'aria-selected',

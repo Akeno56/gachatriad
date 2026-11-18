@@ -47,11 +47,7 @@ export default function JourneyPage() {
       const result = await api<{ awarded: number }>('/journey/weekly/claim', {
         week: data.weekly.week,
       });
-      setNotice(
-        result.awarded
-          ? 'Weekly reward claimed. Enjoy your next hand!'
-          : 'This week’s reward has already been claimed.',
-      );
+      setNotice(result.awarded ? 'Weekly reward claimed.' : 'Reward already claimed.');
       setSnapshot((current) =>
         current
           ? {
@@ -80,8 +76,7 @@ export default function JourneyPage() {
       <div className="content-page journey-page">
         <header className="journey-page-heading">
           <div>
-            <div className="eyebrow">YOUR PLAYER JOURNEY</div>
-            <h1>The traveller’s journal</h1>
+            <h1>Journal</h1>
           </div>
           <Link className="outline-button" href="/">
             Back to play
@@ -89,7 +84,6 @@ export default function JourneyPage() {
         </header>
         <SeasonBanner />
         <div className="journey-intro">
-          <p>A few paths to try. Your own pace. No streak to maintain.</p>
           <Button variant="ghost" onClick={reload} disabled={busy || !profile}>
             Refresh progress
           </Button>
@@ -99,7 +93,7 @@ export default function JourneyPage() {
           panelId="journey-panel"
           items={[
             { value: 'weekly', label: 'This week' },
-            { value: 'journal', label: 'Your journey' },
+            { value: 'journal', label: 'Progress' },
           ]}
           value={panel}
           onChange={setPanel}
@@ -123,15 +117,14 @@ export default function JourneyPage() {
           <div
             id="journey-panel"
             role="tabpanel"
-            aria-label={panel === 'weekly' ? 'This week' : 'Your journey'}
+            aria-label={panel === 'weekly' ? 'This week' : 'Progress'}
           >
             {panel === 'weekly' ? (
               <>
                 <section className="menu-window weekly-summary" aria-labelledby="weekly-title">
                   <div>
-                    <div className="eyebrow">WEEKLY OBJECTIVES</div>
-                    <h2 id="weekly-title">Choose your path</h2>
-                    <p>Complete any three of the six objectives. Play the activities you enjoy.</p>
+                    <h2 id="weekly-title">Weekly objectives</h2>
+                    <p>Complete any 3 objectives.</p>
                     <small>
                       Resets Monday at 00:00 UTC ·{' '}
                       <LocalizedDate
@@ -164,11 +157,6 @@ export default function JourneyPage() {
                     )}
                   </div>
                 </section>
-                {!weekly!.registered && (
-                  <p className="journey-note">
-                    Your progress counts as a guest. Register to keep it and claim weekly rewards.
-                  </p>
-                )}
                 <div className="weekly-objectives">
                   {WEEKLY_OBJECTIVES.map((objective, index) => {
                     const progress =
@@ -208,16 +196,10 @@ export default function JourneyPage() {
                     );
                   })}
                 </div>
-                <p className="journey-note">
-                  Full duels only: forfeits, timeouts and admin results do not count. Each account
-                  can claim one weekly reward.
-                </p>
               </>
             ) : (
               <>
                 <section className="journal-summary">
-                  <h2>Your story at the tables</h2>
-                  <p>Explore the game in any order. Completed chapters stay recorded.</p>
                   <p>
                     <strong>
                       {completedChapters} / {JOURNEY_CHAPTERS.length}
@@ -239,13 +221,9 @@ export default function JourneyPage() {
                           {done ? '✓' : String(index + 1).padStart(2, '0')}
                         </span>
                         <div>
-                          <small>
-                            {done
-                              ? 'Complete'
-                              : nextChapter?.id === chapter.id
-                                ? 'Suggested next step'
-                                : 'Explore when you like'}
-                          </small>
+                          {(done || nextChapter?.id === chapter.id) && (
+                            <small>{done ? 'Complete' : 'Next'}</small>
+                          )}
                           <h3>{chapter.name}</h3>
                           <p>{chapter.description}</p>
                         </div>
@@ -325,14 +303,6 @@ export default function JourneyPage() {
                 </article>
               ))}
             </div>
-            <p className="journey-note">
-              Each format has its own Elo. Only eligible human matches affect rating. Practice and
-              bot matches never change Elo.
-            </p>
-            <p className="journey-note">
-              Ordinary Ranked never removes cards from your collection. Trade One is an optional
-              custom rule.
-            </p>
           </section>
         )}
       </div>
