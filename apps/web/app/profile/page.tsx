@@ -15,6 +15,7 @@ import { AdminPlayerReview } from '../../components/admin-player-review';
 import { useSocial, openFriendChat } from '../../components/social-state';
 import { usePageRefresh } from '../../components/use-page-refresh';
 import { SocialLogin } from '../../components/social-login';
+import { BotStyle } from '../../components/bot-style';
 export default function ProfilePage() {
   return (
     <Suspense
@@ -118,6 +119,12 @@ function PlayerProfile() {
                   <NoTranslate>{player.name}</NoTranslate>
                 </h2>
                 {player.title && <p className="profile-title">{player.title}</p>}
+                <BotStyle style={player.botStyle} />
+                {self && (
+                  <Link className="outline-button profile-replays-link" href="/replays">
+                    Replays
+                  </Link>
+                )}
                 <p>
                   Joined <LocalizedDate value={player.joinedAt} />
                 </p>

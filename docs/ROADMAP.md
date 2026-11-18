@@ -35,3 +35,11 @@ Season names use a single word. Player-facing copy stays short and functional in
 - Provide a persistent journey journal with optional next steps across tutorial, boosters, decks, duels, puzzles, drafting, duplicate management and card exchanges. Keep completed chapters after deleting a loadout.
 - Give Season 0 the identity “Astral” and show separate actual rated results for Ranked, Draft and Shared Draft. Do not invent an end date, reset ratings or introduce collection loss.
 - Keep the home chat and card values readable, avoid extra polling on profile revisions, and verify English/French desktop and phone layouts. Achievements visual changes remain scheduled for 0.1.9.
+
+## 0.1.8 acceptance criteria
+
+- Save completed matches for their participants, including practice and both Draft formats. Provide a private library with mode filters, favourites and pagination. Active matches and unrelated players must never expose hidden hands through replay endpoints.
+- Preserve actual starting cards, Holographic values, rules, Elemental cells, captures, final result and awarded Elo. Playback uses stored frames rather than rerunning a future rules engine. Support older completed matches and partial games ending in forfeit.
+- Offer first/previous/next/last turns, scrubbing, pause/play, speed and card inspection. Access replays from the result screen and the player's own profile. Reading or favouriting a replay cannot award rewards or alter ratings.
+- Give bots Balanced, Attack, Defence and Combos styles independently of difficulty. Let players select practice difficulty, style and rules. Keep bot labels, legal deck limits, hidden-hand privacy and existing no-Elo practice rules.
+- Retain account-deletion anonymisation, English/French and usable phone layouts. Verify the public GitHub Pages test build before production deployment. Achievements visuals remain in 0.1.9.

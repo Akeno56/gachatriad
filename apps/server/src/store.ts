@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import {
   applyMove,
   chooseCpuMove,
+  CPU_STYLES,
   cpuView,
   createGame,
   isRevealed,
@@ -22,6 +23,7 @@ import {
   type GameState,
   type Player,
   type Rules,
+  type CpuStyle,
 } from '@gacha-triad/engine';
 import { CARDS, ALL_CARDS } from '@gacha-triad/shared';
 import {
@@ -45,6 +47,7 @@ import { draftPool } from './draft-packs';
 import { draftTurn, legalDraftCards, type SharedDraft } from './shared-draft';
 import { pruneDeck } from './inventory';
 import { titleName, titlesFor, awardRankTitles } from './titles';
+import { archiveReplay } from './replays';
 export interface Actor {
   id: string;
   name: string;
@@ -68,6 +71,7 @@ interface ProfileRow {
   [key: string]: unknown;
 }
 interface MatchRow {
+  cpu_style: CpuStyle;
   shared_draft: SharedDraft | null;
   season: number;
   disconnected_at: [number | null, number | null];
@@ -193,6 +197,7 @@ export class GameStore {
       '019_shared_draft_daily_puzzle.sql',
       '020_deck_loadouts.sql',
       '021_player_journey.sql',
+      '022_replays_bot_styles.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -481,7 +486,8 @@ export class GameStore {
       if (rows.length !== 1) throw new GameError('A card is no longer available.', 409);
     }
   }
-  async solo(id: string, difficulty: 'easy' | 'normal', rules: Rules) {
+  async solo(id: string, difficulty: 'easy' | 'normal', rules: Rules, style: unknown = 'balanced') {
+    if (!CPU_STYLES.includes(style as CpuStyle)) throw new GameError('Choose a bot style.');
     return this.db.tx(async (sql) => {
       await this.busy(sql, id);
       const deck = await this.deck(sql, id, !!rules.random);
@@ -489,7 +495,18 @@ export class GameStore {
         CARDS.filter((c) => c.rarity <= Math.max(...deck.map((c) => c.rarity))),
         rng(),
       );
-      return this.newMatch(sql, 'solo', id, null, rules, 'none', [deck, cpu], difficulty);
+      const matchId = await this.newMatch(
+        sql,
+        'solo',
+        id,
+        null,
+        rules,
+        'none',
+        [deck, cpu],
+        difficulty,
+      );
+      await sql('UPDATE matches SET cpu_style=$1 WHERE id=$2', [style, matchId]);
+      return matchId;
     });
   }
   private async newMatch(
@@ -555,14 +572,15 @@ export class GameStore {
   }
   async lobbies(includeRated = false): Promise<LobbyView[]> {
     return this.db.read(async (sql) => {
-      const rows = await sql<LobbyRow & { host: string }>(
-        "SELECT l.*,p.name host FROM lobbies l JOIN profiles p ON p.id=l.host_id WHERE l.status IN('waiting','playing') AND ($1 OR l.mode NOT IN('ranked','draft','shared-draft')) ORDER BY l.created_at DESC LIMIT 200",
+      const rows = await sql<LobbyRow & { host: string; bot_style: CpuStyle | null }>(
+        "SELECT l.*,p.name host,CASE WHEN p.is_bot THEN p.bot_style ELSE NULL END bot_style FROM lobbies l JOIN profiles p ON p.id=l.host_id WHERE l.status IN('waiting','playing') AND ($1 OR l.mode NOT IN('ranked','draft','shared-draft')) ORDER BY l.created_at DESC LIMIT 200",
         [includeRated],
       );
       return rows.map((r) => ({
         id: r.id,
         name: r.name,
         host: r.host,
+        botStyle: r.bot_style,
         hostId: r.host_id,
         allowBots: r.allow_bots,
         inviteOnly: !!r.invited_profile || !r.spectatable,
@@ -785,10 +803,11 @@ export class GameStore {
         avatar_card: string | null;
         selected_title: string | null;
         is_bot: boolean;
-      }>('SELECT id,name,avatar_card,selected_title,is_bot FROM profiles WHERE id=$1 OR id=$2', [
-        m.player0,
-        m.player1,
-      ]);
+        bot_style: CpuStyle;
+      }>(
+        'SELECT id,name,avatar_card,selected_title,is_bot,bot_style FROM profiles WHERE id=$1 OR id=$2',
+        [m.player0, m.player1],
+      );
       const game = m.state
         ? {
             ...m.state,
@@ -817,6 +836,7 @@ export class GameStore {
         return {
           id,
           name: p?.name ?? (m.difficulty === 'normal' ? 'The Strategist' : 'The Wanderer'),
+          botStyle: p?.is_bot ? p.bot_style : !id && m.mode === 'solo' ? m.cpu_style : null,
           title: titleName(p?.selected_title),
           avatar: p?.avatar_card ? (byId.get(p.avatar_card) ?? null) : null,
         };
@@ -875,6 +895,7 @@ export class GameStore {
         };
       }
       return {
+        cpuStyle: m.cpu_style,
         spectatorResult,
         sharedDraft:
           !spectator && m.shared_draft && m.status === 'drafting' && m.pools
@@ -1374,6 +1395,7 @@ export class GameStore {
     }
     if (reason !== 'admin test result' && m.mode === 'ranked' && !profileRows.some((p) => p.is_bot))
       await awardRankTitles(sql);
+    await archiveReplay(sql, m.id);
     await sql("UPDATE lobbies SET status='closed' WHERE match_id=$1", [m.id]);
   }
   async resign(profileId: string, id: string) {
@@ -1439,6 +1461,10 @@ export class GameStore {
       [cardId, m.id],
     );
     await sql('UPDATE profiles SET trade_wins=trade_wins+1 WHERE id=$1', [recipient]);
+    await sql(
+      "UPDATE match_replays SET payload=jsonb_set(jsonb_set(payload,'{tradePending}','false'::jsonb),'{claimedCardId}',to_jsonb($1::text)) WHERE match_id=$2",
+      [cardId, m.id],
+    );
     await pruneDeck(sql, loser);
     await this.unlock(sql, recipient);
   }
@@ -1491,6 +1517,7 @@ export class GameStore {
         titles: await titlesFor(sql, p.id),
         name: p.name,
         isBot: p.is_bot === true,
+        botStyle: p.is_bot === true ? (p.bot_style as CpuStyle) : null,
         joinedAt: (p.created_at as Date).toISOString(),
         rating: p.rating,
         draftRating: p.draft_rating,
@@ -1664,7 +1691,7 @@ export class GameStore {
     const seat = m.state.turn;
     let move;
     if (m.mode === 'solo' && seat === 1)
-      move = chooseCpuMove(cpuView(m.state), m.difficulty || 'easy', rng());
+      move = chooseCpuMove(cpuView(m.state), m.difficulty || 'easy', rng(), m.cpu_style);
     else {
       m.auto_turns[seat]++;
       if (m.auto_turns[seat] >= 2) {

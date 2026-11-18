@@ -7,6 +7,7 @@ import { useSession } from './session';
 import { api } from '../lib/platform';
 import { confirmRanked, confirmUnranked, confirmDraft, confirmSharedDraft } from './ranked-warning';
 import { Button, GameDialog } from './ui';
+import { PracticeSetup } from './practice-setup';
 export function MatchmakingPanel({
   onMatch,
   onRules,
@@ -18,6 +19,7 @@ export function MatchmakingPanel({
 }) {
   const { profile, refresh } = useSession();
   const [busy, setBusy] = useState(false),
+    [soloOpen, setSoloOpen] = useState(false),
     [practice, setPractice] = useState(false),
     [error, setError] = useState(''),
     [now, setNow] = useState(Date.now());
@@ -167,13 +169,16 @@ export function MatchmakingPanel({
         {profile && profile.deck.length !== 5 && (
           <p className="deck-warning" role="status">
             Your active deck has {profile.deck.length}/5 cards.{' '}
-            <Link href="/collection">Complete your deck in Collection</Link> before playing.
+            <Link href="/decks">Complete your deck in Decks</Link> before playing.
           </p>
         )}
         {!profile?.registered && (
           <p className="queue-account-note">An account is required for Ranked.</p>
         )}
         <div className="setup-secondary">
+          <button className="text-button" onClick={() => setSoloOpen(true)}>
+            Practice
+          </button>
           <button className="text-button" onClick={onTutorial}>
             How to play
           </button>
@@ -184,6 +189,7 @@ export function MatchmakingPanel({
         <p className="error-message" role="alert">
           {error}
         </p>
+        <PracticeSetup open={soloOpen} onClose={() => setSoloOpen(false)} onMatch={onMatch} />
         <GameDialog
           open={practice}
           onClose={() => setPractice(false)}

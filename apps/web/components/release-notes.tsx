@@ -29,9 +29,9 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>Weekly objectives: complete any five for 150 Prisms.</li>
-          <li>Journal: track progress across eight activities.</li>
-          <li>Season 0: Astral, with separate records for all three rated formats.</li>
+          <li>Replays: review completed matches and save favourites.</li>
+          <li>Bots: Balanced, Attack, Defence and Combos styles.</li>
+          <li>Practice: choose a bot style, difficulty and rules.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

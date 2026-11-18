@@ -407,6 +407,8 @@ export function applyMove(state: GameState, move: Move): GameState {
 export type Difficulty = 'easy' | 'normal' | 'hard';
 /** CPU receives only its own hand and the public board. Opponent hidden cards are omitted. */
 export type CpuView = Omit<GameState, 'hands' | 'revealed'> & { readonly hand: readonly Card[] };
+export const CPU_STYLES = ['balanced', 'aggressive', 'defensive', 'combo'] as const;
+export type CpuStyle = (typeof CPU_STYLES)[number];
 export function cpuView(state: GameState): CpuView {
   const { hands, revealed, ...publicState } = state;
   return { ...publicState, hand: hands[state.turn] };
@@ -415,6 +417,7 @@ export function chooseCpuMove(
   view: CpuView,
   difficulty: Difficulty,
   random: () => number,
+  style: CpuStyle = 'balanced',
 ): Move | null {
   // A synthetic empty opposing hand is sufficient for local capture evaluation. No hidden knowledge.
   const hands: [readonly Card[], readonly Card[]] = [[], []];
@@ -454,6 +457,12 @@ export function chooseCpuMove(
         weakness * 0.85 -
         risk * 0.9 +
         (exposure.length === 0 ? 2 : 0);
+    }
+    if (style === 'aggressive') value += captures * 9 - defense * 0.12 + weakness * 0.25;
+    if (style === 'defensive') value += defense * 0.7 - weakness * 2 - exposure.length;
+    if (style === 'combo') {
+      const special = next.history.at(-1)!.captures.filter((c) => c.reason !== 'standard');
+      value += special.length * 14 + special.filter((c) => c.reason === 'combo').length * 8;
     }
     if (value > best + 0.0001) {
       best = value;

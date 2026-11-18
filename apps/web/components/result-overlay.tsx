@@ -1,5 +1,6 @@
 'use client';
 import { useRef } from 'react';
+import Link from 'next/link';
 import type { MatchView } from '@gacha-triad/shared/platform';
 import { LocaleView, NoTranslate } from './i18n';
 import { Card } from './card';
@@ -208,6 +209,9 @@ export function ResultOverlay({
           ) : null}
         </section>
         <div className="result-actions">
+          <Link className="outline-button" href={`/replays?match=${match.id}`}>
+            Replay
+          </Link>
           {match.mode === 'solo' && (
             <Button variant="primary" busy={busy} onClick={onPlayAgain}>
               Play again ▶

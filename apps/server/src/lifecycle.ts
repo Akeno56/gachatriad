@@ -1,10 +1,12 @@
 import type { Sql } from './database';
 import type { GameStore } from './store';
 import { GameError } from './errors';
+import { anonymizeReplays } from './replays';
 
 /** Delete private guest data; retain anonymized duel/trade history for the other player. */
 async function purge(sql: Sql, ids: string[]) {
   if (!ids.length) return;
+  await anonymizeReplays(sql, ids);
   await sql(
     "INSERT INTO profiles(id,name,default_deck) VALUES('former-guest','Deleted player','[]') ON CONFLICT DO NOTHING",
   );
@@ -46,6 +48,9 @@ async function purge(sql: Sql, ids: string[]) {
   ])
     await sql(`DELETE FROM ${table} WHERE profile_id=ANY($1::text[])`, [ids]);
   await sql('DELETE FROM profiles WHERE id=ANY($1::text[])', [ids]);
+  await sql(
+    'DELETE FROM match_replays r WHERE NOT EXISTS(SELECT 1 FROM replay_owners o WHERE o.match_id=r.match_id)',
+  );
 }
 export class GuestLifecycle {
   constructor(readonly store: GameStore) {}

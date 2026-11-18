@@ -8,7 +8,6 @@ import {
   PRESETS,
   validateDeck,
   type Card as CardData,
-  type Rules,
 } from '@gacha-triad/engine';
 import { ALL_CARDS as CARDS } from '@gacha-triad/shared';
 import type { MatchView } from '@gacha-triad/shared/platform';
@@ -30,16 +29,9 @@ import { CaptureCard } from './capture-card';
 import { DraftOpening } from './draft-opening';
 import { SharedDraft } from './shared-draft';
 import { BattleChat } from './battle-chat';
-export function ruleNames(r: Rules) {
-  return [
-    r.allOpen ? 'All Open' : r.threeOpen ? 'Three Open' : 'Closed',
-    ...(r.same ? ['Same'] : []),
-    ...(r.plus ? ['Plus'] : []),
-    ...(r.combo ? ['Combo'] : []),
-    ...(r.random ? ['Random'] : []),
-    ...(r.elemental ? ['Elemental'] : []),
-  ];
-}
+import { BotStyle } from './bot-style';
+import { ruleNames } from '../lib/rules';
+export { ruleNames } from '../lib/rules';
 const describe = (c: CardData, modifier = 0) =>
   `${c.name}. Top ${displayValue(c.stats[0] + modifier)}, right ${displayValue(c.stats[1] + modifier)}, bottom ${displayValue(c.stats[2] + modifier)}, left ${displayValue(c.stats[3] + modifier)}. ${c.rarity} stars`;
 export function Game() {
@@ -214,6 +206,7 @@ export function Game() {
     try {
       const result = await api<{ matchId: string }>('/solo', {
         difficulty: match?.names[1] === 'The Strategist' ? 'normal' : 'easy',
+        style: match?.cpuStyle ?? 'balanced',
         rules: match?.rules ?? PRESETS[0].rules,
       });
       setMatchId(result.matchId);
@@ -530,6 +523,7 @@ export function Game() {
                         <strong>
                           <NoTranslate>{match.names[other]}</NoTranslate>
                         </strong>
+                        <BotStyle style={match.players[other].botStyle} />
                         {match.players[other].title && (
                           <span className="battle-title">{match.players[other].title}</span>
                         )}

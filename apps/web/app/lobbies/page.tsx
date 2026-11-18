@@ -13,6 +13,7 @@ import { LocalBots } from '../../components/local-bots';
 import { confirmUnranked } from '../../components/ranked-warning';
 import { useAllowBots } from '../../lib/lobby-preferences';
 import { MainChat } from '../../components/main-chat';
+import { BotStyle } from '../../components/bot-style';
 export default function Lobbies() {
   const { profile, revision, refresh, error: connectionError } = useSession(),
     router = useRouter();
@@ -379,7 +380,8 @@ export default function Lobbies() {
                     <Link href={`/profile?id=${row.hostId}`}>
                       <NoTranslate>{row.host}</NoTranslate>
                     </Link>{' '}
-                    · {row.mode === 'casual' ? 'Unranked' : row.mode}
+                    · {row.mode === 'casual' ? 'Unranked' : row.mode}{' '}
+                    <BotStyle style={row.botStyle} />
                   </p>
                   <div className="rule-badges">
                     {(row.mode === 'roulette' && row.status === 'waiting'

@@ -23,6 +23,7 @@ import { Feedback } from './feedback';
 import { DailyPuzzles } from './daily-puzzle';
 import { DeckLoadouts } from './deck-loadouts';
 import { PlayerJourney } from './journey';
+import { MatchReplays } from './replays';
 export async function createPlatform(
   root: string,
   options: { memory?: boolean; timers?: boolean; logger?: boolean } = {},
@@ -45,6 +46,7 @@ export async function createPlatform(
   const puzzles = new DailyPuzzles(db, (await auth.$context).secret);
   const loadouts = new DeckLoadouts(db);
   const journey = new PlayerJourney(db);
+  const replays = new MatchReplays(db);
   const review = new PlayerReview(db);
   if (process.env.TRIAD_LOCAL_TEST === 'true')
     await security.action('127.0.0.1', 'allow-shared', 'Isolated PC test save');
@@ -581,6 +583,16 @@ export async function createPlatform(
     return store.lobbies();
   });
   app.get('/api/achievements', async (req) => store.achievements((await profile(req)).id));
+  app.get('/api/replays', async (req) =>
+    replays.list(
+      (await profile(req)).id,
+      req.query as { mode?: string; offset?: string; favorites?: string },
+    ),
+  );
+  app.get('/api/replays/:id', async (req) => replays.get((await profile(req)).id, id(req)));
+  app.post('/api/replays/:id/favorite', async (req) =>
+    replays.favorite((await profile(req)).id, id(req), body(req).favorite),
+  );
   app.get('/api/journey', async (req) => {
     const { actor, requested } = await sessionActor(req);
     const p = await store.identity(actor, requested);
@@ -734,6 +746,7 @@ export async function createPlatform(
         p.id,
         b.difficulty === 'normal' ? 'normal' : 'easy',
         cleanRules(b.rules),
+        b.style,
       );
       notify();
       return { matchId };

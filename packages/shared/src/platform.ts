@@ -1,4 +1,4 @@
-import type { Card, GameState, Player, Rules } from '@gacha-triad/engine';
+import type { Card, GameState, Player, Rules, CpuStyle } from '@gacha-triad/engine';
 import type { BattleIdentity, TitleView } from './social';
 export type Mode = 'solo' | 'casual' | 'custom' | 'ranked' | 'draft' | 'shared-draft' | 'roulette';
 export const isDraftMode = (mode: string) => mode === 'draft' || mode === 'shared-draft';
@@ -10,6 +10,7 @@ export interface HandCard {
   card: Card | null;
 }
 export interface MatchView {
+  cpuStyle?: CpuStyle;
   sharedDraft?: {
     first: Player;
     turn: Player | null;
@@ -75,6 +76,7 @@ export interface MatchView {
   };
 }
 export interface LobbyView {
+  botStyle?: CpuStyle | null;
   allowBots: boolean;
   inviteOnly: boolean;
   hostId: string;
@@ -282,6 +284,7 @@ export const ACHIEVEMENTS = [
   },
 ] as const;
 export interface PlayerProfileView {
+  botStyle?: CpuStyle | null;
   title: string | null;
   titleId: string | null;
   titles: TitleView[];

@@ -1,11 +1,13 @@
 import { randomUUID, randomInt } from 'node:crypto';
 import {
   chooseCpuMove,
+  CPU_STYLES,
   cpuView,
   randomDeck,
   seededRandom,
   STANDARD,
   type GameState,
+  type CpuStyle,
 } from '@gacha-triad/engine';
 import { CARDS, STARTER_DECK, CPU_DECK } from '@gacha-triad/shared';
 import type { Mode, PopulationView } from '@gacha-triad/shared/platform';
@@ -144,9 +146,10 @@ export class BotPopulation {
         });
         const p = await this.store.profile({ id, name: `[BOT] ${NAMES[i]}`, isAnonymous: false });
         await this.store.db.read((sql) =>
-          sql('UPDATE profiles SET is_bot=true,bot_difficulty=$2 WHERE id=$1', [
+          sql('UPDATE profiles SET is_bot=true,bot_difficulty=$2,bot_style=$3 WHERE id=$1', [
             p.id,
             distribution[i],
+            CPU_STYLES[i % CPU_STYLES.length],
           ]),
         );
         for (const pack of await this.store.economy.list(p.id))
@@ -174,8 +177,8 @@ export class BotPopulation {
   }
   private async actors() {
     return this.store.db.read((sql) =>
-      sql<Actor & { bot_difficulty: 'easy' | 'medium' | 'hard' }>(
-        'SELECT DISTINCT u.id,u.name,false AS "isAnonymous",p.bot_difficulty FROM "user" u JOIN profile_accounts a ON a.auth_user_id=u.id JOIN profiles p ON p.id=a.profile_id WHERE p.is_bot ORDER BY u.id',
+      sql<Actor & { bot_difficulty: 'easy' | 'medium' | 'hard'; bot_style: CpuStyle }>(
+        'SELECT DISTINCT u.id,u.name,false AS "isAnonymous",p.bot_difficulty,p.bot_style FROM "user" u JOIN profile_accounts a ON a.auth_user_id=u.id JOIN profiles p ON p.id=a.profile_id WHERE p.is_bot ORDER BY u.id',
       ),
     );
   }
@@ -232,6 +235,7 @@ export class BotPopulation {
                 ? 'normal'
                 : difficulty,
               seededRandom(randomInt(2 ** 32)),
+              actor.bot_style,
             );
             if (move) {
               await this.store.move(p.id, m.id, move.cardId, move.cell, m.version);

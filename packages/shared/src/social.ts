@@ -80,6 +80,7 @@ export const TITLES = [
   },
 ] as const;
 export interface BattleIdentity {
+  botStyle?: import('@gacha-triad/engine').CpuStyle | null;
   id: string | null;
   name: string;
   title: string | null;

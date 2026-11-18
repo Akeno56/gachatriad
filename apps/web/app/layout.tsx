@@ -31,6 +31,7 @@ import './release-015.css';
 import './spectator-results.css';
 import './release-016.css';
 import './release-017.css';
+import './release-018.css';
 
 export const metadata: Metadata = {
   title: 'Gacha Triad · Cross-world card battle',
