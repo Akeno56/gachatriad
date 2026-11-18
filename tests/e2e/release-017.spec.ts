@@ -164,7 +164,7 @@ test('links the tavern to readable weekly objectives and a persistent bilingual 
     await expect(
       c.page.getByRole('button', { name: 'Claim weekly reward', exact: true }),
     ).toBeDisabled();
-    await expect(c.page.locator('.season-banner')).toContainText('The First Gathering');
+    await expect(c.page.locator('.season-banner')).toContainText('Astral');
     await centeredSeason(c.page);
     await expect(c.page.locator('.weekly-count')).toContainText('0 / 5');
     await c.page.screenshot({ path: info.outputPath('weekly-en.png'), fullPage: true });

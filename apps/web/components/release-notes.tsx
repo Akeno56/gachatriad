@@ -31,7 +31,7 @@ export function ReleaseNotes() {
         <ul>
           <li>Weekly objectives: complete any five for 150 Prisms.</li>
           <li>Journal: track progress across eight activities.</li>
-          <li>Season 0: The First Gathering, with separate records for all three rated formats.</li>
+          <li>Season 0: Astral, with separate records for all three rated formats.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

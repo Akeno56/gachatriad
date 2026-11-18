@@ -262,7 +262,7 @@ it('uses the actual rating ledger and separates the current season and all three
     { mode: 'draft', games: 1, wins: 1 },
     { mode: 'shared-draft', games: 1, wins: 1 },
   ]);
-  expect(result.season).toMatchObject({ id: 0, name: 'The First Gathering', endAt: null });
+  expect(result.season).toMatchObject({ id: 0, name: 'Astral', endAt: null });
   const ladder = (await request(u, '/ladder?mode=ranked')).json();
   expect(ladder.find((row: { id: string }) => row.id === u.profile.id)?.games).toBe(1);
 });

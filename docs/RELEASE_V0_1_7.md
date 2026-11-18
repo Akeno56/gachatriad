@@ -6,7 +6,7 @@ Public GitHub Pages testing comes first. This release keeps achievements present
 
 - **Flexible weeklies:** finish any five of six objectives for 150 Stellar Prisms. Options cover full duels, different modes, a daily puzzle, non-starter boosters, a saved full deck, or a custom/Roulette duel. No wins, consecutive logins or Trade One stakes are required. Practice and bots count for duel objectives; starter packs do not count for the booster objective. Free daily boosters do.
 - **Journey journal:** eight optional chapters guide players through the tutorial, boosters, named decks, complete duels, puzzles, both drafting formats, duplicates and card exchanges. A suggested next chapter never blocks other activities. Existing qualifying history is recognised, and completed chapters remain recorded.
-- **Season identity:** Season 0 is “The First Gathering”. The journal and Ladder show the season name and explain the three separate Elo ladders. Season records count the actual rating ledger. There is no scheduled season end or rating reset in this patch.
+- **Season identity:** Season 0 is “Astral”. The journal and Ladder show the season name and explain the three separate Elo ladders. Season records count the actual rating ledger. There is no scheduled season end or rating reset in this patch.
 
 The Journal is available from the main navigation and the home-page welcome line. Existing card sizes and the home chat’s viewport fit are preserved. All new player text supports English and French.
 

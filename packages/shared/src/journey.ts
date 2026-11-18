@@ -1,6 +1,6 @@
 export const CURRENT_SEASON = {
   id: 0,
-  name: 'The First Gathering',
+  name: 'Astral',
   endAt: null,
 } as const;
 
