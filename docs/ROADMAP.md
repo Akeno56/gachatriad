@@ -30,7 +30,7 @@ Player-facing copy stays short and functional in both languages. Avoid promotion
 
 ## 0.1.7 acceptance criteria
 
-- Complete any three of six weekly objectives for 150 Prisms, once per account and UTC week. Wins, streaks and collection loss are never required. Guests can progress and register before claiming.
+- Complete any five of six weekly objectives for 150 Prisms, once per account and UTC week. Wins, streaks and collection loss are never required. Guests can progress and register before claiming.
 - Count real server records only, including practice and bots for full duels; exclude forfeits, timeouts and administrative test results. Reset Monday at 00:00 UTC, and reject stale-week claims. Repeated requests cannot pay twice.
 - Provide a persistent journey journal with optional next steps across tutorial, boosters, decks, duels, puzzles, drafting, duplicate management and card exchanges. Keep completed chapters after deleting a loadout.
 - Give Season 0 the identity “The First Gathering” and show separate actual rated results for Ranked, Draft and Shared Draft. Do not invent an end date, reset ratings or introduce collection loss.

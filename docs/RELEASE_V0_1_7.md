@@ -4,7 +4,7 @@ Public GitHub Pages testing comes first. This release keeps achievements present
 
 ## Player features
 
-- **Flexible weeklies:** finish any three of six objectives for 150 Stellar Prisms. Options cover full duels, different modes, a daily puzzle, non-starter boosters, a saved full deck, or a custom/Roulette duel. No wins, consecutive logins or Trade One stakes are required. Practice and bots count for duel objectives; starter packs do not count for the booster objective. Free daily boosters do.
+- **Flexible weeklies:** finish any five of six objectives for 150 Stellar Prisms. Options cover full duels, different modes, a daily puzzle, non-starter boosters, a saved full deck, or a custom/Roulette duel. No wins, consecutive logins or Trade One stakes are required. Practice and bots count for duel objectives; starter packs do not count for the booster objective. Free daily boosters do.
 - **Journey journal:** eight optional chapters guide players through the tutorial, boosters, named decks, complete duels, puzzles, both drafting formats, duplicates and card exchanges. A suggested next chapter never blocks other activities. Existing qualifying history is recognised, and completed chapters remain recorded.
 - **Season identity:** Season 0 is “The First Gathering”. The journal and Ladder show the season name and explain the three separate Elo ladders. Season records count the actual rating ledger. There is no scheduled season end or rating reset in this patch.
 
@@ -22,7 +22,7 @@ Only natural nine-turn finishes count for duel objectives. Forfeits, timeout res
 
 1. Open the Pages preview with the isolated testing server selected. From Play, follow the season/journey link. Check all six weekly options and all eight journal chapters in English and French.
 2. Save a complete named deck, then delete the loadout. Refresh the journal: its deck chapter and this week’s deck objective should stay complete. An incomplete loadout must not earn them.
-3. Complete duels in different modes, or choose the puzzle/booster/deck path. Finish any three options, claim the reward and reload. The balance should increase by exactly 150 once; inventory, active hand and Elo must remain unchanged by the claim.
+3. Combine duels in different modes with the puzzle, booster or deck objectives. Finish any five options, claim the reward and reload. The balance should increase by exactly 150 once; inventory, active hand and Elo must remain unchanged by the claim.
 4. Try the flow as a guest, register from the journal and confirm that progress remains. Simulate a failed progress request or claim and retry without losing the reward.
 5. Check Play and the journal at 1280×720 and on a 320-pixel-wide French phone layout. Check keyboard tabs, the mobile navigation, the tutorial action and Back to play on the `/gachatriad` Pages base path.
 6. Review season records for Ranked, Draft and Shared Draft. Bot/practice and other non-rated results must not appear as rated games. Verify that ordinary Ranked still has no card loss.

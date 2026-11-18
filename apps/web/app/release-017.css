@@ -44,12 +44,16 @@
   width: 52px;
   height: 52px;
   flex: none;
-  font: 74px/1 var(--pixel);
   color: #cdbb8d;
 }
-.season-seal b {
-  position: absolute;
-  font: 28px/1 var(--pixel);
+.season-seal svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.season-seal text {
+  fill: currentColor;
+  font: 28px var(--pixel);
 }
 .season-copy {
   min-width: 0;
@@ -361,10 +365,6 @@
   .season-seal {
     width: 40px;
     height: 48px;
-    font-size: 62px;
-  }
-  .season-seal b {
-    font-size: 22px;
   }
   .season-banner h2 {
     font-size: 26px;

@@ -49,7 +49,7 @@ export const WEEKLY_OBJECTIVES = [
   },
 ] as const;
 export type WeeklyObjectiveId = (typeof WEEKLY_OBJECTIVES)[number]['id'];
-export const WEEKLY_REQUIRED = 3;
+export const WEEKLY_REQUIRED = 5;
 export const WEEKLY_REWARD = 150;
 
 export const JOURNEY_CHAPTERS = [

@@ -1666,12 +1666,10 @@
   "rated games": "parties classées",
   "Register an account to claim weekly rewards.": "Inscrivez-vous pour récupérer les récompenses hebdomadaires.",
   "A new week has started. Refresh your objectives.": "Une nouvelle semaine a commencé. Actualisez vos objectifs.",
-  "Complete any three weekly objectives before claiming.": "Accomplissez trois objectifs hebdomadaires avant de récupérer la récompense.",
   "Season 0: The First Gathering, with separate records for all three rated formats.": "Saison 0 : Le Premier Rassemblement, avec un bilan distinct pour chacun des trois formats classés.",
   "Complete": "Accompli",
   "Build a deck": "Composer un deck",
   "Weekly objectives": "Objectifs hebdomadaires",
-  "Complete any 3 objectives.": "Accomplissez 3 objectifs.",
   "Duels": "Duels",
   "Complete 3 full duels.": "Terminez 3 duels complets.",
   "Game modes": "Modes de jeu",
@@ -1694,6 +1692,8 @@
   "Next": "Suivant",
   "Weekly reward claimed.": "Récompense hebdomadaire récupérée.",
   "Reward already claimed.": "Récompense déjà récupérée.",
-  "Weekly objectives: complete any three for 150 Prisms.": "Objectifs hebdomadaires : accomplissez-en trois pour gagner 150 Prismes.",
-  "Journal: track progress across eight activities.": "Journal : suivez votre progression dans huit activités."
+  "Journal: track progress across eight activities.": "Journal : suivez votre progression dans huit activités.",
+  "Complete {0} weekly objectives before claiming.": "Accomplissez {0} objectifs hebdomadaires avant de récupérer la récompense.",
+  "Complete any {0} objectives.": "Accomplissez {0} objectifs.",
+  "Weekly objectives: complete any five for 150 Prisms.": "Objectifs hebdomadaires : accomplissez-en cinq pour gagner 150 Prismes."
 }

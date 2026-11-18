@@ -96,6 +96,19 @@ async function french(page: Page) {
   await page.getByRole('button', { name: 'Language: English', exact: true }).click();
   await page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
 }
+async function centeredSeason(page: Page) {
+  await page.evaluate(() => document.fonts.ready);
+  const offset = await page.locator('.season-seal').evaluate((el) => {
+    const diamond = el.querySelector('polygon')!.getBBox();
+    const number = el.querySelector('text')!.getBBox();
+    return {
+      x: number.x + number.width / 2 - diamond.x - diamond.width / 2,
+      y: number.y + number.height / 2 - diamond.y - diamond.height / 2,
+    };
+  });
+  expect(Math.abs(offset.x)).toBeLessThanOrEqual(2);
+  expect(Math.abs(offset.y)).toBeLessThanOrEqual(2);
+}
 
 const base = process.env.PREVIEW_BASE_PATH ?? '';
 async function readyWeek(c: Awaited<ReturnType<typeof player>>) {
@@ -115,6 +128,23 @@ async function readyWeek(c: Awaited<ReturnType<typeof player>>) {
         ],
       ),
     );
+  const saved = await platform.app.inject({
+    method: 'POST',
+    url: '/api/deck-loadouts',
+    headers: { authorization: `Bearer ${c.token}` },
+    payload: { name: 'Weekly hand', cards: c.profile.deck },
+  });
+  expect(saved.statusCode).toBe(200);
+  await platform.store.economy.grant(
+    c.profile.id,
+    'boosters',
+    2,
+    randomUUID(),
+    'Weekly browser test',
+  );
+  for (const pack of await platform.store.economy.list(c.profile.id))
+    if (!pack.openedAt) await platform.store.economy.open(c.profile.id, pack.id);
+  c.profile = await platform.store.profile(c.actor);
 }
 
 test('links the tavern to readable weekly objectives and a persistent bilingual journal', async ({
@@ -135,6 +165,8 @@ test('links the tavern to readable weekly objectives and a persistent bilingual 
       c.page.getByRole('button', { name: 'Claim weekly reward', exact: true }),
     ).toBeDisabled();
     await expect(c.page.locator('.season-banner')).toContainText('The First Gathering');
+    await centeredSeason(c.page);
+    await expect(c.page.locator('.weekly-count')).toContainText('0 / 5');
     await c.page.screenshot({ path: info.outputPath('weekly-en.png'), fullPage: true });
     await c.page.getByRole('tab', { name: 'Progress', exact: true }).click();
     await expect(c.page.locator('.journal-chapter')).toHaveCount(8);
@@ -176,6 +208,10 @@ test('links the tavern to readable weekly objectives and a persistent bilingual 
     await c.page.getByRole('link', { name: 'Retour au jeu', exact: true }).click();
     await expect(c.page.locator('.tavern-sign')).toBeVisible();
     expect(new URL(c.page.url()).pathname).toBe(`${base}/`);
+    await c.page.goto(`${base}/ladder/`);
+    await expect(c.page.locator('.season-banner')).toBeVisible();
+    await centeredSeason(c.page);
+    await c.page.screenshot({ path: info.outputPath('ladder-season-fr.png'), fullPage: true });
   } finally {
     await c.context.close();
   }
@@ -230,7 +266,7 @@ test('lets guests explore and register without losing their objective progress',
     await expect(
       c.page.getByRole('button', { name: 'Claim weekly reward', exact: true }),
     ).toBeEnabled();
-    await expect(c.page.locator('.weekly-count')).toContainText('3 / 3');
+    await expect(c.page.locator('.weekly-count')).toContainText('5 / 5');
     await expect(c.page.locator('.weekly-claimed')).toHaveCount(0);
   } finally {
     await c.context.close();

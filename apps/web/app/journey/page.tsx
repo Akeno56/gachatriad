@@ -124,7 +124,7 @@ export default function JourneyPage() {
                 <section className="menu-window weekly-summary" aria-labelledby="weekly-title">
                   <div>
                     <h2 id="weekly-title">Weekly objectives</h2>
-                    <p>Complete any 3 objectives.</p>
+                    <p>{`Complete any ${weekly!.required} objectives.`}</p>
                     <small>
                       Resets Monday at 00:00 UTC ·{' '}
                       <LocalizedDate

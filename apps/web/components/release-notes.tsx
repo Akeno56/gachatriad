@@ -29,7 +29,7 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>Weekly objectives: complete any three for 150 Prisms.</li>
+          <li>Weekly objectives: complete any five for 150 Prisms.</li>
           <li>Journal: track progress across eight activities.</li>
           <li>Season 0: The First Gathering, with separate records for all three rated formats.</li>
         </ul>

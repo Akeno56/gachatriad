@@ -7,7 +7,17 @@ export function SeasonBanner() {
     <LocaleView>
       <section className="menu-window season-banner" aria-label="Current season">
         <span className="season-seal" aria-hidden="true">
-          ◇<b>{CURRENT_SEASON.id}</b>
+          <svg viewBox="0 0 52 52" focusable="false">
+            <polygon
+              points="26,4 48,26 26,48 4,26"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <text x="26" y="26" textAnchor="middle" dominantBaseline="central">
+              {CURRENT_SEASON.id}
+            </text>
+          </svg>
         </span>
         <div className="season-copy">
           <div className="eyebrow">Season {CURRENT_SEASON.id} · Alpha</div>

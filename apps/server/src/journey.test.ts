@@ -60,6 +60,16 @@ async function view(u: User) {
   expect(r.statusCode, r.body).toBe(200);
   return r.json<JourneyView>();
 }
+async function openWeeklyBoosters(u: User) {
+  await p.store.economy.grant(u.profile.id, 'boosters', 2, randomUUID(), 'Weekly test');
+  for (const pack of await p.store.economy.list(u.profile.id))
+    if (!pack.openedAt) await p.store.economy.open(u.profile.id, pack.id);
+}
+async function saveWeeklyDeck(u: User) {
+  expect(
+    (await request(u, '/deck-loadouts', { name: 'Weekly hand', cards: u.profile.deck })).statusCode,
+  ).toBe(200);
+}
 async function storedDuel(
   u: User,
   mode: string,
@@ -133,14 +143,28 @@ it('counts a real completed practice duel and excludes forfeits, timeouts, admin
   expect(result.weekly.objectives.find((r) => r.id === 'variant')?.progress).toBe(0);
   expect(result.chapters.find((r) => r.id === 'duel')?.completed).toBe(true);
 });
-it('awards any three objectives exactly once under repeated and concurrent requests', async () => {
+it('requires five of six objectives and pays exactly once under repeated and concurrent requests', async () => {
   const u = await user();
   await storedDuel(u, 'solo');
   await storedDuel(u, 'custom');
   await storedDuel(u, 'solo');
-  const before = await p.store.profile(u.actor),
-    result = await view(u);
+  let result = await view(u);
   expect(result.weekly.completed).toBe(3);
+  expect(result.weekly.required).toBe(5);
+  expect(result.weekly.objectives).toHaveLength(6);
+  expect((await request(u, '/journey/weekly/claim', { week: result.weekly.week })).statusCode).toBe(
+    409,
+  );
+  await saveWeeklyDeck(u);
+  result = await view(u);
+  expect(result.weekly.completed).toBe(4);
+  expect((await request(u, '/journey/weekly/claim', { week: result.weekly.week })).statusCode).toBe(
+    409,
+  );
+  await openWeeklyBoosters(u);
+  result = await view(u);
+  expect(result.weekly.completed).toBe(5);
+  const before = await p.store.profile(u.actor);
   expect((await request(u, '/journey/weekly/claim', { week: '2000-01-03' })).statusCode).toBe(409);
   const claims = await Promise.all(
     Array.from({ length: 4 }, () =>
@@ -176,8 +200,10 @@ it('keeps guest progress without paying guests, and ignores forged client progre
   await storedDuel(guest, 'solo');
   await storedDuel(guest, 'custom');
   await storedDuel(guest, 'solo');
+  await saveWeeklyDeck(guest);
+  await openWeeklyBoosters(guest);
   const g = await view(guest);
-  expect(g.weekly.completed).toBe(3);
+  expect(g.weekly.completed).toBe(5);
   expect(g.weekly.registered).toBe(false);
   expect((await request(guest, '/journey/weekly/claim', { week: g.weekly.week })).statusCode).toBe(
     403,
@@ -241,7 +267,7 @@ it('uses the actual rating ledger and separates the current season and all three
   expect(ladder.find((row: { id: string }) => row.id === u.profile.id)?.games).toBe(1);
 });
 
-it('supports a non-duel weekly path using real puzzle, booster and loadout actions', async () => {
+it('counts real puzzle, booster and loadout actions toward the five-objective reward', async () => {
   const u = await user();
   const daily = await p.store.economy.claimDaily(u.profile.id, true);
   await p.store.economy.open(u.profile.id, daily.id);
@@ -277,6 +303,12 @@ it('supports a non-duel weekly path using real puzzle, booster and loadout actio
     'deck',
   ]);
   const before = await p.store.profile(u.actor);
+  expect((await request(u, '/journey/weekly/claim', { week: result.weekly.week })).statusCode).toBe(
+    409,
+  );
+  await storedDuel(u, 'solo');
+  await storedDuel(u, 'custom');
+  expect((await view(u)).weekly.completed).toBe(5);
   expect(
     (await request(u, '/journey/weekly/claim', { week: result.weekly.week })).json().awarded,
   ).toBe(150);
@@ -290,6 +322,8 @@ it('rolls back a claim when the currency limit prevents payment, allowing a safe
   await storedDuel(u, 'custom');
   await storedDuel(u, 'solo');
   await storedDuel(u, 'solo');
+  await saveWeeklyDeck(u);
+  await openWeeklyBoosters(u);
   await p.db.read((sql) =>
     sql('UPDATE profiles SET prisms=2147483647 WHERE id=$1', [u.profile.id]),
   );

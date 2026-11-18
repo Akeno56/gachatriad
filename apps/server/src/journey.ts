@@ -141,7 +141,7 @@ export class PlayerJourney {
         throw new GameError('A new week has started. Refresh your objectives.', 409);
       if (current.claimed) return { ok: true, awarded: 0 };
       if (current.completed < current.required)
-        throw new GameError('Complete any three weekly objectives before claiming.', 409);
+        throw new GameError(`Complete ${WEEKLY_REQUIRED} weekly objectives before claiming.`, 409);
       const inserted = await sql(
         'INSERT INTO weekly_claims(account_id,week_start) VALUES($1,$2::date) ON CONFLICT DO NOTHING RETURNING account_id',
         [accountId, current.week],
