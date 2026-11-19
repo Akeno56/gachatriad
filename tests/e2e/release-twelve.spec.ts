@@ -217,9 +217,8 @@ test('filters multiple required and excluded lobby rules together', async ({ pag
   await page.getByRole('button', { name: 'Clear rules' }).click();
   await expect(page.locator('.lobby-row')).toHaveCount(3);
 });
-test('resolves Same then Plus then Combo above the board with staged owners', async ({
-  page,
-}, info) => {
+test('plays the Same, Plus and Combo splashes before each group flips', async ({ page }, info) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   await prepared(page);
   const solo = await (await page.request.post('/api/solo', { data: {} })).json();
   const original = await (await page.request.get(`/api/matches/${solo.matchId}`)).json();
@@ -255,22 +254,37 @@ test('resolves Same then Plus then Combo above the board with staged owners', as
             label: string;
             aboveBoard: boolean;
             owners: Array<string | null | undefined>;
+            animation: string;
+            flipAnimation?: string;
+            startsAt: number;
+            flipDelay: number | null;
           }>
         >((resolve) => {
           const see = document.querySelector('.duel-command')!;
           const board = document.querySelector('.board')!;
           const phases: Parameters<typeof resolve>[0] = [];
           const observer = new MutationObserver(() => {
-            const label = see.querySelector('.capture-splash');
-            if (!label?.textContent || label.textContent === phases.at(-1)?.label) return;
-            phases.push({
-              label: label.textContent,
-              aboveBoard: label.getBoundingClientRect().bottom <= board.getBoundingClientRect().top,
-              owners: [0, 3, 5].map((cell) =>
-                board.querySelector(`[data-testid="cell-${cell}"]`)?.getAttribute('data-owner'),
-              ),
-            });
-            if (label.textContent === 'COMBO') finish();
+            const splash = board.parentElement!.querySelector('.capture-splash');
+            const rotor = board.querySelector('.capture-flip-rotor');
+            const current = phases.at(-1);
+            if (splash?.textContent && splash.textContent !== current?.label) {
+              const label = see.querySelector('.capture-phase-label')!;
+              phases.push({
+                label: splash.textContent,
+                aboveBoard:
+                  label.getBoundingClientRect().bottom <= board.getBoundingClientRect().top,
+                owners: [0, 3, 5].map((cell) =>
+                  board.querySelector(`[data-testid="cell-${cell}"]`)?.getAttribute('data-owner'),
+                ),
+                animation: getComputedStyle(splash).animationName,
+                startsAt: performance.now(),
+                flipDelay: null,
+              });
+            } else if (!splash && current?.flipDelay === null && rotor) {
+              current.flipDelay = performance.now() - current.startsAt;
+              current.flipAnimation = getComputedStyle(rotor).animationName;
+              if (current.label === 'COMBO') finish();
+            }
           });
           const timeout = setTimeout(finish, 8000);
           function finish() {
@@ -278,18 +292,27 @@ test('resolves Same then Plus then Combo above the board with staged owners', as
             observer.disconnect();
             resolve(phases);
           }
-          observer.observe(see, { childList: true, subtree: true, characterData: true });
+          observer.observe(document.querySelector('.arena-screen')!, {
+            childList: true,
+            subtree: true,
+          });
         }),
     );
     await page.getByTestId('cell-4').click();
+    await page.waitForFunction(() => document.querySelector('.capture-splash.splash-combo'));
+    await page.screenshot({ path: info.outputPath('combo-splash.png') });
     const phases = await observed;
     expect(phases.map((phase) => phase.label)).toEqual(['SAME', 'PLUS', 'COMBO']);
     expect(phases.every((phase) => phase.aboveBoard)).toBe(true);
+    for (const phase of phases) {
+      expect(phase.animation).toBe('capture-splash');
+      expect(phase.flipAnimation).toBe('capture-turn');
+      expect(phase.flipDelay).toBeGreaterThanOrEqual(700);
+    }
     expect(phases[0].owners[0]).toBe('1');
     expect(phases[1].owners.slice(1)).toEqual(['0', '1']);
     expect(phases[2].owners).toEqual(['1', '0', '0']);
     const splash = page.locator('.capture-splash');
-    await page.screenshot({ path: info.outputPath('combo-splash.png') });
     await expect(splash).toHaveCount(0);
     for (const cell of [0, 2, 3, 5])
       await expect(page.getByTestId(`cell-${cell}`)).toHaveAttribute('data-owner', '0');

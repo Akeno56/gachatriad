@@ -149,17 +149,14 @@ body:has(.arena-screen) .system-bar :is(.release-trigger, .player-navigation) {
   margin: 2px 0 0;
 }
 
-.turn-banner .capture-splash {
-  position: static;
+.turn-banner .capture-phase-label {
   display: inline-block;
-  transform: none;
   border: 1px solid #bca46f;
   padding: 0 13px;
   background: #3a3240;
   color: #ffe1a4;
   font: 400 24px/1 var(--pixel);
   letter-spacing: 2px;
-  animation: none;
   text-shadow: 1px 1px #0d1322;
 }
 
@@ -185,8 +182,19 @@ body:has(.arena-screen) .system-bar :is(.release-trigger, .player-navigation) {
 }
 
 .arena-screen .board-area {
+  position: relative;
   width: min(100%, var(--duel-board));
   order: 0;
+}
+
+.arena-screen .capture-splash {
+  position: absolute;
+  font-size: clamp(42px, 11vw, 100px);
+  padding: clamp(8px, 1.5vw, 18px) clamp(18px, 4vw, 60px);
+}
+
+.game-shell:not(.effects-animated) .arena-screen .capture-splash {
+  animation: none;
 }
 
 .arena-screen .board {
@@ -380,6 +388,10 @@ body:has(.arena-screen) .system-bar :is(.release-trigger, .player-navigation) {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .arena-screen .capture-splash {
+    animation: none;
+  }
+
   .effects-animated .arena-screen .capture-flip-rotor {
     animation: none !important;
   }

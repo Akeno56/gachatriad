@@ -535,12 +535,7 @@ export function Game() {
                     >
                       <span role="status">
                         {callout ? (
-                          <strong
-                            key={`${callout}:${game.history.length}`}
-                            className={`capture-splash splash-${callout.toLowerCase()}`}
-                          >
-                            {callout}
-                          </strong>
+                          <strong className="capture-phase-label">{callout}</strong>
                         ) : resolving ? (
                           'RESOLVING CAPTURES…'
                         ) : match.status === 'complete' ? (
@@ -642,6 +637,15 @@ export function Game() {
                       )}
                     </div>
                     <div className="board-area">
+                      {callout && !flipping.length && (
+                        <div
+                          key={`${callout}:${game.history.length}`}
+                          className={`capture-splash splash-${callout.toLowerCase()}`}
+                          aria-hidden="true"
+                        >
+                          {callout}
+                        </div>
+                      )}
                       <div
                         className={`board ${match.rules.elemental ? 'elemental-board' : ''}`}
                         role="group"
