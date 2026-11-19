@@ -21,6 +21,7 @@ import { GameError } from './errors';
 import { titleName } from './titles';
 import { ChatFilter } from './chat-filter';
 interface Person {
+  portrait_frame: import('@gacha-triad/shared/customization').PortraitFrame;
   id: string;
   name: string;
   avatar_card: string | null;
@@ -32,6 +33,7 @@ function identity(p: Person): BattleIdentity {
     id: p.id,
     name: p.name,
     title: titleName(p.selected_title),
+    frameId: p.portrait_frame ?? 'classic',
     avatar: p.avatar_card ? (cards.get(p.avatar_card) ?? null) : null,
   };
 }
@@ -338,14 +340,14 @@ export class Social {
       );
       const onlinePlayers = (
         await sql<Person>(
-          'SELECT id,name,avatar_card,selected_title FROM profiles WHERE id=ANY($1::text[]) ORDER BY name,id LIMIT 200',
+          'SELECT id,name,avatar_card,selected_title,portrait_frame FROM profiles WHERE id=ANY($1::text[]) ORDER BY name,id LIMIT 200',
           [[...online]],
         )
       ).map(identity);
       const chat = await sql<
         Person & { message_id: string; body: string; created_at: Date; channel: ChatChannel }
       >(
-        `SELECT p.id,p.name,p.avatar_card,p.selected_title,m.id AS message_id,m.body,m.created_at,m.channel
+        `SELECT p.id,p.name,p.avatar_card,p.selected_title,p.portrait_frame,m.id AS message_id,m.body,m.created_at,m.channel
          FROM (SELECT *,row_number() OVER(PARTITION BY channel ORDER BY created_at DESC,id DESC) AS position FROM chat_messages WHERE NOT deleted) m
          JOIN profiles p ON p.id=m.profile_id WHERE m.position<=80 ORDER BY m.created_at DESC,m.id`,
       );
@@ -499,7 +501,7 @@ export class Social {
     return this.store.db.read(async (sql) =>
       (
         await sql<Person & { rating: number; games: number; wins: number; draws: number }>(
-          `SELECT p.id,p.name,p.avatar_card,p.selected_title,p.${rating} AS rating,
+          `SELECT p.id,p.name,p.avatar_card,p.selected_title,p.portrait_frame,p.${rating} AS rating,
       count(m.id)::int AS games,count(m.id) FILTER(WHERE (m.winner=0 AND m.player0=p.id) OR(m.winner=1 AND m.player1=p.id))::int AS wins,
       count(m.id) FILTER(WHERE m.is_draw)::int AS draws FROM profiles p
       JOIN profile_accounts a ON a.profile_id=p.id AND a.is_primary JOIN "user" u ON u.id=a.auth_user_id

@@ -1,0 +1,271 @@
+import { beforeAll, afterAll, it, expect } from 'vitest';
+import { resolve } from 'node:path';
+import { createPlatform } from './app';
+import { ProfileCustomizations } from './customization';
+import { ALL_CARDS } from '@gacha-triad/shared';
+import type { CustomizationView } from '@gacha-triad/shared/customization';
+import type { PlayerProfileView } from '@gacha-triad/shared/platform';
+import { STANDARD } from '@gacha-triad/engine';
+let p: Awaited<ReturnType<typeof createPlatform>>,
+  custom: ProfileCustomizations,
+  serial = 0;
+beforeAll(async () => {
+  p = await createPlatform(resolve('.'), { memory: true, timers: false });
+  await p.bots.set(false);
+  custom = new ProfileCustomizations(p.db);
+});
+afterAll(async () => {
+  await p.app.close();
+});
+async function user(guest = false) {
+  const n = ++serial,
+    r = await p.app.inject({
+      method: 'POST',
+      url: guest ? '/api/auth/sign-in/anonymous' : '/api/auth/sign-up/email',
+      remoteAddress: `198.18.19.${n}`,
+      payload: guest
+        ? {}
+        : {
+            name: `Portrait tester ${n}`,
+            email: `portrait-${n}@test.invalid`,
+            password: 'portrait-test-password',
+          },
+    });
+  expect(r.statusCode, r.body).toBe(200);
+  const actor = { ...r.json().user, isAnonymous: guest },
+    token = String(r.headers['set-auth-token']);
+  let profile = await p.store.profile(actor);
+  for (const pack of await p.store.economy.list(profile.id))
+    await p.store.economy.open(profile.id, pack.id);
+  await p.store.rebuildDeck(profile.id);
+  await p.store.completeTutorial(profile.id);
+  profile = await p.store.profile(actor);
+  return { actor, token, profile };
+}
+type User = Awaited<ReturnType<typeof user>>;
+async function request(u: User, path = '/profile/customization', body?: unknown, headers = {}) {
+  return p.app.inject({
+    method: body === undefined ? 'GET' : 'POST',
+    url: '/api' + path,
+    headers: { authorization: `Bearer ${u.token}`, 'content-type': 'application/json', ...headers },
+    ...(body === undefined ? {} : { payload: JSON.stringify(body) }),
+  });
+}
+async function settings(u: User) {
+  const r = await request(u);
+  expect(r.statusCode, r.body).toBe(200);
+  return r.json<CustomizationView>();
+}
+async function earned(u: User, id: string) {
+  await p.db.read((sql) =>
+    sql(
+      'INSERT INTO achievement_unlocks(profile_id,achievement_id) VALUES($1,$2) ON CONFLICT DO NOTHING',
+      [u.profile.id, id],
+    ),
+  );
+}
+it('preserves existing avatars and titles, supplies safe defaults and authorizes all customization routes', async () => {
+  const a = await user(),
+    b = await user(true),
+    card = a.profile.deck[0];
+  await p.store.setAvatar(a.profile.id, card);
+  const initial = await settings(a);
+  expect(initial.settings).toMatchObject({
+    revision: 1,
+    bio: '',
+    frameId: 'classic',
+    featuredMode: 'ranked',
+    featuredCards: [],
+    featuredAchievements: [],
+    avatarCardId: card,
+    titleId: null,
+  });
+  expect(initial.frames.filter((f) => f.unlocked).map((f) => f.id)).toEqual(['classic']);
+  expect((await settings(b)).settings.frameId).toBe('classic');
+  for (const path of ['/profile/customization', '/profile/frame'])
+    expect(
+      (await p.app.inject({ method: 'POST', url: '/api' + path, payload: {} })).statusCode,
+    ).toBe(401);
+  expect(
+    (await request(a, '/profile/customization', undefined, { 'x-profile-id': b.profile.id }))
+      .statusCode,
+  ).toBe(403);
+  const before = await settings(b);
+  const saved = await request(a, '/profile/customization', {
+    ...initial.settings,
+    bio: 'A small bio.',
+    profileId: b.profile.id,
+    rating: 9999,
+    prisms: 999999,
+  });
+  expect(saved.statusCode, saved.body).toBe(200);
+  expect((await settings(a)).settings.bio).toBe('A small bio.');
+  expect(await settings(b)).toEqual(before);
+  expect((await p.store.profile(a.actor)).rating).toBe(1000);
+  expect((await p.store.profile(a.actor)).prisms).toBe(a.profile.prisms);
+});
+it('validates all fields before changing any part of a profile', async () => {
+  const a = await user(),
+    initial = await settings(a),
+    unowned = ALL_CARDS.find((c) => !a.profile.inventory[c.id])!.id;
+  const invalid = [
+    { avatarCardId: '' },
+    { titleId: '' },
+    { frameId: 'gold' },
+    { frameId: 'https://unsafe.invalid/frame.svg' },
+    { avatarCardId: unowned },
+    { titleId: 'ranked-champion' },
+    { featuredCards: [unowned] },
+    { featuredCards: [a.profile.deck[0], a.profile.deck[0]] },
+    { featuredCards: Array(4).fill(a.profile.deck[0]) },
+    { featuredCards: 'one' },
+    { featuredAchievements: ['hundred-wins'] },
+    { featuredAchievements: [null] },
+    { featuredMode: 'solo' },
+    { bio: 'a'.repeat(161) },
+    { bio: 'q\u0344'.repeat(80) },
+    { bio: '👾'.repeat(161) },
+    { bio: 'hello\0world' },
+    { bio: 'hello\u202eworld' },
+    { bio: 'send me your password' },
+    { revision: -1 },
+  ];
+  for (const patch of invalid) {
+    const r = await request(a, '/profile/customization', {
+      ...initial.settings,
+      bio: 'Should not be saved',
+      ...patch,
+    });
+    expect(r.statusCode, r.body).toBe(400);
+    expect(await settings(a)).toEqual(initial);
+  }
+});
+it('unlocks frames through real recorded achievements and saves showcase order atomically', async () => {
+  const a = await user(),
+    id = await p.store.solo(a.profile.id, 'easy', STANDARD);
+  await p.store.resign(a.profile.id, id);
+  const initial = await settings(a);
+  expect(initial.frames.find((f) => f.id === 'silver')?.unlocked).toBe(true);
+  const cards = a.profile.deck.slice(0, 3).reverse(),
+    bio = '<img src=x onerror=alert(1)> Bonjour !';
+  const before = await p.store.profile(a.actor);
+  const r = await request(a, '/profile/customization', {
+    ...initial.settings,
+    frameId: 'silver',
+    featuredMode: 'shared-draft',
+    bio,
+    featuredCards: cards,
+    featuredAchievements: ['first-duel'],
+    avatarCardId: cards[0],
+    titleId: 'card-player',
+  });
+  expect(r.statusCode, r.body).toBe(200);
+  const after = r.json<CustomizationView>();
+  expect(after.settings.revision).toBe(initial.settings.revision + 1);
+  const publicView = (await request(a, `/players/${a.profile.id}`)).json<PlayerProfileView>();
+  expect(publicView.bio).toBe(bio);
+  expect(publicView.frameId).toBe('silver');
+  expect(publicView.featuredMode).toBe('shared-draft');
+  expect(publicView.featuredCards.map((c) => c.id)).toEqual(cards);
+  expect(publicView.featuredAchievements.map((a) => a.id)).toEqual(['first-duel']);
+  expect(publicView).not.toHaveProperty('inventory');
+  expect(publicView).not.toHaveProperty('showcase_cards');
+  expect(publicView).not.toHaveProperty('profile_revision');
+  const profile = await p.store.profile(a.actor);
+  expect(profile.inventory).toEqual(before.inventory);
+  expect(profile.prisms).toBe(before.prisms);
+  expect(profile.deck).toEqual(before.deck);
+  expect(profile.rating).toBe(before.rating);
+});
+it('rejects stale and simultaneous edits, including legacy avatar/title endpoints', async () => {
+  const a = await user(),
+    initial = await settings(a);
+  const outcomes = await Promise.all([
+    request(a, '/profile/customization', { ...initial.settings, bio: 'First edit' }),
+    request(a, '/profile/customization', { ...initial.settings, bio: 'Second edit' }),
+  ]);
+  expect(outcomes.map((r) => r.statusCode).sort()).toEqual([200, 409]);
+  const current = await settings(a);
+  await p.store.setAvatar(a.profile.id, a.profile.deck[0]);
+  expect(
+    (await request(a, '/profile/customization', { ...current.settings, bio: 'Stale edit' }))
+      .statusCode,
+  ).toBe(409);
+  const latest = await settings(a);
+  await p.store.setTitle(a.profile.id, null);
+  expect(
+    (await request(a, '/profile/frame', { frameId: 'classic', revision: latest.settings.revision }))
+      .statusCode,
+  ).toBe(409);
+  const fresh = await settings(a);
+  expect(
+    (await request(a, '/profile/frame', { frameId: 'classic', revision: fresh.settings.revision }))
+      .statusCode,
+  ).toBe(200);
+});
+it('removes unavailable showcase cards without revealing the rest of the inventory', async () => {
+  const a = await user(),
+    initial = await settings(a),
+    card = a.profile.deck[0];
+  await custom.save(a.profile.id, {
+    ...initial.settings,
+    featuredCards: [card],
+    avatarCardId: card,
+  });
+  await p.db.read((sql) =>
+    sql('UPDATE inventory SET reserved=1 WHERE profile_id=$1 AND card_id=$2', [a.profile.id, card]),
+  );
+  expect((await p.store.playerProfile(a.profile.id)).featuredCards.map((c) => c.id)).toEqual([
+    card,
+  ]);
+  await p.db.read((sql) =>
+    sql('DELETE FROM inventory WHERE profile_id=$1 AND card_id=$2', [a.profile.id, card]),
+  );
+  expect((await p.store.playerProfile(a.profile.id)).featuredCards).toEqual([]);
+  const before = (await settings(a)).settings.revision;
+  await p.store.profile(a.actor);
+  const saved = await settings(a);
+  expect(saved.settings.featuredCards).toEqual([]);
+  expect(saved.settings.avatarCardId).toBeNull();
+  expect(saved.settings.revision).toBe(before + 1);
+  expect(
+    (
+      await p.db.read((sql) =>
+        sql<{ showcase_cards: string[] }>('SELECT showcase_cards FROM profiles WHERE id=$1', [
+          a.profile.id,
+        ]),
+      )
+    )[0].showcase_cards,
+  ).toEqual([]);
+});
+it('retains earned collection frames and completed bars after the collection shrinks', async () => {
+  const a = await user();
+  await earned(a, 'collector');
+  const initial = await settings(a);
+  await custom.equipFrame(a.profile.id, 'verdant', initial.settings.revision);
+  await p.db.read((sql) => sql('DELETE FROM inventory WHERE profile_id=$1', [a.profile.id]));
+  expect((await settings(a)).frames.find((f) => f.id === 'verdant')?.unlocked).toBe(true);
+  expect(
+    (await p.store.achievements(a.profile.id)).find((a) => a.id === 'collector'),
+  ).toMatchObject({ progress: 50, target: 50 });
+  const bio = '👾🙂'.repeat(80),
+    fresh = await settings(a);
+  expect(
+    (await request(a, '/profile/customization', { ...fresh.settings, avatarCardId: null, bio }))
+      .statusCode,
+  ).toBe(200);
+});
+it('propagates equipped frames to social and battle identities and retains achievement progress', async () => {
+  const a = await user(),
+    b = await user();
+  await earned(a, 'first-win');
+  const initial = await settings(a);
+  await custom.equipFrame(a.profile.id, 'azure', initial.settings.revision);
+  const social = await p.social.view(a.profile, new Set([a.profile.id, b.profile.id]));
+  expect(social.onlinePlayers.find((p) => p.id === a.profile.id)?.frameId).toBe('azure');
+  const lobby = await p.store.createLobby(a.profile, { mode: 'custom', allowBots: false }),
+    joined = await p.store.joinLobby(b.profile, lobby.lobbyId!);
+  expect((await p.store.view(b.profile.id, joined.matchId!)).players[0].frameId).toBe('azure');
+  await p.store.resign(b.profile.id, joined.matchId!);
+  expect((await settings(a)).settings.frameId).toBe('azure');
+});

@@ -1,0 +1,345 @@
+import { expect, test, type Browser, type Page } from '@playwright/test';
+import { mkdtemp } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { createPlatform } from '../../apps/server/src/app';
+import {
+  applyMove,
+  createGame,
+  legalMoves,
+  STANDARD,
+  scores,
+  type GameState,
+} from '../../packages/engine/src/index';
+import { randomUUID } from 'node:crypto';
+import { CARDS, ALL_CARDS } from '../../packages/shared/src/index';
+import { ProfileCustomizations } from '../../apps/server/src/customization';
+import { translate } from '../../apps/web/lib/translate';
+let platform: Awaited<ReturnType<typeof createPlatform>>,
+  origin: string,
+  serial = 0;
+test.beforeAll(async () => {
+  const old = process.env.DATA_DIR;
+  process.env.DATA_DIR = await mkdtemp(resolve('.cache/pw-014-'));
+  try {
+    platform = await createPlatform(resolve('.'), { memory: true, timers: false });
+  } finally {
+    if (old === undefined) delete process.env.DATA_DIR;
+    else process.env.DATA_DIR = old;
+  }
+  await platform.bots.set(false);
+  await platform.app.listen({ port: 0, host: '127.0.0.1' });
+  origin = `http://127.0.0.1:${(platform.app.server.address() as { port: number }).port}`;
+});
+test.afterAll(async () => {
+  await platform?.app.close();
+});
+async function player(browser: Browser, registered = true) {
+  const n = ++serial;
+  const r = await platform.app.inject({
+    method: 'POST',
+    url: registered ? '/api/auth/sign-up/email' : '/api/auth/sign-in/anonymous',
+    remoteAddress: `198.19.14.${n}`,
+    headers: { origin: 'http://127.0.0.1:3000' },
+    payload: registered
+      ? {
+          name: `Journey tester ${n}`,
+          email: `release019-${n}@test.invalid`,
+          password: 'isolated-release019-password',
+        }
+      : {},
+  });
+  expect(r.statusCode, r.body).toBe(200);
+  const actor = { ...r.json().user, isAnonymous: !registered },
+    token = String(r.headers['set-auth-token']);
+  let profile = await platform.store.profile(actor);
+  for (const pack of await platform.store.economy.list(profile.id))
+    await platform.store.economy.open(profile.id, pack.id);
+  await platform.store.completeTutorial(profile.id);
+  const cards = CARDS.filter((card) => card.rarity === 1).slice(0, 6);
+  for (const card of cards)
+    await platform.db.read((sql) =>
+      sql(
+        'INSERT INTO inventory(profile_id,card_id,quantity) VALUES($1,$2,1) ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=inventory.quantity+1',
+        [profile.id, card.id],
+      ),
+    );
+  await platform.store.saveDeck(
+    profile.id,
+    cards.slice(0, 5).map((card) => card.id),
+  );
+  profile = await platform.store.profile(actor);
+  const mobile = test.info().project.name === 'mobile';
+  const context = await browser.newContext({
+    baseURL: 'http://127.0.0.1:3000',
+    viewport: mobile ? { width: 390, height: 844 } : { width: 1280, height: 720 },
+    isMobile: mobile,
+    hasTouch: mobile,
+  });
+  await context.addInitScript(
+    ({ origin, token }) => {
+      localStorage.setItem('triad-server', origin);
+      localStorage.setItem(`triad-session:${origin}`, token);
+      localStorage.setItem('triad-music', 'off');
+    },
+    { origin, token },
+  );
+  await context.route('**/*', (route) => {
+    const url = new URL(route.request().url());
+    return /^https?:$/.test(url.protocol) && !['127.0.0.1', 'localhost'].includes(url.hostname)
+      ? route.abort()
+      : route.continue();
+  });
+  const page = await context.newPage();
+  page.on('dialog', (dialog) => {
+    if (dialog.type() === 'beforeunload') void dialog.accept();
+    else void dialog.dismiss();
+  });
+  return { actor, token, profile, cards, page, context };
+}
+
+async function fits(page: Page) {
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+}
+
+async function french(page: Page) {
+  await page.getByRole('button', { name: 'Language: English', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
+}
+async function centeredSeason(page: Page) {
+  await page.evaluate(() => document.fonts.ready);
+  const offset = await page.locator('.season-seal').evaluate((el) => {
+    const diamond = el.querySelector('polygon')!.getBBox();
+    const number = el.querySelector('text')!.getBBox();
+    return {
+      x: number.x + number.width / 2 - diamond.x - diamond.width / 2,
+      y: number.y + number.height / 2 - diamond.y - diamond.height / 2,
+    };
+  });
+  expect(Math.abs(offset.x)).toBeLessThanOrEqual(2);
+  expect(Math.abs(offset.y)).toBeLessThanOrEqual(2);
+}
+
+const base = process.env.PREVIEW_BASE_PATH ?? '';
+async function unlock(c: Awaited<ReturnType<typeof player>>) {
+  for (const id of ['first-duel', 'first-win', 'combo'])
+    await platform.db.read((sql) =>
+      sql(
+        'INSERT INTO achievement_unlocks(profile_id,achievement_id) VALUES($1,$2) ON CONFLICT DO NOTHING',
+        [c.profile.id, id],
+      ),
+    );
+}
+test('saves a themed profile and shows only its public showcase to another player in EN/FR', async ({
+  browser,
+}, info) => {
+  const c = await player(browser),
+    visitor = await player(browser),
+    errors: string[] = [];
+  c.page.on('pageerror', (e) => errors.push(e.message));
+  visitor.page.on('pageerror', (e) => errors.push(e.message));
+  try {
+    await unlock(c);
+    const holo = ALL_CARDS.find((card) => card.baseCardId === c.cards[0].id)!;
+    await platform.db.read((sql) =>
+      sql(
+        'INSERT INTO inventory(profile_id,card_id,quantity) VALUES($1,$2,1) ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=inventory.quantity+1',
+        [c.profile.id, holo.id],
+      ),
+    );
+    await c.page.goto(`${base}/profile/`);
+    await c.page.getByRole('button', { name: 'Customize profile', exact: true }).click();
+    const editor = c.page.getByRole('dialog', { name: 'Customize profile', exact: true });
+    await editor.getByRole('combobox', { name: 'Profile card', exact: true }).selectOption(holo.id);
+    await editor
+      .getByRole('combobox', { name: 'Equipped title', exact: true })
+      .selectOption('card-player');
+    await editor.getByLabel('Bio', { exact: true }).fill('Bonjour <b>Triad</b> ♢');
+    await editor
+      .getByRole('combobox', { name: 'Featured format', exact: true })
+      .selectOption('shared-draft');
+    await editor.getByRole('tab', { name: 'Showcases', exact: true }).click();
+    for (const [i, id] of [holo.id, c.cards[1].id, c.cards[2].id].entries())
+      await editor
+        .getByRole('combobox', { name: `Showcase card ${i + 1}`, exact: true })
+        .selectOption(id);
+    await editor
+      .getByRole('combobox', { name: 'Showcase achievement 1', exact: true })
+      .selectOption('combo');
+    await editor.getByRole('tab', { name: 'Portrait frames', exact: true }).click();
+    await expect(
+      editor.getByRole('button', { name: 'Gold portrait frame', exact: true }),
+    ).toHaveAttribute('aria-disabled', 'true');
+    await expect(
+      editor.getByRole('button', { name: 'Classic portrait frame', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await editor.getByRole('button', { name: 'Amethyst portrait frame', exact: true }).click();
+    await c.page.screenshot({
+      path: `.cache/release019-frames-${info.project.name}.png`,
+      fullPage: true,
+    });
+    await editor.getByRole('button', { name: 'Save profile', exact: true }).click();
+    await expect(editor).not.toBeVisible();
+    await expect(c.page.locator('.profile-portrait .player-avatar')).toHaveClass(/frame-amethyst/);
+    await expect(c.page.locator('.profile-bio')).toHaveText('Bonjour <b>Triad</b> ♢');
+    await expect(c.page.locator('.profile-bio b')).toHaveCount(0);
+    await expect(c.page.locator('.profile-showcase-cards .playing-card')).toHaveCount(3);
+    await expect(c.page.locator('.profile-showcase-cards .holo-card')).toHaveCount(1);
+    await c.page.reload();
+    await expect(c.page.locator('.profile-portrait .player-avatar')).toHaveClass(/frame-amethyst/);
+    await c.page.screenshot({
+      path: `.cache/release019-profile-${info.project.name}.png`,
+      fullPage: true,
+    });
+    await visitor.page.goto(`${base}/profile/?id=${c.profile.id}`);
+    await expect(visitor.page.locator('.profile-showcase-cards .playing-card')).toHaveCount(3);
+    await expect(
+      visitor.page.getByRole('button', { name: 'Customize profile', exact: true }),
+    ).toHaveCount(0);
+    await expect(visitor.page.getByRole('link', { name: 'Replays', exact: true })).toHaveCount(0);
+    await visitor.page.locator('.profile-showcase-cards>button').first().click();
+    await expect(visitor.page.locator('dialog.card-detail')).toBeVisible();
+    await expect(visitor.page.locator('dialog.card-detail')).toContainText('Holo bonus');
+    await visitor.page.getByRole('button', { name: 'Close card detail', exact: true }).click();
+    await french(visitor.page);
+    if (info.project.name === 'mobile')
+      await visitor.page.setViewportSize({ width: 320, height: 740 });
+    await fits(visitor.page);
+    await visitor.page.screenshot({
+      path: `.cache/release019-public-fr-${info.project.name}.png`,
+      fullPage: true,
+    });
+    const saved = (await new ProfileCustomizations(platform.db).view(c.profile.id)).settings;
+    expect(saved.featuredCards).toEqual([holo.id, c.cards[1].id, c.cards[2].id]);
+    expect(saved.featuredAchievements).toEqual(['combo']);
+    expect(saved.featuredMode).toBe('shared-draft');
+    expect(errors).toEqual([]);
+  } finally {
+    await c.context.close();
+    await visitor.context.close();
+  }
+});
+test('browses achievement categories, equips rewards and features an earned achievement', async ({
+  browser,
+}, info) => {
+  const c = await player(browser),
+    errors: string[] = [];
+  c.page.on('pageerror', (e) => errors.push(e.message));
+  try {
+    await unlock(c);
+    await c.page.goto(`${base}/achievements/`);
+    await expect(c.page.locator('.achievement-row')).toHaveCount(11);
+    await c.page
+      .getByRole('navigation', { name: 'Achievement categories' })
+      .getByRole('button', { name: /Techniques/ })
+      .click();
+    await expect(c.page.locator('.achievement-row')).toHaveCount(3);
+    await c.page.getByRole('combobox', { name: 'Status', exact: true }).selectOption('earned');
+    await expect(c.page.locator('.achievement-row')).toHaveCount(1);
+    await c.page.locator('.achievement-row').click();
+    let failed = false;
+    await c.page.route('**/api/profile/frame', (route) => {
+      if (!failed) {
+        failed = true;
+        return route.fulfill({
+          status: 503,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'That action could not be completed.' }),
+        });
+      }
+      return route.continue();
+    });
+    await c.page.getByRole('button', { name: 'Equip frame', exact: true }).click();
+    await expect(c.page.locator('.achievement-detail-content [role="alert"]')).toHaveText(
+      'That action could not be completed.',
+    );
+    await c.page.getByRole('button', { name: 'Equip frame', exact: true }).click();
+    await expect(c.page.getByRole('button', { name: 'Equipped', exact: true })).toBeDisabled();
+    if (info.project.name === 'desktop')
+      await expect(
+        c.page.getByRole('button', { name: 'Feature on profile', exact: true }),
+      ).toBeInViewport({ ratio: 1 });
+    await c.page.getByRole('button', { name: 'Feature on profile', exact: true }).click();
+    await expect(
+      c.page.getByRole('button', { name: 'Remove from showcase', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await c.page.getByRole('button', { name: 'Remove from showcase', exact: true }).click();
+    await expect(
+      c.page.getByRole('button', { name: 'Feature on profile', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'false');
+    if (info.project.name === 'mobile')
+      await c.page.getByRole('button', { name: 'Close dialog', exact: true }).click();
+    await french(c.page);
+    if (info.project.name === 'mobile') await c.page.setViewportSize({ width: 320, height: 740 });
+    await c.page.locator('.achievement-row').click();
+    await fits(c.page);
+    await c.page.screenshot({
+      path: `.cache/release019-achievements-fr-${info.project.name}.png`,
+      fullPage: true,
+    });
+    const saved = await new ProfileCustomizations(platform.db).view(c.profile.id);
+    expect(saved.settings.frameId).toBe('amethyst');
+    expect(saved.settings.featuredAchievements).toEqual([]);
+    expect(errors).toEqual([]);
+  } finally {
+    await c.context.close();
+  }
+});
+test('protects unsaved profile edits, recovers stale saves and keeps guest customization after registration', async ({
+  browser,
+}, info) => {
+  const c = await player(browser, false);
+  try {
+    await c.page.goto(`${base}/profile/`);
+    await c.page.getByRole('button', { name: 'Customize profile', exact: true }).click();
+    const editor = c.page.getByRole('dialog', { name: 'Customize profile', exact: true });
+    await editor.getByLabel('Bio', { exact: true }).fill('A saved guest profile.');
+    await editor.getByRole('button', { name: 'Cancel', exact: true }).click();
+    const warning = c.page.getByRole('dialog', { name: 'Unsaved profile changes', exact: true });
+    await expect(warning).toBeVisible();
+    await warning.getByRole('button', { name: 'Keep editing', exact: true }).click();
+    let blocked = false;
+    await c.page.route('**/api/profile/customization', (route) => {
+      if (route.request().method() === 'POST' && !blocked) {
+        blocked = true;
+        return route.fulfill({
+          status: 409,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'Your profile changed. Reload before saving.' }),
+        });
+      }
+      return route.continue();
+    });
+    await editor.getByRole('button', { name: 'Save profile', exact: true }).click();
+    await expect(editor.getByLabel('Bio', { exact: true })).toHaveValue('A saved guest profile.');
+    await expect(editor.locator('[role="alert"]')).toContainText('Your profile changed.');
+    await editor.getByRole('button', { name: 'Reload saved profile', exact: true }).click();
+    await warning.getByRole('button', { name: 'Discard changes', exact: true }).click();
+    await expect(editor.getByLabel('Bio', { exact: true })).toHaveValue('');
+    await editor.getByLabel('Bio', { exact: true }).fill('A saved guest profile.');
+    await editor.getByRole('button', { name: 'Save profile', exact: true }).click();
+    await expect(editor).not.toBeVisible();
+    await c.page
+      .getByRole('button', { name: 'Register to keep this profile', exact: true })
+      .click();
+    const account = c.page.locator('.account-dialog[open]');
+    await account.getByLabel('Player name', { exact: true }).fill('New portrait player');
+    await account
+      .getByLabel('Email', { exact: true })
+      .fill(`portrait-guest-${randomUUID()}@test.invalid`);
+    await account.getByLabel('Password', { exact: true }).fill('portrait-player-password');
+    await account.getByRole('button', { name: 'Create account', exact: true }).click();
+    await expect(account).toHaveCount(0);
+    await expect(c.page.locator('.profile-header h2')).toHaveText('New portrait player');
+    await expect(c.page.locator('.profile-bio')).toHaveText('A saved guest profile.');
+    await c.page.getByRole('button', { name: 'Customize profile', exact: true }).click();
+    await expect(editor.getByLabel('Bio', { exact: true })).toHaveValue('A saved guest profile.');
+    await editor.getByLabel('Bio', { exact: true }).fill('Not saved');
+    await editor.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await warning.getByRole('button', { name: 'Discard changes', exact: true }).click();
+    await expect(editor).not.toBeVisible();
+    await c.page.getByRole('button', { name: 'Customize profile', exact: true }).click();
+    await expect(editor.getByLabel('Bio', { exact: true })).toHaveValue('A saved guest profile.');
+  } finally {
+    await c.context.close();
+  }
+});

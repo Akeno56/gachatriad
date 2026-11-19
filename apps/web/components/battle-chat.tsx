@@ -84,7 +84,7 @@ export function BattleChat({ match }: { match: MatchView }) {
               .filter((f) => f.status === 'friend')
               .map((f) => (
                 <button key={f.id} onClick={() => openFriendChat(f.id)}>
-                  <Avatar card={f.avatar} name={f.name} />
+                  <Avatar card={f.avatar} frameId={f.frameId} name={f.name} />
                   <span>
                     <NoTranslate>{f.name}</NoTranslate>
                     <small>{f.online ? 'Online' : 'Offline'}</small>

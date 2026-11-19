@@ -74,7 +74,11 @@ export function ResultOverlay({
           {match.game && (
             <div className="result-duel">
               <div className="result-player">
-                <Avatar card={match.players[match.seat].avatar} name={match.names[match.seat]} />
+                <Avatar
+                  frameId={match.players[match.seat].frameId}
+                  card={match.players[match.seat].avatar}
+                  name={match.names[match.seat]}
+                />
                 <span>
                   <NoTranslate>{match.names[match.seat]}</NoTranslate>
                 </span>
@@ -89,7 +93,11 @@ export function ResultOverlay({
                 </p>
               </div>
               <div className="result-player">
-                <Avatar card={match.players[other].avatar} name={match.names[other]} />
+                <Avatar
+                  frameId={match.players[other].frameId}
+                  card={match.players[other].avatar}
+                  name={match.names[other]}
+                />
                 <span>
                   <NoTranslate>{match.names[other]}</NoTranslate>
                 </span>

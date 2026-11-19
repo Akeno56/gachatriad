@@ -48,6 +48,7 @@ import { draftTurn, legalDraftCards, type SharedDraft } from './shared-draft';
 import { pruneDeck } from './inventory';
 import { titleName, titlesFor, awardRankTitles } from './titles';
 import { archiveReplay } from './replays';
+import type { PortraitFrame, FeaturedMode } from '@gacha-triad/shared/customization';
 export interface Actor {
   id: string;
   name: string;
@@ -198,6 +199,7 @@ export class GameStore {
       '020_deck_loadouts.sql',
       '021_player_journey.sql',
       '022_replays_bot_styles.sql',
+      '023_profile_customization.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -298,6 +300,7 @@ export class GameStore {
         p.default_deck = pruned.default_deck;
         p.avatar_card = pruned.avatar_card;
         p.active_loadout_id = pruned.active_loadout_id;
+        p.profile_revision = pruned.profile_revision;
       }
       const owned = await sql<{ card_id: string; quantity: number; reserved: number }>(
         'SELECT * FROM inventory WHERE profile_id=$1 AND quantity>0',
@@ -327,6 +330,8 @@ export class GameStore {
       );
       return {
         rankedAcknowledged: p.ranked_acknowledged === true,
+        frameId: (p.portrait_frame as PortraitFrame) ?? 'classic',
+        profileRevision: Number(p.profile_revision ?? 0),
         titleId: typeof p.selected_title === 'string' ? p.selected_title : null,
         isAdmin:
           !actor.isAnonymous &&
@@ -804,8 +809,9 @@ export class GameStore {
         selected_title: string | null;
         is_bot: boolean;
         bot_style: CpuStyle;
+        portrait_frame: PortraitFrame;
       }>(
-        'SELECT id,name,avatar_card,selected_title,is_bot,bot_style FROM profiles WHERE id=$1 OR id=$2',
+        'SELECT id,name,avatar_card,selected_title,is_bot,bot_style,portrait_frame FROM profiles WHERE id=$1 OR id=$2',
         [m.player0, m.player1],
       );
       const game = m.state
@@ -838,6 +844,7 @@ export class GameStore {
           name: p?.name ?? (m.difficulty === 'normal' ? 'The Strategist' : 'The Wanderer'),
           botStyle: p?.is_bot ? p.bot_style : !id && m.mode === 'solo' ? m.cpu_style : null,
           title: titleName(p?.selected_title),
+          frameId: p?.portrait_frame ?? 'classic',
           avatar: p?.avatar_card ? (byId.get(p.avatar_card) ?? null) : null,
         };
       };
@@ -1492,7 +1499,9 @@ export class GameStore {
         name: a.name,
         description: a.description,
         target: a.target,
-        progress: Math.min(a.target, a.stat === 'collection' ? n.n : Number(p[a.stat] ?? 0)),
+        progress: unlocked.some((u) => u.achievement_id === a.id)
+          ? a.target
+          : Math.min(a.target, a.stat === 'collection' ? n.n : Number(p[a.stat] ?? 0)),
         unlockedAt:
           unlocked.find((u) => u.achievement_id === a.id)?.unlocked_at.toISOString() ?? null,
       }));
@@ -1510,8 +1519,29 @@ export class GameStore {
         'SELECT * FROM achievement_unlocks WHERE profile_id=$1 ORDER BY unlocked_at DESC',
         [id],
       );
+      const showcase = (p.showcase_cards ?? []) as string[];
+      const owned = new Set(
+        (
+          await sql<{ card_id: string }>(
+            'SELECT card_id FROM inventory WHERE profile_id=$1 AND quantity>0 AND card_id=ANY($2::text[])',
+            [id, showcase],
+          )
+        ).map((c) => c.card_id),
+      );
+      const achievementViews = earned.map((a) => ({
+        id: a.achievement_id,
+        name: ACHIEVEMENTS.find((x) => x.id === a.achievement_id)?.name ?? a.achievement_id,
+        unlockedAt: a.unlocked_at.toISOString(),
+      }));
       return {
         id: p.id,
+        bio: String(p.profile_bio ?? ''),
+        frameId: (p.portrait_frame as PortraitFrame) ?? 'classic',
+        featuredMode: (p.featured_mode as FeaturedMode) ?? 'ranked',
+        featuredCards: showcase.flatMap((id) => (owned.has(id) ? (byId.get(id) ?? []) : [])),
+        featuredAchievements: ((p.showcase_achievements ?? []) as string[]).flatMap(
+          (id) => achievementViews.find((a) => a.id === id) ?? [],
+        ),
         titleId: typeof p.selected_title === 'string' ? p.selected_title : null,
         title: titleName(p.selected_title),
         titles: await titlesFor(sql, p.id),
@@ -1528,11 +1558,7 @@ export class GameStore {
         draws: p.draws,
         avatar: typeof p.avatar_card === 'string' ? (byId.get(p.avatar_card) ?? null) : null,
         collection,
-        achievements: earned.map((a) => ({
-          id: a.achievement_id,
-          name: ACHIEVEMENTS.find((x) => x.id === a.achievement_id)?.name ?? a.achievement_id,
-          unlockedAt: a.unlocked_at.toISOString(),
-        })),
+        achievements: achievementViews,
       };
     });
   }
@@ -1550,7 +1576,10 @@ export class GameStore {
         )
           throw new GameError('Choose an owned card for your profile.');
       }
-      await sql('UPDATE profiles SET avatar_card=$1 WHERE id=$2', [cardId, id]);
+      await sql(
+        'UPDATE profiles SET avatar_card=$1,profile_revision=profile_revision+1 WHERE id=$2',
+        [cardId, id],
+      );
     });
   }
   async setTitle(id: string, titleId: unknown) {
@@ -1560,7 +1589,10 @@ export class GameStore {
         !(await titlesFor(sql, id)).some((t) => t.id === titleId && t.unlocked)
       )
         throw new GameError('Earn this title before equipping it.');
-      await sql('UPDATE profiles SET selected_title=$1 WHERE id=$2', [titleId, id]);
+      await sql(
+        'UPDATE profiles SET selected_title=$1,profile_revision=profile_revision+1 WHERE id=$2',
+        [titleId, id],
+      );
     });
   }
   private async rankedEligible(sql: Sql, id: string) {

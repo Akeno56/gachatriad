@@ -29,9 +29,9 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>Replays: review completed matches and save favourites.</li>
-          <li>Bots: Balanced, Attack, Defence and Combos styles.</li>
-          <li>Practice: choose a bot style, difficulty and rules.</li>
+          <li>Profiles: add a bio and choose card and achievement showcases.</li>
+          <li>Portrait frames, with five achievement unlocks.</li>
+          <li>Achievements: categories, progress filters and reward details.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

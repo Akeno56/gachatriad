@@ -11,6 +11,7 @@
     "./journey": "./src/journey.ts",
     "./replays": "./src/replays.ts",
     "./bots": "./src/bots.ts",
+    "./customization": "./src/customization.ts",
     "./social": "./src/social.ts",
     "./rule-examples": "./src/rule-examples.ts",
     "./training-duel": "./src/training-duel.ts"

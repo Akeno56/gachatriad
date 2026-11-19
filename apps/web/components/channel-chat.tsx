@@ -154,7 +154,7 @@ export function ChannelChat({
             <div>
               {onlinePlayers.map((p) => (
                 <a key={p.id} href={appPath(`/profile?id=${p.id}`)}>
-                  <Avatar card={p.avatar} name={p.name} />
+                  <Avatar card={p.avatar} frameId={p.frameId} name={p.name} />
                   <span>
                     <NoTranslate>{p.name}</NoTranslate>
                     {p.id === profile?.id ? ' (you)' : ''}

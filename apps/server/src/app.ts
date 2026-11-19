@@ -24,6 +24,7 @@ import { DailyPuzzles } from './daily-puzzle';
 import { DeckLoadouts } from './deck-loadouts';
 import { PlayerJourney } from './journey';
 import { MatchReplays } from './replays';
+import { ProfileCustomizations } from './customization';
 export async function createPlatform(
   root: string,
   options: { memory?: boolean; timers?: boolean; logger?: boolean } = {},
@@ -47,6 +48,7 @@ export async function createPlatform(
   const loadouts = new DeckLoadouts(db);
   const journey = new PlayerJourney(db);
   const replays = new MatchReplays(db);
+  const customizations = new ProfileCustomizations(db);
   const review = new PlayerReview(db);
   if (process.env.TRIAD_LOCAL_TEST === 'true')
     await security.action('127.0.0.1', 'allow-shared', 'Isolated PC test save');
@@ -423,6 +425,23 @@ export async function createPlatform(
     await store.setTitle((await profile(req)).id, body(req).titleId);
     notify();
     return { ok: true };
+  });
+  app.get('/api/profile/customization', async (req) =>
+    customizations.view((await profile(req)).id),
+  );
+  app.post('/api/profile/customization', async (req) => {
+    const result = await customizations.save((await profile(req)).id, body(req));
+    notify();
+    return result;
+  });
+  app.post('/api/profile/frame', async (req) => {
+    const result = await customizations.equipFrame(
+      (await profile(req)).id,
+      body(req).frameId,
+      body(req).revision,
+    );
+    notify();
+    return result;
   });
   app.post('/api/ranked/acknowledge', async (req) => {
     const p = await profile(req);

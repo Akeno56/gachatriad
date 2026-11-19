@@ -14,7 +14,7 @@ export function ChatMessageContent({
   return (
     <LocaleView>
       <>
-        <Avatar card={person.avatar} name={person.name} />
+        <Avatar card={person.avatar} frameId={person.frameId} name={person.name} />
         <div className="message-content">
           <header className="message-heading">
             {person.id ? (

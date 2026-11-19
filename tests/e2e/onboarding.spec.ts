@@ -93,14 +93,15 @@ test('saves a public profile card and removes artwork inspection from Collection
   await page.goto('/profile');
   await openStarterPacks(page);
   await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible();
-  const select = page.getByLabel('Profile card', { exact: true });
+  await page.getByRole('button', { name: 'Customize profile', exact: true }).click();
+  const select = page.getByRole('combobox', { name: 'Profile card', exact: true });
   await expect(select.locator('option').nth(1)).toBeAttached();
   const value = await select.locator('option').nth(1).getAttribute('value');
   await select.selectOption(value!);
   await page.getByRole('button', { name: 'Save profile' }).click();
-  await expect(page.locator('.profile-portrait .playing-card')).toBeVisible();
+  await expect(page.locator('.profile-portrait .player-avatar img')).toBeVisible();
   await page.reload();
-  await expect(page.locator('.profile-portrait .playing-card')).toBeVisible();
+  await expect(page.locator('.profile-portrait .player-avatar img')).toBeVisible();
   await page.goto('/collection');
   await expect(page.getByRole('heading', { name: 'Collection', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: /Inspect artwork/ })).toHaveCount(0);

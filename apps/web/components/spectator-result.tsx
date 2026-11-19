@@ -101,7 +101,11 @@ export function SpectatorResult({
                 aria-label={`${match.names[seat]} starting deck`}
               >
                 <div className="spectator-deck-heading">
-                  <Avatar card={match.players[seat].avatar} name={match.names[seat]} />
+                  <Avatar
+                    frameId={match.players[seat].frameId}
+                    card={match.players[seat].avatar}
+                    name={match.names[seat]}
+                  />
                   <div>
                     <h3>
                       <NoTranslate>{match.names[seat]}</NoTranslate>

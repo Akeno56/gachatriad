@@ -74,7 +74,12 @@ export default function Ladder() {
                   <td>{p.rank}</td>
                   <td>
                     <Link href={`/profile?id=${p.id}`}>
-                      <Avatar key={p.avatar?.id ?? p.id} card={p.avatar} name={p.name} />
+                      <Avatar
+                        key={p.avatar?.id ?? p.id}
+                        card={p.avatar}
+                        frameId={p.frameId}
+                        name={p.name}
+                      />
                       <span>
                         <NoTranslate>{p.name}</NoTranslate>
                         {p.title && <small>{p.title}</small>}

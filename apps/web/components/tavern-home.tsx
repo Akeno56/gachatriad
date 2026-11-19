@@ -155,7 +155,7 @@ export function TavernHome({
         <section className="title-party" aria-label="Your saved deck">
           <div className="party-heading tavern-party-heading">
             <div className="tavern-welcome">
-              <Avatar card={portrait} name={profile.name} />
+              <Avatar card={portrait} frameId={profile.frameId} name={profile.name} />
               <span>
                 <small>
                   <Link className="tavern-journey-link" href="/journey">

@@ -487,6 +487,7 @@ export function Game() {
                     >
                       <Avatar
                         key={match.players[seat].avatar?.id ?? 'you'}
+                        frameId={match.players[seat].frameId}
                         card={match.players[seat].avatar}
                         name={match.names[seat]}
                       />
@@ -516,6 +517,7 @@ export function Game() {
                       <span className="cpu-score">{displayScore[other]}</span>
                       <Avatar
                         key={match.players[other].avatar?.id ?? 'rival'}
+                        frameId={match.players[other].frameId}
                         card={match.players[other].avatar}
                         name={match.names[other]}
                       />

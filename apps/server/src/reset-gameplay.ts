@@ -12,6 +12,9 @@ export async function resetGameplay(store: GameStore, version = 'v0.12-holo-star
       combo_captures=0,best_combo=0,perfect_wins=0,trade_wins=0,prisms=0,
       default_deck='[]',active_loadout_id=NULL,avatar_card=NULL,selected_title=NULL,best_ranked_position=NULL,
       tutorial_completed=false,ranked_acknowledged=false,starter_granted=true,last_seen_at=now()`);
+    await sql(
+      "UPDATE profiles SET portrait_frame='classic',showcase_cards='[]',showcase_achievements='[]',profile_revision=profile_revision+1",
+    );
     await sql('UPDATE local_population SET enabled=false WHERE id=1');
     const players = await sql<{ id: string }>(
       'SELECT DISTINCT p.id FROM profiles p JOIN profile_accounts a ON a.profile_id=p.id WHERE a.auth_user_id IS NOT NULL',

@@ -43,3 +43,12 @@ Season names use a single word. Player-facing copy stays short and functional in
 - Offer first/previous/next/last turns, scrubbing, pause/play, speed and card inspection. Access replays from the result screen and the player's own profile. Reading or favouriting a replay cannot award rewards or alter ratings.
 - Give bots Balanced, Attack, Defence and Combos styles independently of difficulty. Let players select practice difficulty, style and rules. Keep bot labels, legal deck limits, hidden-hand privacy and existing no-Elo practice rules.
 - Retain account-deletion anonymisation, English/French and usable phone layouts. Verify the public GitHub Pages test build before production deployment. Achievements visuals remain in 0.1.9.
+
+## 0.1.9 acceptance criteria
+
+- Configure a plain-text bio, portrait, earned title, preferred rated format, three owned showcase cards and three earned showcase achievements. Save all fields atomically; reject stale updates and recheck ownership and unlocks on the server.
+- Keep existing avatars, titles and earned records. Remove showcase cards when their last owned copy leaves the collection. Never expose the remaining inventory, active deck, account details or private replays through a public profile.
+- Offer a Classic portrait frame and five permanent achievement frames: Silver (first duel), Azure (first win), Verdant (50 characters), Amethyst (two Combo captures in one turn) and Gold (100 wins). Frames are cosmetic and appear in profiles, the tavern, chat, friends, ladders, battles and results.
+- Rework achievements with categories, earned/in-progress filtering, progress/recent sorting, a selected achievement detail view, earned dates and frame rewards. Equip an unlocked frame and add/remove featured achievements directly from this view.
+- Preserve completed achievement bars even if an inventory-based counter later falls. Do not change achievement targets, gameplay rewards, Elo, matchmaking or the weekly five-of-six requirement.
+- Validate short English/French text, desktop and 320 px layouts, modal focus/unsaved changes, authorization, conflicting edits and the public Pages testing build before production deployment.

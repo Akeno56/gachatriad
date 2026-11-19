@@ -5,18 +5,22 @@ export async function pruneDeck(sql: Sql, profileId: string) {
     default_deck: string[];
     avatar_card: string | null;
     active_loadout_id: string | null;
+    profile_revision: number;
   }>(
     `UPDATE profiles p SET default_deck=coalesce((SELECT jsonb_agg(card ORDER BY position)
     FROM jsonb_array_elements_text(p.default_deck) WITH ORDINALITY AS d(card,position)
     WHERE EXISTS(SELECT 1 FROM inventory i WHERE i.profile_id=p.id AND i.card_id=d.card AND i.quantity>0)),'[]'::jsonb),
     active_loadout_id=CASE WHEN EXISTS(SELECT 1 FROM jsonb_array_elements_text(p.default_deck) AS d(card)
       WHERE NOT EXISTS(SELECT 1 FROM inventory i WHERE i.profile_id=p.id AND i.card_id=d.card AND i.quantity>0)) THEN NULL ELSE p.active_loadout_id END,
-    avatar_card=CASE WHEN EXISTS(SELECT 1 FROM inventory i WHERE i.profile_id=p.id AND i.card_id=p.avatar_card AND i.quantity>0) THEN p.avatar_card ELSE NULL END
+    avatar_card=CASE WHEN EXISTS(SELECT 1 FROM inventory i WHERE i.profile_id=p.id AND i.card_id=p.avatar_card AND i.quantity>0) THEN p.avatar_card ELSE NULL END,
+    showcase_cards=coalesce((SELECT jsonb_agg(card ORDER BY position) FROM jsonb_array_elements_text(p.showcase_cards) WITH ORDINALITY AS s(card,position) WHERE EXISTS(SELECT 1 FROM inventory i WHERE i.profile_id=p.id AND i.card_id=s.card AND i.quantity>0)),'[]'::jsonb),
+    profile_revision=profile_revision+1
     WHERE p.id=$1 AND (
       EXISTS(SELECT 1 FROM jsonb_array_elements_text(p.default_deck) AS d(card)
         WHERE NOT EXISTS(SELECT 1 FROM inventory i WHERE i.profile_id=p.id AND i.card_id=d.card AND i.quantity>0))
       OR (p.avatar_card IS NOT NULL AND NOT EXISTS(SELECT 1 FROM inventory i WHERE i.profile_id=p.id AND i.card_id=p.avatar_card AND i.quantity>0))
-    ) RETURNING default_deck,avatar_card,active_loadout_id`,
+      OR EXISTS(SELECT 1 FROM jsonb_array_elements_text(p.showcase_cards) AS s(card) WHERE NOT EXISTS(SELECT 1 FROM inventory i WHERE i.profile_id=p.id AND i.card_id=s.card AND i.quantity>0))
+    ) RETURNING default_deck,avatar_card,active_loadout_id,profile_revision`,
     [profileId],
   );
   return changed;

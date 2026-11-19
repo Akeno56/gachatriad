@@ -128,7 +128,14 @@ it('rejects unsigned sockets and limits each authenticated player to five connec
     expect(await connect({ token, profileId: profile.id })).toBe(false);
     const social = (await send('/social', '10.82.0.1', undefined, token)).json();
     expect(social.onlinePlayers).toHaveLength(1);
-    expect(Object.keys(social.onlinePlayers[0]).sort()).toEqual(['avatar', 'id', 'name', 'title']);
+    expect(Object.keys(social.onlinePlayers[0]).sort()).toEqual([
+      'avatar',
+      'frameId',
+      'id',
+      'name',
+      'title',
+    ]);
+    expect(social.onlinePlayers[0].frameId).toBe('classic');
   } finally {
     for (const socket of sockets) socket.disconnect();
   }

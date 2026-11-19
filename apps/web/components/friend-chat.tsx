@@ -103,7 +103,7 @@ export function FriendChat({
                   onClick={() => select(f.id)}
                 >
                   <span className={`contact-avatar ${f.online ? 'is-online' : ''}`}>
-                    <Avatar card={f.avatar} name={f.name} />
+                    <Avatar card={f.avatar} frameId={f.frameId} name={f.name} />
                   </span>
                   <span>
                     <strong>

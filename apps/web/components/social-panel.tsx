@@ -267,7 +267,12 @@ export function SocialPanel() {
                 </form>
                 {results.map((p) => (
                   <div className="friend-row" key={p.id}>
-                    <Avatar key={p.avatar?.id ?? p.id} card={p.avatar} name={p.name} />
+                    <Avatar
+                      key={p.avatar?.id ?? p.id}
+                      card={p.avatar}
+                      frameId={p.frameId}
+                      name={p.name}
+                    />
                     <a href={appPath(`/profile?id=${p.id}`)}>
                       <NoTranslate>{p.name}</NoTranslate>
                     </a>
@@ -286,7 +291,12 @@ export function SocialPanel() {
                 {!data.friends.length && <p>No friends or requests yet.</p>}
                 {data.friends.map((f) => (
                   <div className="friend-row" key={f.id}>
-                    <Avatar key={f.avatar?.id ?? f.id} card={f.avatar} name={f.name} />
+                    <Avatar
+                      key={f.avatar?.id ?? f.id}
+                      card={f.avatar}
+                      frameId={f.frameId}
+                      name={f.name}
+                    />
                     <div>
                       <a href={appPath(`/profile?id=${f.id}`)}>
                         <NoTranslate>{f.name}</NoTranslate>
@@ -366,7 +376,12 @@ export function SocialPanel() {
                     p = incoming ? inv.sender : inv.recipient;
                   return (
                     <div className="friend-row" key={inv.id}>
-                      <Avatar key={p.avatar?.id ?? p.id} card={p.avatar} name={p.name} />
+                      <Avatar
+                        key={p.avatar?.id ?? p.id}
+                        card={p.avatar}
+                        frameId={p.frameId}
+                        name={p.name}
+                      />
                       <div>
                         <strong>
                           {incoming ? `${p.name} invited you` : `Waiting for ${p.name}`}

@@ -1,29 +1,31 @@
 'use client';
-import { LocaleView, NoTranslate, LocalizedDate } from '../../components/i18n';
-
-import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ALL_CARDS, CARDS, SIDE_NAMES } from '@gacha-triad/shared';
+import { CARDS } from '@gacha-triad/shared';
+import type { Card as CardData } from '@gacha-triad/engine';
 import type { PlayerProfileView } from '@gacha-triad/shared/platform';
-import { useSession } from '../../components/session';
-import { Card } from '../../components/card';
-import { assetPath } from '../../lib/connection';
 import { api } from '../../lib/platform';
+import { useSession } from '../../components/session';
+import { usePageRefresh } from '../../components/use-page-refresh';
+import { LocaleView, NoTranslate, LocalizedDate } from '../../components/i18n';
+import { Button } from '../../components/ui';
+import { Avatar } from '../../components/avatar';
+import { Card } from '../../components/card';
+import { CardDetail } from '../../components/card-detail';
+import { BotStyle } from '../../components/bot-style';
+import { AchievementIcon } from '../../components/achievement-icon';
+import { ProfileEditor } from '../../components/profile-editor';
+import { ProfileActions } from '../../components/profile-actions';
+import { SocialLogin } from '../../components/social-login';
 import { AdminGrant } from '../../components/admin-grant';
 import { AdminPlayerReview } from '../../components/admin-player-review';
-import { useSocial, openFriendChat } from '../../components/social-state';
-import { usePageRefresh } from '../../components/use-page-refresh';
-import { SocialLogin } from '../../components/social-login';
-import { BotStyle } from '../../components/bot-style';
 export default function ProfilePage() {
   return (
     <Suspense
       fallback={
         <LocaleView>
-          <div className="content-page">
-            <p>Loading profile…</p>
-          </div>
+          <p>Loading profile…</p>
         </LocaleView>
       }
     >
@@ -32,82 +34,90 @@ export default function ProfilePage() {
   );
 }
 function PlayerProfile() {
-  const { profile, refresh, openAccount } = useSession();
-  const [revision] = usePageRefresh();
-  const params = useSearchParams();
+  const { profile, openAccount } = useSession(),
+    params = useSearchParams(),
+    [revision, refreshPage] = usePageRefresh();
   const playerId = params.get('id') || profile?.id;
+  const [snapshot, setSnapshot] = useState<{ id: string; value: PlayerProfileView } | null>(null),
+    [error, setError] = useState(''),
+    [editing, setEditing] = useState(false),
+    [detail, setDetail] = useState<CardData | null>(null);
   const selfVersion =
-    playerId === profile?.id && profile
+    playerId === profile?.id
       ? JSON.stringify([
-          profile.name,
-          profile.avatarCardId,
-          profile.titleId,
-          profile.rating,
-          profile.draftRating,
-          profile.sharedDraftRating,
-          profile.played,
-          profile.wins,
-          profile.losses,
-          profile.draws,
-          Object.entries(profile.inventory).map(([id, copy]) => [id, copy.quantity]),
+          profile?.profileRevision,
+          profile?.name,
+          profile?.played,
+          profile?.rating,
+          profile?.draftRating,
+          profile?.sharedDraftRating,
+          profile?.avatarCardId,
+          profile?.titleId,
+          profile?.inventory,
         ])
       : '';
-  const { data: social, ready: socialReady } = useSocial();
-  const [player, setPlayer] = useState<PlayerProfileView | null>(null),
-    [error, setError] = useState(''),
-    [avatar, setAvatar] = useState(''),
-    [title, setTitle] = useState(''),
-    [notice, setNotice] = useState(''),
-    [busy, setBusy] = useState(false);
   useEffect(() => {
-    if (!profile) return;
-    const id = playerId;
-    let valid = true;
-    void api<PlayerProfileView>(`/players/${id}`)
-      .then((p) => {
-        if (valid) {
-          setPlayer(p);
-          setError('');
-        }
-      })
-      .catch((e) => valid && setError(e.message));
+    if (!profile || !playerId) return;
+    let active = true;
+    setError('');
+    void api<PlayerProfileView>(`/players/${encodeURIComponent(playerId)}`)
+      .then((p) => active && setSnapshot({ id: playerId, value: p }))
+      .catch((e) => active && setError(e.message));
     return () => {
-      valid = false;
+      active = false;
     };
   }, [profile?.id, playerId, revision, selfVersion]);
-  useEffect(() => setAvatar(profile?.avatarCardId ?? ''), [profile?.avatarCardId]);
-  useEffect(() => setTitle(profile?.titleId ?? ''), [profile?.titleId]);
-  const self = player?.id === profile?.id;
-  const friendship = social.friends.find((f) => f.id === player?.id);
+  const player = snapshot && snapshot.id === playerId ? snapshot.value : null,
+    self = player?.id === profile?.id;
+  const modes = [
+    { id: 'ranked', name: 'Ranked', rating: player?.rating },
+    { id: 'draft', name: 'Draft', rating: player?.draftRating },
+    { id: 'shared-draft', name: 'Shared Draft', rating: player?.sharedDraftRating },
+  ];
+  const featured = modes.find((m) => m.id === player?.featuredMode) ?? modes[0];
   return (
     <LocaleView>
-      <div className="content-page profile-page">
+      <div className="content-page profile-page profile-v19">
+        <header className="profile-page-heading">
+          <h1>{self ? 'Your profile' : 'Player profile'}</h1>
+          <div>
+            {self && (
+              <>
+                <Link className="outline-button" href="/replays">
+                  Replays
+                </Link>
+                <Button variant="primary" onClick={() => setEditing(true)}>
+                  Customize profile
+                </Button>
+              </>
+            )}
+            <Link className="outline-button" href="/">
+              Back to play
+            </Link>
+          </div>
+        </header>
         {params.has('error') && (
           <p role="alert" className="deck-warning">
             Social sign-in could not finish. Try again, or sign in to your existing account and link
             the provider from your profile.
           </p>
         )}
-        <div className="eyebrow">PLAYER RECORD</div>
-        <h1>{self ? 'Your profile' : player?.name || 'Player profile'}</h1>
-        <p className="error-message" role="alert">
-          {error}
-        </p>
+        {error && (
+          <div className="profile-load-error" role="alert">
+            {error}
+            <Button variant="ghost" onClick={refreshPage}>
+              Try again
+            </Button>
+          </div>
+        )}
+        {!player && !error && <p role="status">Loading profile…</p>}
         {player && (
           <>
             <section className="menu-window profile-header">
               <div className="profile-portrait">
-                {player.avatar ? (
-                  <Card card={player.avatar} showElement />
-                ) : (
-                  <img
-                    className="profile-brand-emblem"
-                    src={assetPath('/assets/ui/triad-logo.webp')}
-                    alt="Gacha Triad"
-                  />
-                )}
+                <Avatar card={player.avatar} name={player.name} frameId={player.frameId} />
               </div>
-              <div>
+              <div className="profile-identity">
                 <span className="profile-kind">
                   {player.isBot
                     ? 'LOCAL BOT'
@@ -120,234 +130,162 @@ function PlayerProfile() {
                 </h2>
                 {player.title && <p className="profile-title">{player.title}</p>}
                 <BotStyle style={player.botStyle} />
-                {self && (
-                  <Link className="outline-button profile-replays-link" href="/replays">
-                    Replays
-                  </Link>
+                {player.bio && (
+                  <p className="profile-bio">
+                    <NoTranslate>{player.bio}</NoTranslate>
+                  </p>
                 )}
-                <p>
+                <small>
                   Joined <LocalizedDate value={player.joinedAt} />
-                </p>
-                <p>
-                  {player.collection.unique}/{CARDS.length} cards collected ·{' '}
-                  {player.collection.copies} copies · {player.collection.holo} Holo
-                </p>
-                {self && !profile?.registered && (
-                  <button className="outline-button" onClick={openAccount}>
-                    Register to keep this profile
-                  </button>
-                )}
-                {!self && (
-                  <Link href="/lobbies" className="outline-button">
-                    Meet in the card hall
-                  </Link>
-                )}
-                {!self && !player.isBot && profile?.registered && (
-                  <div className="result-actions">
-                    {socialReady && !friendship && (
-                      <button
-                        className="outline-button"
-                        disabled={busy}
-                        onClick={async () => {
-                          setBusy(true);
-                          setError('');
-                          try {
-                            await api('/friends/request', { playerId: player.id });
-                            await refresh();
-                            setNotice('Friend request sent.');
-                          } catch (e) {
-                            setError((e as Error).message);
-                          } finally {
-                            setBusy(false);
-                          }
-                        }}
-                      >
-                        Add friend
-                      </button>
-                    )}
-                    {friendship?.status === 'outgoing' && <span>Friend request sent</span>}
-                    {friendship?.status === 'incoming' && (
-                      <button
-                        className="outline-button"
-                        disabled={busy}
-                        onClick={async () => {
-                          setBusy(true);
-                          setError('');
-                          try {
-                            await api(`/friends/${player.id}/accept`, {});
-                            await refresh();
-                            setNotice('Friend request accepted.');
-                          } catch (e) {
-                            setError((e as Error).message);
-                          } finally {
-                            setBusy(false);
-                          }
-                        }}
-                      >
-                        Accept friend
-                      </button>
-                    )}
-                    {friendship?.status === 'friend' && (
-                      <>
-                        <span className="friend-status">✓ Friends</span>
-                        <button
-                          className="outline-button"
-                          onClick={() => openFriendChat(player.id)}
-                        >
-                          Message
-                        </button>
-                        <button
-                          className="outline-button"
-                          disabled={
-                            busy ||
-                            !!profile.activeMatchId ||
-                            !!profile.waitingLobbyId ||
-                            !!profile.pendingTrade
-                          }
-                          onClick={async () => {
-                            setBusy(true);
-                            setError('');
-                            try {
-                              await api('/invites', { playerId: player.id });
-                              await refresh();
-                              setNotice('Invitation sent. Open Friends & messages to manage it.');
-                            } catch (e) {
-                              setError((e as Error).message);
-                            } finally {
-                              setBusy(false);
-                            }
-                          }}
-                        >
-                          Invite to duel
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
-                {notice && <p role="status">{notice}</p>}
+                </small>
+              </div>
+              <div className="profile-featured-rating">
+                <span>{featured.name}</span>
+                <strong>{featured.rating}</strong>
+                <small>Elo</small>
               </div>
             </section>
-            <section className="profile-stats" aria-label="Player statistics">
-              {[
-                ['Constructed rating', player.rating],
-                ['Draft rating', player.draftRating],
-                ['Shared Draft rating', player.sharedDraftRating],
-                ['Games', player.played],
-                ['Wins', player.wins],
-                ['Losses', player.losses],
-                ['Draws', player.draws],
-              ].map(([label, value]) => (
-                <div className="menu-window" key={label}>
-                  <span>{label}</span>
-                  <strong>{value}</strong>
-                </div>
-              ))}
-            </section>
-            {self && (
-              <form
-                className="menu-window profile-edit"
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  setBusy(true);
-                  try {
-                    await api('/profile/avatar', { cardId: avatar || null });
-                    await api('/profile/title', { titleId: title || null });
-                    await refresh();
-                    setError('');
-                  } catch (e) {
-                    setError((e as Error).message);
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-              >
-                {profile?.registered && <SocialLogin link />}
-                <label>
-                  Profile card
-                  <select
-                    name="page-select-1"
-                    aria-label="Profile card"
-                    value={avatar}
-                    onChange={(e) => setAvatar(e.target.value)}
-                  >
-                    <option value="">Default emblem</option>
-                    {ALL_CARDS.filter((c) => (profile?.inventory[c.id]?.quantity ?? 0) > 0).map(
-                      (c) => (
-                        <option key={c.id} value={c.id}>
-                          <NoTranslate>{c.name}</NoTranslate>
-                          {c.finish === 'holo'
-                            ? ` · Holo +1 ${SIDE_NAMES[c.holoBonusSide ?? 0]}`
-                            : ''}{' '}
-                          · {c.rarity}★
-                        </option>
-                      ),
-                    )}
-                  </select>
-                </label>
-                <button className="primary-button" disabled={busy}>
-                  Save profile
-                </button>
-                <label>
-                  Equipped title
-                  <select
-                    name="page-select-2"
-                    aria-label="Equipped title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                  >
-                    <option value="">No title</option>
-                    {player.titles
-                      .filter((t) => t.unlocked)
-                      .map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.name}
-                        </option>
-                      ))}
-                  </select>
-                </label>
-                <small>Your chosen card is public. Your deck and inventory stay private.</small>
-              </form>
+            {self && !profile?.registered && (
+              <Button onClick={openAccount}>Register to keep this profile</Button>
             )}
-            <details className="menu-window title-list">
-              <summary>
-                Titles · {player.titles.filter((t) => t.unlocked).length}/{player.titles.length}{' '}
-                unlocked
-              </summary>
-              {player.titles.map((t) => (
-                <p key={t.id}>
+            {!self && <ProfileActions player={player} />}
+            <div className="profile-overview">
+              <div className="profile-showcases">
+                <section className="menu-window profile-card-showcase">
+                  <header>
+                    <h2>Card showcase</h2>
+                    {self && (
+                      <Button variant="ghost" onClick={() => setEditing(true)}>
+                        Edit
+                      </Button>
+                    )}
+                  </header>
+                  {player.featuredCards.length ? (
+                    <div className="profile-showcase-cards">
+                      {player.featuredCards.map((card) => (
+                        <button
+                          key={card.id}
+                          aria-label={`Inspect ${card.name}`}
+                          onClick={() => setDetail(card)}
+                        >
+                          <Card card={card} showElement />
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="profile-empty">No showcased cards.</p>
+                  )}
+                </section>
+                <section className="menu-window profile-achievement-showcase">
+                  <header>
+                    <h2>Achievement showcase</h2>
+                    {self && <Link href="/achievements">Achievements →</Link>}
+                  </header>
+                  {player.featuredAchievements.length ? (
+                    <div className="profile-featured-achievements">
+                      {player.featuredAchievements.map((a) => (
+                        <article key={a.id}>
+                          <AchievementIcon id={a.id} earned />
+                          <div>
+                            <strong>{a.name}</strong>
+                            <small>
+                              <LocalizedDate value={a.unlockedAt} />
+                            </small>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="profile-empty">No featured achievements.</p>
+                  )}
+                </section>
+              </div>
+              <aside className="profile-record">
+                <section className="menu-window profile-record-panel">
+                  <h2>Match record</h2>
+                  <dl className="profile-record-totals">
+                    {[
+                      ['Games', player.played],
+                      ['Wins', player.wins],
+                      ['Losses', player.losses],
+                      ['Draws', player.draws],
+                    ].map(([label, value]) => (
+                      <div key={label}>
+                        <dt>{label}</dt>
+                        <dd>{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <div className="profile-ratings">
+                    {modes.map((m) => (
+                      <div key={m.id} className={m.id === player.featuredMode ? 'is-featured' : ''}>
+                        <span>{m.name}</span>
+                        <strong>{m.rating}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+                <section className="menu-window profile-collection-record">
+                  <h2>Collection</h2>
                   <strong>
-                    {t.unlocked ? '✓ ' : '🔒 '}
-                    {t.name}
-                  </strong>{' '}
-                  — {t.requirement}
-                </p>
-              ))}
-            </details>
+                    {player.collection.unique}
+                    <small> / {CARDS.length}</small>
+                  </strong>
+                  <p>{`${player.collection.copies} copies · ${player.collection.holo} Holo`}</p>
+                </section>
+              </aside>
+            </div>
+            <div className="profile-record-details">
+              <details className="menu-window">
+                <summary>{`Earned achievements · ${player.achievements.length}`}</summary>
+                <div className="profile-earned-list">
+                  {player.achievements.map((a) => (
+                    <div key={a.id}>
+                      <AchievementIcon id={a.id} earned />
+                      <strong>{a.name}</strong>
+                      <small>
+                        <LocalizedDate value={a.unlockedAt} />
+                      </small>
+                    </div>
+                  ))}
+                  {!player.achievements.length && <p>No earned achievements.</p>}
+                </div>
+              </details>
+              <details className="menu-window title-list">
+                <summary>{`Titles · ${player.titles.filter((t) => t.unlocked).length}/${player.titles.length} unlocked`}</summary>
+                {player.titles.map((t) => (
+                  <p key={t.id}>
+                    <strong>
+                      {t.unlocked ? '✓ ' : '◇ '}
+                      {t.name}
+                    </strong>{' '}
+                    — {t.requirement}
+                  </p>
+                ))}
+              </details>
+            </div>
+            {self && profile?.registered && (
+              <details className="menu-window profile-account-links">
+                <summary>Account connections</summary>
+                <SocialLogin link />
+              </details>
+            )}
             <AdminGrant playerId={player.id} name={player.name} />
             <AdminPlayerReview playerId={player.id} />
-            <h2 className="profile-section-title">
-              Earned achievements · {player.achievements.length}
-            </h2>
-            <div className="achievement-grid">
-              {player.achievements.map((a) => (
-                <article key={a.id} className="menu-window achievement is-unlocked">
-                  <span className="achievement-seal">★</span>
-                  <div>
-                    <h2>{a.name}</h2>
-                    <small>
-                      <LocalizedDate value={a.unlockedAt} />
-                    </small>
-                  </div>
-                </article>
-              ))}
-            </div>
-            {!player.achievements.length && (
-              <p>
-                Every challenger starts somewhere. Finish a duel to earn your first achievement.
-              </p>
+            {self && profile && editing && (
+              <ProfileEditor
+                key={profile.id}
+                profile={profile}
+                onClose={() => setEditing(false)}
+                onSaved={() => {
+                  setEditing(false);
+                  refreshPage();
+                }}
+              />
             )}
           </>
         )}
+        <CardDetail card={detail} onClose={() => setDetail(null)} />
       </div>
     </LocaleView>
   );
