@@ -177,10 +177,32 @@ test('saves a themed profile and shows only its public showcase to another playe
       .getByRole('combobox', { name: 'Featured format', exact: true })
       .selectOption('shared-draft');
     await editor.getByRole('tab', { name: 'Showcases', exact: true }).click();
-    for (const [i, id] of [holo.id, c.cards[1].id, c.cards[2].id].entries())
-      await editor
-        .getByRole('combobox', { name: `Showcase card ${i + 1}`, exact: true })
-        .selectOption(id);
+    const showcase = c.page.getByRole('dialog', { name: 'Choose showcase card', exact: true });
+    const cardSearch = showcase.getByRole('searchbox', { name: 'Search cards', exact: true });
+    const holoTop = showcase.locator('.profile-showcase-option').filter({
+      has: c.page.locator('.value-0.holo-bonus-value'),
+    });
+    for (const [index, featured] of [holo, c.cards[1], c.cards[2]].entries()) {
+      const slot = editor.getByRole('button', { name: `Showcase card ${index + 1}`, exact: true });
+      await slot.click();
+      if (index === 1) {
+        await cardSearch.fill(`${holo.name} holo`);
+        await expect(holoTop).toHaveCount(0);
+      }
+      await cardSearch.fill(featured.name + (featured.finish === 'holo' ? ' holo' : ''));
+      const standard = showcase.locator('.profile-showcase-option').filter({
+        has: c.page.getByText(featured.name, { exact: true }),
+        hasNot: c.page.locator('.holo-card'),
+      });
+      const preview = index === 0 ? holoTop : standard;
+      await expect(preview.locator('.card-values .value')).toHaveCount(4);
+      await expect
+        .poll(() => preview.locator('img').evaluate((img: HTMLImageElement) => img.naturalWidth))
+        .toBeGreaterThan(0);
+      await preview.click();
+      await expect(slot).toBeFocused();
+      await expect(slot).toContainText(featured.name);
+    }
     await editor
       .getByRole('combobox', { name: 'Showcase achievement 1', exact: true })
       .selectOption('combo');

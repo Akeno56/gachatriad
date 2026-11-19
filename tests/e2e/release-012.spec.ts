@@ -83,7 +83,7 @@ test('bulk Trade Up gives four rewards in one confirmation and leaves the last c
         card.id,
       ]),
     );
-    await c.page.goto('/collection');
+    await c.page.goto(`${process.env.PREVIEW_BASE_PATH ?? ''}/collection/`);
     await c.page.getByText('Duplicate cards · Recycle & Trade Up', { exact: true }).click();
     await c.page.getByRole('button', { name: 'Trade Up ×4', exact: true }).click();
     await expect(c.page.locator('.duplicate-dialog')).toContainText('20 spare copies');
@@ -117,6 +117,20 @@ test('bulk Trade Up gives four rewards in one confirmation and leaves the last c
       'Vous recevez une carte 2★ aléatoire.',
     );
     await expect(c.page.locator('.catalog-grid')).toContainText('Possédées : 1 · Disponibles : 1');
+    await c.page.getByRole('button', { name: 'Confirmer', exact: true }).click();
+    const reward = c.page.locator('.duplicate-rewards .playing-card');
+    await expect(reward).toHaveCount(1);
+    await expect(reward.locator('.card-values .value')).toHaveCount(4);
+    await expect
+      .poll(() => reward.locator('img').evaluate((img) => img.naturalWidth))
+      .toBeGreaterThan(0);
+    const { width, height } = (await reward.boundingBox())!;
+    expect(width / height).toBeCloseTo(3 / 4, 2);
+    await c.page
+      .locator('.duplicate-dialog')
+      .screenshot({ path: info.outputPath('single-trade-up.png') });
+    await c.page.getByRole('button', { name: 'Continuer', exact: true }).click();
+    await expect(c.page.locator('.duplicate-dialog')).toBeHidden();
   } finally {
     await c.context.close();
   }

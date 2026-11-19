@@ -150,17 +150,17 @@
 }
 .duplicate-rewards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 112px), 1fr));
+  justify-items: center;
   gap: 12px;
   max-height: 55dvh;
   overflow: auto;
   margin: 16px 0;
 }
 .duplicate-rewards .playing-card {
-  height: 200px;
-}
-.duplicate-rewards p {
-  font-size: 14px;
+  max-width: 150px;
+  height: auto;
+  aspect-ratio: 3 / 4;
 }
 .arena-comms .chat-message {
   display: grid;

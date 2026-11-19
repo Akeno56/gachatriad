@@ -208,14 +208,9 @@ export function DuplicateCards() {
           {result ? (
             <>
               {rewards.length ? (
-                <div className="duplicate-rewards">
+                <div className="duplicate-rewards menu-scrollbar">
                   {rewards.map((card, i) => (
-                    <div key={i}>
-                      <Card card={card} showElement />
-                      <p>
-                        <NoTranslate>{card.name}</NoTranslate>
-                      </p>
-                    </div>
+                    <Card key={i} card={card} showElement />
                   ))}
                 </div>
               ) : (

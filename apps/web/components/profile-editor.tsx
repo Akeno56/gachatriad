@@ -11,7 +11,7 @@ import type {
 import { api, ApiError } from '../lib/platform';
 import { Button, GameDialog, Tabs } from './ui';
 import { Avatar } from './avatar';
-import { ProfilePortraitPicker } from './profile-portrait-picker';
+import { ProfileCardPicker } from './profile-card-picker';
 import { LocaleView, NoTranslate } from './i18n';
 import { useSession } from './session';
 const byId = new Map(ALL_CARDS.map((c) => [c.id, c]));
@@ -34,7 +34,7 @@ export function ProfileEditor({
   const [data, setData] = useState<CustomizationView | null>(null),
     [draft, setDraft] = useState<ProfileCustomization | null>(null),
     [tab, setTab] = useState('identity'),
-    [choosingPortrait, setChoosingPortrait] = useState(false),
+    [cardPicker, setCardPicker] = useState<'portrait' | number | null>(null),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
     [reload, setReload] = useState(false),
@@ -42,7 +42,7 @@ export function ProfileEditor({
   const [loadRevision, setLoadRevision] = useState(0);
   const heading = useRef<HTMLHeadingElement>(null),
     confirm = useRef<HTMLHeadingElement>(null),
-    portraitTrigger = useRef<HTMLButtonElement>(null),
+    pickerTrigger = useRef<HTMLButtonElement>(null),
     lock = useRef(false);
   useEffect(() => {
     let active = true;
@@ -113,11 +113,16 @@ export function ProfileEditor({
       else onClose();
     }
   }
-  function closePortraitPicker() {
-    setChoosingPortrait(false);
-    requestAnimationFrame(() => portraitTrigger.current?.focus({ preventScroll: true }));
+  function openCardPicker(target: 'portrait' | number, trigger: HTMLButtonElement) {
+    pickerTrigger.current = trigger;
+    setCardPicker(target);
+  }
+  function closeCardPicker() {
+    setCardPicker(null);
+    requestAnimationFrame(() => pickerTrigger.current?.focus({ preventScroll: true }));
   }
   const card = draft?.avatarCardId ? byId.get(draft.avatarCardId) : null;
+  const showcaseSlot = typeof cardPicker === 'number' ? cardPicker : null;
   return (
     <LocaleView>
       <GameDialog
@@ -177,13 +182,12 @@ export function ProfileEditor({
                     <div className="profile-card-field">
                       <span>Profile card</span>
                       <button
-                        ref={portraitTrigger}
                         type="button"
                         className="outline-button profile-card-trigger"
                         aria-label="Choose profile card"
                         aria-haspopup="dialog"
                         disabled={busy}
-                        onClick={() => setChoosingPortrait(true)}
+                        onClick={(event) => openCardPicker('portrait', event.currentTarget)}
                       >
                         <Avatar card={card} name={profile.name} decorative />
                         <span>
@@ -248,34 +252,38 @@ export function ProfileEditor({
                   <div className="showcase-fields">
                     <fieldset>
                       <legend>Card showcase</legend>
-                      {[0, 1, 2].map((i) => (
-                        <label key={i}>
-                          {`Showcase card ${i + 1}`}
-                          <select
-                            name={`showcase-card-${i}`}
-                            value={draft.featuredCards[i] ?? ''}
-                            disabled={busy}
-                            onChange={(e) => slot('featuredCards', i, e.target.value)}
-                          >
-                            <option value="">None</option>
-                            {owned
-                              .filter(
-                                (c) =>
-                                  !draft.featuredCards.includes(c.id) ||
-                                  draft.featuredCards[i] === c.id,
-                              )
-                              .map((c) => (
-                                <option key={c.id} value={c.id}>
-                                  <NoTranslate>{c.name}</NoTranslate>
-                                  {c.finish === 'holo'
-                                    ? ` · Holo +1 ${SIDE_NAMES[c.holoBonusSide ?? 0]}`
-                                    : ''}{' '}
-                                  · {c.rarity}★
-                                </option>
-                              ))}
-                          </select>
-                        </label>
-                      ))}
+                      {[0, 1, 2].map((index) => {
+                        const featured = byId.get(draft.featuredCards[index]);
+                        const label = `Showcase card ${index + 1}`;
+                        return (
+                          <div className="profile-card-field" key={index}>
+                            <span>{label}</span>
+                            <button
+                              type="button"
+                              className="outline-button profile-card-trigger"
+                              aria-label={label}
+                              aria-haspopup="dialog"
+                              disabled={busy}
+                              onClick={(event) => openCardPicker(index, event.currentTarget)}
+                            >
+                              {featured ? (
+                                <Avatar card={featured} name={featured.name} decorative />
+                              ) : (
+                                <span className="showcase-card-empty" aria-hidden="true">
+                                  +
+                                </span>
+                              )}
+                              <span>
+                                {featured ? <NoTranslate>{featured.name}</NoTranslate> : 'None'}
+                                {featured?.finish === 'holo' && (
+                                  <small>{`· Holo +1 ${SIDE_NAMES[featured.holoBonusSide ?? 0]}`}</small>
+                                )}
+                              </span>
+                              <span aria-hidden="true">▸</span>
+                            </button>
+                          </div>
+                        );
+                      })}
                     </fieldset>
                     <fieldset>
                       <legend>Achievement showcase</legend>
@@ -372,15 +380,27 @@ export function ProfileEditor({
           </>
         )}
       </GameDialog>
-      {choosingPortrait && draft && (
-        <ProfilePortraitPicker
-          cards={owned}
-          selected={draft.avatarCardId}
+      {cardPicker !== null && draft && (
+        <ProfileCardPicker
+          variant={showcaseSlot === null ? 'portrait' : 'showcase'}
+          cards={
+            showcaseSlot === null
+              ? owned
+              : owned.filter(
+                  (card) =>
+                    !draft.featuredCards.includes(card.id) ||
+                    draft.featuredCards[showcaseSlot] === card.id,
+                )
+          }
+          selected={
+            showcaseSlot === null ? draft.avatarCardId : draft.featuredCards[showcaseSlot] || null
+          }
           onChoose={(id) => {
-            field('avatarCardId', id);
-            closePortraitPicker();
+            if (showcaseSlot === null) field('avatarCardId', id);
+            else slot('featuredCards', showcaseSlot, id ?? '');
+            closeCardPicker();
           }}
-          onClose={closePortraitPicker}
+          onClose={closeCardPicker}
         />
       )}
       <GameDialog
