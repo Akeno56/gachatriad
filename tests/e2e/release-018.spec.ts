@@ -287,7 +287,7 @@ test('sets up a styled practice match, opens its replay from results and keeps t
     await c.page.goto(`${base}/?match=${id}`);
     const result = c.page.locator('dialog.result-overlay');
     await expect(result).toBeVisible();
-    await result.getByRole('link', { name: 'Replay', exact: true }).click();
+    await result.getByRole('link', { name: 'Watch replay', exact: true }).click();
     await expect(c.page.locator('.replay-player')).toBeVisible();
     await expect(c.page.locator('.replay-hand .bot-style')).toHaveText('Combos');
     await c.page.getByRole('button', { name: 'Last turn', exact: true }).click();

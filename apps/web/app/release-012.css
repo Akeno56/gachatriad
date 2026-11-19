@@ -160,7 +160,7 @@
 .duplicate-rewards .playing-card {
   max-width: 150px;
   height: auto;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: var(--triad-card-ratio);
 }
 .arena-comms .chat-message {
   display: grid;

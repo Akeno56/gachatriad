@@ -10,6 +10,7 @@
   --line: #6f7d9e;
   --pixel: 'VT323', monospace;
   --sans: 'Rajdhani', 'Segoe UI', sans-serif;
+  --triad-card-ratio: 3 / 4;
   --window: linear-gradient(145deg, #243f79f5, #131f49f7 58%, #101833fa);
   color-scheme: dark;
 }

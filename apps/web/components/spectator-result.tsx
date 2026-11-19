@@ -6,16 +6,7 @@ import { LocaleView, NoTranslate } from './i18n';
 import { Card } from './card';
 import { Avatar } from './avatar';
 import { Button, GameDialog } from './ui';
-
-const modes: Record<MatchView['mode'], string> = {
-  solo: 'Practice',
-  casual: 'Unranked',
-  ranked: 'Ranked',
-  draft: 'Draft',
-  'shared-draft': 'Shared Draft',
-  custom: 'Custom game',
-  roulette: 'Roulette',
-};
+import { matchModeNames } from '../lib/rules';
 
 export function SpectatorResult({
   match,
@@ -52,7 +43,7 @@ export function SpectatorResult({
             <h2 id="spectator-result-title" ref={heading} tabIndex={-1}>
               Match complete
             </h2>
-            <div className="eyebrow">SPECTATOR RESULT · {modes[match.mode]}</div>
+            <div className="eyebrow">SPECTATOR RESULT · {matchModeNames[match.mode]}</div>
           </div>
           <p className="spectator-duel-names">
             <NoTranslate>{match.names[0]}</NoTranslate>
@@ -86,7 +77,7 @@ export function SpectatorResult({
             </div>
             {summary && ['ranked', 'draft', 'shared-draft'].includes(match.mode) && (
               <small>
-                Season {summary.season} · {modes[match.mode]}
+                Season {summary.season} · {matchModeNames[match.mode]}
               </small>
             )}
           </div>

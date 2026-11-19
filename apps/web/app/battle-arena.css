@@ -1,0 +1,496 @@
+.arena-screen {
+  --duel-card: clamp(82px, calc((100dvh - 278px) / 4), 148px);
+  --duel-hand-card: clamp(76px, calc(var(--duel-card) * 0.74), 106px);
+  --duel-board: calc(3 * var(--duel-card) + 24px);
+  --duel-border: #78694e;
+  --duel-table: #101e33;
+  grid-template-columns: minmax(0, 1fr) clamp(244px, 21vw, 305px);
+  grid-template-rows: auto;
+  align-items: start;
+  gap: 16px;
+  max-width: 1420px;
+  height: auto;
+  padding: 6px clamp(10px, 2vw, 28px) 8px;
+}
+
+body:has(.arena-screen) .system-bar {
+  min-height: 48px;
+  padding-block: 5px;
+}
+
+body:has(.arena-screen) .system-bar :is(.release-trigger, .player-navigation) {
+  display: none;
+}
+
+.arena-screen .match-toolbar {
+  min-height: 32px;
+  padding-bottom: 3px;
+  border-color: #526583;
+}
+
+.arena-screen .match {
+  gap: 5px;
+}
+
+.arena-screen .battle-actions {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.arena-screen .battle-actions .text-button {
+  min-height: 28px;
+}
+
+.arena-screen .scoreboard {
+  grid-template-columns: minmax(0, 1fr) clamp(32px, 10vw, 78px) minmax(0, 1fr);
+}
+
+.arena-screen .scoreboard .player-heading {
+  border-block: 1px solid #526a8b;
+  border-inline-end: 1px solid #526a8b;
+  background: linear-gradient(105deg, #263d62, #14223e);
+}
+
+.arena-screen .scoreboard .cpu-heading {
+  border-inline-start: 1px solid #785866;
+  border-inline-end: 3px solid #ba7682;
+  background: linear-gradient(255deg, #513346, #20233a);
+}
+
+.arena-screen .player-heading.active-player {
+  border-color: #c4a76c;
+  box-shadow:
+    inset 0 -2px #c4a76c,
+    0 0 14px #bca05a24;
+}
+
+.arena-screen .active-player::before {
+  content: none;
+}
+
+.arena-screen .player-heading strong,
+.arena-screen .battle-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arena-screen .score-divider {
+  display: grid;
+  gap: 3px;
+  font-size: 21px;
+}
+
+.score-divider progress {
+  width: 100%;
+  height: 4px;
+  appearance: none;
+  border: 0;
+  background: #142642;
+  color: #d3b676;
+}
+
+.score-divider progress::-webkit-progress-bar {
+  background: #142642;
+}
+
+.score-divider progress::-webkit-progress-value {
+  background: #d3b676;
+}
+
+.score-divider progress::-moz-progress-bar {
+  background: #d3b676;
+}
+
+.arena-screen .turn-banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  margin: 0;
+  padding: 3px 8px;
+  background: #101b32;
+  border-block: 1px solid #516784;
+  color: #dce6f6;
+}
+
+.turn-banner > [role='status'] {
+  grid-column: 2;
+  max-width: min(370px, 62vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arena-screen .turn-banner[data-side='player'] {
+  color: #e8d39b;
+}
+
+.duel-clock,
+.arena-screen .turn-banner .reopen-result {
+  grid-column: 3;
+  justify-self: end;
+}
+
+.duel-clock {
+  min-width: 3ch;
+  font: 22px/1 var(--pixel);
+  color: #e6d39b;
+}
+
+.duel-clock[data-urgent='true'] {
+  color: #ffd1c3;
+  background: #613142;
+  padding: 2px 4px;
+}
+
+.arena-screen .turn-policy.timeout-danger {
+  margin: 2px 0 0;
+}
+
+.turn-banner .capture-splash {
+  position: static;
+  display: inline-block;
+  transform: none;
+  border: 1px solid #bca46f;
+  padding: 0 13px;
+  background: #3a3240;
+  color: #ffe1a4;
+  font: 400 24px/1 var(--pixel);
+  letter-spacing: 2px;
+  animation: none;
+  text-shadow: 1px 1px #0d1322;
+}
+
+.arena-screen .battle-layout {
+  display: grid;
+  grid-template-columns:
+    minmax(0, calc(2 * var(--duel-hand-card) + 6px)) minmax(0, var(--duel-board))
+    minmax(0, calc(2 * var(--duel-hand-card) + 6px));
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 2vw, 24px);
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 8px;
+  border: 1px solid var(--duel-border);
+  box-shadow:
+    inset 0 0 0 3px #16213a,
+    inset 0 0 0 4px #2d3f57;
+  background:
+    radial-gradient(ellipse at center, #29466183, transparent 69%),
+    repeating-linear-gradient(135deg, #718dad0a 0 1px, transparent 1px 6px), var(--duel-table);
+}
+
+.arena-screen .board-area {
+  width: min(100%, var(--duel-board));
+  order: 0;
+}
+
+.arena-screen .board {
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto;
+  grid-template-rows: repeat(3, auto);
+  padding: 6px;
+  gap: 4px;
+  border: 2px solid #a68d5e;
+  border-radius: 0;
+  background: #0e192b;
+  box-shadow:
+    inset 0 0 0 2px #38445a,
+    0 4px 14px #0309199e;
+}
+
+.arena-screen .board-cell {
+  aspect-ratio: var(--triad-card-ratio);
+}
+
+.arena-screen .board-cell:disabled {
+  opacity: 1;
+}
+
+.arena-screen .board-cell.legal-cell:not([data-modifier]) {
+  border-color: #d7bc83;
+}
+
+.cell-sigil {
+  color: #849ebd61;
+  font: 29px/1 var(--pixel);
+  pointer-events: none;
+}
+
+.legal-cell .cell-sigil {
+  color: #e1c788;
+}
+
+.arena-screen .hand {
+  width: 100%;
+  order: 0;
+  padding: 0;
+}
+
+.arena-screen .hand-label {
+  gap: 4px;
+  text-transform: uppercase;
+  font: 650 11px/1.2 var(--sans);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.arena-screen .hand-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  height: auto;
+  min-height: calc(4 * var(--duel-hand-card) + 12px);
+  align-content: start;
+  gap: 6px;
+  overflow: visible;
+}
+
+.arena-screen .hand :is(.hand-card, .opponent-card) {
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--triad-card-ratio);
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+}
+
+.arena-screen .hand-card:is(:not(:disabled):hover, .is-selected) {
+  transform: translateY(-2px);
+}
+
+.arena-screen .hand .card-values {
+  transform: scale(0.82);
+}
+
+.arena-screen .hand .card-caption {
+  display: block;
+  padding: 8px 5px 4px;
+}
+
+.arena-screen .card-inspector {
+  position: static;
+  display: block;
+  min-height: 24px;
+  margin: 4px 0 0;
+  padding: 0;
+  font: 16px var(--pixel);
+  color: #e9d5a5;
+}
+
+.duel-log {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  min-height: 20px;
+  padding: 2px 3px 0;
+}
+
+.arena-screen .match-history {
+  grid-column: 2;
+  grid-row: 1;
+  border: 0;
+  padding: 0;
+  color: #adbfd8;
+}
+
+.arena-screen .match-history[open] {
+  position: static;
+  grid-column: 1/-1;
+  grid-row: 2;
+}
+
+.duel-last-move {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #bfcee2;
+  font: 600 13px/1.25 var(--sans);
+}
+
+.arena-screen .arena-comms {
+  height: clamp(310px, calc(100dvh - 140px), 690px);
+  min-height: 0;
+}
+
+.result-overlay.result-v15[open] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+
+.result-summary {
+  min-height: 0;
+  overflow: auto;
+  padding: 16px clamp(10px, 3vw, 23px) 10px;
+  scrollbar-gutter: stable both-edges;
+}
+
+.duel-result-footer {
+  flex: none;
+  padding: 10px clamp(10px, 3vw, 23px) 7px;
+  border-top: 1px solid #887958;
+  background: #14233e;
+}
+
+.result-v15 .duel-result-footer .result-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+}
+
+.result-v15 .duel-result-footer .result-actions > * {
+  display: grid;
+  place-items: center;
+  grid-column: auto;
+  min-height: 40px;
+  padding: 5px;
+  font-size: 20px;
+  text-align: center;
+}
+
+.result-secondary-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 4px;
+}
+
+.result-v15 .result-secondary-actions > button {
+  margin: 0;
+  font-size: 17px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .effects-animated .arena-screen [data-arriving='true'] > .playing-card {
+    animation: card-land 180ms ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .effects-animated .arena-screen .capture-flip-rotor {
+    animation: none !important;
+  }
+}
+
+@media (min-width: 681px) {
+  .game-shell:has(.arena-screen) .mobile-navigation-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid #576c8a;
+    background: #14223d;
+    color: #e4d6ad;
+    font: 18px var(--pixel);
+  }
+
+  .game-shell:has(.arena-screen) #main-navigation:not(.is-open) {
+    display: none;
+  }
+
+  .game-shell:has(.arena-screen) #main-navigation.is-open {
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 275px;
+    padding: 8px;
+    border: 1px solid #8ca3c1;
+    background: #142442;
+    box-shadow: 3px 5px #0008;
+  }
+}
+
+@keyframes card-land {
+  from {
+    transform: translateY(-4px) scale(1.04);
+    opacity: 0.72;
+  }
+}
+
+@media (max-width: 1000px) {
+  .arena-screen {
+    grid-template-columns: minmax(0, 1fr);
+    padding-bottom: 64px;
+  }
+
+  .arena-screen .arena-comms {
+    height: 36px;
+  }
+
+  .arena-screen .arena-comms.is-expanded {
+    height: min(420px, 63dvh);
+  }
+}
+
+@media (max-width: 680px) {
+  .arena-screen {
+    --duel-card: clamp(71px, calc((100dvh - 461px) / 4), 99px);
+    padding: 5px 8px 64px;
+  }
+
+  .arena-screen .match-toolbar {
+    min-height: 26px;
+  }
+
+  .arena-screen .battle-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'rival' 'board' 'player';
+    gap: 5px;
+    padding: 6px;
+  }
+
+  .arena-screen .hand-label {
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+
+  .arena-screen .hand .hand-cards {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    height: auto;
+    min-height: 0;
+    gap: 4px;
+  }
+
+  .arena-screen .hand .card-values {
+    transform: scale(0.65);
+    left: 1px;
+    top: 3px;
+  }
+
+  .arena-screen .hand .card-caption strong {
+    font-size: 13px;
+  }
+
+  .arena-screen .board .card-values {
+    transform: scale(0.82);
+  }
+
+  .arena-screen .turn-banner {
+    font-size: 17px;
+  }
+
+  .arena-screen .turn-banner .reopen-result {
+    grid-column: 1/-1;
+    justify-self: center;
+  }
+
+  .result-v15 .duel-result-footer .result-actions > * {
+    font-size: 17px;
+    line-height: 1.05;
+  }
+}

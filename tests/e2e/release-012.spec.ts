@@ -122,7 +122,7 @@ test('bulk Trade Up gives four rewards in one confirmation and leaves the last c
     await expect(reward).toHaveCount(1);
     await expect(reward.locator('.card-values .value')).toHaveCount(4);
     await expect
-      .poll(() => reward.locator('img').evaluate((img) => img.naturalWidth))
+      .poll(() => reward.locator('img').evaluate((img: HTMLImageElement) => img.naturalWidth))
       .toBeGreaterThan(0);
     const { width, height } = (await reward.boundingBox())!;
     expect(width / height).toBeCloseTo(3 / 4, 2);

@@ -387,7 +387,7 @@ test('shows spectators a draw with no Elo change and both original decks', async
   }
 });
 
-test('shows saved win and draw rewards and returns to the tavern without awarding twice', async ({
+test('shows saved win and draw rewards and returns to lobbies without awarding twice', async ({
   browser,
 }, info) => {
   const a = await player(browser),
@@ -413,6 +413,12 @@ test('shows saved win and draw rewards and returns to the tavern without awardin
       await expect(result.getByRole('button', { name: 'Queue again', exact: true })).toBeInViewport(
         { ratio: 1 },
       );
+      await expect(result.getByRole('link', { name: 'Watch replay', exact: true })).toBeInViewport({
+        ratio: 1,
+      });
+      await expect(
+        result.getByRole('button', { name: 'Back to lobbies', exact: true }),
+      ).toBeInViewport({ ratio: 1 });
       await a.page.screenshot({
         path: info.outputPath(target === 'draw' ? 'draw-result.png' : 'complete-victory.png'),
       });
@@ -421,8 +427,8 @@ test('shows saved win and draw rewards and returns to the tavern without awardin
       expect((await platform.store.profile(a.actor)).prisms - before.prisms).toBe(
         actual.prismReward,
       );
-      await result.getByRole('button', { name: 'Back to the tavern', exact: true }).click();
-      await expect(a.page.locator('.tavern-sign')).toBeVisible();
+      await result.getByRole('button', { name: 'Back to lobbies', exact: true }).click();
+      await expect(a.page.getByRole('heading', { name: 'Find a table' })).toBeVisible();
       expect((await platform.store.profile(a.actor)).deck).toEqual(a.profile.deck);
     }
   } finally {
@@ -449,7 +455,7 @@ test('keeps custom Trade One settlement in the results and blocks leaving until 
     const result = a.page.locator('.result-v15[open]');
     await expect(result.locator('.trade-choices button')).toHaveCount(5);
     await expect(
-      result.getByRole('button', { name: 'Back to the tavern', exact: true }),
+      result.getByRole('button', { name: 'Back to lobbies', exact: true }),
     ).toBeDisabled();
     await expect(result.getByRole('button', { name: 'Queue again', exact: true })).toHaveCount(0);
     await a.page.screenshot({ path: info.outputPath('trade-one-result.png') });
@@ -459,11 +465,11 @@ test('keeps custom Trade One settlement in the results and blocks leaving until 
     await result.getByRole('button', { name: `Claim ${card.name}`, exact: true }).click();
     await expect(result.locator('.trade-choices')).toHaveCount(0);
     await expect(
-      result.getByRole('button', { name: 'Back to the tavern', exact: true }),
+      result.getByRole('button', { name: 'Back to lobbies', exact: true }),
     ).toBeEnabled();
     expect((await platform.store.profile(a.actor)).inventory[card.id].quantity).toBe(before + 1);
-    await result.getByRole('button', { name: 'Back to the tavern', exact: true }).click();
-    await expect(a.page.locator('.tavern-sign')).toBeVisible();
+    await result.getByRole('button', { name: 'Back to lobbies', exact: true }).click();
+    await expect(a.page.getByRole('heading', { name: 'Find a table' })).toBeVisible();
   } finally {
     await a.context.close();
     await b.context.close();

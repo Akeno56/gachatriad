@@ -1836,5 +1836,14 @@
   "Portrait frames, with five achievement unlocks.": "Cadres de portrait, dont cinq à débloquer avec les succès.",
   "Achievements earned": "Succès obtenus",
   "Earned only": "Obtenus",
-  "Unlocked": "Débloqué"
+  "Unlocked": "Débloqué",
+  "Match score": "Score de la partie",
+  "Cards placed": "Cartes posées",
+  "Seconds remaining": "Secondes restantes",
+  "Opponent’s turn": "Tour adverse",
+  "is playing…": "joue…",
+  "{0} captured": "Captures : {0}",
+  "A new battle table with upright hands, a turn clock and a clearer score.": "Nouvelle table de jeu avec des cartes verticales, un chrono et un score plus lisible.",
+  "Same, Plus and Combo callouts appear above the board as cards flip.": "Les annonces Same, Plus et Combo s’affichent au-dessus du plateau.",
+  "Match results keep queue, replay and lobby shortcuts in view.": "Les raccourcis de file, de replay et de retour aux salons restent visibles dans les résultats."
 }

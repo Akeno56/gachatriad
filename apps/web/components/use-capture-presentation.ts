@@ -53,13 +53,12 @@ export function useCapturePresentation(incoming: MatchView | null, sound: (sound
         }
         for (const phase of phases) {
           if (token.current !== stamp) return;
+          setCallout(phase.label);
           if (phase.label) {
-            setCallout(phase.label);
             sound(phase.reason === 'combo' ? 'combo' : 'capture');
-            await wait(750);
+            await wait(420);
           }
           if (token.current !== stamp) return;
-          setCallout('');
           for (const capture of phase.captures) visible.add(capture.cell);
           setRevealed(new Set(visible));
           setFlipping(phase.captures.map((c) => c.cell));

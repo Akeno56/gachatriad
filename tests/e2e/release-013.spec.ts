@@ -233,7 +233,7 @@ test('ignores a delayed battle response after returning to the menu', async ({ b
       payload: { cardId: null },
     });
     await held;
-    await c.page.getByRole('button', { name: 'Return to menu', exact: true }).click();
+    await c.page.getByRole('button', { name: 'Back to the tavern', exact: true }).click();
     await expect(c.page.locator('.game-title')).toBeVisible();
     const delivered = c.page.waitForResponse(
       (response) => new URL(response.url()).pathname === `/api/matches/${matchId}`,

@@ -501,7 +501,7 @@
 }
 .profile-showcase-option .playing-card {
   height: auto;
-  aspect-ratio: 5/7;
+  aspect-ratio: var(--triad-card-ratio);
 }
 .profile-showcase-option .value {
   font-size: 25px;

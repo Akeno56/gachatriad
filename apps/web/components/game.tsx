@@ -9,7 +9,6 @@ import {
   validateDeck,
   type Card as CardData,
 } from '@gacha-triad/engine';
-import { ALL_CARDS as CARDS } from '@gacha-triad/shared';
 import type { MatchView } from '@gacha-triad/shared/platform';
 import { api } from '../lib/platform';
 import { useCapturePresentation } from './use-capture-presentation';
@@ -30,7 +29,7 @@ import { DraftOpening } from './draft-opening';
 import { SharedDraft } from './shared-draft';
 import { BattleChat } from './battle-chat';
 import { BotStyle } from './bot-style';
-import { ruleNames } from '../lib/rules';
+import { matchModeNames, ruleNames } from '../lib/rules';
 export { ruleNames } from '../lib/rules';
 const describe = (c: CardData, modifier = 0) =>
   `${c.name}. Top ${displayValue(c.stats[0] + modifier)}, right ${displayValue(c.stats[1] + modifier)}, bottom ${displayValue(c.stats[2] + modifier)}, left ${displayValue(c.stats[3] + modifier)}. ${c.rarity} stars`;
@@ -141,10 +140,12 @@ export function Game() {
         appPath(`/?${watchingId ? 'spectate' : 'match'}=${matchId}`),
       );
   }, [matchId, watchingId]);
+  const showBoard = !!match?.game;
+  const showSharedDraft = match?.mode === 'shared-draft' && match.status === 'drafting';
   useEffect(() => {
-    if (!match?.game && !(match?.mode === 'shared-draft' && match.status === 'drafting')) return;
-    document.body.classList.add('in-battle');
+    if (!showBoard && !showSharedDraft) return;
     window.scrollTo(0, 0);
+    if (!showSharedDraft) return;
     const measure = () => {
       const bar = document.querySelector('.system-bar')?.getBoundingClientRect().height ?? 62;
       document.documentElement.style.setProperty(
@@ -156,11 +157,11 @@ export function Game() {
     window.addEventListener('resize', measure);
     window.visualViewport?.addEventListener('resize', measure);
     return () => {
-      document.body.classList.remove('in-battle');
+      document.documentElement.style.removeProperty('--battle-space');
       window.removeEventListener('resize', measure);
       window.visualViewport?.removeEventListener('resize', measure);
     };
-  }, [match?.id, !!match?.game, match?.mode, match?.status]);
+  }, [match?.id, showBoard, showSharedDraft]);
   useEffect(() => {
     const timer = setInterval(() => setClock(Date.now()), 1000);
     return () => clearInterval(timer);
@@ -229,19 +230,24 @@ export function Game() {
     history.replaceState(history.state, '', appPath('/'));
   }
   const resultAction = useRef(false);
-  async function leaveResult(requeue = false) {
+  async function leaveResult(destination: 'tavern' | 'lobbies' | 'queue') {
     if (!match || match.trade.pending || resultAction.current) return;
     resultAction.current = true;
     setBusy(true);
     setError('');
     try {
       await api(`/matches/${match.id}/leave`, {});
-      const next = requeue
-        ? await api<{ matchId: string | null }>('/lobbies', {
-            mode: match.mode,
-            allowBots: match.mode === 'casual' || match.mode === 'roulette',
-          })
-        : null;
+      const next =
+        destination === 'queue'
+          ? await api<{ matchId: string | null }>('/lobbies', {
+              mode: match.mode,
+              allowBots: match.mode === 'casual' || match.mode === 'roulette',
+            })
+          : null;
+      if (destination === 'lobbies') {
+        location.assign(appPath('/lobbies'));
+        return;
+      }
       menu();
       if (next?.matchId) setMatchId(next.matchId);
       await refresh();
@@ -263,6 +269,10 @@ export function Game() {
   }
   const canPlay =
     !match?.spectator && match?.status === 'playing' && game?.turn === seat && !busy && !resolving;
+  const turnSeconds = match?.deadline
+    ? Math.max(0, Math.ceil((match.deadline - clock) / 1000))
+    : null;
+  const lastPlayed = latest && game?.board[latest.move.cell]?.card;
   const displayScore = game
     ? [game.hands[0].length, game.hands[1].length]
     : [...(match?.score ?? [5, 5])];
@@ -307,15 +317,6 @@ export function Game() {
       <div
         className={`play-page ${match ? 'battle-screen' : 'title-screen'} ${match?.spectator ? 'spectator-screen' : ''} ${match?.game ? 'arena-screen' : ''} ${match?.mode === 'shared-draft' && match.status === 'drafting' ? 'shared-draft-screen' : ''}`}
       >
-        {callout && (
-          <div
-            key={callout + ':' + match?.game?.history.length}
-            className={`capture-splash splash-${callout.toLowerCase()}`}
-            role="status"
-          >
-            {callout}
-          </div>
-        )}
         {!match ? (
           <TavernHome
             onMatch={setMatchId}
@@ -327,19 +328,9 @@ export function Game() {
           <section className="match" aria-label="Triple Triad match">
             <div className="match-toolbar">
               <div className="battle-mode">
-                <span>
-                  {match.mode === 'shared-draft'
-                    ? 'SHARED DRAFT BATTLE'
-                    : `${match.mode.toUpperCase()} BATTLE`}
-                </span>
+                {match.status === 'drafting' && <span>{matchModeNames[match.mode]}</span>}
                 <strong>
-                  {match.status === 'drafting'
-                    ? 'Choose your hand'
-                    : match.mode === 'solo'
-                      ? 'Practice duel'
-                      : match.spectator
-                        ? 'Spectating'
-                        : 'Online duel'}
+                  {match.status === 'drafting' ? 'Choose your hand' : matchModeNames[match.mode]}
                 </strong>
               </div>
               <div className="rule-badges">
@@ -380,9 +371,20 @@ export function Game() {
                 {!match.spectator && (
                   <button
                     className="text-button"
-                    onClick={() => (match.status === 'complete' ? menu() : setDialog('exit'))}
+                    onClick={() => {
+                      if (match.status !== 'complete') setDialog('exit');
+                      else if (match.trade.pending) setResultOpen(true);
+                      else void leaveResult(match.mode === 'solo' ? 'tavern' : 'lobbies');
+                    }}
+                    disabled={busy}
                   >
-                    {match.status === 'complete' ? 'Return to menu' : 'Leave match'}
+                    {match.status !== 'complete'
+                      ? 'Leave match'
+                      : match.trade.pending
+                        ? 'View result'
+                        : match.mode === 'solo'
+                          ? 'Back to the tavern'
+                          : 'Back to lobbies'}
                   </button>
                 )}
               </div>
@@ -481,7 +483,7 @@ export function Game() {
             ) : (
               game && (
                 <>
-                  <div className="scoreboard">
+                  <div className="scoreboard" role="group" aria-label="Match score">
                     <div
                       className={`player-heading ${game.turn === seat && match.status === 'playing' ? 'active-player' : ''}`}
                     >
@@ -498,18 +500,12 @@ export function Game() {
                         {match.players[seat].title && (
                           <span className="battle-title">{match.players[seat].title}</span>
                         )}
-                        <small>
-                          {game.turn === seat && match.status === 'playing'
-                            ? match.spectator
-                              ? 'PLAYING'
-                              : 'YOUR TURN'
-                            : 'CHALLENGER'}
-                        </small>
                       </div>
                       <span className="your-score">{displayScore[seat]}</span>
                     </div>
                     <div className="score-divider">
-                      VS<small>{game.history.length}/9</small>
+                      <span>{game.history.length}/9</span>
+                      <progress value={game.history.length} max={9} aria-label="Cards placed" />
                     </div>
                     <div
                       className={`player-heading cpu-heading ${game.turn === other && match.status === 'playing' ? 'active-player' : ''}`}
@@ -529,24 +525,76 @@ export function Game() {
                         {match.players[other].title && (
                           <span className="battle-title">{match.players[other].title}</span>
                         )}
-                        <small>
-                          {game.turn === other && match.status === 'playing'
-                            ? match.spectator
-                              ? 'PLAYING'
-                              : 'OPPONENT’S TURN'
-                            : match.spectator
-                              ? 'CHALLENGER'
-                              : match.mode === 'solo'
-                                ? 'CPU'
-                                : 'OPPONENT'}
-                        </small>
                       </div>
                     </div>
+                  </div>
+                  <div className="duel-command">
+                    <div
+                      className="turn-banner"
+                      data-side={game.turn === seat ? 'player' : 'rival'}
+                    >
+                      <span role="status">
+                        {callout ? (
+                          <strong
+                            key={`${callout}:${game.history.length}`}
+                            className={`capture-splash splash-${callout.toLowerCase()}`}
+                          >
+                            {callout}
+                          </strong>
+                        ) : resolving ? (
+                          'RESOLVING CAPTURES…'
+                        ) : match.status === 'complete' ? (
+                          'MATCH COMPLETE'
+                        ) : match.spectator ? (
+                          <>
+                            <NoTranslate>{match.names[game.turn]}</NoTranslate> is playing…
+                          </>
+                        ) : game.turn === seat ? (
+                          selectedCard ? (
+                            'Choose an empty space'
+                          ) : (
+                            'Your turn · Select a card'
+                          )
+                        ) : (
+                          'Opponent’s turn'
+                        )}
+                      </span>
+                      {match.status === 'playing' &&
+                        !resolving &&
+                        turnSeconds !== null &&
+                        !match.players[game.turn].botStyle && (
+                          <span
+                            className="duel-clock"
+                            data-urgent={turnSeconds <= 10}
+                            role="timer"
+                            aria-label="Seconds remaining"
+                          >
+                            {turnSeconds}s
+                          </span>
+                        )}
+                      {match.status === 'complete' && !resultOpen && (
+                        <button
+                          className="outline-button reopen-result"
+                          onClick={() => setResultOpen(true)}
+                        >
+                          {match.spectator ? 'Match details' : 'View result'}
+                        </button>
+                      )}
+                    </div>
+                    {match.status === 'playing' && (match.missedTurns?.[game.turn] ?? 0) > 0 && (
+                      <p className="turn-policy timeout-danger" role="note">
+                        Next timeout: instant defeat.
+                      </p>
+                    )}
                   </div>
                   <div className="battle-layout">
                     <div className="hand player-hand">
                       <div className="hand-label">
-                        {match.spectator ? match.names[seat] : 'YOUR HAND'}{' '}
+                        {match.spectator ? (
+                          <NoTranslate>{match.names[seat]}</NoTranslate>
+                        ) : (
+                          'YOUR HAND'
+                        )}{' '}
                         <span>{own.length}/5</span>
                       </div>
                       <div className="hand-cards">
@@ -583,64 +631,20 @@ export function Game() {
                                   compact
                                   showElement={!!match.rules.elemental}
                                 />
-                                <span className="selected-marker">▶</span>
                               </button>
                             ),
                         )}
                       </div>
                       {selectedCard && (
                         <button className="card-inspector" onClick={() => inspect(selectedCard)}>
-                          <strong>
-                            <NoTranslate>{selectedCard.name}</NoTranslate>
-                          </strong>
-                          <span>Inspect artwork ↗</span>
+                          Inspect selected card
                         </button>
                       )}
                     </div>
                     <div className="board-area">
                       <div
-                        className={`turn-banner ${game.turn === other ? 'cpu-turn' : 'your-turn'}`}
-                        role="status"
-                        aria-live="polite"
-                      >
-                        {resolving
-                          ? 'RESOLVING CAPTURES…'
-                          : match.status === 'complete'
-                            ? 'MATCH COMPLETE'
-                            : match.spectator
-                              ? `${match.names[game.turn]} is playing…`
-                              : game.turn === seat
-                                ? selected
-                                  ? 'Choose an empty space'
-                                  : 'Your turn · Select a card'
-                                : `${match.names[other]} is ${match.mode === 'solo' ? 'thinking' : 'playing'}…`}
-                        {match.status === 'playing' && (
-                          <small>
-                            {' '}
-                            · {Math.max(0, Math.ceil(((match.deadline ?? clock) - clock) / 1000))}s
-                          </small>
-                        )}
-                      </div>
-                      {match.status === 'playing' && (
-                        <p
-                          className={`turn-policy ${(match.missedTurns?.[game.turn] ?? 0) > 0 ? 'timeout-danger' : ''}`}
-                          role="note"
-                        >
-                          {(match.missedTurns?.[game.turn] ?? 0) > 0
-                            ? 'Next timeout: instant defeat.'
-                            : '0 seconds: auto-play once. Miss your next turn: defeat.'}
-                        </p>
-                      )}
-                      {match.status === 'complete' && !resultOpen && (
-                        <button
-                          className="outline-button reopen-result"
-                          onClick={() => setResultOpen(true)}
-                        >
-                          {match.spectator ? 'Match details' : 'View result'}
-                        </button>
-                      )}
-                      <div
                         className={`board ${match.rules.elemental ? 'elemental-board' : ''}`}
+                        role="group"
                         aria-label="Three by three game board"
                       >
                         {game.board.map((item, cell) => {
@@ -660,6 +664,7 @@ export function Game() {
                               data-testid={`cell-${cell}`}
                               data-element={game.cellElements?.[cell] ?? undefined}
                               data-owner={visibleOwner}
+                              data-arriving={(resolving && latest?.move.cell === cell) || undefined}
                               data-modifier={preview || undefined}
                               className={`board-cell ${!item && selected && canPlay ? 'legal-cell' : ''} ${preview > 0 ? 'elemental-preview-buff' : preview < 0 ? 'elemental-preview-penalty' : ''}`}
                               disabled={!item && !canPlay}
@@ -686,20 +691,14 @@ export function Game() {
                                   captureOrder={Math.max(0, flipping.indexOf(cell))}
                                 />
                               ) : null}
+                              {!item && !game.cellElements?.[cell] && (
+                                <span className="cell-sigil" aria-hidden="true">
+                                  ◇
+                                </span>
+                              )}
                             </button>
                           );
                         })}
-                      </div>
-                      <div className="board-bottom">
-                        <span>
-                          <i className="legend-dot mint-dot" />{' '}
-                          {match.spectator ? match.names[seat] : 'YOU'}
-                        </span>
-                        <span>{game.history.length}/9 PLACED</span>
-                        <span>
-                          <i className="legend-dot rose-dot" />{' '}
-                          {match.spectator ? match.names[other] : 'OPPONENT'}
-                        </span>
                       </div>
                     </div>
                     <div className="hand cpu-hand">
@@ -707,7 +706,7 @@ export function Game() {
                         {match.spectator ? (
                           <NoTranslate>{match.names[other]}</NoTranslate>
                         ) : (
-                          'OPPONENT'
+                          'Opponent’s hand'
                         )}{' '}
                         <span>{opponent.length}/5</span>
                       </div>
@@ -732,40 +731,34 @@ export function Game() {
                       </div>
                     </div>
                   </div>
-                  <div className="battle-message menu-window match-status">
-                    <span className="window-label">BATTLE LOG</span>
-                    <span className="message-cursor">▶</span>
-                    <p role="log" aria-live="polite">
-                      {latest
-                        ? `${match.names[latest.move.player]} played ${CARDS.find((c) => c.id === latest.move.cardId)?.name ?? 'a card'}. ${latest.captures.length} captured${latest.captures.some((c) => c.reason === 'combo') ? ' — Combo!' : ''}.`
-                        : match.spectator
-                          ? 'Watching a public match.'
-                          : 'Select a card, then choose an empty space.'}
-                    </p>
+                  <div className="duel-log">
+                    <details className="match-history menu-scrollbar">
+                      <summary>Turn history</summary>
+                      <ol>
+                        {game.history.map((turn, i) => (
+                          <li key={i}>
+                            <span>{i + 1}</span>{' '}
+                            <NoTranslate>{match.names[turn.move.player]}</NoTranslate> ·{' '}
+                            <NoTranslate>{game.board[turn.move.cell]?.card.name}</NoTranslate> ·{' '}
+                            {String.fromCharCode(65 + Math.floor(turn.move.cell / 3))}
+                            {(turn.move.cell % 3) + 1}
+                            {turn.captures.length
+                              ? ` · ${turn.captures.map((c) => `${c.reason} ${String.fromCharCode(65 + Math.floor(c.cell / 3))}${(c.cell % 3) + 1}`).join(', ')}`
+                              : ''}
+                          </li>
+                        ))}
+                      </ol>
+                    </details>
+                    {lastPlayed && latest && !resolving && (
+                      <p className="duel-last-move" role="log">
+                        <NoTranslate>{match.names[latest.move.player]}</NoTranslate> ·{' '}
+                        <NoTranslate>{lastPlayed.name}</NoTranslate>
+                        {latest.captures.length > 0 && (
+                          <> · {`${latest.captures.length} captured`}</>
+                        )}
+                      </p>
+                    )}
                   </div>
-                  <details className="match-history">
-                    <summary>
-                      Turn history <span>{game.history.length} moves</span>
-                    </summary>
-                    <ol>
-                      {game.history.map((turn, i) => (
-                        <li key={i}>
-                          <span>{i + 1}</span>{' '}
-                          <NoTranslate>{match.names[turn.move.player]}</NoTranslate> ·{' '}
-                          {String.fromCharCode(65 + Math.floor(turn.move.cell / 3))}
-                          {(turn.move.cell % 3) + 1}
-                          {turn.captures.length
-                            ? ` · ${turn.captures.map((c) => `${c.reason} ${String.fromCharCode(65 + Math.floor(c.cell / 3))}${(c.cell % 3) + 1}`).join(', ')}`
-                            : ''}
-                        </li>
-                      ))}
-                    </ol>
-                  </details>
-                  {match.spectator && match.status === 'complete' && (
-                    <p className="spectator-result">
-                      {match.winner === 'draw' ? 'Draw' : `${match.names[match.winner ?? 0]} wins`}
-                    </p>
-                  )}
                 </>
               )
             )}
@@ -792,7 +785,14 @@ export function Game() {
             </button>
           </div>
           {dialog === 'rules' ? (
-            <RulesContent />
+            <>
+              {game && (
+                <p className="turn-policy" role="note">
+                  0 seconds: auto-play once. Miss your next turn: defeat.
+                </p>
+              )}
+              <RulesContent />
+            </>
           ) : dialog === 'exit' ? (
             <>
               <p>
@@ -833,8 +833,8 @@ export function Game() {
             busy={busy}
             onClose={() => setResultOpen(false)}
             onPlayAgain={start}
-            onQueueAgain={() => void leaveResult(true)}
-            onReturnToTavern={() => void leaveResult()}
+            onQueueAgain={() => void leaveResult('queue')}
+            onReturn={() => void leaveResult(match.mode === 'solo' ? 'tavern' : 'lobbies')}
             onClaim={(cardId) => action(`/matches/${match.id}/claim`, { cardId })}
             onRematch={() => action(`/matches/${match.id}/rematch`, {})}
             onCancelRematch={() => action(`/matches/${match.id}/rematch`, { cancel: true })}

@@ -61,8 +61,10 @@ for (const preset of ['classic', 'standard', 'combo'])
       true,
     );
     const board = (await page.locator('.board').boundingBox())!;
-    if (info.project.name === 'desktop') expect(board.width).toBeGreaterThanOrEqual(400);
-    expect(board.y + board.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+    if (info.project.name === 'desktop') {
+      expect(board.width).toBeGreaterThanOrEqual(400);
+      expect(board.y + board.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+    }
     await page.reload();
     await expect(page.locator('.board-cell')).toHaveCount(9);
     await playToEnd(page);

@@ -4,13 +4,17 @@ test('fits the arena in the viewport with visible chat and clear timeout rules',
   page,
 }, info) => {
   await page.goto('/');
+  await expect(page.getByRole('dialog', { name: 'Your first hand starts here' })).toBeVisible();
   await openStarterPacks(page);
   await page.request.post('/api/tutorial/complete', { data: {} });
   await startPractice(page);
   await expect(page.locator('.board-cell')).toHaveCount(9);
   const sizes =
     info.project.name === 'mobile'
-      ? [{ width: 390, height: 844 }]
+      ? [
+          { width: 390, height: 844 },
+          { width: 320, height: 740 },
+        ]
       : [
           { width: 1920, height: 1080 },
           { width: 1366, height: 768 },
@@ -18,6 +22,14 @@ test('fits the arena in the viewport with visible chat and clear timeout rules',
         ];
   for (const size of sizes) {
     await page.setViewportSize(size);
+    await expect(page.locator('.player-hand .hand-card').last()).toBeVisible();
+    const hand = await page.locator('.player-hand .hand-card').last().boundingBox();
+    expect(hand!.width / hand!.height).toBeCloseTo(3 / 4, 2);
+    await expect(page.locator('.opponent-card').first().locator('.value')).toHaveCount(4);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    if (info.project.name === 'mobile') continue;
     await expect
       .poll(async () => {
         return page.evaluate(() => {
@@ -34,8 +46,11 @@ test('fits the arena in the viewport with visible chat and clear timeout rules',
         });
       })
       .toBe(true);
+    await page.screenshot({ path: info.outputPath(`arena-${size.width}x${size.height}.png`) });
   }
+  await page.getByRole('button', { name: 'How to play', exact: true }).click();
   await expect(page.locator('.turn-policy')).toContainText('auto-play once');
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
   if (info.project.name === 'mobile') await page.getByRole('button', { name: /^Chat/ }).click();
   await expect(page.getByRole('region', { name: 'Battle chat', exact: true })).toBeVisible();
   await expect(
@@ -46,6 +61,18 @@ test('fits the arena in the viewport with visible chat and clear timeout rules',
     page.getByText('Bots cannot reply. Use General or Friends to chat with players.'),
   ).toBeVisible();
   await page.screenshot({ path: info.outputPath('fitted-arena.png') });
+  if (info.project.name === 'mobile') await page.getByRole('button', { name: /^Chat/ }).click();
+  await page.getByRole('button', { name: 'Menu', exact: true }).click();
+  await expect(
+    page.locator('#main-navigation').getByRole('link', { name: 'Lobbies' }),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Language: English' }).click();
+  await page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
+  await expect(page.getByRole('group', { name: 'Score de la partie' })).toBeVisible();
+  await expect(page.locator('.cpu-hand .hand-label')).toContainText('Main de l’adversaire');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: info.outputPath('arena-fr.png') });
 });
 test('spectates public matches with both hands hidden and live board updates', async ({
   page,

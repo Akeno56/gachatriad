@@ -106,7 +106,7 @@ export function BattleChat({ match }: { match: MatchView }) {
               </p>
             )}
             <div
-              className="chat-messages"
+              className="chat-messages menu-scrollbar"
               role="log"
               aria-label="Battle chat messages"
               aria-live="polite"

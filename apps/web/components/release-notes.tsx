@@ -29,9 +29,9 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>Profiles: add a bio and choose card and achievement showcases.</li>
-          <li>Portrait frames, with five achievement unlocks.</li>
-          <li>Achievements: categories, progress filters and reward details.</li>
+          <li>A new battle table with upright hands, a turn clock and a clearer score.</li>
+          <li>Same, Plus and Combo callouts appear above the board as cards flip.</li>
+          <li>Match results keep queue, replay and lobby shortcuts in view.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

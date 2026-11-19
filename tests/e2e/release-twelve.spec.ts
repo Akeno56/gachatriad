@@ -217,7 +217,7 @@ test('filters multiple required and excluded lobby rules together', async ({ pag
   await page.getByRole('button', { name: 'Clear rules' }).click();
   await expect(page.locator('.lobby-row')).toHaveCount(3);
 });
-test('resolves Same then Plus then Combo with centered splashes and staged owners', async ({
+test('resolves Same then Plus then Combo above the board with staged owners', async ({
   page,
 }, info) => {
   await prepared(page);
@@ -248,27 +248,47 @@ test('resolves Same then Plus then Combo with centered splashes and staged owner
       .getByTestId('player-card')
       .filter({ hasText: lesson.before.hands[0].find((c) => c.id === lesson.move!.cardId)!.name })
       .click();
+    const observed = page.evaluate(
+      () =>
+        new Promise<
+          Array<{
+            label: string;
+            aboveBoard: boolean;
+            owners: Array<string | null | undefined>;
+          }>
+        >((resolve) => {
+          const see = document.querySelector('.duel-command')!;
+          const board = document.querySelector('.board')!;
+          const phases: Parameters<typeof resolve>[0] = [];
+          const observer = new MutationObserver(() => {
+            const label = see.querySelector('.capture-splash');
+            if (!label?.textContent || label.textContent === phases.at(-1)?.label) return;
+            phases.push({
+              label: label.textContent,
+              aboveBoard: label.getBoundingClientRect().bottom <= board.getBoundingClientRect().top,
+              owners: [0, 3, 5].map((cell) =>
+                board.querySelector(`[data-testid="cell-${cell}"]`)?.getAttribute('data-owner'),
+              ),
+            });
+            if (label.textContent === 'COMBO') finish();
+          });
+          const timeout = setTimeout(finish, 8000);
+          function finish() {
+            clearTimeout(timeout);
+            observer.disconnect();
+            resolve(phases);
+          }
+          observer.observe(see, { childList: true, subtree: true, characterData: true });
+        }),
+    );
     await page.getByTestId('cell-4').click();
+    const phases = await observed;
+    expect(phases.map((phase) => phase.label)).toEqual(['SAME', 'PLUS', 'COMBO']);
+    expect(phases.every((phase) => phase.aboveBoard)).toBe(true);
+    expect(phases[0].owners[0]).toBe('1');
+    expect(phases[1].owners.slice(1)).toEqual(['0', '1']);
+    expect(phases[2].owners).toEqual(['1', '0', '0']);
     const splash = page.locator('.capture-splash');
-    await expect(splash).toHaveText('SAME');
-    await expect(page.getByTestId('cell-0')).toHaveAttribute('data-owner', '1');
-    await expect(splash).toHaveText('PLUS');
-    await expect(page.getByTestId('cell-3')).toHaveAttribute('data-owner', '0');
-    await expect(page.getByTestId('cell-5')).toHaveAttribute('data-owner', '1');
-    await expect(splash).toHaveText('COMBO');
-    await expect(page.getByTestId('cell-5')).toHaveAttribute('data-owner', '0');
-    await expect(page.getByTestId('cell-0')).toHaveAttribute('data-owner', '1');
-    // The splash slides into its centered hold; don't measure its entrance frame.
-    await expect
-      .poll(
-        async () => {
-          const box = await splash.boundingBox(),
-            v = page.viewportSize()!;
-          return box ? Math.abs(box.x + box.width / 2 - v.width / 2) : Infinity;
-        },
-        { intervals: [16, 32, 50, 75], timeout: 500 },
-      )
-      .toBeLessThan(3);
     await page.screenshot({ path: info.outputPath('combo-splash.png') });
     await expect(splash).toHaveCount(0);
     for (const cell of [0, 2, 3, 5])
