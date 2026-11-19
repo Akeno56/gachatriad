@@ -4,19 +4,34 @@
   isolation: isolate;
   border-radius: 0;
 }
+.player-avatar.portrait-frame:not(.frame-classic) {
+  overflow: visible;
+  border-color: var(--frame-accent);
+  box-shadow: 0 0 0 1px #081225;
+}
 .portrait-frame-art {
+  /* The transparent cutout matches the image bounds at every avatar size. */
+  --frame-outset: 4px;
+  position: absolute;
+  inset: calc(-1 * var(--frame-outset));
+  padding: var(--frame-outset);
+  pointer-events: none;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+.portrait-frame-art svg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;
-  z-index: 2;
-  overflow: visible;
 }
 .portrait-frame-art path {
   fill: none;
   stroke: var(--frame-accent, #cad5e4);
-  stroke-width: 2;
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
 }
 .frame-silver {
   --frame-accent: #e1e8f2;
@@ -33,17 +48,10 @@
 .frame-gold {
   --frame-accent: #f4d889;
 }
-.player-avatar.portrait-frame:not(.frame-classic) {
-  border-color: var(--frame-accent);
-  box-shadow:
-    inset 0 0 0 2px #102039,
-    0 0 0 1px #081225;
-}
-.frame-gold .portrait-frame-art path {
-  fill: #d1b15a22;
-}
-.frame-amethyst .portrait-frame-art path {
-  fill: #b88ae211;
+.profile-portrait .portrait-frame-art,
+.profile-editor-preview > .player-avatar .portrait-frame-art,
+.frame-choice .portrait-frame-art {
+  --frame-outset: 8px;
 }
 
 .profile-page.profile-v19 {
@@ -378,12 +386,106 @@
   gap: 16px;
 }
 .identity-fields label,
+.profile-card-field,
 .showcase-fields label {
   display: grid;
   gap: 6px;
   font-size: 14px;
   min-width: 0;
   color: #c6d3e5;
+}
+.profile-card-trigger.outline-button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 5px 10px;
+  text-align: left;
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+.profile-card-trigger .player-avatar {
+  width: 30px;
+  height: 30px;
+  font-size: 19px;
+}
+.profile-card-trigger small {
+  display: block;
+  margin-top: 3px;
+  color: #c8bbeb;
+  font: 13px/1.2 var(--sans);
+}
+.profile-card-trigger > span:last-child {
+  color: var(--gold);
+}
+.profile-portrait-picker {
+  width: min(880px, calc(100vw - 24px));
+  max-width: 880px;
+  padding: clamp(14px, 3vw, 24px);
+}
+.profile-portrait-picker h2 {
+  margin: 0 32px 16px 0;
+  color: var(--gold);
+  font: 29px/1 var(--pixel);
+}
+.profile-portrait-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.profile-portrait-tools input {
+  flex: 1 1 160px;
+  width: auto;
+  min-width: 0;
+}
+.profile-portrait-tools button,
+.profile-portrait-more {
+  padding: 7px 10px;
+  font-size: 19px;
+}
+.profile-portrait-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+  gap: 8px;
+}
+.profile-portrait-option {
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 8px 4px;
+  color: #ebedf5;
+  background: #12213f;
+  border: 1px solid #728aaf;
+}
+.profile-portrait-option:hover {
+  background: #273c62;
+  border-color: #b5c7df;
+}
+.profile-portrait-option[aria-pressed='true'],
+.profile-portrait-tools button[aria-pressed='true'] {
+  border-color: #f1da96;
+  box-shadow: inset 0 0 0 1px #bea76e;
+}
+.profile-portrait-option .player-avatar {
+  width: 72px;
+  height: 72px;
+}
+.profile-portrait-option strong {
+  font: 18px/1.05 var(--pixel);
+  overflow-wrap: anywhere;
+}
+.profile-portrait-option small {
+  color: #d2c7e9;
+  font: 13px/1.15 var(--sans);
+}
+.profile-portrait-more {
+  display: flex;
+  margin: 14px auto 0;
 }
 .identity-fields select,
 .showcase-fields select {

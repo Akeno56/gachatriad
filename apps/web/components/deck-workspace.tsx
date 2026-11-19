@@ -504,7 +504,10 @@ function Builder({ profile }: { profile: ProfileView }) {
           </div>
         )}
         <div className="builder-workbench">
-          <section className="builder-hand-panel menu-window" aria-label="Loadout editor">
+          <section
+            className="builder-hand-panel menu-window menu-scrollbar"
+            aria-label="Loadout editor"
+          >
             <div className="builder-hand-controls">
               <label>
                 Loadout name
@@ -771,7 +774,7 @@ function Builder({ profile }: { profile: ProfileView }) {
                     </div>
                   </details>
                 </div>
-                <div className="builder-card-library">
+                <div className="builder-card-library menu-scrollbar">
                   {owned.slice(currentPage * 24, (currentPage + 1) * 24).map((card) => {
                     const inDeck = draft.cards.includes(card.id),
                       sameCharacter = selected.some(
@@ -840,7 +843,7 @@ function Builder({ profile }: { profile: ProfileView }) {
                   </Button>
                 </div>
               </section>
-              <aside className="builder-outlook menu-window">
+              <aside className="builder-outlook menu-window menu-scrollbar">
                 <DeckAnalysis
                   cards={selected}
                   comparison={dirty ? definitions(draft.baseCards) : undefined}

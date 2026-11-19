@@ -149,7 +149,26 @@ test('saves a themed profile and shows only its public showcase to another playe
     await c.page.goto(`${base}/profile/`);
     await c.page.getByRole('button', { name: 'Customize profile', exact: true }).click();
     const editor = c.page.getByRole('dialog', { name: 'Customize profile', exact: true });
-    await editor.getByRole('combobox', { name: 'Profile card', exact: true }).selectOption(holo.id);
+    const chooseCard = editor.getByRole('button', { name: 'Choose profile card', exact: true });
+    const picker = c.page.getByRole('dialog', { name: 'Choose profile card', exact: true });
+    await chooseCard.click();
+    const search = picker.getByRole('searchbox', { name: 'Search portraits' });
+    await search.fill('no-such-portrait');
+    await expect(picker.getByRole('status')).toHaveText('No portraits match your search.');
+    await search.fill('');
+    await c.page.keyboard.press('Escape');
+    await expect(chooseCard).toBeFocused();
+    await expect(chooseCard).toContainText('Default emblem');
+    await chooseCard.click();
+    await search.fill(`${holo.name} holo`);
+    const option = picker.locator('.profile-portrait-option').filter({ hasText: 'Holo +1 Top' });
+    await expect(option.locator('img')).toBeVisible();
+    await expect
+      .poll(() => option.locator('img').evaluate((img: HTMLImageElement) => img.naturalWidth))
+      .toBeGreaterThan(0);
+    await option.click();
+    await expect(picker).not.toBeVisible();
+    await expect(chooseCard).toContainText(holo.name);
     await editor
       .getByRole('combobox', { name: 'Equipped title', exact: true })
       .selectOption('card-player');

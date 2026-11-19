@@ -13,17 +13,20 @@ export function Avatar({
   name,
   className = '',
   frameId = 'classic',
+  decorative = false,
 }: {
   card: Card | null | undefined;
   name: string;
   className?: string;
   frameId?: PortraitFrame | null;
+  decorative?: boolean;
 }) {
   return (
     <LocaleView>
       <span
         className={`player-avatar ${frameClass(frameId)} ${className}`}
-        aria-label={`${name} avatar`}
+        aria-label={decorative ? undefined : `${name} avatar`}
+        aria-hidden={decorative || undefined}
       >
         <Portrait key={card?.id ?? name} card={card} name={name} />
         <FrameArt frameId={frameId} />

@@ -355,30 +355,36 @@ textarea:hover {
 }
 /* Native scrolling, with the square bevels used by the game's menu windows. */
 .main-chat .chat-messages,
-.main-chat .chat-user-list > div {
+.main-chat .chat-user-list > div,
+.menu-scrollbar {
   scrollbar-color: #829ac0 #0d1932;
   scrollbar-width: thin;
 }
 @supports selector(::-webkit-scrollbar) {
   .main-chat .chat-messages,
-  .main-chat .chat-user-list > div {
+  .main-chat .chat-user-list > div,
+  .menu-scrollbar {
     scrollbar-color: auto;
     scrollbar-width: auto;
   }
 }
-.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar {
+.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar,
+.menu-scrollbar::-webkit-scrollbar {
   width: 14px;
   height: 14px;
 }
-.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-button {
+.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-button,
+.menu-scrollbar::-webkit-scrollbar-button {
   display: none;
 }
-.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-track {
+.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-track,
+.menu-scrollbar::-webkit-scrollbar-track {
   background: #0d1932;
   border-left: 1px solid #7187a7;
   box-shadow: inset 2px 0 #050d20;
 }
-.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-thumb {
+.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-thumb,
+.menu-scrollbar::-webkit-scrollbar-thumb {
   min-height: 36px;
   border: 2px solid #0d1932;
   border-radius: 0;
@@ -387,13 +393,15 @@ textarea:hover {
     inset 1px 1px #a9bbd7,
     inset -1px -1px #263b60;
 }
-.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-thumb:hover {
+.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-thumb:hover,
+.menu-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #b09a64;
   box-shadow:
     inset 1px 1px #f3d789,
     inset -1px -1px #66522d;
 }
-.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-thumb:active {
+.main-chat :is(.chat-messages, .chat-user-list > div)::-webkit-scrollbar-thumb:active,
+.menu-scrollbar::-webkit-scrollbar-thumb:active {
   background: #d8c28a;
 }
 .title-screen .build-label {

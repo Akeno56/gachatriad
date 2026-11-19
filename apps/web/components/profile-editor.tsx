@@ -11,6 +11,7 @@ import type {
 import { api, ApiError } from '../lib/platform';
 import { Button, GameDialog, Tabs } from './ui';
 import { Avatar } from './avatar';
+import { ProfilePortraitPicker } from './profile-portrait-picker';
 import { LocaleView, NoTranslate } from './i18n';
 import { useSession } from './session';
 const byId = new Map(ALL_CARDS.map((c) => [c.id, c]));
@@ -33,6 +34,7 @@ export function ProfileEditor({
   const [data, setData] = useState<CustomizationView | null>(null),
     [draft, setDraft] = useState<ProfileCustomization | null>(null),
     [tab, setTab] = useState('identity'),
+    [choosingPortrait, setChoosingPortrait] = useState(false),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
     [reload, setReload] = useState(false),
@@ -40,6 +42,7 @@ export function ProfileEditor({
   const [loadRevision, setLoadRevision] = useState(0);
   const heading = useRef<HTMLHeadingElement>(null),
     confirm = useRef<HTMLHeadingElement>(null),
+    portraitTrigger = useRef<HTMLButtonElement>(null),
     lock = useRef(false);
   useEffect(() => {
     let active = true;
@@ -110,6 +113,10 @@ export function ProfileEditor({
       else onClose();
     }
   }
+  function closePortraitPicker() {
+    setChoosingPortrait(false);
+    requestAnimationFrame(() => portraitTrigger.current?.focus({ preventScroll: true }));
+  }
   const card = draft?.avatarCardId ? byId.get(draft.avatarCardId) : null;
   return (
     <LocaleView>
@@ -167,26 +174,27 @@ export function ProfileEditor({
               >
                 {tab === 'identity' && (
                   <div className="identity-fields">
-                    <label>
-                      Profile card
-                      <select
-                        name="profile-card"
-                        value={draft.avatarCardId ?? ''}
+                    <div className="profile-card-field">
+                      <span>Profile card</span>
+                      <button
+                        ref={portraitTrigger}
+                        type="button"
+                        className="outline-button profile-card-trigger"
+                        aria-label="Choose profile card"
+                        aria-haspopup="dialog"
                         disabled={busy}
-                        onChange={(e) => field('avatarCardId', e.target.value || null)}
+                        onClick={() => setChoosingPortrait(true)}
                       >
-                        <option value="">Default emblem</option>
-                        {owned.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            <NoTranslate>{c.name}</NoTranslate>
-                            {c.finish === 'holo'
-                              ? ` · Holo +1 ${SIDE_NAMES[c.holoBonusSide ?? 0]}`
-                              : ''}{' '}
-                            · {c.rarity}★
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                        <Avatar card={card} name={profile.name} decorative />
+                        <span>
+                          {card ? <NoTranslate>{card.name}</NoTranslate> : 'Default emblem'}
+                          {card?.finish === 'holo' && (
+                            <small>{`· Holo +1 ${SIDE_NAMES[card.holoBonusSide ?? 0]}`}</small>
+                          )}
+                        </span>
+                        <span aria-hidden="true">▸</span>
+                      </button>
+                    </div>
                     <label>
                       Equipped title
                       <select
@@ -364,6 +372,17 @@ export function ProfileEditor({
           </>
         )}
       </GameDialog>
+      {choosingPortrait && draft && (
+        <ProfilePortraitPicker
+          cards={owned}
+          selected={draft.avatarCardId}
+          onChoose={(id) => {
+            field('avatarCardId', id);
+            closePortraitPicker();
+          }}
+          onClose={closePortraitPicker}
+        />
+      )}
       <GameDialog
         open={!!discard}
         onClose={() => setDiscard(null)}
