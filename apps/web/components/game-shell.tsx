@@ -33,6 +33,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
   const [sfx, setSfx] = useState(true);
   const [crt, setCrt] = useState(false);
   const [effects, setEffects] = useState(true);
+  const [captureFlips, setCaptureFlips] = useState(true);
   const [fullScreen, setFullScreen] = useState(false);
   const [notice, setNotice] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -98,6 +99,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
     try {
       setCrt(localStorage.getItem('triad-crt') === 'on');
       setEffects(localStorage.getItem('triad-effects') !== 'off');
+      setCaptureFlips(localStorage.getItem('triad-capture-flips') !== 'off');
       const enabled = localStorage.getItem('triad-sfx') !== 'off';
       setSfx(enabled);
       getAudio().setSfx(enabled);
@@ -186,7 +188,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
           <AudioContext.Provider value={play}>
             <MusicSceneContext.Provider value={changeMusicScene}>
               <div
-                className={`game-shell ${crt ? 'crt-enabled' : ''} ${effects ? 'effects-animated' : ''}`}
+                className={`game-shell ${crt ? 'crt-enabled' : ''} ${effects ? 'effects-animated' : ''} ${captureFlips ? 'capture-flips-enabled' : ''}`}
               >
                 <a className="skip-link" href="#main">
                   Skip to content
@@ -353,6 +355,24 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                                 }}
                               />
                               Animate Holo &amp; CRT
+                            </label>
+                            <label className="effects-setting">
+                              <input
+                                name="capture-flips"
+                                type="checkbox"
+                                checked={captureFlips}
+                                onChange={(e) => {
+                                  const enabled = e.target.checked;
+                                  setCaptureFlips(enabled);
+                                  try {
+                                    localStorage.setItem(
+                                      'triad-capture-flips',
+                                      enabled ? 'on' : 'off',
+                                    );
+                                  } catch {}
+                                }}
+                              />
+                              Animate capture flips
                             </label>
                             <label>
                               Music volume <output>{musicVolume}%</output>

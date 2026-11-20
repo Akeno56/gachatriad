@@ -2,7 +2,7 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 import { mkdtemp } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createPlatform } from '../../apps/server/src/app';
-import { legalMoves, applyMove } from '../../packages/engine/src/index';
+import { legalMoves, applyMove, type GameState } from '../../packages/engine/src/index';
 import { makePuzzle, puzzleDay, puzzleValue } from '../../apps/server/src/daily-puzzle';
 import { bestPuzzleMove } from '../../packages/shared/src/puzzle';
 import { CARDS } from '../../packages/shared/src/index';
@@ -92,6 +92,100 @@ async function player(browser: Browser, registered = true) {
 async function fits(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 }
+
+test('rotates a captured card for both players in a live match with system reduced motion', async ({
+  browser,
+}, info) => {
+  const host = await player(browser),
+    guest = await player(browser);
+  const players = [host, guest];
+  try {
+    const { lobbyId } = await platform.store.createLobby(host.profile, {
+      mode: 'custom',
+      rules: { allOpen: true },
+    });
+    const { matchId } = await platform.store.joinLobby(guest.profile, lobbyId!);
+    // Read the live starting decks so the fixture works whichever player starts.
+    const [initial] = await platform.db.read((sql) =>
+      sql<{ state: GameState; version: number }>('SELECT state,version FROM matches WHERE id=$1', [
+        matchId,
+      ]),
+    );
+    const opening = legalMoves(initial.state).find((move) => {
+      const next = applyMove(initial.state, move);
+      return legalMoves(next).some(
+        (reply) => !!applyMove(next, reply).history.at(-1)?.captures.length,
+      );
+    })!;
+    const afterOpening = applyMove(initial.state, opening);
+    const reply = legalMoves(afterOpening).find(
+      (move) => !!applyMove(afterOpening, move).history.at(-1)?.captures.length,
+    )!;
+    await platform.store.move(
+      players[opening.player].profile.id,
+      matchId!,
+      opening.cardId,
+      opening.cell,
+      initial.version,
+    );
+    await Promise.all(
+      players.map(async ({ page, context }) => {
+        await context.addInitScript(() => localStorage.setItem('triad-effects', 'off'));
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await page.goto(`/?match=${matchId}`);
+        await expect(
+          page.getByTestId(`cell-${opening.cell}`).locator('.playing-card'),
+        ).toBeVisible();
+      }),
+    );
+    const attacker = players[reply.player].page;
+    const card = afterOpening.hands[reply.player].find(({ id }) => id === reply.cardId)!;
+    await attacker.getByTestId('player-card').filter({ hasText: card.name }).click();
+    const flips = Promise.all(
+      players.map(async ({ page }) => {
+        const cell = page.getByTestId(`cell-${opening.cell}`);
+        const rotor = cell.locator('.capture-flip-rotor');
+        await expect(rotor).toHaveCSS('animation-name', 'capture-turn');
+        const ratio = await rotor.evaluate((element) => {
+          const flip = element
+            .getAnimations()
+            .find(
+              (animation) =>
+                animation instanceof CSSAnimation && animation.animationName === 'capture-turn',
+            )!;
+          const time = flip.currentTime;
+          flip.currentTime = 0;
+          const face = element.getBoundingClientRect().width;
+          flip.currentTime = Number(flip.effect!.getTiming().duration) / 2;
+          const edge = element.getBoundingClientRect().width;
+          flip.currentTime = time;
+          return edge / face;
+        });
+        expect(ratio).toBeLessThan(0.2);
+        if (page === attacker && info.project.name === 'desktop')
+          await page.screenshot({ path: info.outputPath('live-capture-flip.png') });
+        await expect(cell.locator('.playing-card')).toHaveCount(1);
+        await expect(cell.locator('.playing-card')).toHaveClass(
+          page === attacker ? /owned-player/ : /owned-cpu/,
+        );
+      }),
+    );
+    await attacker.getByTestId(`cell-${reply.cell}`).click();
+    await flips;
+    await attacker.getByRole('button', { name: 'Game settings', exact: true }).click();
+    const setting = attacker.getByRole('checkbox', { name: 'Animate capture flips', exact: true });
+    await expect(setting).toBeChecked();
+    await setting.uncheck();
+    await attacker.reload();
+    await expect(attacker.locator('.game-shell')).not.toHaveClass(/capture-flips-enabled/);
+    await attacker.getByRole('button', { name: 'Game settings', exact: true }).click();
+    await expect(setting).not.toBeChecked();
+  } finally {
+    await host.context.close();
+    await guest.context.close();
+  }
+});
+
 test('keeps the complete home chat and composer inside the desktop viewport for guests and accounts', async ({
   browser,
 }, info) => {
