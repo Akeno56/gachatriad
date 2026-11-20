@@ -6,6 +6,7 @@ export const matchModeNames: Record<MatchView['mode'], string> = {
   casual: 'Unranked',
   ranked: 'Ranked',
   'ranked-random': 'Ranked Random',
+  correspondence: 'Correspondence',
   draft: 'Draft',
   'shared-draft': 'Shared Draft',
   custom: 'Custom game',

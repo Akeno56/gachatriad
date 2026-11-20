@@ -37,6 +37,8 @@ import {
   isRatedMode,
   modeRatingField,
   type AchievementView,
+  type CorrespondenceHours,
+  type CorrespondenceMatch,
   type LobbyView,
   type MatchView,
   type Mode,
@@ -104,6 +106,7 @@ interface MatchRow {
   is_draw: boolean;
   version: number;
   deadline: string | number | null;
+  turn_hours: CorrespondenceHours | null;
   auto_turns: [number, number];
   claim_deadline: string | number | null;
   claimed_card: string | null;
@@ -209,6 +212,7 @@ export class GameStore {
       '022_replays_bot_styles.sql',
       '023_profile_customization.sql',
       '024_ranked_random.sql',
+      '025_correspondence.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -318,7 +322,7 @@ export class GameStore {
         [p.id],
       );
       const active = await sql<{ id: string }>(
-        "SELECT id FROM matches WHERE (player0=$1 OR player1=$1) AND status IN('playing','drafting') ORDER BY created_at DESC LIMIT 1",
+        "SELECT id FROM matches WHERE (player0=$1 OR player1=$1) AND mode<>'correspondence' AND status IN('playing','drafting') ORDER BY created_at DESC LIMIT 1",
         [p.id],
       );
       const [pendingTrade] = await sql<{ id: string; winner: number; player0: string }>(
@@ -425,7 +429,7 @@ export class GameStore {
         428,
       );
     const rows = await sql(
-      "SELECT id FROM matches WHERE (player0=$1 OR player1=$1) AND status IN('playing','drafting')",
+      "SELECT id FROM matches WHERE (player0=$1 OR player1=$1) AND mode<>'correspondence' AND status IN('playing','drafting')",
       [id],
     );
     const waiting = await sql("SELECT id FROM lobbies WHERE host_id=$1 AND status='waiting'", [id]);
@@ -447,7 +451,17 @@ export class GameStore {
       );
   }
   private async deck(sql: Sql, id: string, random = false, mode: Mode = 'solo') {
-    const pool = await this.available(sql, id);
+    const pool =
+      mode === 'correspondence'
+        ? cards(
+            (
+              await sql<{ card_id: string }>(
+                'SELECT card_id FROM inventory WHERE profile_id=$1 AND quantity>0',
+                [id],
+              )
+            ).map((row) => row.card_id),
+          )
+        : await this.available(sql, id);
     if (mode === 'ranked-random') {
       try {
         return randomDeck(pool, rng());
@@ -546,10 +560,13 @@ export class GameStore {
     decks: [Card[], Card[]],
     difficulty: 'easy' | 'normal' | null = null,
     unratedRematch = false,
+    turnHours: CorrespondenceHours | null = null,
   ) {
     const id = randomUUID();
-    await this.requireSettlement(sql, a);
-    if (b) await this.requireSettlement(sql, b);
+    if (!turnHours) {
+      await this.requireSettlement(sql, a);
+      if (b) await this.requireSettlement(sql, b);
+    }
     let state: GameState | null = null;
     let pools: [Card[], Card[]] | null = null;
     if (isDraftMode(mode)) {
@@ -560,13 +577,13 @@ export class GameStore {
       decks = [[], []];
     } else {
       state = createGame(decks, rules, rng());
-      if (b) {
+      if (b && !turnHours) {
         await this.reserve(sql, a, decks[0], 1);
         await this.reserve(sql, b, decks[1], 1);
       }
     }
     await sql(
-      `INSERT INTO matches(id,mode,player0,player1,difficulty,state,decks,pools,rules,trade_rule,status,deadline,unrated_rematch) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8::jsonb,$9::jsonb,$10,$11,$12,$13)`,
+      `INSERT INTO matches(id,mode,player0,player1,difficulty,state,decks,pools,rules,trade_rule,status,deadline,unrated_rematch,turn_hours) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8::jsonb,$9::jsonb,$10,$11,$12,$13,$14)`,
       [
         id,
         mode,
@@ -580,24 +597,97 @@ export class GameStore {
         trade,
         isDraftMode(mode) ? 'drafting' : 'playing',
         state
-          ? Date.now() + (mode === 'solo' && state.turn === 1 ? 700 : 60_000)
+          ? Date.now() +
+            (turnHours ? turnHours * 3_600_000 : mode === 'solo' && state.turn === 1 ? 700 : 60_000)
           : Date.now() + 180_000,
         unratedRematch,
+        turnHours,
       ],
     );
-    await sql('UPDATE matches SET activity_at=$1::jsonb,disconnected_at=$2::jsonb WHERE id=$3', [
-      JSON.stringify([Date.now(), Date.now()]),
-      JSON.stringify(
-        [a, b].map((p) => (p && this.isOnline && !this.isOnline(p) ? Date.now() : null)),
-      ),
-      id,
-    ]);
+    if (!turnHours)
+      await sql('UPDATE matches SET activity_at=$1::jsonb,disconnected_at=$2::jsonb WHERE id=$3', [
+        JSON.stringify([Date.now(), Date.now()]),
+        JSON.stringify(
+          [a, b].map((p) => (p && this.isOnline && !this.isOnline(p) ? Date.now() : null)),
+        ),
+        id,
+      ]);
     if (mode === 'shared-draft')
       await sql('UPDATE matches SET shared_draft=$1::jsonb WHERE id=$2', [
         JSON.stringify({ first: randomInt(2) }),
         id,
       ]);
     return id;
+  }
+  async correspondence(profileId: string): Promise<CorrespondenceMatch[]> {
+    return this.db.read(async (sql) => {
+      const rows = await sql<{
+        id: string;
+        opponent: string;
+        your_turn: boolean;
+        deadline: string | null;
+        outcome: CorrespondenceMatch['outcome'];
+      }>(
+        `SELECT m.id,p.name AS opponent,
+           m.status='playing' AND (m.state->>'turn')::int=seat AS your_turn,m.deadline,
+           CASE WHEN m.status='complete' THEN CASE WHEN m.is_draw THEN 'draw' WHEN m.winner=seat THEN 'win' ELSE 'loss' END END AS outcome
+         FROM (
+           SELECT *,CASE WHEN player0=$1 THEN 0 ELSE 1 END AS seat
+           FROM matches WHERE mode='correspondence' AND (player0=$1 OR player1=$1)
+           AND (status='playing' OR completed_at>now()-interval '7 days')
+         ) m JOIN profiles p ON p.id=CASE WHEN m.seat=0 THEN m.player1 ELSE m.player0 END
+         ORDER BY (m.status='playing') DESC,your_turn DESC,m.deadline,m.completed_at DESC LIMIT 24`,
+        [profileId],
+      );
+      return rows.map((row) => ({
+        id: row.id,
+        opponent: row.opponent,
+        yourTurn: row.your_turn,
+        deadline: row.deadline === null ? null : Number(row.deadline),
+        outcome: row.outcome,
+      }));
+    });
+  }
+  async startCorrespondence(
+    sql: Sql,
+    sender: string,
+    recipient: string,
+    hours: CorrespondenceHours,
+  ) {
+    const participants = [sender, recipient];
+    const active = await sql<{ player0: string; player1: string }>(
+      "SELECT player0,player1 FROM matches WHERE mode='correspondence' AND status='playing' AND (player0=ANY($1::text[]) OR player1=ANY($1::text[]))",
+      [participants],
+    );
+    if (active.some((m) => participants.includes(m.player0) && participants.includes(m.player1)))
+      throw new GameError('You already have a correspondence match with this friend.', 409);
+    if (
+      participants.some(
+        (id) => active.filter((m) => m.player0 === id || m.player1 === id).length >= 12,
+      )
+    )
+      throw new GameError('A player has reached the limit of 12 correspondence matches.', 409);
+    const decks: [Card[], Card[]] = [[], []];
+    for (const seat of [0, 1] as const) {
+      try {
+        decks[seat] = await this.deck(sql, participants[seat], false, 'correspondence');
+      } catch (e) {
+        if (!(e instanceof GameError)) throw e;
+        throw new GameError('Both players need a legal saved deck.', 428);
+      }
+    }
+    return this.newMatch(
+      sql,
+      'correspondence',
+      sender,
+      recipient,
+      UNRANKED,
+      'none',
+      decks,
+      null,
+      false,
+      hours,
+    );
   }
   async lobbies(includeRated = false): Promise<LobbyView[]> {
     return this.db.read(async (sql) => {
@@ -817,13 +907,14 @@ export class GameStore {
       const m = await this.load(sql, id, spectator ? undefined : profileId);
       if (
         spectator &&
-        !host &&
-        !(
-          await sql(
-            'SELECT 1 FROM lobbies WHERE match_id=$1 AND spectatable AND invited_profile IS NULL',
-            [id],
-          )
-        ).length
+        (m.mode === 'correspondence' ||
+          (!host &&
+            !(
+              await sql(
+                'SELECT 1 FROM lobbies WHERE match_id=$1 AND spectatable AND invited_profile IS NULL',
+                [id],
+              )
+            ).length))
       )
         throw new GameError('This battle is not available to spectators.', 403);
       const seat: Player = spectator || m.player0 === profileId ? 0 : 1;
@@ -983,6 +1074,7 @@ export class GameStore {
         winner: m.status === 'complete' ? (m.is_draw ? 'draw' : m.winner) : null,
         rules: m.rules,
         deadline: m.deadline ? Number(m.deadline) : null,
+        turnHours: m.turn_hours ?? undefined,
         endReason: m.end_reason,
         draftPool: !spectator && m.status === 'drafting' && m.pools ? cards(m.pools[seat]) : [],
         draftLocked: m.decks[seat].length === 5,
@@ -1239,6 +1331,8 @@ export class GameStore {
     match: MatchRow,
     viewer: string,
   ): Promise<string | null> {
+    if (match.mode === 'correspondence')
+      return 'Send a new correspondence invitation to play again.';
     if (isRatedMode(match.mode) && match.mode !== 'ranked-random')
       return 'Rated matches use matchmaking. Join the queue for your next game.';
     if (match.departed?.length)
@@ -1254,7 +1348,7 @@ export class GameStore {
     if (
       (
         await sql(
-          "SELECT 1 FROM matches WHERE id<>$2 AND (player0=$1 OR player1=$1) AND status IN('playing','drafting') UNION ALL SELECT 1 FROM lobbies WHERE host_id=$1 AND status='waiting' AND NOT EXISTS(SELECT 1 FROM profiles WHERE id=$1 AND is_bot) LIMIT 1",
+          "SELECT 1 FROM matches WHERE id<>$2 AND (player0=$1 OR player1=$1) AND mode<>'correspondence' AND status IN('playing','drafting') UNION ALL SELECT 1 FROM lobbies WHERE host_id=$1 AND status='waiting' AND NOT EXISTS(SELECT 1 FROM profiles WHERE id=$1 AND is_bot) LIMIT 1",
           [opponent, match.id],
         )
       ).length
@@ -1324,6 +1418,7 @@ export class GameStore {
     });
   }
   private async recordAction(sql: Sql, m: MatchRow, seat: Player) {
+    if (m.mode === 'correspondence') return;
     const now = Date.now(),
       id = seat === 0 ? m.player0 : m.player1!;
     m.activity_at[seat] = now;
@@ -1340,9 +1435,11 @@ export class GameStore {
     await sql('UPDATE matches SET state=$1::jsonb,version=version+1,deadline=$2 WHERE id=$3', [
       JSON.stringify(next),
       Date.now() +
-        (m.mode === 'solo' && next.turn === 1
-          ? 900 + (next.history.at(-1)?.captures.length ?? 0) * 160
-          : 60_000),
+        (m.turn_hours
+          ? m.turn_hours * 3_600_000
+          : m.mode === 'solo' && next.turn === 1
+            ? 900 + (next.history.at(-1)?.captures.length ?? 0) * 160
+            : 60_000),
       m.id,
     ]);
     if (next.status === 'complete') await this.finish(sql, m, winner(next)!, null);
@@ -1369,7 +1466,7 @@ export class GameStore {
       "UPDATE matches SET status='complete',winner=$1,is_draw=$2,completed_at=now(),deadline=NULL,end_reason=$3,settlement_done=$4,claim_deadline=$5 WHERE id=$6",
       [draw ? null : result, draw, reason, !stake, stake ? Date.now() + 120000 : null, m.id],
     );
-    if (m.player1 && !isDraftMode(m.mode)) {
+    if (m.player1 && !isDraftMode(m.mode) && m.mode !== 'correspondence') {
       if (!stake || result === 0) await this.reserve(sql, m.player0, cards(m.decks[0]), -1);
       if (!stake || result === 1) await this.reserve(sql, m.player1, cards(m.decks[1]), -1);
     }
@@ -1410,10 +1507,10 @@ export class GameStore {
       );
       if (
         m.player1 &&
+        isRatedMode(m.mode) &&
         !m.unrated_rematch &&
         !profileRows.some((p) => p.is_bot) &&
-        !(await this.sharedNetwork(sql, m.player0, m.player1)) &&
-        isRatedMode(m.mode)
+        !(await this.sharedNetwork(sql, m.player0, m.player1))
       ) {
         const field = modeRatingField(m.mode);
         const self = Number(profileRows.find((p) => p.id === id)![field]);
@@ -1653,7 +1750,7 @@ export class GameStore {
   async presence(profileId: string, online: boolean) {
     return this.db.tx(async (sql) => {
       const matches = await sql<MatchRow>(
-        "SELECT * FROM matches WHERE status IN('playing','drafting') AND (player0=$1 OR player1=$1)",
+        "SELECT * FROM matches WHERE status IN('playing','drafting') AND mode<>'correspondence' AND (player0=$1 OR player1=$1)",
         [profileId],
       );
       for (const m of matches) {
@@ -1671,13 +1768,13 @@ export class GameStore {
   async recoverPresence() {
     const players = await this.db.read((sql) =>
       sql<{ id: string }>(
-        "SELECT DISTINCT p.id FROM profiles p JOIN matches m ON (m.player0=p.id OR m.player1=p.id) WHERE NOT p.is_bot AND m.status IN('playing','drafting')",
+        "SELECT DISTINCT p.id FROM profiles p JOIN matches m ON (m.player0=p.id OR m.player1=p.id) WHERE NOT p.is_bot AND m.mode<>'correspondence' AND m.status IN('playing','drafting')",
       ),
     );
     for (const p of players) await this.presence(p.id, false);
   }
   private async expireInactivity(sql: Sql, m: MatchRow, now = Date.now()) {
-    if (m.status === 'complete') return false;
+    if (m.status === 'complete' || m.mode === 'correspondence') return false;
     const people = await sql<{ id: string; is_bot: boolean }>(
       'SELECT id,is_bot FROM profiles WHERE id=$1 OR id=$2',
       [m.player0, m.player1],
@@ -1705,7 +1802,7 @@ export class GameStore {
   async tick() {
     return this.db.tx(async (sql) => {
       const active = await sql<MatchRow>(
-        `SELECT * FROM matches WHERE status IN('playing','drafting') AND
+        `SELECT * FROM matches WHERE status IN('playing','drafting') AND mode<>'correspondence' AND
         (deadline<=$1 OR (disconnected_at->>0)::bigint<=$2 OR (disconnected_at->>1)::bigint<=$2 OR
         (status='drafting' AND ((jsonb_array_length(decks->0)=0 AND (activity_at->>0)::bigint<=$2) OR
         (jsonb_array_length(decks->1)=0 AND (activity_at->>1)::bigint<=$2))))`,
@@ -1714,7 +1811,7 @@ export class GameStore {
       const changed: string[] = [];
       for (const m of active) if (await this.expireInactivity(sql, m)) changed.push(m.id);
       const due = await sql<MatchRow>(
-        "SELECT * FROM matches WHERE (status IN('playing','drafting') AND deadline<$1) OR (status='complete' AND settlement_done=false AND claim_deadline<$1) LIMIT 20",
+        "SELECT * FROM matches WHERE (status IN('playing','drafting') AND deadline<=$1) OR (status='complete' AND settlement_done=false AND claim_deadline<=$1) ORDER BY (mode='correspondence'),deadline LIMIT 20",
         [Date.now()],
       );
       for (const m of due) {
@@ -1754,6 +1851,10 @@ export class GameStore {
   private async timeoutTurn(sql: Sql, m: MatchRow) {
     if (!m.state) return false;
     const seat = m.state.turn;
+    if (m.mode === 'correspondence') {
+      await this.finish(sql, m, (1 - seat) as Player, 'turn deadline expired');
+      return true;
+    }
     let move;
     if (m.mode === 'solo' && seat === 1)
       move = chooseCpuMove(cpuView(m.state), m.difficulty || 'easy', rng(), m.cpu_style);

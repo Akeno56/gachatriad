@@ -42,7 +42,7 @@ export function ResultOverlay({
   const queueable = match.mode === 'casual' || match.mode === 'roulette' || isRatedMode(match.mode);
   const randomRematch = match.mode === 'ranked-random';
   const rematchPending = match.rematch?.requestedBy === match.players[match.seat].id;
-  const rematchButton = match.mode !== 'solo' && (
+  const rematchButton = match.mode !== 'solo' && match.mode !== 'correspondence' && (
     <Button
       variant={queueable ? 'ghost' : 'primary'}
       disabled={busy || match.trade.pending || !!match.rematch?.unavailableReason || rematchPending}
@@ -215,7 +215,7 @@ export function ResultOverlay({
               <p>A draw trades no cards.</p>
             ) : null}
           </section>
-          {match.rematch?.unavailableReason && (
+          {match.mode !== 'correspondence' && match.rematch?.unavailableReason && (
             <p className="rematch-status" role="status">
               {match.rematch.unavailableReason}
             </p>
@@ -264,7 +264,11 @@ export function ResultOverlay({
               Watch replay
             </Link>
             <Button disabled={busy || match.trade.pending} onClick={onReturn}>
-              {match.mode === 'solo' ? 'Back to the tavern' : 'Back to lobbies'}
+              {match.mode === 'solo'
+                ? 'Back to the tavern'
+                : match.mode === 'correspondence'
+                  ? 'Back to correspondence'
+                  : 'Back to lobbies'}
             </Button>
           </div>
           <div className="result-secondary-actions">

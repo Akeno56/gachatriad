@@ -142,6 +142,20 @@ export function TavernHome({
                 →
               </span>
             </Link>
+            {profile.registered && (
+              <Link className="tavern-notice" href="/correspondence">
+                <span className="notice-symbol" aria-hidden="true">
+                  ✉
+                </span>
+                <span>
+                  <strong>Your turn</strong>
+                  <small>Correspondence</small>
+                </span>
+                <span className="notice-arrow" aria-hidden="true">
+                  →
+                </span>
+              </Link>
+            )}
             {notice.error && (
               <div className="noticeboard-error" role="status">
                 Daily status unavailable.{' '}

@@ -4,7 +4,7 @@ import { LocaleView, NoTranslate } from '../../components/i18n';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { isRatedMode, type LobbyView } from '@gacha-triad/shared/platform';
+import { isRatedMode, type LobbyPreset, type LobbyView } from '@gacha-triad/shared/platform';
 import { STANDARD } from '@gacha-triad/engine';
 import { api } from '../../lib/platform';
 import { useSession } from '../../components/session';
@@ -34,7 +34,20 @@ export default function Lobbies() {
     [random, setRandom] = useState(false),
     [trade, setTrade] = useState(false);
   const [allowBots, setAllowBots] = useAllowBots();
+  const [presets, setPresets] = useState<LobbyPreset[]>([]);
+  const [presetName, setPresetName] = useState('');
+  const [presetBusy, setPresetBusy] = useState(false);
   const tradeEligible = visibility === 'closed' && same && plus && combo;
+  const customRules = {
+    ...STANDARD,
+    allOpen: visibility === 'allOpen',
+    threeOpen: visibility === 'threeOpen',
+    same,
+    plus,
+    combo,
+    random,
+    elemental,
+  };
   useEffect(() => {
     if (!same && !plus) setCombo(false);
   }, [same, plus]);
@@ -50,6 +63,61 @@ export default function Lobbies() {
   useEffect(() => {
     if (profile?.activeMatchId) router.push(`/?match=${profile.activeMatchId}`);
   }, [profile?.activeMatchId, router]);
+  useEffect(() => {
+    if (!create || !profile) return;
+    let current = true;
+    void api<LobbyPreset[]>('/lobby-presets').then(
+      (rows) => {
+        if (current) setPresets(rows);
+      },
+      (e: Error) => {
+        if (current) setError(e.message);
+      },
+    );
+    return () => {
+      current = false;
+    };
+  }, [create, profile?.id]);
+  function applyPreset(preset: LobbyPreset) {
+    const { rules } = preset;
+    setVisibility(rules.allOpen ? 'allOpen' : rules.threeOpen ? 'threeOpen' : 'closed');
+    setSame(rules.same);
+    setPlus(rules.plus);
+    setCombo(rules.combo);
+    setRandom(!!rules.random);
+    setElemental(!!rules.elemental);
+    setTrade(preset.tradeRule === 'one');
+    setAllowBots(preset.allowBots);
+    setPresetName(preset.name);
+    setError('');
+  }
+  async function changePreset(removeId?: string) {
+    setPresetBusy(true);
+    setError('');
+    try {
+      if (removeId) {
+        await api(`/lobby-presets/${removeId}`, undefined, 'DELETE');
+        setPresets((rows) => rows.filter((row) => row.id !== removeId));
+      } else {
+        const saved = await api<LobbyPreset>('/lobby-presets', {
+          name: presetName,
+          rules: customRules,
+          tradeRule: trade ? 'one' : 'none',
+          allowBots,
+        });
+        setPresets((rows) =>
+          [...rows.filter((row) => row.id !== saved.id), saved].sort((a, b) =>
+            a.name.localeCompare(b.name),
+          ),
+        );
+        setPresetName(saved.name);
+      }
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setPresetBusy(false);
+    }
+  }
   async function enter(path: string, body: unknown) {
     const requestedMode =
       (body as { mode?: string }).mode ?? rows.find((r) => path === `/lobbies/${r.id}/join`)?.mode;
@@ -203,16 +271,7 @@ export default function Lobbies() {
               void enter('/lobbies', {
                 mode: 'custom',
                 name: name || undefined,
-                rules: {
-                  ...STANDARD,
-                  allOpen: visibility === 'allOpen',
-                  threeOpen: visibility === 'threeOpen',
-                  same,
-                  plus,
-                  combo,
-                  random,
-                  elemental,
-                },
+                rules: customRules,
                 tradeRule: trade ? 'one' : 'none',
                 allowBots,
               });
@@ -262,6 +321,55 @@ export default function Lobbies() {
                 </button>
               ))}
             </div>
+            <fieldset className="saved-lobby-presets">
+              <legend>Saved presets</legend>
+              {presets.length > 0 && (
+                <ul>
+                  {presets.map((preset) => (
+                    <li key={preset.id}>
+                      <button
+                        type="button"
+                        className="outline-button"
+                        disabled={presetBusy}
+                        onClick={() => applyPreset(preset)}
+                      >
+                        <NoTranslate>{preset.name}</NoTranslate>
+                      </button>
+                      <button
+                        type="button"
+                        className="text-button"
+                        disabled={presetBusy}
+                        aria-label={`Delete preset ${preset.name}`}
+                        onClick={() => void changePreset(preset.id)}
+                      >
+                        ×
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="save-lobby-preset">
+                <label>
+                  Preset name
+                  <input
+                    name="presetName"
+                    maxLength={40}
+                    value={presetName}
+                    onChange={(e) => setPresetName(e.target.value)}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="outline-button"
+                  disabled={presetBusy || !presetName.trim()}
+                  onClick={() => void changePreset()}
+                >
+                  {presets.some((preset) => preset.name === presetName.trim())
+                    ? 'Update preset'
+                    : 'Save preset'}
+                </button>
+              </div>
+            </fieldset>
             <label className="check-label">
               <input
                 name="page-input-1"

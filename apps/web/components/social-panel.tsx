@@ -4,12 +4,14 @@ import { LocaleView, NoTranslate, LocalizedDate } from './i18n';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { BattleIdentity } from '@gacha-triad/shared/social';
+import { CORRESPONDENCE_HOURS, type CorrespondenceHours } from '@gacha-triad/shared/platform';
 import { useSession } from './session';
 import { Avatar } from './avatar';
 import { api } from '../lib/platform';
 import { appPath } from '../lib/connection';
 import { useSocial } from './social-state';
 import { FriendChat } from './friend-chat';
+import { GameDialog } from './ui';
 export function SocialPanel() {
   const { profile, refresh, openAccount } = useSession(),
     router = useRouter();
@@ -21,6 +23,9 @@ export function SocialPanel() {
     [busy, setBusy] = useState(false),
     [query, setQuery] = useState(''),
     [results, setResults] = useState<BattleIdentity[]>([]);
+  const [correspondenceFriend, setCorrespondenceFriend] = useState<BattleIdentity | null>(null);
+  const [turnHours, setTurnHours] = useState<CorrespondenceHours>(48);
+  const [acceptedCorrespondence, setAcceptedCorrespondence] = useState(false);
   const seen = useRef(new Set<string>()),
     seenOwner = useRef('');
   const [inviteToast, setInviteToast] = useState<{
@@ -104,6 +109,8 @@ export function SocialPanel() {
     setResults([]);
     setError('');
     setConversation('');
+    setAcceptedCorrespondence(false);
+    setCorrespondenceFriend(null);
   }, [profile?.id]);
   useEffect(() => {
     const show = (event: Event) => {
@@ -117,24 +124,39 @@ export function SocialPanel() {
   useEffect(() => {
     if (!open) return;
     const escape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
+      if (event.key === 'Escape' && !correspondenceFriend) setOpen(false);
     };
     window.addEventListener('keydown', escape);
     return () => window.removeEventListener('keydown', escape);
-  }, [open]);
+  }, [open, correspondenceFriend]);
   const notifications =
     data.friends.filter((f) => f.status === 'incoming').length +
     data.invitations.filter((i) => i.recipient.id === profile?.id).length +
     data.conversations.reduce((n, c) => n + c.unread, 0);
+  useEffect(() => {
+    const show = () => {
+      setOpen(true);
+      setTab('friends');
+    };
+    window.addEventListener('triad:open-friends', show);
+    return () => window.removeEventListener('triad:open-friends', show);
+  }, []);
   async function action(path: string, body?: unknown, method?: string) {
     setBusy(true);
     setError('');
     try {
-      const result = await api<{ matchId?: string | null }>(path, body, method);
+      const result = await api<{ matchId?: string | null; correspondence?: boolean }>(
+        path,
+        body,
+        method,
+      );
       await refresh();
       if (result.matchId) {
-        setOpen(false);
-        router.push(`/?match=${result.matchId}`);
+        if (result.correspondence) setAcceptedCorrespondence(true);
+        else {
+          setOpen(false);
+          router.push(`/?match=${result.matchId}`);
+        }
       }
       return true;
     } catch (e) {
@@ -363,6 +385,19 @@ export function SocialPanel() {
                           Invite to duel
                         </button>
                       )}
+                      {f.status === 'friend' && (
+                        <button
+                          className="outline-button"
+                          disabled={busy}
+                          onClick={() => {
+                            setError('');
+                            setTurnHours(48);
+                            setCorrespondenceFriend(f);
+                          }}
+                        >
+                          Correspondence
+                        </button>
+                      )}
                       <button
                         className="text-button"
                         disabled={busy}
@@ -381,10 +416,25 @@ export function SocialPanel() {
             )}
             {tab === 'invitations' && (
               <section className="duel-invite-inbox menu-scrollbar" aria-label="Duel invitations">
+                {acceptedCorrespondence && (
+                  <p role="status">
+                    Match accepted.{' '}
+                    <button
+                      className="text-button"
+                      onClick={() => {
+                        setAcceptedCorrespondence(false);
+                        setOpen(false);
+                        router.push('/correspondence');
+                      }}
+                    >
+                      Your turn
+                    </button>
+                  </p>
+                )}
                 {!data.invitations.length && (
                   <p>{ready ? 'No pending invitations.' : 'Loading…'}</p>
                 )}
-                {incomingInvitations.length > 0 && acceptBlocked && (
+                {incomingInvitations.some((inv) => !inv.turnHours) && acceptBlocked && (
                   <p role="status">{acceptBlocked}</p>
                 )}
                 {[
@@ -405,13 +455,28 @@ export function SocialPanel() {
                         <strong>
                           <NoTranslate>{p.name}</NoTranslate>
                         </strong>
-                        <small>{incoming ? 'Invited you to a duel' : 'Waiting for a reply'}</small>
+                        <small>
+                          {inv.turnHours
+                            ? `Correspondence · ${inv.turnHours}h per turn`
+                            : incoming
+                              ? 'Invited you to a duel'
+                              : 'Waiting for a reply'}
+                        </small>
                         <small>
                           Expires{' '}
                           <LocalizedDate
                             value={inv.expiresAt}
-                            format="time"
-                            options={{ hour: '2-digit', minute: '2-digit' }}
+                            format={inv.turnHours ? 'datetime' : 'time'}
+                            options={
+                              inv.turnHours
+                                ? {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  }
+                                : { hour: '2-digit', minute: '2-digit' }
+                            }
                           />
                         </small>
                       </div>
@@ -419,12 +484,12 @@ export function SocialPanel() {
                         {incoming && (
                           <button
                             className="primary-button"
-                            disabled={busy || !!acceptBlocked}
+                            disabled={busy || (!inv.turnHours && !!acceptBlocked)}
                             onClick={() =>
                               void action(`/invites/${inv.id}/respond`, { accept: true })
                             }
                           >
-                            Accept duel
+                            {inv.turnHours ? 'Accept match' : 'Accept duel'}
                           </button>
                         )}
                         <button
@@ -443,6 +508,62 @@ export function SocialPanel() {
               </section>
             )}
             {toast}
+            <GameDialog
+              open={!!correspondenceFriend}
+              onClose={() => setCorrespondenceFriend(null)}
+              labelledBy="correspondence-invite-title"
+              className="correspondence-invite-dialog"
+              closeLabel="Close dialog"
+            >
+              <h2 id="correspondence-invite-title">Correspondence</h2>
+              <form
+                onSubmit={async (event) => {
+                  event.preventDefault();
+                  if (
+                    correspondenceFriend &&
+                    (await action('/invites', {
+                      playerId: correspondenceFriend.id,
+                      turnHours,
+                    }))
+                  ) {
+                    setCorrespondenceFriend(null);
+                    setTab('invitations');
+                  }
+                }}
+              >
+                <p>
+                  <NoTranslate>{correspondenceFriend?.name}</NoTranslate>
+                </p>
+                <label>
+                  Hours per turn
+                  <select
+                    name="turnHours"
+                    value={turnHours}
+                    onChange={(event) => {
+                      const hours = CORRESPONDENCE_HOURS.find(
+                        (value) => value === Number(event.target.value),
+                      );
+                      if (hours) setTurnHours(hours);
+                    }}
+                  >
+                    {CORRESPONDENCE_HOURS.map((hours) => (
+                      <option value={hours} key={hours}>
+                        {hours}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <p>Unrated · No card loss</p>
+                {error && (
+                  <p className="error-message" role="alert">
+                    {error}
+                  </p>
+                )}
+                <button className="primary-button" disabled={busy}>
+                  Send invitation
+                </button>
+              </form>
+            </GameDialog>
           </aside>
         )}
       </>

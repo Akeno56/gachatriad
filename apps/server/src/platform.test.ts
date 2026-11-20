@@ -1,7 +1,13 @@
 import { beforeAll, afterAll, expect, it, vi } from 'vitest';
 import { resolve } from 'node:path';
 import { createPlatform } from './app';
-import type { MatchView, ProfileView, LobbyView } from '@gacha-triad/shared/platform';
+import type {
+  CorrespondenceMatch,
+  LobbyPreset,
+  MatchView,
+  ProfileView,
+  LobbyView,
+} from '@gacha-triad/shared/platform';
 import { CARDS } from '@gacha-triad/shared';
 import { ECONOMY } from '@gacha-triad/shared/platform';
 import {
@@ -74,6 +80,109 @@ async function ok<T>(c: Client, path: string, body?: unknown, method?: string): 
   expect(r.statusCode, r.body).toBe(200);
   return r.json();
 }
+it('resumes private correspondence matches alongside live play and enforces turn deadlines', async () => {
+  const a = await user(true),
+    b = await user(true),
+    outsider = await user(true, false);
+  const invite = { playerId: b.profile.id, turnHours: 48 };
+  expect((await request(a, '/invites', invite)).statusCode).toBe(403);
+  await ok(a, '/friends/request', { playerId: b.profile.id });
+  await ok(b, `/friends/${a.profile.id}/accept`, {});
+  expect((await request(a, '/invites', { ...invite, turnHours: 1 })).statusCode).toBe(400);
+  const pending = await ok<{ id: string; lobbyId: null }>(a, '/invites', invite);
+  expect(pending.lobbyId).toBeNull();
+  expect(await ok(a, '/invites', invite)).toEqual(pending);
+  const respond = `/invites/${pending.id}/respond`;
+  expect((await request(a, respond, { accept: true })).statusCode).toBe(403);
+  expect((await request(outsider, respond, { accept: true })).statusCode).toBe(404);
+  const live = await ok<{ matchId: string }>(b, '/solo', { difficulty: 'easy' });
+  const { matchId } = await ok<{ matchId: string }>(b, respond, { accept: true });
+  expect(await ok(b, respond, { accept: true })).toMatchObject({ matchId });
+  const path = `/matches/${matchId}`;
+  const view = await ok<MatchView>(a, path);
+  expect(view).toMatchObject({
+    mode: 'correspondence',
+    trade: { rule: 'none' },
+    ratingApplies: false,
+    turnHours: 48,
+  });
+  expect(view.deadline! - Date.now()).toBeGreaterThan(47.99 * 3_600_000);
+  expect(await ok<ProfileView>(a, '/profile')).toMatchObject({
+    activeMatchId: null,
+    inventory: a.profile.inventory,
+  });
+  expect(await ok<ProfileView>(b, '/profile')).toMatchObject({ activeMatchId: live.matchId });
+  expect((await request(outsider, path)).statusCode).toBe(403);
+  expect((await request(outsider, `/spectate/${matchId}`)).statusCode).toBe(403);
+  expect(await ok<CorrespondenceMatch[]>(outsider, '/correspondence')).toEqual([]);
+  const first = view.game!.turn === view.seat ? a : b,
+    next = first === a ? b : a;
+  const row = (await ok<CorrespondenceMatch[]>(first, '/correspondence'))[0];
+  expect(row).toMatchObject({
+    id: matchId,
+    opponent: next.profile.name,
+    yourTurn: true,
+    outcome: null,
+  });
+  await platform.store.presence(first.profile.id, false);
+  await platform.db.tx((sql) =>
+    sql("UPDATE matches SET disconnected_at='[0,0]',deadline=$1 WHERE id=$2", [
+      Date.now() + 1_000_000,
+      matchId,
+    ]),
+  );
+  await platform.store.tick();
+  const ownView = await ok<MatchView>(first, path);
+  const cardId = ownView.game!.hands[ownView.seat][0].card!.id;
+  const updated = await ok<MatchView>(first, `${path}/move`, {
+    cardId,
+    cell: 4,
+    version: ownView.version,
+  });
+  expect(updated.game!.history).toHaveLength(1);
+  expect(updated.deadline! - Date.now()).toBeGreaterThan(47.99 * 3_600_000);
+  expect((await ok<CorrespondenceMatch[]>(next, '/correspondence'))[0].yourTurn).toBe(true);
+  await platform.db.tx((sql) =>
+    sql('UPDATE matches SET deadline=$1 WHERE id=$2', [Date.now() - 5, matchId]),
+  );
+  await platform.store.tick();
+  expect(await ok<MatchView>(first, path)).toMatchObject({
+    status: 'complete',
+    winner: ownView.seat,
+    endReason: 'turn deadline expired',
+    prismReward: 0,
+  });
+  expect((await ok<CorrespondenceMatch[]>(next, '/correspondence'))[0]).toMatchObject({
+    outcome: 'loss',
+    yourTurn: false,
+    deadline: null,
+  });
+  expect(await ok<ProfileView>(a, '/profile')).toMatchObject({
+    rating: a.profile.rating,
+    inventory: a.profile.inventory,
+  });
+});
+it('saves and updates named lobby presets for their owner', async () => {
+  const a = await user(true, false),
+    b = await user(false, false);
+  const path = '/lobby-presets';
+  const preset = {
+    name: '  Training table  ',
+    rules: { threeOpen: true, same: true, combo: true },
+    tradeRule: 'none',
+    allowBots: true,
+  };
+  const saved = await ok<LobbyPreset>(a, path, preset);
+  expect(saved).toMatchObject({ name: 'Training table', rules: preset.rules });
+  expect(await ok<LobbyPreset[]>(b, path)).toEqual([]);
+  expect((await request(b, `${path}/${saved.id}`, undefined, 'DELETE')).statusCode).toBe(404);
+  expect((await request(a, path, { ...preset, tradeRule: 'one' })).statusCode).toBe(400);
+  const edited = await ok<LobbyPreset>(a, path, { ...preset, allowBots: false });
+  expect(edited.id).toBe(saved.id);
+  expect(await ok<LobbyPreset[]>(a, path)).toEqual([edited]);
+  await ok(a, `${path}/${saved.id}`, undefined, 'DELETE');
+  expect(await ok<LobbyPreset[]>(a, path)).toEqual([]);
+});
 it('buys Standard cards at server prices atomically and deduplicates retries', async () => {
   const a = await user(),
     b = await user();

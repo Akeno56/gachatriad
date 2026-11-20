@@ -19,6 +19,7 @@ const modes = [
   'ranked-random',
   'draft',
   'shared-draft',
+  'correspondence',
   'roulette',
 ];
 interface Row {

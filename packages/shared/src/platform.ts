@@ -3,7 +3,23 @@ import type { BattleIdentity, TitleView } from './social';
 import type { PortraitFrame, FeaturedMode } from './customization';
 export const RATED_MODES = ['ranked', 'ranked-random', 'draft', 'shared-draft'] as const;
 export type RatedMode = (typeof RATED_MODES)[number];
-export type Mode = 'solo' | 'casual' | 'custom' | RatedMode | 'roulette';
+export type Mode = 'solo' | 'casual' | 'custom' | RatedMode | 'roulette' | 'correspondence';
+export const CORRESPONDENCE_HOURS = [24, 48, 72] as const;
+export type CorrespondenceHours = (typeof CORRESPONDENCE_HOURS)[number];
+export interface CorrespondenceMatch {
+  id: string;
+  opponent: string;
+  yourTurn: boolean;
+  deadline: number | null;
+  outcome: 'win' | 'loss' | 'draw' | null;
+}
+export interface LobbyPreset {
+  id: string;
+  name: string;
+  rules: Rules;
+  tradeRule: 'one' | 'none';
+  allowBots: boolean;
+}
 export const isDraftMode = (mode: string) => mode === 'draft' || mode === 'shared-draft';
 export const isRatedMode = (mode: string): mode is RatedMode =>
   (RATED_MODES as readonly string[]).includes(mode);
@@ -67,6 +83,7 @@ export interface MatchView {
   winner: Player | 'draw' | null;
   rules: Rules;
   deadline: number | null;
+  turnHours?: CorrespondenceHours;
   endReason: string | null;
   draftPool: Card[];
   draftLocked: boolean;

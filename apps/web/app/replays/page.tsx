@@ -17,6 +17,7 @@ const modes = [
   ['ranked-random', 'Ranked Random'],
   ['draft', 'Draft'],
   ['shared-draft', 'Shared Draft'],
+  ['correspondence', 'Correspondence'],
   ['custom', 'Custom'],
   ['roulette', 'Roulette'],
 ];

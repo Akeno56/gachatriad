@@ -1,5 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import { isRatedMode, modeRatingField } from '@gacha-triad/shared/platform';
+import {
+  CORRESPONDENCE_HOURS,
+  isRatedMode,
+  modeRatingField,
+  type CorrespondenceHours,
+} from '@gacha-triad/shared/platform';
 import { CURRENT_SEASON } from '@gacha-triad/shared/journey';
 import { ALL_CARDS } from '@gacha-triad/shared';
 import { CHAT_CHANNELS, type ChatChannel } from '@gacha-triad/shared/social';
@@ -115,7 +120,12 @@ export class Social {
       return { id };
     });
   }
-  private async requireFriend(sql: Sql, p: ProfileIdentity, target: string) {
+  private async requireFriend(
+    sql: Sql,
+    p: ProfileIdentity,
+    target: string,
+    message = 'Private chat is available between accepted friends.',
+  ) {
     registered(p);
     await this.eligible(sql, target);
     if (
@@ -126,7 +136,7 @@ export class Social {
         )
       ).length
     )
-      throw new GameError('Private chat is available between accepted friends.', 403);
+      throw new GameError(message, 403);
   }
   async messages(p: ProfileIdentity, target: string): Promise<FriendMessage[]> {
     return this.store.db.read(async (sql) => {
@@ -366,7 +376,8 @@ export class Social {
         id: string;
         sender_id: string;
         recipient_id: string;
-        lobby_id: string;
+        lobby_id: string | null;
+        turn_hours: CorrespondenceHours | null;
         expires_at: Date;
       }>(
         "SELECT * FROM duel_invitations WHERE status='pending' AND (sender_id=$1 OR recipient_id=$1) ORDER BY created_at DESC LIMIT 20",
@@ -383,6 +394,7 @@ export class Social {
           sender: identity(people.find((p) => p.id === invitation.sender_id)!),
           recipient: identity(people.find((p) => p.id === invitation.recipient_id)!),
           lobbyId: invitation.lobby_id,
+          turnHours: invitation.turn_hours ?? undefined,
           expiresAt: invitation.expires_at.toISOString(),
         });
       }
@@ -413,22 +425,44 @@ export class Social {
       };
     });
   }
-  async invite(p: ProfileIdentity, target: unknown) {
+  async invite(p: ProfileIdentity, target: unknown, turnHours?: unknown) {
     registered(p);
     if (typeof target !== 'string' || target === p.id) throw new GameError('Choose a friend.');
-    await this.store.db.read(async (sql) => {
-      await this.eligible(sql, target);
-      const pair = [p.id, target].sort();
-      if (
-        !(
-          await sql(
-            "SELECT 1 FROM friendships WHERE profile_a=$1 AND profile_b=$2 AND status='accepted'",
-            pair,
-          )
-        ).length
-      )
-        throw new GameError('Add this player as a friend before inviting them.', 403);
-    });
+    if (turnHours !== undefined) {
+      const hours = CORRESPONDENCE_HOURS.find((hours) => hours === turnHours);
+      if (!hours) throw new GameError('Choose 24, 48, or 72 hours per turn.');
+      return this.store.db.tx(async (sql) => {
+        await this.requireFriend(
+          sql,
+          p,
+          target,
+          'Add this player as a friend before inviting them.',
+        );
+        const existing = await sql<{ id: string; recipient_id: string }>(
+          `SELECT id,recipient_id FROM duel_invitations WHERE turn_hours IS NOT NULL AND status='pending' AND expires_at>now()
+           AND ((sender_id=$1 AND recipient_id=$2) OR (sender_id=$2 AND recipient_id=$1))`,
+          [p.id, target],
+        );
+        if (existing[0]?.recipient_id === target) return { id: existing[0].id, lobbyId: null };
+        if (existing.length)
+          throw new GameError('This friend already sent you a correspondence invitation.', 409);
+        const [pending] = await sql<{ count: number }>(
+          "SELECT count(*)::int AS count FROM duel_invitations WHERE sender_id=$1 AND turn_hours IS NOT NULL AND status='pending' AND expires_at>now()",
+          [p.id],
+        );
+        if (pending.count >= 12)
+          throw new GameError('You have 12 pending correspondence invitations.', 409);
+        const id = randomUUID();
+        await sql(
+          "INSERT INTO duel_invitations(id,sender_id,recipient_id,turn_hours,expires_at) VALUES($1,$2,$3,$4,now()+interval '7 days')",
+          [id, p.id, target, hours],
+        );
+        return { id, lobbyId: null };
+      });
+    }
+    await this.store.db.read((sql) =>
+      this.requireFriend(sql, p, target, 'Add this player as a friend before inviting them.'),
+    );
     const lobby = await this.store.createLobby(p, {
       mode: 'custom',
       rules: UNRANKED,
@@ -458,21 +492,35 @@ export class Social {
         status: string;
         sender_id: string;
         recipient_id: string;
-        lobby_id: string;
+        lobby_id: string | null;
+        turn_hours: CorrespondenceHours | null;
+        match_id: string | null;
       }>('SELECT * FROM duel_invitations WHERE id=$1', [id]);
       if (!invitation || ![invitation.sender_id, invitation.recipient_id].includes(p.id))
         throw new GameError('Invitation not found.', 404);
+      if (accept && invitation.recipient_id !== p.id)
+        throw new GameError('Only the invited player may accept.', 403);
       if (invitation.status === 'accepted' && accept) {
-        if (invitation.recipient_id !== p.id)
-          throw new GameError('Only the invited player may accept.', 403);
         return invitation;
       }
       if (invitation.status !== 'pending') throw new GameError('This invitation has ended.', 409);
-      if (accept && invitation.recipient_id !== p.id)
-        throw new GameError('Only the invited player may accept.', 403);
       if (!accept) await sql("UPDATE duel_invitations SET status='declined' WHERE id=$1", [id]);
+      else if (invitation.turn_hours) {
+        await this.requireFriend(sql, p, invitation.sender_id, 'The sender is no longer a friend.');
+        invitation.match_id = await this.store.startCorrespondence(
+          sql,
+          invitation.sender_id,
+          p.id,
+          invitation.turn_hours,
+        );
+        await sql("UPDATE duel_invitations SET status='accepted',match_id=$2 WHERE id=$1", [
+          id,
+          invitation.match_id,
+        ]);
+      }
       return invitation;
     });
+    if (!row.lobby_id) return { matchId: accept ? row.match_id : null, correspondence: true };
     if (!accept) {
       await this.store.cancelLobby(row.sender_id, row.lobby_id);
       return { matchId: null };

@@ -1,5 +1,5 @@
 'use client';
-import { LocaleView, NoTranslate } from './i18n';
+import { LocalizedDate, LocaleView, NoTranslate } from './i18n';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -64,6 +64,7 @@ export function Game() {
       const last = receivedRef.current;
       if (
         !last?.spectator &&
+        last?.mode !== 'correspondence' &&
         last?.id === matchId &&
         last.status === 'complete' &&
         !last.trade.pending
@@ -113,8 +114,17 @@ export function Game() {
   );
   useEffect(() => {
     if (!profile) return;
-    const query = new URLSearchParams(location.search).get('match');
-    const watch = new URLSearchParams(location.search).get('spectate');
+    const params = new URLSearchParams(location.search);
+    const query = params.get('match');
+    const watch = params.get('spectate');
+    const correspondence = params.get('correspondence');
+    if (correspondence) {
+      if (correspondence !== matchId) {
+        setWatchingId(null);
+        setMatchId(correspondence);
+      }
+      return;
+    }
     const active = profile.activeMatchId === leftResultId.current ? null : profile.activeMatchId;
     const target = profile.pendingTrade?.matchId ?? active;
     if (target && target !== matchId) {
@@ -139,7 +149,9 @@ export function Game() {
       history.replaceState(
         history.state,
         '',
-        appPath(`/?${watchingId ? 'spectate' : 'match'}=${matchId}`),
+        appPath(
+          `/?${watchingId ? 'spectate' : new URLSearchParams(location.search).has('correspondence') ? 'correspondence' : 'match'}=${encodeURIComponent(matchId)}`,
+        ),
       );
   }, [matchId, watchingId]);
   const showBoard = !!match?.game;
@@ -279,6 +291,8 @@ export function Game() {
   const turnSeconds = match?.deadline
     ? Math.max(0, Math.ceil((match.deadline - clock) / 1000))
     : null;
+  const correspondence = match?.mode === 'correspondence';
+  const returnToCorrespondence = () => location.assign(appPath('/correspondence'));
   const lastPlayed = latest && game?.board[latest.move.cell]?.card;
   const displayScore = game
     ? [game.hands[0].length, game.hands[1].length]
@@ -307,7 +321,7 @@ export function Game() {
   const draftErrors = validateDeck(match?.draftPool.filter((c) => draft.includes(c.id)) ?? []);
   if (
     !profile ||
-    (!watchingId && !profile.activeMatchId && !profile.deck.length && profile.starterBoosters > 0)
+    (!matchId && !profile.activeMatchId && !profile.deck.length && profile.starterBoosters > 0)
   )
     return (
       <LocaleView>
@@ -324,7 +338,17 @@ export function Game() {
       <div
         className={`play-page ${match ? 'battle-screen' : 'title-screen'} ${match?.spectator ? 'spectator-screen' : ''} ${match?.game ? 'arena-screen' : ''} ${match?.mode === 'shared-draft' && match.status === 'drafting' ? 'shared-draft-screen' : ''}`}
       >
-        {!match ? (
+        {!match &&
+        matchId &&
+        !watchingId &&
+        new URLSearchParams(location.search).has('correspondence') ? (
+          <section className="menu-window correspondence-loading">
+            <button className="outline-button" onClick={returnToCorrespondence}>
+              Back to correspondence
+            </button>
+            {!error && <p>Loading…</p>}
+          </section>
+        ) : !match ? (
           <TavernHome
             onMatch={setMatchId}
             onRules={() => setDialog('rules')}
@@ -375,7 +399,12 @@ export function Game() {
                 <button className="text-button" onClick={() => setDialog('rules')}>
                   How to play
                 </button>
-                {!match.spectator && (
+                {correspondence && (
+                  <button className="outline-button" onClick={returnToCorrespondence}>
+                    Back to correspondence
+                  </button>
+                )}
+                {!match.spectator && (!correspondence || match.status === 'playing') && (
                   <button
                     className="text-button"
                     onClick={() => {
@@ -386,7 +415,9 @@ export function Game() {
                     disabled={busy}
                   >
                     {match.status !== 'complete'
-                      ? 'Leave match'
+                      ? correspondence
+                        ? 'Forfeit match'
+                        : 'Leave match'
                       : match.trade.pending
                         ? 'View result'
                         : match.mode === 'solo'
@@ -561,7 +592,23 @@ export function Game() {
                           'Opponent’s turn'
                         )}
                       </span>
-                      {match.status === 'playing' &&
+                      {correspondence && match.status === 'playing' && match.deadline !== null && (
+                        <span className="duel-clock correspondence-clock">
+                          Turn due{' '}
+                          <LocalizedDate
+                            value={match.deadline}
+                            format="datetime"
+                            options={{
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            }}
+                          />
+                        </span>
+                      )}
+                      {!correspondence &&
+                        match.status === 'playing' &&
                         !resolving &&
                         turnSeconds !== null &&
                         !match.players[game.turn].botStyle && (
@@ -786,7 +833,13 @@ export function Game() {
           onCancel={() => setDialog(null)}
         >
           <div className="dialog-header">
-            <h2 id="dialog-title">{dialog === 'rules' ? 'How to play' : 'Leave this match?'}</h2>
+            <h2 id="dialog-title">
+              {dialog === 'rules'
+                ? 'How to play'
+                : correspondence
+                  ? 'Forfeit this match?'
+                  : 'Leave this match?'}
+            </h2>
             <button
               className="close-button"
               aria-label="Close dialog"
@@ -799,7 +852,9 @@ export function Game() {
             <>
               {game && (
                 <p className="turn-policy" role="note">
-                  0 seconds: auto-play once. Miss your next turn: defeat.
+                  {correspondence
+                    ? `${match?.turnHours}h per turn. Miss the deadline and you lose.`
+                    : '0 seconds: auto-play once. Miss your next turn: defeat.'}
                 </p>
               )}
               <RulesContent />
@@ -807,7 +862,9 @@ export function Game() {
           ) : dialog === 'exit' ? (
             <>
               <p>
-                Leaving forfeits this duel.
+                {correspondence
+                  ? 'Your opponent wins if you forfeit.'
+                  : 'Leaving forfeits this duel.'}
                 {match?.trade.rule === 'one'
                   ? ' Trade One still applies: your opponent may take one of your five cards.'
                   : ''}
@@ -845,7 +902,11 @@ export function Game() {
             onClose={() => setResultOpen(false)}
             onPlayAgain={start}
             onQueueAgain={() => void leaveResult('queue')}
-            onReturn={() => void leaveResult(match.mode === 'solo' ? 'tavern' : 'lobbies')}
+            onReturn={
+              correspondence
+                ? returnToCorrespondence
+                : () => void leaveResult(match.mode === 'solo' ? 'tavern' : 'lobbies')
+            }
             onClaim={(cardId) => action(`/matches/${match.id}/claim`, { cardId })}
             onRematch={() => action(`/matches/${match.id}/rematch`, {})}
             onCancelRematch={() => action(`/matches/${match.id}/rematch`, { cancel: true })}

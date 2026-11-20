@@ -1,4 +1,5 @@
 import type { Card } from '@gacha-triad/engine';
+import type { CorrespondenceHours } from './platform';
 export interface TitleView {
   id: string;
   name: string;
@@ -103,7 +104,8 @@ export interface DuelInvitation {
   id: string;
   sender: BattleIdentity;
   recipient: BattleIdentity;
-  lobbyId: string;
+  lobbyId: string | null;
+  turnHours?: CorrespondenceHours;
   expiresAt: string;
 }
 export interface SocialView {

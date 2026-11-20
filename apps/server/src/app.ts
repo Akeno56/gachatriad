@@ -22,6 +22,7 @@ import { socialProviders } from './social-auth';
 import { Feedback } from './feedback';
 import { DailyPuzzles } from './daily-puzzle';
 import { DeckLoadouts } from './deck-loadouts';
+import { LobbyPresets } from './lobby-presets';
 import { PlayerJourney } from './journey';
 import { MatchReplays } from './replays';
 import { ProfileCustomizations } from './customization';
@@ -46,6 +47,7 @@ export async function createPlatform(
   const feedback = new Feedback(db, (await auth.$context).secret);
   const puzzles = new DailyPuzzles(db, (await auth.$context).secret);
   const loadouts = new DeckLoadouts(db);
+  const lobbyPresets = new LobbyPresets(db);
   const journey = new PlayerJourney(db);
   const replays = new MatchReplays(db);
   const customizations = new ProfileCustomizations(db);
@@ -406,7 +408,7 @@ export async function createPlatform(
     return { ok: true };
   });
   app.post('/api/invites', async (req) => {
-    const result = await social.invite(await profile(req), body(req).playerId);
+    const result = await social.invite(await profile(req), body(req).playerId, body(req).turnHours);
     notify();
     return result;
   });
@@ -421,6 +423,12 @@ export async function createPlatform(
     await profile(req);
     return social.ladder((req.query as { mode?: string }).mode);
   });
+  app.get('/api/correspondence', async (req) => store.correspondence((await profile(req)).id));
+  app.get('/api/lobby-presets', async (req) => lobbyPresets.list((await profile(req)).id));
+  app.post('/api/lobby-presets', async (req) => lobbyPresets.save(await profile(req), body(req)));
+  app.delete('/api/lobby-presets/:id', async (req) =>
+    lobbyPresets.remove((await profile(req)).id, id(req)),
+  );
   app.post('/api/profile/title', async (req) => {
     await store.setTitle((await profile(req)).id, body(req).titleId);
     notify();
