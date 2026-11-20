@@ -11,6 +11,7 @@ import { createAuth } from './auth';
 import { GameStore, GameError, cleanRules } from './store';
 import { isRatedMode, type Mode } from '@gacha-triad/shared/platform';
 import { Trades } from './trades';
+import { Wishlist } from './wishlist';
 import { BotPopulation } from './bots';
 import { allowedOrigins } from './config';
 import { Moderation } from './moderation';
@@ -59,6 +60,7 @@ export async function createPlatform(
   await guests.cleanup();
   const trades = new Trades(db),
     bots = new BotPopulation(store, trades);
+  const wishlist = new Wishlist(db);
   const moderation = new Moderation(db);
   const social = new Social(store);
   if (!bots.available) await bots.set(false);
@@ -632,6 +634,11 @@ export async function createPlatform(
     notify();
     return result;
   });
+  app.post('/api/journey/weekly/swap', async (req) => {
+    const { actor, requested } = await sessionActor(req);
+    const p = await store.identity(actor, requested);
+    return journey.swap(p.id, actor.id, p.registered, body(req));
+  });
   app.get('/api/local-bots', async (req) => {
     if (!(await profile(req)).isAdmin) throw new GameError('Administrator access required.', 403);
     return bots.status();
@@ -697,11 +704,31 @@ export async function createPlatform(
   });
   app.get('/api/trades', async (req) => {
     await profile(req);
-    const offers = await trades.list();
+    const query = req.query as { includeSales?: string; card?: string };
+    const offers = await trades.list(typeof query.card === 'string' ? query.card : undefined);
     // Old open clients require a requested card and cannot render currency listings.
-    return (req.query as { includeSales?: string }).includeSales === 'true'
-      ? offers
-      : offers.filter((o) => o.wanted !== null);
+    return query.includeSales === 'true' ? offers : offers.filter((o) => o.wanted !== null);
+  });
+  app.get('/api/wishlist', async (req) => wishlist.list((await profile(req)).id));
+  app.post('/api/wishlist', async (req) => {
+    const { cardId, saved } = body(req);
+    return wishlist.save((await profile(req)).id, cardId, saved);
+  });
+  app.get('/api/market/requests', async (req) => trades.requests((await profile(req)).id));
+  app.post('/api/market/requests', async (req) => {
+    const result = await trades.request(await profile(req), body(req).cardId);
+    notify();
+    return result;
+  });
+  app.post('/api/market/requests/:id/respond', async (req) => {
+    const result = await trades.respond(await profile(req), id(req), body(req).price);
+    notify();
+    return result;
+  });
+  app.delete('/api/market/requests/:id', async (req) => {
+    await trades.cancelRequest(await profile(req), id(req));
+    notify();
+    return { ok: true };
   });
   app.post('/api/trades', async (req) => {
     const p = await profile(req),

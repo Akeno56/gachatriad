@@ -1,7 +1,7 @@
 'use client';
 import { LocaleView, NoTranslate } from './i18n';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import type { Card as CardData } from '@gacha-triad/engine';
 import { universeName, SIDE_NAMES } from '@gacha-triad/shared';
 import { Card } from './card';
@@ -9,15 +9,17 @@ export function CardDetail({
   card,
   onClose,
   modifier = 0,
+  actions,
 }: {
   card: CardData | null;
   onClose: () => void;
   modifier?: number;
+  actions?: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
-    if (card) ref.current?.showModal();
-    else ref.current?.close();
+    if (card && !ref.current?.open) ref.current?.showModal();
+    if (!card) ref.current?.close();
   }, [card]);
   return (
     <LocaleView>
@@ -63,6 +65,7 @@ export function CardDetail({
                   {card.stats.join(' / ')}. Same and Plus use the adjusted values shown above.
                 </small>
               )}
+              {actions}
             </div>
           </div>
         )}

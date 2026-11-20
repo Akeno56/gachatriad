@@ -213,6 +213,7 @@ export class GameStore {
       '023_profile_customization.sql',
       '024_ranked_random.sql',
       '025_correspondence.sql',
+      '026_collection_choices.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>

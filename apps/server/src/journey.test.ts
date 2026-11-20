@@ -6,7 +6,7 @@ import { PlayerJourney, weekWindow } from './journey';
 import { puzzleDay, puzzleValue } from './daily-puzzle';
 import { ALL_CARDS } from '@gacha-triad/shared';
 import { applyMove, createGame, legalMoves, STANDARD, type GameState } from '@gacha-triad/engine';
-import type { JourneyView } from '@gacha-triad/shared/journey';
+import type { JourneyView, WeeklyView } from '@gacha-triad/shared/journey';
 
 let p: Awaited<ReturnType<typeof createPlatform>>,
   serial = 0;
@@ -110,6 +110,37 @@ it('uses Monday UTC boundaries across Sundays and years', () => {
   });
   expect(weekWindow(Date.parse('2026-11-23T00:00:00Z')).week).toBe('2026-11-23');
   expect(weekWindow(Date.parse('2027-01-01T05:00:00Z')).week).toBe('2026-12-28');
+});
+it('swaps one unfinished weekly objective for an alternative of the same tier', async () => {
+  const u = await user(),
+    guest = await user(true);
+  await storedDuel(u, 'solo');
+  await saveWeeklyDeck(u);
+  const initial = (await view(u)).weekly;
+  const path = '/journey/weekly/swap';
+  const valid = { week: initial.week, original: 'puzzle', replacement: 'practice' };
+  expect((await request(guest, path, valid)).statusCode).toBe(403);
+  expect((await request(u, path, { ...valid, original: 'deck' })).statusCode).toBe(409);
+  expect((await request(u, path, { ...valid, original: 'boosters' })).statusCode).toBe(400);
+  expect((await request(u, path, { ...valid, week: '2001-01-01' })).statusCode).toBe(409);
+  const responses = await Promise.all([request(u, path, valid), request(u, path, valid)]);
+  expect(responses.map((response) => response.statusCode)).toEqual([200, 409]);
+  const updated = responses[0].json<WeeklyView>();
+  expect(updated).toMatchObject({
+    required: 5,
+    completed: initial.completed + 1,
+    swapped: true,
+    reward: initial.reward,
+  });
+  expect(updated.objectives).toHaveLength(6);
+  expect(updated.objectives.find((row) => row.id === 'practice')?.progress).toBe(1);
+  expect(updated.objectives.some((row) => row.id === 'puzzle')).toBe(false);
+  expect((await view(u)).weekly).toEqual(updated);
+  const newWeek = new PlayerJourney(p.db, () => Date.parse(initial.resetAt));
+  expect((await newWeek.view(u.profile.id, u.actor.id, true)).weekly).toMatchObject({
+    swapped: false,
+    objectives: expect.arrayContaining([{ id: 'puzzle', progress: 0 }]),
+  });
 });
 it('counts a real completed practice duel and excludes forfeits, timeouts, admin results and old weeks', async () => {
   const u = await user();

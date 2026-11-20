@@ -10,6 +10,7 @@ export const WEEKLY_OBJECTIVES = [
     name: 'Duels',
     description: 'Complete 3 full duels.',
     target: 3,
+    tier: 2,
     href: '/',
   },
   {
@@ -17,6 +18,7 @@ export const WEEKLY_OBJECTIVES = [
     name: 'Game modes',
     description: 'Complete duels in 2 different modes.',
     target: 2,
+    tier: 2,
     href: '/lobbies',
   },
   {
@@ -24,6 +26,7 @@ export const WEEKLY_OBJECTIVES = [
     name: 'Daily puzzle',
     description: 'Solve the daily puzzle.',
     target: 1,
+    tier: 1,
     href: '/puzzle',
   },
   {
@@ -31,6 +34,7 @@ export const WEEKLY_OBJECTIVES = [
     name: 'Boosters',
     description: 'Open 2 non-starter boosters.',
     target: 2,
+    tier: 2,
     href: '/boosters',
   },
   {
@@ -38,6 +42,7 @@ export const WEEKLY_OBJECTIVES = [
     name: 'Saved deck',
     description: 'Save a complete named deck.',
     target: 1,
+    tier: 1,
     href: '/decks',
   },
   {
@@ -45,10 +50,46 @@ export const WEEKLY_OBJECTIVES = [
     name: 'Custom rules',
     description: 'Complete a Custom or Roulette duel.',
     target: 1,
+    tier: 1,
     href: '/lobbies',
   },
 ] as const;
-export type WeeklyObjectiveId = (typeof WEEKLY_OBJECTIVES)[number]['id'];
+export const WEEKLY_ALTERNATIVES = [
+  {
+    id: 'practice',
+    name: 'Practice duel',
+    description: 'Complete a full Practice duel.',
+    target: 1,
+    tier: 1,
+    href: '/',
+  },
+  {
+    id: 'duplicates',
+    name: 'Duplicates',
+    description: 'Recycle duplicates or use Trade Up.',
+    target: 1,
+    tier: 1,
+    href: '/collection',
+  },
+  {
+    id: 'puzzle-pair',
+    name: 'Two puzzles',
+    description: 'Solve daily puzzles on 2 different days.',
+    target: 2,
+    tier: 2,
+    href: '/puzzle',
+  },
+  {
+    id: 'unranked-duels',
+    name: 'Unranked duels',
+    description: 'Complete 2 full Unranked duels.',
+    target: 2,
+    tier: 2,
+    href: '/',
+  },
+] as const;
+export const WEEKLY_CHOICES = [...WEEKLY_OBJECTIVES, ...WEEKLY_ALTERNATIVES] as const;
+export type WeeklyObjectiveId = (typeof WEEKLY_CHOICES)[number]['id'];
 export const WEEKLY_REQUIRED = 5;
 export const WEEKLY_REWARD = 150;
 
@@ -120,6 +161,7 @@ export interface WeeklyView {
   completed: number;
   registered: boolean;
   objectives: { id: WeeklyObjectiveId; progress: number }[];
+  swapped?: boolean;
 }
 export interface SeasonRecord {
   mode: import('./platform').RatedMode;

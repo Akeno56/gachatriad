@@ -29,9 +29,9 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>Play private correspondence matches with friends.</li>
-          <li>Resume matches from Your turn.</li>
-          <li>Save and reuse custom lobby presets.</li>
+          <li>Save cards to your wishlist and find their boosters and listings.</li>
+          <li>Post market requests and review private offers.</li>
+          <li>Swap one unfinished weekly objective.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

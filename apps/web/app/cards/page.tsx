@@ -2,6 +2,7 @@
 import { LocaleView, NoTranslate } from '../../components/i18n';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import {
   CARDS,
   HOLO_CARDS,
@@ -18,8 +19,11 @@ import { ECONOMY } from '@gacha-triad/shared/platform';
 import { api } from '../../lib/platform';
 import { useActionNotice } from '../../components/action-notice';
 import { useBrowseState, useBrowseScroll } from '../../components/browse-preferences';
+import { useWishlist } from '../../components/use-wishlist';
 export default function CardsPage() {
   const { profile, error, refresh } = useSession();
+  const wishlist = useWishlist(profile?.id);
+  const saved = new Set(wishlist.rows?.map((entry) => entry.cardId));
   const notify = useActionNotice();
   const [purchase, setPurchase] = useState<CardData | null>(null),
     [buying, setBuying] = useState(false),
@@ -79,7 +83,12 @@ export default function CardsPage() {
     <LocaleView>
       <div className="content-page catalog-page">
         <div className="eyebrow">YOUR CARD ALBUM</div>
-        <h1>Cards</h1>
+        <div className="collection-release-heading">
+          <h1>Cards</h1>
+          <Link className="outline-button" href="/market?tab=wishlist">
+            Wishlist
+          </Link>
+        </div>
         <p className="page-description">
           {CARDS.length} battle cards across {UNIVERSES.length} worlds. Cards you haven’t collected
           are greyed out.
@@ -201,7 +210,7 @@ export default function CardsPage() {
           className={purchased && !error ? 'card-purchase-notice' : 'error-message'}
           role={purchased && !error ? undefined : 'alert'}
         >
-          {message || error}
+          {message || error || wishlist.error}
         </p>
         <div className="catalog-grid">
           {visible.map((card) => {
@@ -217,9 +226,21 @@ export default function CardsPage() {
                 </button>
                 <div className="album-card-footer">
                   <div className="album-card-info">
-                    <h2 title={card.name}>
-                      <NoTranslate>{card.name}</NoTranslate>
-                    </h2>
+                    <div className="album-card-title">
+                      <h2 title={card.name}>
+                        <NoTranslate>{card.name}</NoTranslate>
+                      </h2>
+                      <button
+                        type="button"
+                        className="wishlist-star"
+                        aria-label={`Wishlist ${card.name}`}
+                        aria-pressed={saved.has(card.id)}
+                        disabled={!wishlist.rows || !!wishlist.pending}
+                        onClick={() => void wishlist.save(card.id, !saved.has(card.id))}
+                      >
+                        {saved.has(card.id) ? '★' : '☆'}
+                      </button>
+                    </div>
                     <p title={universeName(card.universeId)}>{universeName(card.universeId)}</p>
                     <small>
                       {card.rarity}★ ·{' '}
@@ -282,7 +303,50 @@ export default function CardsPage() {
             Next →
           </button>
         </div>
-        <CardDetail card={detail} onClose={() => setDetail(null)} />
+        <CardDetail
+          card={detail}
+          onClose={() => setDetail(null)}
+          actions={
+            detail && (
+              <div className="wishlist-detail-actions">
+                {detail.finish === 'holo' && (
+                  <label>
+                    Holo bonus side
+                    <select
+                      name="holoSide"
+                      value={detail.id}
+                      onChange={(event) => {
+                        setDetail(
+                          HOLO_VARIANTS.find(({ id }) => id === event.target.value) ?? detail,
+                        );
+                      }}
+                    >
+                      {HOLO_VARIANTS.filter((card) => card.baseCardId === detail.baseCardId).map(
+                        (card) => (
+                          <option key={card.id} value={card.id}>
+                            {SIDE_NAMES[card.holoBonusSide!]}
+                          </option>
+                        ),
+                      )}
+                    </select>
+                  </label>
+                )}
+                <button
+                  className="outline-button"
+                  disabled={!wishlist.rows || !!wishlist.pending}
+                  onClick={() => void wishlist.save(detail.id, !saved.has(detail.id))}
+                >
+                  {saved.has(detail.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                </button>
+                {wishlist.error && (
+                  <p role="alert" className="error-message">
+                    {wishlist.error}
+                  </p>
+                )}
+              </div>
+            )
+          }
+        />
         <dialog
           ref={purchaseDialog}
           className="game-dialog menu-window card-purchase-dialog"

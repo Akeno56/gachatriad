@@ -357,6 +357,19 @@ export interface TradeOfferView {
   price: number | null;
   createdAt: string;
 }
+export interface WishlistEntry {
+  cardId: string;
+  listings: number;
+  requestId: string | null;
+}
+export interface MarketRequestView {
+  id: string;
+  requesterId: string;
+  requester: string;
+  cardId: string;
+  createdAt: string;
+  responses: TradeOfferView[];
+}
 export type BotMix = { easy: number; medium: number; hard: number };
 export interface PopulationView {
   mix: BotMix;

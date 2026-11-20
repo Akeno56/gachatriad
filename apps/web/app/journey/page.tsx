@@ -1,12 +1,18 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { JOURNEY_CHAPTERS, WEEKLY_OBJECTIVES, type JourneyView } from '@gacha-triad/shared/journey';
+import {
+  JOURNEY_CHAPTERS,
+  WEEKLY_ALTERNATIVES,
+  WEEKLY_CHOICES,
+  type JourneyView,
+  type WeeklyView,
+} from '@gacha-triad/shared/journey';
 import { LocaleView, LocalizedDate } from '../../components/i18n';
 import { useSession } from '../../components/session';
 import { usePageRefresh } from '../../components/use-page-refresh';
 import { SeasonBanner } from '../../components/season-banner';
-import { Tabs, Button } from '../../components/ui';
+import { Tabs, Button, GameDialog } from '../../components/ui';
 import { api } from '../../lib/platform';
 import { matchModeNames } from '../../lib/rules';
 
@@ -19,6 +25,10 @@ export default function JourneyPage() {
     [notice, setNotice] = useState(''),
     [busy, setBusy] = useState(false);
   const [panel, setPanel] = useState('weekly');
+  const [swapOpen, setSwapOpen] = useState(false);
+  const [original, setOriginal] = useState('');
+  const [replacement, setReplacement] = useState('');
+  const [swapError, setSwapError] = useState('');
   const saving = useRef(false);
   const data = snapshot?.owner === profile?.id ? snapshot?.value : null;
   useEffect(() => {
@@ -68,6 +78,40 @@ export default function JourneyPage() {
     }
   }
   const weekly = data?.weekly;
+  const objectives = (weekly?.objectives ?? []).flatMap((row) => {
+    const objective = WEEKLY_CHOICES.find(({ id }) => id === row.id);
+    return objective ? [{ ...objective, progress: row.progress }] : [];
+  });
+  const unfinished = objectives.filter((objective) => objective.progress < objective.target);
+  const swapTier = unfinished.find(({ id }) => id === original)?.tier;
+  async function swap() {
+    if (!weekly || !profile || saving.current || !replacement) return;
+    saving.current = true;
+    setBusy(true);
+    setSwapError('');
+    setNotice('');
+    try {
+      const updated = await api<WeeklyView>('/journey/weekly/swap', {
+        week: weekly.week,
+        original,
+        replacement,
+      });
+      setSnapshot((current) =>
+        current?.owner === profile.id
+          ? { ...current, value: { ...current.value, weekly: updated } }
+          : current,
+      );
+      setSwapOpen(false);
+      setNotice('Weekly objective swapped.');
+      reload();
+    } catch (e) {
+      setSwapError((e as Error).message);
+      reload();
+    } finally {
+      saving.current = false;
+      setBusy(false);
+    }
+  }
   const completedChapters = data?.chapters.filter((chapter) => chapter.completed).length ?? 0;
   const nextChapter = JOURNEY_CHAPTERS.find(
     (chapter) => !data?.chapters.find((row) => row.id === chapter.id)?.completed,
@@ -134,6 +178,27 @@ export default function JourneyPage() {
                         options={{ timeZone: 'UTC', timeZoneName: 'short' }}
                       />
                     </small>
+                    {weekly!.registered &&
+                      (weekly!.swapped ? (
+                        <small className="weekly-swap-used">Weekly swap used</small>
+                      ) : (
+                        !weekly!.claimed &&
+                        unfinished.length > 0 && (
+                          <Button
+                            variant="outline"
+                            className="weekly-swap-button"
+                            disabled={busy}
+                            onClick={() => {
+                              setOriginal(unfinished[0].id);
+                              setReplacement('');
+                              setSwapError('');
+                              setSwapOpen(true);
+                            }}
+                          >
+                            Swap objective
+                          </Button>
+                        )
+                      ))}
                   </div>
                   <div className="weekly-reward">
                     <strong>◇ {weekly!.reward}</strong>
@@ -159,9 +224,8 @@ export default function JourneyPage() {
                   </div>
                 </section>
                 <div className="weekly-objectives">
-                  {WEEKLY_OBJECTIVES.map((objective, index) => {
-                    const progress =
-                      weekly!.objectives.find((row) => row.id === objective.id)?.progress ?? 0;
+                  {objectives.map((objective, index) => {
+                    const progress = objective.progress;
                     const complete = progress >= objective.target;
                     return (
                       <article
@@ -300,6 +364,66 @@ export default function JourneyPage() {
             </div>
           </section>
         )}
+        <GameDialog
+          open={swapOpen}
+          onClose={() => setSwapOpen(false)}
+          labelledBy="weekly-swap-title"
+          className="weekly-swap-dialog"
+          dismissible={!busy}
+        >
+          <h2 id="weekly-swap-title">Swap objective</h2>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void swap();
+            }}
+          >
+            <label>
+              Replace
+              <select
+                name="original"
+                value={original}
+                disabled={busy}
+                onChange={(event) => {
+                  setOriginal(event.target.value);
+                  setReplacement('');
+                }}
+              >
+                {unfinished.map((item) => (
+                  <option value={item.id} key={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              New objective
+              <select
+                name="replacement"
+                value={replacement}
+                disabled={busy}
+                required
+                onChange={(event) => setReplacement(event.target.value)}
+              >
+                <option value="">Choose an objective</option>
+                {WEEKLY_ALTERNATIVES.filter((item) => item.tier === swapTier).map((item) => (
+                  <option value={item.id} key={item.id}>
+                    {item.description}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <small>One swap per week.</small>
+            {swapError && (
+              <p className="error-message" role="alert">
+                {swapError}
+              </p>
+            )}
+            <button className="primary-button" disabled={busy || !replacement || !swapTier}>
+              Confirm swap
+            </button>
+          </form>
+        </GameDialog>
       </div>
     </LocaleView>
   );

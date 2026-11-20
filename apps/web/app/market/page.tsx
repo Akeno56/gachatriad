@@ -12,8 +12,85 @@ import { api } from '../../lib/platform';
 import { MainChat } from '../../components/main-chat';
 import { useActionNotice } from '../../components/action-notice';
 import { useBrowseState, useBrowseScroll } from '../../components/browse-preferences';
+import { Tabs } from '../../components/ui';
+import { MarketCollections } from '../../components/market-collections';
+
+const tabs = [
+  { value: 'offers', label: 'Offers' },
+  { value: 'requests', label: 'Requests' },
+  { value: 'wishlist', label: 'Wishlist' },
+] as const;
+type MarketTab = (typeof tabs)[number]['value'];
+
 export default function Market() {
-  const { profile, revision, refresh, error: connectionError, openAccount } = useSession();
+  const { profile, openAccount } = useSession();
+  const [tab, setTab] = useState<MarketTab>('offers');
+  const [cardId, setCardId] = useState('');
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const initial = tabs.find((item) => item.value === params.get('tab'));
+    const card = CARDS.find(({ id }) => id === params.get('card'));
+    if (initial) setTab(initial.value);
+    if (card) setCardId(card.id);
+  }, []);
+  function select(next: MarketTab, card = '') {
+    setTab(next);
+    setCardId(card);
+    const url = new URL(location.href);
+    if (next === 'offers') url.searchParams.delete('tab');
+    else url.searchParams.set('tab', next);
+    if (card) url.searchParams.set('card', card);
+    else url.searchParams.delete('card');
+    history.replaceState(history.state, '', url);
+  }
+  return (
+    <LocaleView>
+      <div className="content-page market-page">
+        <h1>Market</h1>
+        <LocalBots />
+        {tab === 'offers' && <MainChat compact />}
+        {profile && !profile.registered && (
+          <aside className="guest-market-notice menu-window" role="note">
+            <div>
+              <strong>You’re browsing as a guest</strong>
+              <p>
+                Register or sign in to post offers and accept exchanges. Registering keeps this
+                guest collection and progress.
+              </p>
+            </div>
+            <button className="primary-button" onClick={openAccount}>
+              Register or sign in
+            </button>
+          </aside>
+        )}
+        <Tabs
+          label="Market sections"
+          items={tabs}
+          value={tab}
+          panelId="market-panel"
+          onChange={(next) => {
+            const selected = tabs.find((item) => item.value === next);
+            if (selected) select(selected.value);
+          }}
+        />
+        <div
+          id="market-panel"
+          role="tabpanel"
+          aria-label={tabs.find((item) => item.value === tab)!.label}
+        >
+          {tab === 'offers' ? (
+            <MarketOffers cardId={cardId} clearCard={() => select('offers')} />
+          ) : (
+            <MarketCollections tab={tab} onViewListings={(card) => select('offers', card)} />
+          )}
+        </div>
+      </div>
+    </LocaleView>
+  );
+}
+
+function MarketOffers({ cardId, clearCard }: { cardId: string; clearCard: () => void }) {
+  const { profile, revision, refresh, error: connectionError } = useSession();
   const notify = useActionNotice(),
     actionLock = useRef(false);
   const [offers, setOffers] = useState<TradeOfferView[]>([]),
@@ -42,27 +119,31 @@ export default function Market() {
     [busy, setBusy] = useState(false),
     [workingPath, setWorkingPath] = useState(''),
     [selected, setSelected] = useState<TradeOfferView | null>(null);
+  const offersKey = profile ? `${profile.id}:${cardId}` : '';
   useEffect(() => {
     let active = true;
     if (profile)
-      void api<TradeOfferView[]>('/trades?includeSales=true')
+      void api<TradeOfferView[]>(
+        `/trades?includeSales=true${cardId ? `&card=${encodeURIComponent(cardId)}` : ''}`,
+      )
         .then((rows) => {
           if (active) {
             setOffers(rows.map((o) => ({ ...o, price: o.price ?? null })));
-            setLoadedFor(profile.id);
+            setLoadedFor(offersKey);
           }
         })
         .catch((e) => {
           if (active) {
             setError(e.message);
-            setLoadedFor(profile.id);
+            setLoadedFor(offersKey);
           }
         });
     return () => {
       active = false;
     };
-  }, [profile?.id, revision]);
-  useBrowseScroll('market', loadedFor === profile?.id);
+  }, [offersKey, revision]);
+  const loaded = !!offersKey && loadedFor === offersKey;
+  useBrowseScroll('market', loaded && !cardId);
   const confirmRef = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     if (selected) confirmRef.current?.showModal();
@@ -76,35 +157,36 @@ export default function Market() {
         ? profile.prisms >= o.price
         : !!o.wanted && (profile.inventory[o.wanted.id]?.available ?? 0) > 0),
     visible = offers
-      .filter(
-        (o) =>
-          (
-            o.offered.name +
-            ' ' +
-            (o.wanted?.name ?? '') +
-            ' ' +
-            o.owner +
-            ' ' +
-            universeName(o.offered.universeId)
-          )
-            .toLowerCase()
-            .includes(search.toLowerCase()) &&
-          (filter !== 'mine' || o.ownerId === profile?.id) &&
-          (listingType === 'all' ||
-            (listingType === 'sale' ? o.price !== null : o.price === null)) &&
-          (!minPrice || (o.price !== null && o.price >= Number(minPrice))) &&
-          (!maxPrice || (o.price !== null && o.price <= Number(maxPrice))) &&
-          (finish === 'all' || (o.offered.finish ?? 'standard') === finish) &&
-          (filter !== 'available' || canAccept(o)) &&
-          (rarity === 'all' || o.offered.rarity === Number(rarity)) &&
-          (wantedRarity === 'all' || o.wanted?.rarity === Number(wantedRarity)) &&
-          (universe === 'all' || o.offered.universeId === universe) &&
-          (!onlyMissing || (!!profile && !(profile.inventory[o.offered.id]?.quantity ?? 0))) &&
-          (!onlyDuplicates ||
-            (!!profile &&
-              !!o.wanted &&
-              (profile.inventory[o.wanted.id]?.quantity ?? 0) > 1 &&
-              (profile.inventory[o.wanted.id]?.available ?? 0) > 0)),
+      .filter((o) =>
+        cardId
+          ? o.offered.id === cardId
+          : (
+              o.offered.name +
+              ' ' +
+              (o.wanted?.name ?? '') +
+              ' ' +
+              o.owner +
+              ' ' +
+              universeName(o.offered.universeId)
+            )
+              .toLowerCase()
+              .includes(search.toLowerCase()) &&
+            (filter !== 'mine' || o.ownerId === profile?.id) &&
+            (listingType === 'all' ||
+              (listingType === 'sale' ? o.price !== null : o.price === null)) &&
+            (!minPrice || (o.price !== null && o.price >= Number(minPrice))) &&
+            (!maxPrice || (o.price !== null && o.price <= Number(maxPrice))) &&
+            (finish === 'all' || (o.offered.finish ?? 'standard') === finish) &&
+            (filter !== 'available' || canAccept(o)) &&
+            (rarity === 'all' || o.offered.rarity === Number(rarity)) &&
+            (wantedRarity === 'all' || o.wanted?.rarity === Number(wantedRarity)) &&
+            (universe === 'all' || o.offered.universeId === universe) &&
+            (!onlyMissing || (!!profile && !(profile.inventory[o.offered.id]?.quantity ?? 0))) &&
+            (!onlyDuplicates ||
+              (!!profile &&
+                !!o.wanted &&
+                (profile.inventory[o.wanted.id]?.quantity ?? 0) > 1 &&
+                (profile.inventory[o.wanted.id]?.available ?? 0) > 0)),
       )
       .sort((a, b) =>
         sort === 'price-low'
@@ -160,28 +242,16 @@ export default function Market() {
   }
   return (
     <LocaleView>
-      <div className="content-page market-page">
-        <div className="eyebrow">THE TRADING POST</div>
-        <h1>Market</h1>
-        <p className="page-description">
-          Sell cards for Stellar Prisms or exchange one card for another. Listed copies stay
-          reserved until bought, exchanged or cancelled.
-        </p>
-        <LocalBots />
-        <MainChat compact />
-        {profile && !profile.registered && (
-          <aside className="guest-market-notice menu-window" role="note">
-            <div>
-              <strong>You’re browsing as a guest</strong>
-              <p>
-                Register or sign in to post offers and accept exchanges. Registering keeps this
-                guest collection and progress.
-              </p>
-            </div>
-            <button className="primary-button" onClick={openAccount}>
-              Register or sign in
+      <div className="market-offers-panel" data-exact-card={!!cardId}>
+        {cardId && (
+          <div className="collection-market-tools">
+            <p>
+              Listings for <NoTranslate>{CARDS.find(({ id }) => id === cardId)?.name}</NoTranslate>
+            </p>
+            <button className="text-button" onClick={clearCard}>
+              Clear card filter
             </button>
-          </aside>
+          </div>
         )}
         <details className="menu-window trade-create">
           <summary>Post an offer</summary>
@@ -470,13 +540,13 @@ export default function Market() {
           </button>
         </div>
         <p className="market-count" role="status">
-          {loadedFor === profile?.id ? `${visible.length} matching offers` : 'Loading offers…'}
+          {loaded ? `${visible.length} matching offers` : 'Loading offers…'}
         </p>
         <p className="error-message" role="alert">
           {error || connectionError}
         </p>
         <div className="trade-grid">
-          {(loadedFor === profile?.id ? visible : []).map((o) => (
+          {(loaded ? visible : []).map((o) => (
             <article className="menu-window trade-offer" key={o.id}>
               <h2>
                 <Link href={`/profile?id=${o.ownerId}`}>{o.owner}</Link>
@@ -531,7 +601,7 @@ export default function Market() {
             </article>
           ))}
         </div>
-        {loadedFor === profile?.id && !error && !connectionError && !visible.length && (
+        {loaded && !error && !connectionError && !visible.length && (
           <section className="menu-empty-state">
             <h2>No offers match these filters.</h2>
             <p>Try different filters or post an offer.</p>

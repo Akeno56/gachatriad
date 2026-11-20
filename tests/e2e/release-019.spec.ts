@@ -120,6 +120,88 @@ async function centeredSeason(page: Page) {
 }
 
 const base = process.env.PREVIEW_BASE_PATH ?? '';
+test('saves a wishlist card, buys a private market response, and swaps a weekly objective', async ({
+  browser,
+}, info) => {
+  const buyer = await player(browser),
+    seller = await player(browser);
+  const card = seller.cards[0];
+  try {
+    await platform.db.tx(async (sql) => {
+      await sql('UPDATE profiles SET prisms=500 WHERE id=$1', [buyer.profile.id]);
+      await sql(
+        'UPDATE inventory SET quantity=greatest(quantity,2) WHERE profile_id=$1 AND card_id=$2',
+        [seller.profile.id, card.id],
+      );
+    });
+    await platform.trades.create(await platform.store.identity(seller.actor), card.id, null, 122);
+    await buyer.page.goto(`${base}/cards/`);
+    await buyer.page.getByRole('searchbox', { name: 'Find a card' }).fill(card.name);
+    const star = buyer.page.getByRole('button', { name: `Wishlist ${card.name}`, exact: true });
+    await star.click();
+    await expect(star).toHaveAttribute('aria-pressed', 'true');
+    await buyer.page.getByRole('link', { name: 'Wishlist', exact: true }).click();
+    const wish = buyer.page.locator('.collection-market-card').filter({ hasText: card.name });
+    await expect(wish.getByText('Card shop · ◇ 100')).toBeVisible();
+    if (info.project.name === 'desktop') {
+      for (const [width, height] of [
+        [1280, 720],
+        [1366, 768],
+        [1920, 1080],
+      ]) {
+        await buyer.page.setViewportSize({ width, height });
+        await fits(buyer.page);
+        await expect(wish).toBeInViewport({ ratio: 1 });
+        await buyer.page.screenshot({ path: info.outputPath(`wishlist-${width}.png`) });
+      }
+      await buyer.page.setViewportSize({ width: 1280, height: 720 });
+    }
+    await wish.getByRole('button', { name: 'View listings (1)' }).click();
+    await expect(buyer.page.locator('.trade-offer')).toHaveCount(1);
+    await buyer.page.getByRole('tab', { name: 'Wishlist', exact: true }).click();
+    await wish.getByRole('button', { name: 'Post request' }).click();
+    await expect(wish.getByText('Request open')).toBeVisible();
+    await seller.page.goto(`${base}/market/?tab=requests`);
+    const request = seller.page.locator('.collection-market-card').filter({ hasText: card.name });
+    await request.getByRole('button', { name: 'Respond to request' }).click();
+    const response = seller.page.getByRole('dialog', { name: 'Respond to request' });
+    await response.getByRole('spinbutton', { name: 'Price in Stellar Prisms' }).fill('93');
+    await response.getByRole('button', { name: 'Send offer' }).click();
+    await expect(request.getByRole('button', { name: 'Cancel response' })).toBeVisible();
+    await buyer.page.getByRole('tab', { name: 'Requests', exact: true }).click();
+    await buyer.page.getByRole('button', { name: 'Review purchase' }).click();
+    const purchase = buyer.page.getByRole('dialog', { name: 'Review purchase' });
+    await expect(purchase).toContainText('93 Stellar Prisms');
+    await purchase.getByRole('button', { name: 'Confirm purchase' }).click();
+    await expect(
+      buyer.page.getByText('No open requests. Post one from your wishlist.'),
+    ).toBeVisible();
+    expect((await platform.store.profile(buyer.actor)).prisms).toBe(407);
+    await buyer.page.goto(`${base}/journey/`);
+    await buyer.page.getByRole('button', { name: 'Swap objective', exact: true }).click();
+    const swap = buyer.page.getByRole('dialog', { name: 'Swap objective' });
+    await swap.getByRole('combobox', { name: 'Replace', exact: true }).selectOption('puzzle');
+    await swap.getByRole('combobox', { name: 'New objective' }).selectOption('practice');
+    await swap.getByRole('button', { name: 'Confirm swap' }).click();
+    await expect(buyer.page.locator('.weekly-objective')).toHaveCount(6);
+    await expect(buyer.page.locator('[data-objective=practice]')).toBeVisible();
+    await expect(buyer.page.getByText('Weekly swap used')).toBeVisible();
+    await french(buyer.page);
+    await expect(buyer.page.getByText('Remplacement hebdomadaire utilisé')).toBeVisible();
+    await buyer.page.goto(`${base}/market/?tab=wishlist`);
+    await expect(buyer.page.getByRole('tab', { name: 'Liste de souhaits' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await expect(
+      buyer.page.getByRole('button', { name: 'Retirer de la liste de souhaits' }),
+    ).toBeVisible();
+    await fits(buyer.page);
+  } finally {
+    await buyer.context.close();
+    await seller.context.close();
+  }
+});
 async function unlock(c: Awaited<ReturnType<typeof player>>) {
   for (const id of ['first-duel', 'first-win', 'combo'])
     await platform.db.read((sql) =>

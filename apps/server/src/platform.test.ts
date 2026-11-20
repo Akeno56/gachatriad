@@ -8,7 +8,8 @@ import type {
   ProfileView,
   LobbyView,
 } from '@gacha-triad/shared/platform';
-import { CARDS } from '@gacha-triad/shared';
+import { CARDS, HOLO_VARIANTS } from '@gacha-triad/shared';
+import type { MarketRequestView, WishlistEntry } from '@gacha-triad/shared/platform';
 import { ECONOMY } from '@gacha-triad/shared/platform';
 import {
   applyMove,
@@ -80,6 +81,103 @@ async function ok<T>(c: Client, path: string, body?: unknown, method?: string): 
   expect(r.statusCode, r.body).toBe(200);
   return r.json();
 }
+it('keeps wishlists private and settles a market request through one exact-card offer', async () => {
+  const buyer = await user(true),
+    seller = await user(true),
+    otherSeller = await user(true);
+  const card = HOLO_VARIANTS.find((card) => card.holoBonusSide === 1)!;
+  await platform.db.tx(async (sql) => {
+    await sql('UPDATE profiles SET prisms=400 WHERE id=$1', [buyer.profile.id]);
+    await sql(
+      'INSERT INTO inventory(profile_id,card_id,quantity) SELECT unnest($1::text[]),$2,2 ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=2',
+      [[seller.profile.id, otherSeller.profile.id], card.id],
+    );
+  });
+  expect((await request(buyer, '/market/requests', { cardId: card.id })).statusCode).toBe(409);
+  await ok(buyer, '/wishlist', { cardId: card.id, saved: true });
+  await ok(buyer, '/wishlist', { cardId: card.id, saved: true });
+  const publicOffer = await ok<{ id: string }>(seller, '/trades', { offered: card.id, price: 250 });
+  expect(await ok<WishlistEntry[]>(buyer, '/wishlist')).toEqual([
+    { cardId: card.id, listings: 1, requestId: null },
+  ]);
+  expect(await ok<WishlistEntry[]>(seller, '/wishlist')).toEqual([]);
+  const post = { cardId: card.id };
+  const { id } = await ok<{ id: string }>(buyer, '/market/requests', post);
+  expect(await ok(buyer, '/market/requests', post)).toEqual({ id });
+  expect(await ok<WishlistEntry[]>(buyer, '/wishlist')).toEqual([
+    { cardId: card.id, listings: 1, requestId: id },
+  ]);
+  const endpoint = `/market/requests/${id}/respond`;
+  expect((await request(buyer, endpoint, { price: 80 })).statusCode).toBe(400);
+  const first = await ok<{ id: string }>(seller, endpoint, { price: 80 });
+  expect(await ok(seller, endpoint, { price: 80 })).toEqual(first);
+  expect(
+    (await ok<MarketRequestView[]>(otherSeller, '/market/requests')).find((row) => row.id === id)
+      ?.responses,
+  ).toEqual([]);
+  const second = await ok<{ id: string }>(otherSeller, endpoint, { price: 85 });
+  expect(
+    (await ok<MarketRequestView[]>(buyer, '/market/requests'))
+      .find((row) => row.id === id)
+      ?.responses.map((offer) => offer.id),
+  ).toEqual([first.id, second.id]);
+  expect(
+    (await ok<MarketRequestView[]>(seller, '/market/requests'))
+      .find((row) => row.id === id)
+      ?.responses.map((offer) => offer.id),
+  ).toEqual([first.id]);
+  expect(
+    await ok(seller, `/trades?includeSales=true&card=${encodeURIComponent(card.id)}`),
+  ).toMatchObject([{ id: publicOffer.id }]);
+  expect((await request(otherSeller, `/trades/${first.id}/accept`, {})).statusCode).toBe(409);
+  const buyerBefore = await ok<ProfileView>(buyer, '/profile');
+  const sellerBefore = await ok<ProfileView>(seller, '/profile');
+  const results = await Promise.all(
+    [first, second].map((offer) => request(buyer, `/trades/${offer.id}/accept`, {})),
+  );
+  expect(results.map((result) => result.statusCode)).toEqual([200, 409]);
+  const buyerAfter = await ok<ProfileView>(buyer, '/profile');
+  const sellerAfter = await ok<ProfileView>(seller, '/profile');
+  expect(buyerAfter.prisms).toBe(320);
+  expect(sellerAfter.prisms).toBe(sellerBefore.prisms + 80);
+  expect(buyerAfter.inventory[card.id].quantity).toBe(
+    (buyerBefore.inventory[card.id]?.quantity ?? 0) + 1,
+  );
+  expect((await ok<ProfileView>(otherSeller, '/profile')).inventory[card.id].available).toBe(2);
+  expect(
+    (await ok<MarketRequestView[]>(buyer, '/market/requests')).some((row) => row.id === id),
+  ).toBe(false);
+  expect(await ok<WishlistEntry[]>(buyer, '/wishlist')).toEqual([
+    { cardId: card.id, listings: 1, requestId: null },
+  ]);
+});
+it('releases private market offers when a buyer cancels or deletes their account', async () => {
+  const buyer = await user(true),
+    seller = await user(true),
+    guest = await user();
+  const cardId = seller.profile.deck[0];
+  const before = seller.profile.inventory[cardId].available;
+  await ok(guest, '/wishlist', { cardId, saved: true });
+  expect((await request(guest, '/market/requests', { cardId })).statusCode).toBe(403);
+  await ok(buyer, '/wishlist', { cardId, saved: true });
+  for (let i = 0; i < 2; i++) {
+    const { id } = await ok<{ id: string }>(buyer, '/market/requests', { cardId });
+    await ok(seller, `/market/requests/${id}/respond`, { price: 1 });
+    expect((await ok<ProfileView>(seller, '/profile')).inventory[cardId].available).toBe(
+      before - 1,
+    );
+    if (!i) {
+      expect(
+        (await request(seller, `/market/requests/${id}`, undefined, 'DELETE')).statusCode,
+      ).toBe(409);
+      await ok(buyer, `/market/requests/${id}`, undefined, 'DELETE');
+    } else await platform.guests.deleteAccount(buyer.profile.id, buyer.profile.name);
+    expect((await ok<ProfileView>(seller, '/profile')).inventory[cardId].available).toBe(before);
+    expect(
+      (await ok<MarketRequestView[]>(seller, '/market/requests')).some((row) => row.id === id),
+    ).toBe(false);
+  }
+});
 it('resumes private correspondence matches alongside live play and enforces turn deadlines', async () => {
   const a = await user(true),
     b = await user(true),

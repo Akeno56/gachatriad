@@ -2,10 +2,20 @@ import type { Sql } from './database';
 import type { GameStore } from './store';
 import { GameError } from './errors';
 import { anonymizeReplays } from './replays';
+import { closeMarketRequests } from './trades';
 
 /** Delete private guest data; retain anonymized duel/trade history for the other player. */
 async function purge(sql: Sql, ids: string[]) {
   if (!ids.length) return;
+  const requests = await sql<{ id: string }>(
+    "SELECT id FROM market_requests WHERE profile_id=ANY($1::text[]) AND status='open'",
+    [ids],
+  );
+  await closeMarketRequests(
+    sql,
+    requests.map((request) => request.id),
+    'cancelled',
+  );
   await anonymizeReplays(sql, ids);
   await sql(
     "INSERT INTO profiles(id,name,default_deck) VALUES('former-guest','Deleted player','[]') ON CONFLICT DO NOTHING",

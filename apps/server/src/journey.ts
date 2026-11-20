@@ -3,6 +3,7 @@ import {
   CURRENT_SEASON,
   JOURNEY_CHAPTERS,
   WEEKLY_OBJECTIVES,
+  WEEKLY_ALTERNATIVES,
   WEEKLY_REQUIRED,
   WEEKLY_REWARD,
   type JourneyView,
@@ -36,41 +37,87 @@ export class PlayerJourney {
     profileId: string,
     accountId: string,
     registered: boolean,
+    window = weekWindow(this.clock()),
   ): Promise<WeeklyView> {
-    const window = weekWindow(this.clock());
     const [counts] = await sql<Record<string, number>>(
       `
       WITH duels AS (SELECT mode FROM matches WHERE (player0=$1 OR player1=$1) AND ${fullDuel} AND completed_at >= $2::timestamptz AND completed_at < $3::timestamptz)
       SELECT (SELECT count(*)::int FROM duels) AS duels,
       (SELECT count(DISTINCT mode)::int FROM duels) AS modes,
       (SELECT count(*)::int FROM duels WHERE mode IN('custom','roulette')) AS variant,
+      (SELECT count(*)::int FROM duels WHERE mode='solo') AS practice,
+      (SELECT count(*)::int FROM duels WHERE mode='casual') AS "unranked-duels",
+      (SELECT count(*)::int FROM duplicate_actions WHERE profile_id=$1 AND created_at >= $2::timestamptz AND created_at < $3::timestamptz) AS duplicates,
       (SELECT count(*)::int FROM daily_puzzle_runs WHERE profile_id=$1 AND solved_at >= $2::timestamptz AND solved_at < $3::timestamptz) AS puzzle,
       (SELECT count(*)::int FROM booster_packs WHERE profile_id=$1 AND source<>'starter' AND opened_at >= $2::timestamptz AND opened_at < $3::timestamptz) AS boosters,
       (SELECT count(*)::int FROM journey_deck_weeks WHERE profile_id=$1 AND week_start=$4::date) AS deck`,
       [profileId, window.start, window.resetAt, window.week],
     );
-    const claimed =
-      (
-        await sql('SELECT 1 FROM weekly_claims WHERE account_id=$1 AND week_start=$2::date', [
-          accountId,
-          window.week,
-        ])
-      ).length > 0;
-    const objectives = WEEKLY_OBJECTIVES.map((objective) => ({
+    const [choice] = await sql<{
+      original: string | null;
+      replacement: string | null;
+      claimed: boolean;
+    }>(
+      `SELECT s.original,s.replacement,
+       EXISTS(SELECT 1 FROM weekly_claims WHERE account_id=$1 AND week_start=$2::date) AS claimed
+       FROM (SELECT 1) AS week LEFT JOIN weekly_swaps s ON s.account_id=$1 AND s.week_start=$2::date`,
+      [accountId, window.week],
+    );
+    const replacement = WEEKLY_ALTERNATIVES.find(
+      (objective) => objective.id === choice.replacement,
+    );
+    const selected = WEEKLY_OBJECTIVES.map((objective) =>
+      replacement && choice.original === objective.id ? replacement : objective,
+    );
+    const objectives = selected.map((objective) => ({
       id: objective.id,
-      progress: Math.min(objective.target, counts[objective.id] ?? 0),
+      progress: Math.min(
+        objective.target,
+        counts[objective.id === 'puzzle-pair' ? 'puzzle' : objective.id] ?? 0,
+      ),
     }));
     return {
       week: window.week,
       resetAt: window.resetAt,
       required: WEEKLY_REQUIRED,
       reward: WEEKLY_REWARD,
-      claimed,
+      claimed: choice.claimed,
       registered,
-      completed: objectives.filter((row, index) => row.progress >= WEEKLY_OBJECTIVES[index].target)
-        .length,
+      swapped: !!replacement,
+      completed: objectives.filter((row, index) => row.progress >= selected[index].target).length,
       objectives,
     };
+  }
+  async swap(
+    profileId: string,
+    accountId: string,
+    registered: boolean,
+    input: Record<string, unknown>,
+  ) {
+    if (!registered) throw new GameError('Register an account to swap weekly objectives.', 403);
+    const original = WEEKLY_OBJECTIVES.find((objective) => objective.id === input.original);
+    const replacement = WEEKLY_ALTERNATIVES.find((objective) => objective.id === input.replacement);
+    if (!original || !replacement || original.tier !== replacement.tier)
+      throw new GameError('Choose an objective from the available replacements.');
+    return this.db.tx(async (sql) => {
+      const window = weekWindow(this.clock());
+      const current = await this.weekly(sql, profileId, accountId, registered, window);
+      if (input.week !== current.week)
+        throw new GameError('A new week has started. Refresh your objectives.', 409);
+      if (current.claimed || current.swapped)
+        throw new GameError('Your weekly objectives are locked.', 409);
+      if (
+        current.objectives.some(
+          (objective) => objective.id === original.id && objective.progress >= original.target,
+        )
+      )
+        throw new GameError('Choose an unfinished objective to swap.', 409);
+      await sql(
+        'INSERT INTO weekly_swaps(account_id,week_start,original,replacement) VALUES($1,$2::date,$3,$4)',
+        [accountId, window.week, original.id, replacement.id],
+      );
+      return this.weekly(sql, profileId, accountId, registered, window);
+    });
   }
   async view(profileId: string, accountId: string, registered: boolean): Promise<JourneyView> {
     return this.db.tx(async (sql) => {
