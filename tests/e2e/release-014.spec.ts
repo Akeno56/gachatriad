@@ -156,8 +156,16 @@ test('rotates a captured card for both players in Unranked with system reduced m
           const times = animations.map((animation) => animation.currentTime);
           const sample = (time: number) => {
             for (const animation of animations) animation.currentTime = time;
+            const rect = element.getBoundingClientRect();
             return {
-              width: element.getBoundingClientRect().width,
+              width: rect.width,
+              bounds: {
+                left: rect.left,
+                right: rect.right,
+                top: rect.top,
+                bottom: rect.bottom,
+                center: rect.left + rect.width / 2,
+              },
               oldFace: getComputedStyle(element.querySelector('.capture-flip-old')!).visibility,
               newFace: getComputedStyle(element.querySelector('.capture-flip-new')!).visibility,
             };
@@ -165,14 +173,27 @@ test('rotates a captured card for both players in Unranked with system reduced m
           const first = sample(30);
           const edge = sample(300);
           const last = sample(570);
+          const resting = sample(0).bounds;
+          const cellBounds = element.closest('.board-cell')!.getBoundingClientRect();
+          const staysInCell = Array.from({ length: 21 }, (_, i) => sample(i * 30).bounds).every(
+            (bounds) =>
+              Math.abs(bounds.center - resting.center) < 0.5 &&
+              Math.abs(bounds.top - resting.top) < 0.5 &&
+              Math.abs(bounds.bottom - resting.bottom) < 0.5 &&
+              bounds.left >= cellBounds.left - 0.5 &&
+              bounds.right <= cellBounds.right + 0.5 &&
+              bounds.top >= cellBounds.top - 0.5 &&
+              bounds.bottom <= cellBounds.bottom + 0.5,
+          );
           animations.forEach((animation, i) => {
             animation.currentTime = times[i];
           });
-          return { first, last, edgeRatio: edge.width / first.width };
+          return { first, last, edgeRatio: edge.width / first.width, staysInCell };
         });
         expect(rotation.first).toMatchObject({ oldFace: 'visible', newFace: 'hidden' });
         expect(rotation.last).toMatchObject({ oldFace: 'hidden', newFace: 'visible' });
         expect(rotation.edgeRatio).toBeLessThan(0.2);
+        expect(rotation.staysInCell).toBe(true);
         if (page === attacker && info.project.name === 'desktop')
           await page.screenshot({ path: info.outputPath('live-capture-flip.png') });
         await expect(cell.locator('.playing-card')).toHaveCount(1);

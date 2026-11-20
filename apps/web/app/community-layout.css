@@ -371,6 +371,7 @@
   visibility: hidden;
 }
 .capture-flips-enabled .arena-screen .capture-flip-rotor {
+  transform-origin: center;
   animation: battle-card-turn 0.6s linear var(--capture-delay, 0ms) both !important;
 }
 .capture-flips-enabled .arena-screen .capture-flip-old {
@@ -380,18 +381,16 @@
   animation: battle-new-face 0.6s step-end var(--capture-delay, 0ms) both !important;
 }
 @keyframes battle-card-turn {
-  0%,
-  100% {
+  0% {
     transform: scaleX(1);
-  }
-  25% {
-    transform: scaleX(0.77) skewY(5deg);
+    animation-timing-function: ease-in;
   }
   50% {
     transform: scaleX(0.025);
+    animation-timing-function: ease-out;
   }
-  75% {
-    transform: scaleX(0.77) skewY(-5deg);
+  100% {
+    transform: scaleX(1);
   }
 }
 @keyframes battle-old-face {
