@@ -141,7 +141,7 @@ it('keeps new Ranked losses free of card transfers and allows immediate requeue'
 it('draws Ranked Random decks from available owned cards on match start, rematch, and requeue', async () => {
   const a = await account(false),
     b = await account(false);
-  const request = (user: typeof a, url: string, payload: unknown) =>
+  const request = (user: typeof a, url: string, payload: Record<string, unknown>) =>
     p.app.inject({
       method: 'POST',
       url,
