@@ -101,6 +101,19 @@
   border-color: #cfb370;
 }
 
+.social-friends-grid {
+  align-items: stretch;
+}
+
+.social-friends-grid > .social-card {
+  grid-template-rows: 1fr auto;
+  align-content: stretch;
+}
+
+.social-friends-grid .social-identity {
+  align-items: start;
+}
+
 .social-identity {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr);

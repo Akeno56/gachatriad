@@ -1,0 +1,222 @@
+[data-board-theme='classic'] {
+  --theme-board: #0e192b;
+  --theme-trim: #a68d5e;
+  --theme-cell: #1b2b46;
+  --theme-cell-border: #7084a3;
+}
+
+[data-board-theme='astral'] {
+  --theme-board: #171429;
+  --theme-table: #15192e;
+  --theme-trim: #ac9bce;
+  --theme-cell: #26223d;
+  --theme-cell-border: #77709e;
+  --theme-light: #786bc956;
+}
+
+[data-board-theme='ember'] {
+  --theme-board: #241b1b;
+  --theme-table: #201b22;
+  --theme-trim: #c29a65;
+  --theme-cell: #3a2c28;
+  --theme-cell-border: #926c58;
+  --theme-light: #bd774b49;
+}
+
+.game-shell:is([data-board-theme='astral'], [data-board-theme='ember']) {
+  .arena-screen .battle-layout {
+    border-color: var(--theme-trim);
+    box-shadow:
+      inset 0 0 0 3px var(--theme-board),
+      inset 0 0 0 4px var(--theme-cell-border);
+    background:
+      radial-gradient(ellipse at center, var(--theme-light), transparent 72%),
+      repeating-linear-gradient(135deg, #b9b2d114 0 1px, transparent 1px 6px), var(--theme-table);
+  }
+
+  .arena-screen .board {
+    border-color: var(--theme-trim);
+    background: var(--theme-board);
+    box-shadow:
+      inset 0 0 0 2px var(--theme-cell-border),
+      0 4px 14px #0309199e;
+  }
+
+  :is(.arena-screen .board-cell, .replay-cell, .puzzle-cell):not(
+    [data-element],
+    .legal-cell,
+    .is-legal,
+    .replay-last-move,
+    :has(.playing-card)
+  ) {
+    border-color: var(--theme-cell-border);
+    background: radial-gradient(ellipse, var(--theme-light), transparent 75%), var(--theme-cell);
+  }
+}
+
+[data-card-back='astral'] {
+  --back-field: #18162f;
+  --back-center: #51417c;
+  --back-trim: #b7a5d9;
+  --back-pattern:
+    radial-gradient(circle, #eae2ff80 0 0.8px, transparent 1.5px) 0 0 / 19px 19px,
+    radial-gradient(circle, #b4a9ff80 0 0.6px, transparent 1.5px) 10px 5px / 23px 29px;
+}
+
+[data-card-back='ember'] {
+  --back-field: #361b23;
+  --back-center: #764233;
+  --back-trim: #e5b57e;
+  --back-pattern:
+    repeating-linear-gradient(135deg, #dfa56c20 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(45deg, #dfa56c20 0 1px, transparent 1px 8px);
+}
+
+:is(
+  .game-shell:is([data-card-back='astral'], [data-card-back='ember'])
+    .card-back:not([data-card-back]),
+  .appearance-card-preview:is([data-card-back='astral'], [data-card-back='ember'])
+) {
+  background:
+    var(--back-pattern), radial-gradient(ellipse, var(--back-center), var(--back-field) 78%);
+  border-color: var(--back-trim);
+  box-shadow:
+    inset 0 0 0 3px var(--back-field),
+    inset 0 0 0 4px var(--back-trim);
+}
+
+:is(.game-shell .card-back, .appearance-card-preview) .back-emblem {
+  border-color: var(--back-trim, #b2a77d);
+}
+
+[data-profile-banner='astral'] {
+  --banner-edge: #a79acb;
+  --banner-image:
+    radial-gradient(circle, #e5d7ff80 0 0.8px, transparent 1.6px) 4px 3px / 23px 23px,
+    radial-gradient(circle, #fff0bd69 0 0.7px, transparent 1.6px) 9px 7px / 31px 35px,
+    linear-gradient(120deg, #1a233d, #232744 42%, #453765);
+}
+
+[data-profile-banner='ember'] {
+  --banner-edge: #c69265;
+  --banner-image:
+    repeating-linear-gradient(135deg, #f0b89518 0 1px, transparent 1px 9px),
+    linear-gradient(120deg, #272338, #35263a 42%, #673b36);
+}
+
+:is(.profile-header, .profile-editor-preview, .appearance-banner-preview):is(
+  [data-profile-banner='astral'],
+  [data-profile-banner='ember']
+) {
+  border-color: var(--banner-edge);
+  background: var(--banner-image);
+}
+
+.appearance-dialog {
+  max-width: 480px;
+}
+
+.appearance-dialog h2 {
+  margin: 0 0 4px;
+  color: var(--gold);
+  font: 30px/1 var(--pixel);
+}
+
+.appearance-dialog p {
+  margin: 0 0 10px;
+  color: var(--muted);
+}
+
+.appearance-choices {
+  min-width: 0;
+  margin: 0 0 14px;
+  padding: 8px 10px 10px;
+  border: 1px solid #566e93;
+}
+
+.appearance-choices legend {
+  padding-inline: 5px;
+  color: var(--gold);
+  font: 21px/1 var(--pixel);
+}
+
+.appearance-choices > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.appearance-option {
+  position: relative;
+  cursor: pointer;
+}
+
+.appearance-tile {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  justify-items: center;
+  padding: 8px 4px 4px;
+  border: 1px solid #597094;
+  background: #111e35;
+  color: #dce5f3;
+  font: 19px/1.05 var(--pixel);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.appearance-option:hover .appearance-tile,
+.appearance-option input:checked + .appearance-tile {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.appearance-option input:checked + .appearance-tile {
+  background: #202e49;
+  box-shadow: inset 0 -2px var(--gold);
+}
+
+.appearance-option input:focus-visible + .appearance-tile {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.appearance-board-preview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  width: min(55px, 100%);
+  aspect-ratio: 1;
+  padding: 3px;
+  border: 1px solid var(--theme-trim);
+  background: var(--theme-board);
+}
+
+.appearance-board-preview > span {
+  border: 1px solid var(--theme-cell-border);
+  background: var(--theme-cell);
+}
+
+.appearance-card-preview {
+  width: min(43px, 100%);
+  height: 57px;
+  padding: 0;
+  border: 1px solid #9eabc1;
+}
+
+.appearance-card-preview[data-card-back='classic'] .back-emblem {
+  border-color: #b2a77d;
+}
+
+.appearance-card-preview .back-emblem {
+  width: 19px;
+  height: 19px;
+}
+
+.appearance-banner-preview {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2.7;
+  border: 1px solid #8293b0;
+  background: linear-gradient(120deg, #294069, #14213a);
+}

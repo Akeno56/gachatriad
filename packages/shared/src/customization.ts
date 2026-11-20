@@ -23,11 +23,18 @@ export const PORTRAIT_FRAMES = [
   { id: 'gold', name: 'Gold', achievementId: 'hundred-wins', requirement: 'Win 100 duels.' },
 ] as const;
 export type PortraitFrame = (typeof PORTRAIT_FRAMES)[number]['id'];
+export const COSMETIC_STYLES = [
+  { id: 'classic', name: 'Classic' },
+  { id: 'astral', name: 'Astral' },
+  { id: 'ember', name: 'Ember' },
+] as const;
+export type CosmeticStyle = (typeof COSMETIC_STYLES)[number]['id'];
 export type FeaturedMode = import('./platform').RatedMode;
 export interface ProfileCustomization {
   revision: number;
   bio: string;
   frameId: PortraitFrame;
+  bannerId?: CosmeticStyle;
   featuredMode: FeaturedMode;
   featuredCards: string[];
   featuredAchievements: string[];

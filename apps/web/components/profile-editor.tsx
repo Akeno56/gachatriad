@@ -12,6 +12,7 @@ import { api, ApiError } from '../lib/platform';
 import { Button, GameDialog, Tabs } from './ui';
 import { Avatar } from './avatar';
 import { ProfileCardPicker } from './profile-card-picker';
+import { AppearanceChoices } from './appearance-settings';
 import { LocaleView, NoTranslate } from './i18n';
 import { useSession } from './session';
 const byId = new Map(ALL_CARDS.map((c) => [c.id, c]));
@@ -123,6 +124,12 @@ export function ProfileEditor({
   }
   const card = draft?.avatarCardId ? byId.get(draft.avatarCardId) : null;
   const showcaseSlot = typeof cardPicker === 'number' ? cardPicker : null;
+  const tabs = [
+    { value: 'identity', label: 'Identity' },
+    { value: 'showcases', label: 'Showcases' },
+    { value: 'frames', label: 'Portrait frames' },
+    ...(data?.settings.bannerId ? [{ value: 'banners', label: 'Banners' }] : []),
+  ];
   return (
     <LocaleView>
       <GameDialog
@@ -143,11 +150,7 @@ export function ProfileEditor({
           value={tab}
           onChange={setTab}
           panelId="profile-editor-panel"
-          items={[
-            { value: 'identity', label: 'Identity' },
-            { value: 'showcases', label: 'Showcases' },
-            { value: 'frames', label: 'Portrait frames' },
-          ]}
+          items={tabs}
         />
         {error && (
           <div className="customizer-error" role="alert">
@@ -169,13 +172,7 @@ export function ProfileEditor({
               <div
                 id="profile-editor-panel"
                 role="tabpanel"
-                aria-label={
-                  tab === 'identity'
-                    ? 'Identity'
-                    : tab === 'showcases'
-                      ? 'Showcases'
-                      : 'Portrait frames'
-                }
+                aria-label={tabs.find(({ value }) => value === tab)?.label}
               >
                 {tab === 'identity' && (
                   <div className="identity-fields">
@@ -344,8 +341,28 @@ export function ProfileEditor({
                     ))}
                   </div>
                 )}
+                {tab === 'banners' && draft.bannerId && (
+                  <AppearanceChoices
+                    label="Profile banner"
+                    name="profile-banner"
+                    value={draft.bannerId}
+                    disabled={busy}
+                    onChange={(style) => field('bannerId', style)}
+                    preview={(style) => (
+                      <span
+                        className="appearance-banner-preview"
+                        data-profile-banner={style}
+                        aria-hidden="true"
+                      />
+                    )}
+                  />
+                )}
               </div>
-              <aside className="menu-window profile-editor-preview" aria-label="Profile preview">
+              <aside
+                className="menu-window profile-editor-preview"
+                aria-label="Profile preview"
+                data-profile-banner={draft.bannerId}
+              >
                 <span className="profile-preview-label">Preview</span>
                 <Avatar card={card} name={profile.name} frameId={draft.frameId} />
                 <h3>

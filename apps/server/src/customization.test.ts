@@ -113,6 +113,7 @@ it('validates all fields before changing any part of a profile', async () => {
     { titleId: '' },
     { frameId: 'gold' },
     { frameId: 'https://unsafe.invalid/frame.svg' },
+    { bannerId: 'https://unsafe.invalid/banner.svg' },
     { avatarCardId: unowned },
     { titleId: 'ranked-champion' },
     { featuredCards: [unowned] },
@@ -152,6 +153,7 @@ it('unlocks frames through real recorded achievements and saves showcase order a
   const r = await request(a, '/profile/customization', {
     ...initial.settings,
     frameId: 'silver',
+    bannerId: 'astral',
     featuredMode: 'shared-draft',
     bio,
     featuredCards: cards,
@@ -165,6 +167,7 @@ it('unlocks frames through real recorded achievements and saves showcase order a
   const publicView = (await request(a, `/players/${a.profile.id}`)).json<PlayerProfileView>();
   expect(publicView.bio).toBe(bio);
   expect(publicView.frameId).toBe('silver');
+  expect(publicView.bannerId).toBe('astral');
   expect(publicView.featuredMode).toBe('shared-draft');
   expect(publicView.featuredCards.map((c) => c.id)).toEqual(cards);
   expect(publicView.featuredAchievements.map((a) => a.id)).toEqual(['first-duel']);
@@ -176,6 +179,14 @@ it('unlocks frames through real recorded achievements and saves showcase order a
   expect(profile.prisms).toBe(before.prisms);
   expect(profile.deck).toEqual(before.deck);
   expect(profile.rating).toBe(before.rating);
+  const { bannerId, ...legacySettings } = after.settings;
+  expect(bannerId).toBe('astral');
+  const legacySave = await request(a, '/profile/customization', {
+    ...legacySettings,
+    bio: 'Legacy edit',
+  });
+  expect(legacySave.statusCode, legacySave.body).toBe(200);
+  expect(legacySave.json<CustomizationView>().settings.bannerId).toBe('astral');
 });
 it('rejects stale and simultaneous edits, including legacy avatar/title endpoints', async () => {
   const a = await user(),

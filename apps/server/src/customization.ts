@@ -1,10 +1,12 @@
 import { ALL_CARDS } from '@gacha-triad/shared';
 import { ACHIEVEMENTS, isRatedMode } from '@gacha-triad/shared/platform';
 import {
+  COSMETIC_STYLES,
   PORTRAIT_FRAMES,
   type CustomizationView,
   type ProfileCustomization,
   type PortraitFrame,
+  type CosmeticStyle,
   type FeaturedMode,
 } from '@gacha-triad/shared/customization';
 import type { Database, Sql } from './database';
@@ -17,6 +19,7 @@ interface Row {
   profile_revision: number;
   profile_bio: string;
   portrait_frame: PortraitFrame;
+  profile_banner: CosmeticStyle;
   featured_mode: FeaturedMode;
   showcase_cards: string[];
   showcase_achievements: string[];
@@ -56,6 +59,7 @@ export class ProfileCustomizations {
         revision: p.profile_revision,
         bio: p.profile_bio,
         frameId: p.portrait_frame,
+        bannerId: p.profile_banner,
         featuredMode: p.featured_mode,
         featuredCards: p.showcase_cards.filter((id) => owned.has(id) && cards.has(id)),
         featuredAchievements: p.showcase_achievements.filter((id) => unlocked.has(id)),
@@ -78,6 +82,8 @@ export class ProfileCustomizations {
   }
   async save(id: string, input: Record<string, unknown>) {
     const { revision, bio, frameId, featuredMode, avatarCardId, titleId } = input;
+    const banner = COSMETIC_STYLES.find(({ id }) => id === input.bannerId);
+    if (input.bannerId !== undefined && !banner) throw new GameError('Choose a profile banner.');
     if (!Number.isSafeInteger(revision) || Number(revision) < 0)
       throw new GameError('Invalid profile revision.');
     if (
@@ -123,7 +129,10 @@ export class ProfileCustomizations {
       if (featuredAchievements.some((a) => !current.achievements.some((e) => e.id === a)))
         throw new GameError('Earn these achievements before featuring them.');
       const rows = await sql(
-        'UPDATE profiles SET profile_bio=$1,portrait_frame=$2,featured_mode=$3,showcase_cards=$4::jsonb,showcase_achievements=$5::jsonb,avatar_card=$6,selected_title=$7,profile_revision=profile_revision+1 WHERE id=$8 AND profile_revision=$9 RETURNING id',
+        `UPDATE profiles SET profile_bio=$1,portrait_frame=$2,featured_mode=$3,
+         showcase_cards=$4::jsonb,showcase_achievements=$5::jsonb,avatar_card=$6,selected_title=$7,
+         profile_banner=coalesce($8,profile_banner),profile_revision=profile_revision+1
+         WHERE id=$9 AND profile_revision=$10 RETURNING id`,
         [
           bio.trim().normalize('NFC'),
           frameId,
@@ -132,6 +141,7 @@ export class ProfileCustomizations {
           JSON.stringify(featuredAchievements),
           avatarCardId,
           titleId,
+          banner?.id ?? null,
           id,
           revision,
         ],

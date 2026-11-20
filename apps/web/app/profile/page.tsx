@@ -115,7 +115,7 @@ function PlayerProfile() {
         {!player && !error && <p role="status">Loading profile…</p>}
         {player && (
           <>
-            <section className="menu-window profile-header">
+            <section className="menu-window profile-header" data-profile-banner={player.bannerId}>
               <div className="profile-portrait">
                 <Avatar card={player.avatar} name={player.name} frameId={player.frameId} />
               </div>

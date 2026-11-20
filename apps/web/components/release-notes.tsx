@@ -29,9 +29,9 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>Save cards to your wishlist and find their boosters and listings.</li>
-          <li>Post market requests and review private offers.</li>
-          <li>Swap one unfinished weekly objective.</li>
+          <li>Choose a board theme and card back in Appearance.</li>
+          <li>Choose a banner for your public profile.</li>
+          <li>Friend cards line up with and without titles.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

@@ -2,6 +2,7 @@ import { expect, test, type Browser } from '@playwright/test';
 import { mkdtemp } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createPlatform } from '../../apps/server/src/app';
+import { STANDARD } from '../../packages/engine/src/index';
 import { navigateTo } from './helpers';
 
 let platform: Awaited<ReturnType<typeof createPlatform>>;
@@ -220,6 +221,143 @@ test('fits French correspondence invitations and opens them through the new soci
   } finally {
     await a.context.close();
     await b.context.close();
+  }
+});
+
+test('aligns friend cards with and without titles in both languages', async ({ browser }, info) => {
+  test.skip(info.project.name !== 'desktop');
+  const viewer = await player(browser);
+  const titled = await player(browser, 'Titled friend');
+  const untitled = await player(browser, 'Untitled friend');
+  try {
+    const duel = await platform.store.solo(titled.profile.id, 'easy', STANDARD);
+    await platform.store.resign(titled.profile.id, duel);
+    await titled.request('/profile/title', { titleId: 'card-player' });
+    for (const friend of [titled, untitled]) {
+      await friend.request('/friends/request', { playerId: viewer.profile.id });
+      await viewer.request(`/friends/${friend.profile.id}/accept`, {});
+    }
+    await viewer.page.goto('/social/');
+    const friends = viewer.page.locator('.social-friends-grid');
+    await expect(friends.getByRole('article')).toHaveCount(2);
+    for (const locale of ['en', 'fr']) {
+      if (locale === 'fr') {
+        await viewer.page.getByRole('button', { name: 'Language: English', exact: true }).click();
+        await viewer.page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
+        await expect(friends.getByRole('button', { name: 'Inviter', exact: true })).toHaveCount(2);
+      }
+      for (const [width, height] of [
+        [1280, 720],
+        [1366, 768],
+        [1920, 1080],
+      ]) {
+        await viewer.page.setViewportSize({ width, height });
+        const cards = await friends.getByRole('article').evaluateAll((articles) =>
+          articles.map((article) => ({
+            height: article.getBoundingClientRect().height,
+            name: article.querySelector('h3')!.getBoundingClientRect().top,
+            actions: article.querySelector('.social-card-actions')!.getBoundingClientRect().top,
+            metadata: article.querySelectorAll('.social-identity small').length,
+          })),
+        );
+        expect(cards.map((card) => card.metadata).sort()).toEqual([1, 2]);
+        for (const key of ['height', 'name', 'actions'] as const)
+          expect(Math.abs(cards[0][key] - cards[1][key])).toBeLessThan(1);
+      }
+      await friends.screenshot({ path: info.outputPath(`friend-cards-${locale}.png`) });
+    }
+  } finally {
+    await Promise.all([viewer.context.close(), titled.context.close(), untitled.context.close()]);
+  }
+});
+
+test('previews and retains battle cosmetics and shows a saved banner on another player’s profile', async ({
+  browser,
+}, info) => {
+  const a = await player(browser);
+  const b = await player(browser);
+  const { page } = a;
+  try {
+    const match = await platform.store.solo(a.profile.id, 'easy', STANDARD);
+    await page.goto(`/?match=${match}`);
+    const board = page.locator('.arena-screen .board');
+    const hiddenCard = page.locator('.cpu-hand .card-back').first();
+    await expect(board).toHaveCSS('background-color', 'rgb(14, 25, 43)');
+    await expect(hiddenCard).toBeVisible();
+    const originalBack = await hiddenCard.evaluate(
+      (card) => getComputedStyle(card).backgroundImage,
+    );
+    const settings = page.getByRole('button', { name: 'Game settings', exact: true });
+    await settings.click();
+    await page.getByRole('button', { name: 'Appearance', exact: true }).click();
+    const appearance = page.getByRole('dialog', { name: 'Appearance', exact: true });
+    await expect(
+      appearance
+        .getByRole('group', { name: 'Board theme' })
+        .getByRole('radio', { name: 'Classic' }),
+    ).toBeChecked();
+    await appearance
+      .getByRole('group', { name: 'Board theme' })
+      .locator('label')
+      .filter({ hasText: 'Astral' })
+      .click();
+    await appearance
+      .getByRole('group', { name: 'Card back' })
+      .locator('label')
+      .filter({ hasText: 'Ember' })
+      .click();
+    await expect(appearance).toBeInViewport({ ratio: 1 });
+    await page.screenshot({ path: info.outputPath('appearance.png') });
+    await page.keyboard.press('Escape');
+    await expect(appearance).toHaveCount(0);
+    await expect(settings).toBeFocused();
+    await page.reload();
+    await expect(board).toHaveCSS('background-color', 'rgb(23, 20, 41)');
+    await expect(hiddenCard).not.toHaveCSS('background-image', originalBack);
+    if (info.project.name === 'desktop') {
+      for (const [width, height] of [
+        [1280, 720],
+        [1366, 768],
+        [1920, 1080],
+      ]) {
+        await page.setViewportSize({ width, height });
+        await expect(board).toBeInViewport({ ratio: 1 });
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+          true,
+        );
+      }
+      await page.screenshot({ path: info.outputPath('cosmetic-arena.png') });
+    }
+    await platform.store.resign(a.profile.id, match);
+    await page.goto('/profile/');
+    await page.getByRole('button', { name: 'Customize profile' }).click();
+    const editor = page.getByRole('dialog', { name: 'Customize profile' });
+    await editor.getByRole('tab', { name: 'Banners', exact: true }).click();
+    await editor
+      .getByRole('group', { name: 'Profile banner' })
+      .locator('label')
+      .filter({ hasText: 'Astral' })
+      .click();
+    await expect(editor.locator('.profile-editor-preview')).toHaveAttribute(
+      'data-profile-banner',
+      'astral',
+    );
+    await editor.getByRole('button', { name: 'Save profile' }).click();
+    await expect(page.locator('.profile-header')).toHaveAttribute('data-profile-banner', 'astral');
+    await b.page.goto(`/profile/?id=${a.profile.id}`);
+    const banner = b.page.locator('.profile-header');
+    await expect(banner).toHaveAttribute('data-profile-banner', 'astral');
+    await expect(banner).toContainText(a.profile.name);
+    await expect(b.page.locator('.game-shell')).toHaveAttribute('data-board-theme', 'classic');
+    await b.page.getByRole('button', { name: 'Language: English', exact: true }).click();
+    await b.page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
+    await b.page.getByRole('button', { name: 'Paramètres du jeu', exact: true }).click();
+    await b.page.getByRole('button', { name: 'Apparence', exact: true }).click();
+    await expect(b.page.getByRole('group', { name: 'Thème du plateau' })).toBeVisible();
+    await expect(b.page.getByRole('group', { name: 'Dos de carte' })).toBeVisible();
+    await b.page.screenshot({ path: info.outputPath('appearance-fr.png') });
+  } finally {
+    await Promise.all([a.context.close(), b.context.close()]);
   }
 });
 

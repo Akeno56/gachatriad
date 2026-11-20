@@ -18,6 +18,7 @@ import { ActiveBattleReminder } from './active-battle-reminder';
 import { MatchmakingDock } from './matchmaking-dock';
 import { ActionNoticeProvider } from './action-notice';
 import { ReleaseNotes } from './release-notes';
+import { AppearanceSettings, useAppearancePreference } from './appearance-settings';
 const AudioContext = createContext<(sound: Sound) => void>(() => {});
 const MusicSceneContext = createContext<(scene: MusicScene) => void>(() => {});
 export const useGameAudio = () => useContext(AudioContext);
@@ -37,10 +38,14 @@ export function GameShell({ children }: { children: React.ReactNode }) {
   const [fullScreen, setFullScreen] = useState(false);
   const [notice, setNotice] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const boardTheme = useAppearancePreference('triad-board-theme');
+  const cardBack = useAppearancePreference('triad-card-back');
   const [navigationOpen, setNavigationOpen] = useState(false);
   const headerRoot = useRef<HTMLElement>(null),
     navigationToggle = useRef<HTMLButtonElement>(null);
   const settingsRoot = useRef<HTMLDivElement>(null);
+  const settingsButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (!navigationOpen) return;
     const outside = (event: PointerEvent) => {
@@ -190,6 +195,8 @@ export function GameShell({ children }: { children: React.ReactNode }) {
               <SocialProvider>
                 <div
                   className={`game-shell ${crt ? 'crt-enabled' : ''} ${effects ? 'effects-animated' : ''} ${captureFlips ? 'capture-flips-enabled' : ''}`}
+                  data-board-theme={boardTheme[0]}
+                  data-card-back={cardBack[0]}
                 >
                   <a className="skip-link" href="#main">
                     Skip to content
@@ -268,6 +275,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                   </header>
                   <div ref={settingsRoot} className="settings-dock">
                     <button
+                      ref={settingsButton}
                       className="outline-button settings-cog"
                       aria-label="Game settings"
                       aria-expanded={settingsOpen}
@@ -337,6 +345,16 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                             onClick={toggleCrt}
                           >
                             <span>CRT</span> {crt ? 'ON' : 'OFF'}
+                          </button>
+                          <button
+                            aria-haspopup="dialog"
+                            onClick={() => {
+                              settingsButton.current?.focus();
+                              setSettingsOpen(false);
+                              setAppearanceOpen(true);
+                            }}
+                          >
+                            Appearance
                           </button>
                           <div className="volume-controls">
                             <h3>Volume &amp; effects</h3>
@@ -427,6 +445,12 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                       </aside>
                     )}
                   </div>
+                  <AppearanceSettings
+                    open={appearanceOpen}
+                    onClose={() => setAppearanceOpen(false)}
+                    board={boardTheme}
+                    cardBack={cardBack}
+                  />
                   <main id="main">
                     <ServerConnection>
                       <StarterBoosters />

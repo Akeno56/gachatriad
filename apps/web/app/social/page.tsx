@@ -248,7 +248,7 @@ function SocialPage() {
                   <section className="social-section" aria-labelledby="social-friends">
                     <h2 id="social-friends">Your friends</h2>
                     {friends.length === 0 && <p>No friends yet.</p>}
-                    <div className="social-grid">
+                    <div className="social-grid social-friends-grid">
                       {friends.map((friend) => (
                         <article className="menu-window social-card" key={friend.id}>
                           <SocialIdentity

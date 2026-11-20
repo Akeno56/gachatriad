@@ -1,6 +1,6 @@
 import type { Card, GameState, Player, Rules, CpuStyle } from '@gacha-triad/engine';
 import type { BattleIdentity, TitleView } from './social';
-import type { PortraitFrame, FeaturedMode } from './customization';
+import type { PortraitFrame, FeaturedMode, CosmeticStyle } from './customization';
 export const RATED_MODES = ['ranked', 'ranked-random', 'draft', 'shared-draft'] as const;
 export type RatedMode = (typeof RATED_MODES)[number];
 export type Mode = 'solo' | 'casual' | 'custom' | RatedMode | 'roulette' | 'correspondence';
@@ -317,6 +317,7 @@ export const ACHIEVEMENTS = [
 export interface PlayerProfileView {
   bio: string;
   frameId: PortraitFrame;
+  bannerId?: CosmeticStyle;
   featuredMode: FeaturedMode;
   featuredCards: Card[];
   featuredAchievements: { id: string; name: string; unlockedAt: string }[];
