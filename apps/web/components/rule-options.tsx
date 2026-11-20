@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Rules } from '@gacha-triad/engine';
+import { LocaleView } from './i18n';
 
 type RuleProps = {
   rules: Rules;
@@ -9,21 +10,23 @@ type RuleProps = {
 
 export function RuleVisibility({ rules, onChange, disabled }: RuleProps) {
   return (
-    <label>
-      Visibility
-      <select
-        name="visibility"
-        value={rules.allOpen ? 'allOpen' : rules.threeOpen ? 'threeOpen' : 'closed'}
-        disabled={disabled}
-        onChange={({ target: { value } }) =>
-          onChange({ ...rules, allOpen: value === 'allOpen', threeOpen: value === 'threeOpen' })
-        }
-      >
-        <option value="threeOpen">Three Open</option>
-        <option value="allOpen">All Open</option>
-        <option value="closed">Closed</option>
-      </select>
-    </label>
+    <LocaleView>
+      <label>
+        Visibility
+        <select
+          name="visibility"
+          value={rules.allOpen ? 'allOpen' : rules.threeOpen ? 'threeOpen' : 'closed'}
+          disabled={disabled}
+          onChange={({ target: { value } }) =>
+            onChange({ ...rules, allOpen: value === 'allOpen', threeOpen: value === 'threeOpen' })
+          }
+        >
+          <option value="threeOpen">Three Open</option>
+          <option value="allOpen">All Open</option>
+          <option value="closed">Closed</option>
+        </select>
+      </label>
+    </LocaleView>
   );
 }
 
@@ -42,23 +45,25 @@ export function RuleToggles({
   children,
 }: RuleProps & { children?: ReactNode }) {
   return (
-    <div className="rule-toggles">
-      {toggles.map(({ key, label }) => (
-        <label key={key}>
-          <input
-            name={key}
-            type="checkbox"
-            checked={!!rules[key]}
-            disabled={disabled || (key === 'combo' && !rules.same && !rules.plus)}
-            onChange={(event) => {
-              const next = { ...rules, [key]: event.target.checked };
-              onChange(next.same || next.plus ? next : { ...next, combo: false });
-            }}
-          />
-          {label}
-        </label>
-      ))}
-      {children}
-    </div>
+    <LocaleView>
+      <div className="rule-toggles">
+        {toggles.map(({ key, label }) => (
+          <label key={key}>
+            <input
+              name={key}
+              type="checkbox"
+              checked={!!rules[key]}
+              disabled={disabled || (key === 'combo' && !rules.same && !rules.plus)}
+              onChange={(event) => {
+                const next = { ...rules, [key]: event.target.checked };
+                onChange(next.same || next.plus ? next : { ...next, combo: false });
+              }}
+            />
+            {label}
+          </label>
+        ))}
+        {children}
+      </div>
+    </LocaleView>
   );
 }

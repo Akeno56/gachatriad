@@ -410,6 +410,10 @@ test('sets up a styled practice match, opens its replay from results and keeps t
     await c.page.getByRole('link', { name: 'Retour au jeu', exact: true }).click();
     await c.page.getByRole('button', { name: 'Entraînement', exact: true }).click();
     await expect(c.page.getByRole('combobox', { name: 'Style du bot', exact: true })).toBeVisible();
+    await expect(c.page.getByRole('combobox', { name: 'Visibilité', exact: true })).toHaveValue(
+      'threeOpen',
+    );
+    await expect(c.page.getByRole('checkbox', { name: 'Deck Random', exact: true })).toBeVisible();
     await fits(c.page);
     await c.page.screenshot({
       path: `.cache/release018-practice-${info.project.name}.png`,

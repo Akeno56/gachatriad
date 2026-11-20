@@ -48,11 +48,16 @@
   min-height: 20px;
 }
 .practice-setup .rule-toggles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 14px 0;
   gap: 8px 16px;
 }
 .practice-setup .rule-toggles label {
   gap: 6px;
+}
+.practice-setup .rule-toggles input {
+  flex: 0 0 18px;
 }
 .replays-page {
   max-width: 1360px;
