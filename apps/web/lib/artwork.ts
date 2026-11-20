@@ -16,16 +16,26 @@ export function preloadArtwork(card: Card): Promise<void> {
   if (pending) return pending;
   pending = new Promise<void>((resolve) => {
     const img = new Image();
+    img.fetchPriority = 'low';
+    const finish = () => {
+      clearTimeout(timeout);
+      img.onload = null;
+      img.onerror = null;
+      resolve();
+    };
+    const fail = () => {
+      loaded.delete(path);
+      finish();
+      img.removeAttribute('src');
+    };
+    const timeout = setTimeout(fail, 5000);
     img.onload = () => {
       void img
         .decode()
         .catch(() => {})
-        .then(resolve);
+        .then(finish);
     };
-    img.onerror = () => {
-      loaded.delete(path);
-      resolve();
-    };
+    img.onerror = fail;
     img.src = path;
   });
   loaded.set(path, pending);

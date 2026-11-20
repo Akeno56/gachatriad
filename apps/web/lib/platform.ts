@@ -59,7 +59,7 @@ export async function api<T>(
     // Keep the signed session when a gateway sends an empty/HTML restart response.
     if (response.status !== 429) {
       recordRequest(path, response.status, started, response.headers.get('server-timing'));
-      throw new ApiError(unavailable, response.ok ? 503 : response.status);
+      throw new ApiError(unavailable, 503);
     }
   }
   recordRequest(path, response.status, started, response.headers.get('server-timing'));

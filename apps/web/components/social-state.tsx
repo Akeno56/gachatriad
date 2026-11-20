@@ -1,10 +1,11 @@
 'use client';
 import { LocaleView } from './i18n';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { type ChatChannel, type SocialView } from '@gacha-triad/shared/social';
 import { useSession } from './session';
 import { api } from '../lib/platform';
+import { refreshScheduler } from '../lib/refresh-scheduler';
 import { usePathname } from 'next/navigation';
 const empty: SocialView = {
   friends: [],
@@ -22,9 +23,11 @@ const Context = createContext({
 });
 export const useSocial = () => useContext(Context);
 export function SocialProvider({ children }: { children: React.ReactNode }) {
-  const { profile, revision } = useSession();
+  const { profile, revision, socialRevision } = useSession();
   const pathname = usePathname();
-  const [state, setState] = useState({ data: empty, error: '', ready: false });
+  const owner = profile?.id;
+  const [state, setState] = useState({ owner, data: empty, error: '', ready: false });
+  const scheduler = useRef<ReturnType<typeof refreshScheduler> | null>(null);
   const [channel, setChannelState] = useState<ChatChannel>('general');
   useEffect(() => {
     setChannelState(
@@ -38,24 +41,33 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
   function setChannel(next: ChatChannel) {
     setChannelState(next);
   }
-  useEffect(() => setState({ data: empty, error: '', ready: false }), [profile?.id]);
   useEffect(() => {
-    if (!profile) return;
+    setState({ owner, data: empty, error: '', ready: false });
+    if (!owner) return;
     let active = true;
-    void api<SocialView>('/social')
-      .then((data) => {
-        if (active) setState({ data, error: '', ready: true });
-      })
-      .catch((e) => {
-        if (active) setState((current) => ({ ...current, error: e.message }));
-      });
+    const pending = refreshScheduler(
+      async () => {
+        try {
+          const data = await api<SocialView>('/social');
+          if (active) setState({ owner, data, error: '', ready: true });
+        } catch (e) {
+          if (active) setState((current) => ({ ...current, error: (e as Error).message }));
+        }
+      },
+      { interval: () => 500, visible: () => !document.hidden },
+    );
+    scheduler.current = pending;
     return () => {
       active = false;
+      pending.close();
+      scheduler.current = null;
     };
-  }, [profile?.id, revision]);
+  }, [owner]);
+  useEffect(() => scheduler.current?.request(), [owner, revision, socialRevision]);
+  const visible = state.owner === owner ? state : { data: empty, error: '', ready: false };
   return (
     <LocaleView>
-      <Context.Provider value={{ ...state, channel, setChannel }}>{children}</Context.Provider>
+      <Context.Provider value={{ ...visible, channel, setChannel }}>{children}</Context.Provider>
     </LocaleView>
   );
 }

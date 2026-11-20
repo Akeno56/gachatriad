@@ -19,7 +19,7 @@ export function ChannelChat({
   fitViewport?: boolean;
 }) {
   const { data, error: loadError, channel, setChannel } = useSocial(),
-    { profile, refresh, openAccount } = useSession();
+    { profile, refreshSocial, openAccount } = useSession();
   const panelId = useId();
   const [drafts, setDrafts] = useState<Record<string, string>>({}),
     [error, setError] = useState(''),
@@ -133,7 +133,7 @@ export function ChannelChat({
                       setError('');
                       try {
                         await api(`/chat/${m.id}`, undefined, 'DELETE');
-                        await refresh();
+                        refreshSocial();
                       } catch (e) {
                         setError((e as Error).message);
                       } finally {
@@ -181,7 +181,7 @@ export function ChannelChat({
               setDrafts((current) => ({ ...current, [target]: '' }));
               pending.current = null;
               sticky.current = true;
-              await refresh();
+              refreshSocial();
             } catch (e) {
               setError((e as Error).message);
             } finally {

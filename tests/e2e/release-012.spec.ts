@@ -188,7 +188,7 @@ test('offers explicit no-Elo bot practice while a rated queue searches for human
     await c.page.getByRole('button', { name: 'Play a practice bot — no Elo', exact: true }).click();
     await expect(
       c.page.getByRole('dialog').filter({ hasText: 'Practice with a bot?' }),
-    ).toContainText('losing can cost one card');
+    ).toContainText('never change Elo');
     await c.page.getByRole('button', { name: 'Find practice bot', exact: true }).click();
     await expect(
       c.page.getByRole('button', { name: 'Finding a practice bot…', exact: true }),

@@ -29,6 +29,17 @@ export function SocialPanel() {
     count: number;
   } | null>(null);
   const incomingInvitations = data.invitations.filter((inv) => inv.recipient.id === profile?.id);
+  const acceptBlocked = profile?.waitingLobbyId
+    ? 'Leave your queue or lobby to accept.'
+    : profile?.activeMatchId || profile?.pendingTrade
+      ? 'Finish your current duel to accept.'
+      : '';
+  function openInvitations() {
+    setTab('invitations');
+    setOpen(true);
+    setError('');
+    setInviteToast(null);
+  }
   useEffect(() => {
     if (!profile?.registered) {
       seenOwner.current = '';
@@ -77,14 +88,7 @@ export function SocialPanel() {
           ? `${inviteToast.count} duel invitations received`
           : `${inviteToast.name} sent you a duel invitation`}
       </span>
-      <button
-        className="text-button"
-        onClick={() => {
-          setTab('invitations');
-          setOpen(true);
-          setInviteToast(null);
-        }}
-      >
+      <button className="text-button" onClick={openInvitations}>
         View invitation
       </button>
       <button
@@ -135,6 +139,7 @@ export function SocialPanel() {
       return true;
     } catch (e) {
       setError((e as Error).message);
+      if (path.startsWith('/invites/')) await refresh();
       return false;
     } finally {
       setBusy(false);
@@ -143,6 +148,16 @@ export function SocialPanel() {
   return (
     <LocaleView>
       <>
+        {incomingInvitations.length > 0 && (
+          <button
+            className="duel-invite-launcher outline-button"
+            aria-controls={open ? 'social-drawer' : undefined}
+            aria-expanded={open && tab === 'invitations'}
+            onClick={openInvitations}
+          >
+            Duel invitations <b>{incomingInvitations.length}</b>
+          </button>
+        )}
         <button
           className="social-launcher outline-button"
           onClick={() => setOpen(!open)}
@@ -169,9 +184,10 @@ export function SocialPanel() {
         {!open && toast}
         {open && (
           <aside
+            id="social-drawer"
             role="dialog"
             aria-modal="false"
-            className="menu-window social-dialog messenger-drawer"
+            className={`menu-window social-dialog messenger-drawer ${tab === 'invitations' ? 'is-invitations' : ''}`}
             aria-labelledby="social-title"
           >
             <div className="social-heading">
@@ -364,14 +380,17 @@ export function SocialPanel() {
               </section>
             )}
             {tab === 'invitations' && (
-              <section aria-label="Duel invitations">
-                <p>
-                  Invitations create a five-minute, human-only Unranked table: Three Open, Same,
-                  Plus and Combo, with no card trade. Complete the tutorial and prepare a legal deck
-                  before accepting.
-                </p>
-                {!data.invitations.length && <p>No pending invitations.</p>}
-                {data.invitations.map((inv) => {
+              <section className="duel-invite-inbox menu-scrollbar" aria-label="Duel invitations">
+                {!data.invitations.length && (
+                  <p>{ready ? 'No pending invitations.' : 'Loading…'}</p>
+                )}
+                {incomingInvitations.length > 0 && acceptBlocked && (
+                  <p role="status">{acceptBlocked}</p>
+                )}
+                {[
+                  ...incomingInvitations,
+                  ...data.invitations.filter((inv) => inv.sender.id === profile?.id),
+                ].map((inv) => {
                   const incoming = inv.recipient.id === profile?.id,
                     p = incoming ? inv.sender : inv.recipient;
                   return (
@@ -384,8 +403,9 @@ export function SocialPanel() {
                       />
                       <div>
                         <strong>
-                          {incoming ? `${p.name} invited you` : `Waiting for ${p.name}`}
+                          <NoTranslate>{p.name}</NoTranslate>
                         </strong>
+                        <small>{incoming ? 'Invited you to a duel' : 'Waiting for a reply'}</small>
                         <small>
                           Expires{' '}
                           <LocalizedDate
@@ -399,7 +419,7 @@ export function SocialPanel() {
                         {incoming && (
                           <button
                             className="primary-button"
-                            disabled={busy}
+                            disabled={busy || !!acceptBlocked}
                             onClick={() =>
                               void action(`/invites/${inv.id}/respond`, { accept: true })
                             }

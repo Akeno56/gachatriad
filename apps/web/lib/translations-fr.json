@@ -1845,5 +1845,15 @@
   "{0} captured": "Captures : {0}",
   "A new battle table with upright hands, a turn clock and a clearer score.": "Nouvelle table de jeu avec des cartes verticales, un chrono et un score plus lisible.",
   "Same, Plus and Combo callouts appear above the board as cards flip.": "Les annonces Same, Plus et Combo s’affichent au-dessus du plateau.",
-  "Match results keep queue, replay and lobby shortcuts in view.": "Les raccourcis de file, de replay et de retour aux salons restent visibles dans les résultats."
+  "Match results keep queue, replay and lobby shortcuts in view.": "Les raccourcis de file, de replay et de retour aux salons restent visibles dans les résultats.",
+  "In queue": "En file d’attente",
+  "Reconnecting…": "Reconnexion…",
+  "Waiting for a player…": "En attente d’un joueur…",
+  "Leave your queue or lobby to accept.": "Quittez votre file ou votre salon pour accepter.",
+  "Finish your current duel to accept.": "Terminez votre duel pour accepter.",
+  "Invited you to a duel": "Vous invite en duel",
+  "Waiting for a reply": "En attente d’une réponse",
+  "The queue timer and cancel button stay visible while you browse.": "Le chrono et le bouton d’annulation de la file restent visibles pendant la navigation.",
+  "Pending duel invitations have a shortcut beside Friends & messages.": "Un raccourci vers les invitations en duel s’affiche près du bouton Amis et messages.",
+  "Fewer requests while chatting and smaller batches of artwork downloads.": "Le chat envoie moins de requêtes et les images sont chargées par petits groupes."
 }

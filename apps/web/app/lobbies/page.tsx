@@ -172,23 +172,6 @@ export default function Lobbies() {
               {ruleNames(waiting.rules).join(' · ')} ·{' '}
               {waiting.tradeRule === 'one' ? 'Trade One' : 'No trade'}
             </span>
-            <button
-              className="outline-button"
-              disabled={busy}
-              onClick={async () => {
-                setBusy(true);
-                try {
-                  await api(`/lobbies/${waiting.id}`, undefined, 'DELETE');
-                  await refresh();
-                } catch (e) {
-                  setError((e as Error).message);
-                } finally {
-                  setBusy(false);
-                }
-              }}
-            >
-              Close lobby
-            </button>
           </div>
         )}
         <MainChat compact />

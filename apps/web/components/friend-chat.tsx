@@ -18,9 +18,10 @@ export function FriendChat({
   select: (id: string) => void;
 }) {
   const { data } = useSocial(),
-    { profile, revision, refresh } = useSession();
+    { profile, revision, refresh, refreshSocial } = useSession();
   const friends = data.friends.filter((f) => f.status === 'friend');
   const friend = friends.find((f) => f.id === playerId);
+  const conversation = data.conversations.find((c) => c.playerId === playerId);
   const [messages, setMessages] = useState<FriendMessage[]>([]),
     [search, setSearch] = useState(''),
     [message, setMessage] = useState(''),
@@ -54,20 +55,16 @@ export function FriendChat({
         setMessages(rows);
         setError('');
         const last = rows.filter((m) => m.recipientId === profile?.id).at(-1);
-        if (
-          last &&
-          data.conversations.some((c) => c.playerId === friend.id && c.unread > 0) &&
-          !document.hidden
-        ) {
+        if (last && conversation?.unread && !document.hidden) {
           await api(`/friends/${friend.id}/read`, { through: last.id });
-          if (active) await refresh();
+          if (active) refreshSocial();
         }
       })
       .catch((e) => active && setError(e.message));
     return () => {
       active = false;
     };
-  }, [friend?.id, revision, profile?.id, refresh]);
+  }, [friend?.id, conversation?.lastAt, revision, profile?.id, refreshSocial]);
   useEffect(() => {
     if (sticky.current && list.current) list.current.scrollTop = list.current.scrollHeight;
   }, [messages.at(-1)?.id]);
@@ -220,7 +217,7 @@ export function FriendChat({
                       pending.current = null;
                       sticky.current = true;
                     }
-                    await refresh();
+                    refreshSocial();
                   } catch (e) {
                     if (currentTarget.current === target) setError((e as Error).message);
                   } finally {

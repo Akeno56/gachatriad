@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openStarterPacks } from './helpers';
+import { navigateTo, openStarterPacks } from './helpers';
 
 test('teaches a complete practice duel without changing real progress', async ({ page }, info) => {
   test.setTimeout(90000);
@@ -59,7 +59,7 @@ test('teaches a complete practice duel without changing real progress', async ({
   await expect(tutorial).toHaveCount(0);
 });
 
-test('confirms Unranked rules, preserves its queue timer after refresh and cancels with X', async ({
+test('keeps the Unranked timer across pages and reload and cancels from the dock', async ({
   page,
 }, info) => {
   await page.goto('/');
@@ -97,12 +97,28 @@ test('confirms Unranked rules, preserves its queue timer after refresh and cance
   const before = (await (await page.request.get('/api/profile')).json()).waitingLobby;
   expect(before.mode).toBe('casual');
   expect(before.invited).toBe(false);
+  await navigateTo(page, 'Cards');
+  await expect(page.locator('.matchmaking-dock')).toBeInViewport({ ratio: 1 });
   await page.reload();
   await expect(timer).toHaveText(/In queue for : \d+:\d+/);
   expect((await (await page.request.get('/api/profile')).json()).waitingLobby).toEqual(before);
-  await page.screenshot({ path: info.outputPath('matchmaking-queue.png'), fullPage: true });
+  if (info.project.name === 'desktop') {
+    for (const [width, height] of [
+      [1920, 1080],
+      [1366, 768],
+      [1280, 720],
+    ]) {
+      await page.setViewportSize({ width, height });
+      const dock = page.locator('.matchmaking-dock');
+      await expect(dock).toBeInViewport({ ratio: 1 });
+      const bounds = (await dock.boundingBox())!;
+      const friends = (await page.locator('.social-launcher').boundingBox())!;
+      expect(bounds.x + bounds.width).toBeLessThan(friends.x);
+    }
+  }
+  await page.screenshot({ path: info.outputPath('matchmaking-queue.png') });
   await page.getByRole('button', { name: 'Leave Unranked queue' }).click();
-  await expect(start).toBeEnabled();
+  await expect(page.locator('.matchmaking-dock')).toHaveCount(0);
   expect((await (await page.request.get('/api/profile')).json()).waitingLobby).toBeNull();
 });
 

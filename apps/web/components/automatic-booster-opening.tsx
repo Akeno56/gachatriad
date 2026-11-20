@@ -71,11 +71,11 @@ export function AutomaticBoosterOpening({
         setResults(opened);
         await refresh();
         const cards = opened.flatMap((p) => p.cards);
-        if (!skipRequested.current) for (const card of cards) void preloadArtwork(card);
         for (let i = start; i < cards.length; i++) {
           if (!active) return;
           if (skipRequested.current) break;
           if (i === start || i % 5 === 0) {
+            for (const card of cards.slice(i, i + 5 - (i % 5))) void preloadArtwork(card);
             setPosition(i);
             setPhase('pack');
             await wait(750);

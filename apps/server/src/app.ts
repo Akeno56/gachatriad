@@ -380,7 +380,7 @@ export async function createPlatform(
       body(req).requestId,
       body(req).channel,
     );
-    notify();
+    io.emit('platform:changed', 'social');
     return result;
   });
   app.get('/api/friends/:id/messages', async (req) => social.messages(await profile(req), id(req)));
@@ -390,19 +390,19 @@ export async function createPlatform(
     const result = await social.postFriend(p, target, body(req).message, body(req).requestId);
     for (const socket of io.sockets.sockets.values())
       if (socket.data.profileId === p.id || socket.data.profileId === target)
-        socket.emit('platform:changed');
+        socket.emit('platform:changed', 'social');
     return result;
   });
   app.post('/api/friends/:id/read', async (req) => {
     const p = await profile(req);
     await social.readMessages(p, id(req), body(req).through);
     for (const socket of io.sockets.sockets.values())
-      if (socket.data.profileId === p.id) socket.emit('platform:changed');
+      if (socket.data.profileId === p.id) socket.emit('platform:changed', 'social');
     return { ok: true };
   });
   app.delete('/api/chat/:id', async (req) => {
     await social.deleteMessage(await profile(req), id(req));
-    notify();
+    io.emit('platform:changed', 'social');
     return { ok: true };
   });
   app.post('/api/invites', async (req) => {
@@ -822,7 +822,7 @@ export async function createPlatform(
     const players = (await store.view(p.id, matchId)).players;
     for (const socket of io.sockets.sockets.values())
       if (players.some((player) => player.id === socket.data.profileId))
-        socket.emit('platform:changed');
+        socket.emit('platform:changed', 'battle-chat');
     return result;
   });
   app.post('/api/matches/:id/move', async (req) => {

@@ -29,9 +29,9 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>A new battle table with upright hands, a turn clock and a clearer score.</li>
-          <li>Same, Plus and Combo callouts appear above the board as cards flip.</li>
-          <li>Match results keep queue, replay and lobby shortcuts in view.</li>
+          <li>The queue timer and cancel button stay visible while you browse.</li>
+          <li>Pending duel invitations have a shortcut beside Friends &amp; messages.</li>
+          <li>Fewer requests while chatting and smaller batches of artwork downloads.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

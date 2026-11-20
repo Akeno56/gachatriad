@@ -33,11 +33,15 @@ export function DraftOpening({
     async function open() {
       setError('');
       const source = initial.current;
-      for (const card of source.draftPool) void preloadArtwork(card);
       try {
         let next = await api<MatchView>(`/matches/${source.id}`);
-        for (let step = next.draftRevealed; step < next.draftPool.length; step++) {
+        const start = next.draftRevealed;
+        for (let step = start; step < next.draftPool.length; step++) {
           if (!active || next.status !== 'drafting') return;
+          if (!fast.current && (step === start || step % 5 === 0)) {
+            for (const card of next.draftPool.slice(step, step + 5 - (step % 5)))
+              void preloadArtwork(card);
+          }
           setPosition(step);
           if (step % 5 === 0) {
             setPhase('pack');

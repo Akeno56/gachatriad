@@ -34,6 +34,7 @@ import './release-017.css';
 import './release-018.css';
 import './release-019.css';
 import './battle-arena.css';
+import './multiplayer.css';
 
 export const metadata: Metadata = {
   title: 'Gacha Triad · Cross-world card battle',

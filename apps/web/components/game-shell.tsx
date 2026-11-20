@@ -15,6 +15,7 @@ import { RankedWarning } from './ranked-warning';
 import { SocialPanel } from './social-panel';
 import { SocialProvider } from './social-state';
 import { ActiveBattleReminder } from './active-battle-reminder';
+import { MatchmakingDock } from './matchmaking-dock';
 import { ActionNoticeProvider } from './action-notice';
 import { ReleaseNotes } from './release-notes';
 const AudioContext = createContext<(sound: Sound) => void>(() => {});
@@ -412,6 +413,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                       <FirstDuelTutorial />
                       <RankedWarning />
                       <ActiveBattleReminder />
+                      <MatchmakingDock />
                       <SocialPanel />
                     </SocialProvider>
                   </ServerConnection>

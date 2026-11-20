@@ -19,7 +19,11 @@ const Context = createContext<{
   profile: ProfileView | null;
   error: string;
   revision: number;
+  socialRevision: number;
+  battleChatRevision: number;
   refresh: () => Promise<void>;
+  refreshSocial: () => void;
+  refreshBattleChat: () => void;
   changeAccount: (work: () => Promise<unknown>) => Promise<void>;
   accountOpen: boolean;
   openAccount: () => void;
@@ -28,7 +32,11 @@ const Context = createContext<{
   profile: null,
   error: '',
   revision: 0,
+  socialRevision: 0,
+  battleChatRevision: 0,
   refresh: async () => {},
+  refreshSocial: () => {},
+  refreshBattleChat: () => {},
   changeAccount: async () => {},
   accountOpen: false,
   openAccount: () => {},
@@ -39,12 +47,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<ProfileView | null>(null),
     [error, setError] = useState(''),
     [revision, setRevision] = useState(0);
+  const [socialRevision, setSocialRevision] = useState(0);
+  const [battleChatRevision, setBattleChatRevision] = useState(0);
+  const refreshSocial = useCallback(() => setSocialRevision((value) => value + 1), []);
+  const refreshBattleChat = useCallback(() => setBattleChatRevision((value) => value + 1), []);
   const [accountOpen, setAccountOpen] = useState(false);
   const openAccount = useCallback(() => setAccountOpen(true), []),
     closeAccount = useCallback(() => setAccountOpen(false), []);
   const pending = useRef<Promise<void> | null>(null);
   const changingAccount = useRef(false);
-  const refresh = useCallback(async () => {
+  const readProfile = useCallback(async () => {
     if (!serverConfigured() || changingAccount.current) return;
     if (pending.current) return pending.current;
     pending.current = (async () => {
@@ -76,6 +88,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     })();
     return pending.current;
   }, []);
+  const refresh = useCallback(async () => {
+    // A read started before the mutation may contain the old queue or match.
+    if (pending.current) await pending.current;
+    await readProfile();
+  }, [readProfile]);
   const changeAccount = useCallback(
     async (work: () => Promise<unknown>) => {
       if (changingAccount.current) return;
@@ -94,13 +111,20 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   );
   const inMatch = useRef(false);
   inMatch.current = !!profile?.activeMatchId;
+  const awaitingDuel = useRef(false);
+  awaitingDuel.current = !!(
+    profile?.waitingLobbyId ||
+    profile?.activeMatchId ||
+    profile?.pendingTrade
+  );
+  const socketConnected = useRef(false);
   const automatic = useRef<ReturnType<typeof refreshScheduler> | null>(null);
   useEffect(() => {
-    const scheduler = refreshScheduler(refresh, {
+    const scheduler = refreshScheduler(readProfile, {
       // Each revision also refreshes match, chat and social data. A 250 ms
       // interval can exhaust the shared IP budget during a busy battle.
       interval: () => (inMatch.current ? 1000 : 2000),
-      visible: () => !document.hidden,
+      visible: () => !document.hidden && navigator.onLine,
     });
     automatic.current = scheduler;
     scheduler.request();
@@ -108,26 +132,44 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       if (!document.hidden) scheduler.request();
     };
     document.addEventListener('visibilitychange', visible);
+    window.addEventListener('online', visible);
     const timer = setInterval(() => scheduler.request(), 15000);
+    const duelFallback = setInterval(() => {
+      if (!socketConnected.current && awaitingDuel.current) scheduler.request();
+    }, 5000);
     return () => {
       scheduler.close();
       automatic.current = null;
       clearInterval(timer);
+      clearInterval(duelFallback);
       document.removeEventListener('visibilitychange', visible);
+      window.removeEventListener('online', visible);
     };
-  }, [refresh]);
+  }, [readProfile]);
   useEffect(() => {
     if (!profile) return;
     const socket: Socket = io(socketURL(), {
       withCredentials: true,
       auth: (callback) => callback({ profileId: profile.id, token: sessionToken() }),
     });
-    socket.on('platform:changed', () => automatic.current?.request());
-    socket.on('connect', () => automatic.current?.request());
+    socket.on('platform:changed', (scope?: string) => {
+      if (document.hidden) return;
+      if (scope === 'social') refreshSocial();
+      else if (scope === 'battle-chat') refreshBattleChat();
+      else automatic.current?.request();
+    });
+    socket.on('connect', () => {
+      socketConnected.current = true;
+      automatic.current?.request();
+    });
+    socket.on('disconnect', () => {
+      socketConnected.current = false;
+    });
     return () => {
+      socketConnected.current = false;
       socket.disconnect();
     };
-  }, [profile?.id, profile?.registered, refresh]);
+  }, [profile?.id, profile?.registered, refreshSocial, refreshBattleChat]);
   return (
     <LocaleView>
       <Context.Provider
@@ -135,7 +177,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           profile,
           error,
           revision,
+          socialRevision,
+          battleChatRevision,
           refresh,
+          refreshSocial,
+          refreshBattleChat,
           changeAccount,
           accountOpen,
           openAccount,

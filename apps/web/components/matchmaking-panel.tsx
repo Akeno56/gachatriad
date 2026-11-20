@@ -2,11 +2,11 @@
 import { LocaleView } from './i18n';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSession } from './session';
 import { api } from '../lib/platform';
 import { confirmRanked, confirmUnranked, confirmDraft, confirmSharedDraft } from './ranked-warning';
-import { Button, GameDialog } from './ui';
+import { Button } from './ui';
 import { PracticeSetup } from './practice-setup';
 export function MatchmakingPanel({
   onMatch,
@@ -20,15 +20,8 @@ export function MatchmakingPanel({
   const { profile, refresh } = useSession();
   const [busy, setBusy] = useState(false),
     [soloOpen, setSoloOpen] = useState(false),
-    [practice, setPractice] = useState(false),
-    [error, setError] = useState(''),
-    [now, setNow] = useState(Date.now());
-  const lock = useRef(false),
-    waiting = profile?.waitingLobby;
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+    [error, setError] = useState('');
+  const lock = useRef(false);
   async function queue(mode: 'casual' | 'ranked' | 'draft' | 'shared-draft') {
     if (lock.current) return;
     lock.current = true;
@@ -59,25 +52,6 @@ export function MatchmakingPanel({
       lock.current = false;
     }
   }
-  async function leave() {
-    if (!waiting || lock.current) return;
-    lock.current = true;
-    setBusy(true);
-    try {
-      await api(`/lobbies/${waiting.id}`, undefined, 'DELETE');
-      setError('');
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      await refresh();
-      setBusy(false);
-      lock.current = false;
-    }
-  }
-  const seconds = waiting
-    ? Math.max(0, Math.floor((now - new Date(waiting.createdAt).getTime()) / 1000))
-    : 0;
-  const elapsed = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
   return (
     <LocaleView>
       <section className="setup-panel menu-window matchmaking-panel" aria-label="Match setup">
@@ -88,84 +62,37 @@ export function MatchmakingPanel({
             name = mode === 'shared-draft' ? 'Shared Draft' : 'Draft',
             label = draft ? `${name} (Ranked)` : ranked ? 'Ranked' : 'Unranked',
             action = draft ? `Start ${name} (Ranked)` : `Start match (${label})`,
-            own = waiting?.mode === mode;
+            own = profile?.waitingLobby?.mode === mode;
           return (
-            <div className={`matchmaking-row ${own ? 'is-queued' : ''}`} key={mode}>
-              {own ? (
-                <div
-                  className="queue-status"
-                  role="group"
-                  aria-label={`${label} matchmaking queue`}
-                >
-                  <span className="queue-mode">{label}</span>
-                  <span className="queue-elapsed" role="timer" aria-live="off">
-                    <span className="sr-only">In queue for : </span>
-                    {elapsed}
+            <div className="matchmaking-row" key={mode}>
+              <Button
+                variant={ranked ? 'outline' : 'primary'}
+                className={ranked ? 'ranked-play-button' : 'start-button'}
+                disabled={
+                  busy ||
+                  !profile ||
+                  !!profile.pendingTrade ||
+                  !!profile.activeMatchId ||
+                  !!profile.waitingLobbyId ||
+                  (!draft && profile.deck.length !== 5) ||
+                  (ranked && !profile.registered)
+                }
+                onClick={() => void queue(mode)}
+                aria-label={action}
+              >
+                <>
+                  <span className="command-copy">
+                    <strong>{draft ? name : label}</strong>
+                    <small>{own ? 'In queue' : draft ? 'Ranked' : 'Start match'}</small>
                   </span>
-                  <small>Searching for an opponent…</small>
-                </div>
-              ) : (
-                <Button
-                  variant={ranked ? 'outline' : 'primary'}
-                  className={ranked ? 'ranked-play-button' : 'start-button'}
-                  disabled={
-                    busy ||
-                    !profile ||
-                    !!profile.pendingTrade ||
-                    !!profile.activeMatchId ||
-                    !!profile.waitingLobbyId ||
-                    (!draft && profile.deck.length !== 5) ||
-                    (ranked && !profile.registered)
-                  }
-                  onClick={() => void queue(mode)}
-                  aria-label={action}
-                >
-                  <>
-                    <span className="command-copy">
-                      <strong>{draft ? name : label}</strong>
-                      <small>{draft ? 'Ranked' : 'Start match'}</small>
-                    </span>
-                  </>
-                </Button>
-              )}
-              {own && (
-                <button
-                  className="queue-cancel"
-                  disabled={busy}
-                  onClick={() => void leave()}
-                  aria-label={`Leave ${label} queue`}
-                >
-                  ×
-                </button>
-              )}
-              {own && ranked && (
-                <button
-                  className="text-button practice-queue-button"
-                  disabled={busy || !!waiting?.allowBots}
-                  onClick={() => setPractice(true)}
-                >
-                  {waiting?.allowBots ? 'Finding a practice bot…' : 'Play a practice bot — no Elo'}
-                </button>
-              )}
+                </>
+              </Button>
             </div>
           );
         })}
         <Link className="outline-button lobby-shortcut" href="/lobbies">
           Browse lobbies
         </Link>
-        {waiting && !['casual', 'ranked', 'draft', 'shared-draft'].includes(waiting.mode) && (
-          <p className="waiting-other-lobby">
-            {waiting.invited ? 'Waiting for your invited opponent.' : 'You have a waiting lobby.'}{' '}
-            <button
-              className="queue-cancel"
-              disabled={busy}
-              onClick={() => void leave()}
-              aria-label="Close waiting lobby"
-            >
-              ×
-            </button>
-          </p>
-        )}
         {profile && profile.deck.length !== 5 && (
           <p className="deck-warning" role="status">
             Your active deck has {profile.deck.length}/5 cards.{' '}
@@ -190,44 +117,6 @@ export function MatchmakingPanel({
           {error}
         </p>
         <PracticeSetup open={soloOpen} onClose={() => setSoloOpen(false)} onMatch={onMatch} />
-        <GameDialog
-          open={practice}
-          onClose={() => setPractice(false)}
-          labelledBy="practice-title"
-          dismissible={!busy}
-        >
-          <h2 id="practice-title">Practice with a bot?</h2>
-          <p>
-            Bot games use the same Ranked or Draft rules and never change Elo. A human opponent can
-            still match first.
-          </p>
-          <div className="result-actions">
-            <button
-              className="primary-button"
-              disabled={busy}
-              onClick={async () => {
-                if (!waiting) return;
-                setBusy(true);
-                setError('');
-                try {
-                  await api(`/lobbies/${waiting.id}/practice`, {});
-                  setPractice(false);
-                  await refresh();
-                } catch (e) {
-                  setError((e as Error).message);
-                  setPractice(false);
-                } finally {
-                  setBusy(false);
-                }
-              }}
-            >
-              Find practice bot
-            </button>
-            <button className="outline-button" disabled={busy} onClick={() => setPractice(false)}>
-              Keep waiting for a player
-            </button>
-          </div>
-        </GameDialog>
       </section>
     </LocaleView>
   );

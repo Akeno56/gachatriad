@@ -17,7 +17,7 @@ interface BattleMessage {
   createdAt: string;
 }
 export function BattleChat({ match }: { match: MatchView }) {
-  const { revision, refresh } = useSession();
+  const { revision, battleChatRevision, refreshBattleChat } = useSession();
   const { data } = useSocial();
   const [tab, setTab] = useState(match.chatAvailable && !match.spectator ? 'battle' : 'general'),
     [expanded, setExpanded] = useState(false);
@@ -36,11 +36,14 @@ export function BattleChat({ match }: { match: MatchView }) {
     sticky.current = true;
   }, [match.id]);
   useEffect(() => {
-    if (!match.chatAvailable || match.spectator) return;
+    if (!match.chatAvailable || match.spectator || tab !== 'battle') return;
     let active = true;
     void api<BattleMessage[]>(`/matches/${match.id}/chat`)
       .then((rows) => {
-        if (active) setMessages(rows);
+        if (active) {
+          setMessages(rows);
+          setError('');
+        }
       })
       .catch((e) => {
         if (active) setError(e.message);
@@ -48,7 +51,7 @@ export function BattleChat({ match }: { match: MatchView }) {
     return () => {
       active = false;
     };
-  }, [match.id, revision, match.chatAvailable, match.spectator]);
+  }, [match.id, revision, battleChatRevision, match.chatAvailable, match.spectator, tab]);
   useEffect(() => {
     if (sticky.current && list.current) list.current.scrollTop = list.current.scrollHeight;
   }, [messages.at(-1)?.id]);
@@ -148,7 +151,7 @@ export function BattleChat({ match }: { match: MatchView }) {
                   setMessage('');
                   pending.current = null;
                   sticky.current = true;
-                  await refresh();
+                  refreshBattleChat();
                 } catch (e) {
                   setError((e as Error).message);
                 } finally {
