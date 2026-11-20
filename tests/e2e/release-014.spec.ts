@@ -3,7 +3,8 @@ import { mkdtemp } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createPlatform } from '../../apps/server/src/app';
 import { legalMoves, applyMove } from '../../packages/engine/src/index';
-import { puzzleValue } from '../../apps/server/src/daily-puzzle';
+import { makePuzzle, puzzleDay, puzzleValue } from '../../apps/server/src/daily-puzzle';
+import { bestPuzzleMove } from '../../packages/shared/src/puzzle';
 import { CARDS } from '../../packages/shared/src/index';
 let platform: Awaited<ReturnType<typeof createPlatform>>,
   origin: string,
@@ -381,6 +382,71 @@ test('solves the daily puzzle through the UI, saves one reward and shows the Fre
     await c.page.locator('.puzzle-outcome .outline-button').click();
     await expect(c.page.locator('.puzzle-hand').first().locator('button')).toHaveCount(2);
     expect((await platform.store.profile(c.actor)).prisms - before).toBe(100);
+  } finally {
+    await c.context.close();
+  }
+});
+test('practises an archived puzzle and reveals the winning line on request', async ({
+  browser,
+}, info) => {
+  const c = await player(browser);
+  const day = puzzleDay(Date.now() - 86400000);
+  const initial = makePuzzle(42);
+  try {
+    await platform.db.read((sql) =>
+      sql('INSERT INTO daily_puzzles(day,initial_state) VALUES($1,$2::jsonb)', [
+        day,
+        JSON.stringify(initial),
+      ]),
+    );
+    await c.page.goto('/puzzle');
+    await c.page.getByRole('link', { name: 'Puzzle archive', exact: true }).click();
+    await expect(c.page.locator('.puzzle-archive time')).toHaveCount(1);
+    await c.page.locator(`a:has(time[datetime="${day}"])`).click();
+    const cells = c.page.locator('.puzzle-cell .playing-card');
+    const hand = c.page.locator('.puzzle-hand').first();
+    await expect(cells).toHaveCount(6);
+    const review = c.page.locator('.puzzle-first-move');
+    await expect(review.locator('ol')).toBeHidden();
+    const winning = bestPuzzleMove(initial)!;
+    await hand
+      .getByRole('button', {
+        name: `Select ${initial.hands[0].find((card) => card.id === winning.cardId)!.name}`,
+        exact: true,
+      })
+      .click();
+    await c.page.getByTestId(`puzzle-cell-${winning.cell}`).click();
+    await expect(cells).toHaveCount(8);
+    const state = applyMove(initial, winning);
+    const afterReply = applyMove(state, bestPuzzleMove(state)!);
+    const last = bestPuzzleMove(afterReply)!;
+    await hand.getByRole('button').click();
+    await c.page.getByTestId(`puzzle-cell-${last.cell}`).click();
+    await expect(c.page.locator('#practice-turn-status')).toHaveText('Victory');
+    await c.page.getByRole('button', { name: 'Restart puzzle', exact: true }).click();
+    await expect(cells).toHaveCount(6);
+    await review.locator('summary').click();
+    await expect(review.locator('li')).toHaveCount(3);
+    await expect(review).toContainText('Best nonwinning opener');
+    await expect(c.page.locator('.puzzle-leaderboard, .puzzle-reward')).toHaveCount(0);
+    const before = (await platform.store.profile(c.actor)).prisms;
+    expect(before).toBe(c.profile.prisms);
+    await french(c.page);
+    await expect(review.locator('summary')).toHaveText('Analyse du premier coup');
+    if (info.project.name === 'desktop') {
+      for (const [width, height] of [
+        [1280, 720],
+        [1366, 768],
+        [1920, 1080],
+      ]) {
+        await c.page.setViewportSize({ width, height });
+        await c.page.evaluate(() => scrollTo(0, 0));
+        await fits(c.page);
+        await expect(c.page.locator('.puzzle-board')).toBeInViewport({ ratio: 1 });
+        await expect(c.page.locator('.puzzle-reserves')).toBeInViewport({ ratio: 1 });
+        await c.page.screenshot({ path: info.outputPath(`archive-${width}.png`) });
+      }
+    } else await fits(c.page);
   } finally {
     await c.context.close();
   }

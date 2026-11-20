@@ -29,9 +29,9 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>The queue timer and cancel button stay visible while you browse.</li>
-          <li>Pending duel invitations have a shortcut beside Friends &amp; messages.</li>
-          <li>Fewer requests while chatting and smaller batches of artwork downloads.</li>
+          <li>Replay past daily puzzles from the archive.</li>
+          <li>Review the winning first move after the daily reset.</li>
+          <li>Try a different move in a saved replay against a bot.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

@@ -5,13 +5,19 @@ import {
   legalMoves,
   randomDeck,
   seededRandom,
-  scores,
   winner,
   validateMove,
   type GameState,
 } from '@gacha-triad/engine';
 import { CARDS } from '@gacha-triad/shared';
-import type { DailyPuzzleView, PuzzleEntry } from '@gacha-triad/shared/puzzle';
+import {
+  bestPuzzleMove,
+  puzzleValue,
+  type ArchivedPuzzle,
+  type DailyPuzzleView,
+  type PuzzleArchivePage,
+  type PuzzleEntry,
+} from '@gacha-triad/shared/puzzle';
 import type { Database, Sql } from './database';
 import { GameError } from './errors';
 
@@ -19,11 +25,13 @@ export const PUZZLE_REWARD = 100;
 export function puzzleDay(now = Date.now()) {
   return new Date(now).toISOString().slice(0, 10);
 }
-/** Exact small endgame solver. The opponent always chooses its strongest defense. */
-export function puzzleValue(state: GameState): number {
-  if (state.status === 'complete') return scores(state)[0];
-  const values = legalMoves(state).map((move) => puzzleValue(applyMove(state, move)));
-  return state.turn === 0 ? Math.max(...values) : Math.min(...values);
+export { puzzleValue } from '@gacha-triad/shared/puzzle';
+
+function validDay(value: unknown): value is string {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value.startsWith('0000'))
+    return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return Number.isFinite(parsed.getTime()) && puzzleDay(parsed.getTime()) === value;
 }
 export function makePuzzle(seed: number): GameState {
   const random = seededRandom(seed);
@@ -81,6 +89,29 @@ export class DailyPuzzles {
     } finally {
       this.preparing.delete(day);
     }
+  }
+  async archive(before: unknown = puzzleDay()): Promise<PuzzleArchivePage> {
+    if (!validDay(before) || before > puzzleDay()) throw new GameError('Invalid archive date.');
+    const limit = 12;
+    const rows = await this.db.read((sql) =>
+      sql<{ day: string }>(
+        'SELECT day::text AS day FROM daily_puzzles WHERE day<$1::date ORDER BY day DESC LIMIT $2',
+        [before, limit + 1],
+      ),
+    );
+    const days = rows.slice(0, limit).map(({ day }) => day);
+    return { days, nextBefore: rows.length > limit ? days.at(-1)! : null };
+  }
+  async archived(day: unknown): Promise<ArchivedPuzzle> {
+    if (!validDay(day) || day >= puzzleDay())
+      throw new GameError('Archived puzzle not found.', 404);
+    const [row] = await this.db.read((sql) =>
+      sql<{ state: GameState }>('SELECT initial_state AS state FROM daily_puzzles WHERE day=$1', [
+        day,
+      ]),
+    );
+    if (!row) throw new GameError('Archived puzzle not found.', 404);
+    return { day, state: row.state };
   }
   async view(
     profileId: string,
@@ -223,17 +254,8 @@ export class DailyPuzzles {
       if (error) throw new GameError(error, 409);
       let state = applyMove(run.state, move);
       if (state.status === 'playing' && state.turn === 1) {
-        const choices = legalMoves(state).map((move) => ({
-          move,
-          value: puzzleValue(applyMove(state, move)),
-        }));
-        choices.sort(
-          (a, b) =>
-            a.value - b.value ||
-            a.move.cardId.localeCompare(b.move.cardId) ||
-            a.move.cell - b.move.cell,
-        );
-        state = applyMove(state, choices[0].move);
+        const reply = bestPuzzleMove(state);
+        if (reply) state = applyMove(state, reply);
       }
       const solved = state.status === 'complete' && winner(state) === 0;
       await sql(

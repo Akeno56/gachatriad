@@ -1,7 +1,14 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
-import { elementalModifier, type Card as CardData, type Player } from '@gacha-triad/engine';
-import type { ReplayView } from '@gacha-triad/shared/replays';
+import {
+  chooseCpuMove,
+  cpuView,
+  elementalModifier,
+  seededRandom,
+  type Card as CardData,
+  type Player,
+} from '@gacha-triad/engine';
+import { replayPracticePosition, type ReplayView } from '@gacha-triad/shared/replays';
 import { Card } from './card';
 import { CardDetail } from './card-detail';
 import { ElementIcon } from './element-icon';
@@ -9,6 +16,7 @@ import { BotStyle } from './bot-style';
 import { LocaleView, LocalizedDate, NoTranslate } from './i18n';
 import { Button } from './ui';
 import { ruleNames } from '../lib/rules';
+import { PracticePosition, cellName } from './practice-position';
 export function ReplayPlayer({
   replay,
   favoriteBusy,
@@ -22,7 +30,8 @@ export function ReplayPlayer({
     [playing, setPlaying] = useState(false),
     [speed, setSpeed] = useState('1'),
     [detail, setDetail] = useState<CardData | null>(null),
-    [modifier, setModifier] = useState(0);
+    [modifier, setModifier] = useState(0),
+    [practicing, setPracticing] = useState(false);
   const cards = useMemo(
     () => new Map(replay.decks.flat().map((card) => [card.id, card])),
     [replay],
@@ -30,10 +39,12 @@ export function ReplayPlayer({
   const last = replay.frames.length - 1,
     index = Math.min(step, last),
     frame = replay.frames[index];
+  const practice = useMemo(() => replayPracticePosition(replay, index), [replay, index]);
   useEffect(() => {
     setStep(0);
     setPlaying(false);
     setDetail(null);
+    setPracticing(false);
   }, [replay.id]);
   useEffect(() => {
     if (!playing || detail) return;
@@ -72,6 +83,46 @@ export function ReplayPlayer({
   const scoreState = { rules: replay.rules, cellElements: replay.cellElements };
   const action = frame.move,
     moved = action ? cards.get(action.cardId) : null;
+  if (practicing && practice) {
+    const recorded = replay.frames[index + 1]?.move;
+    const card = recorded && replay.decks[recorded.player].find(({ id }) => id === recorded.cardId);
+    return (
+      <LocaleView>
+        <section className="replay-player" aria-label="Replay practice">
+          <header className="replay-match-heading">
+            <div>
+              <h2>Replay practice</h2>
+              <p>{index ? `After turn ${index}` : 'Starting position'} · Practice against a bot</p>
+            </div>
+            <Button onClick={() => setPracticing(false)}>Back to replay</Button>
+          </header>
+          <PracticePosition
+            key={`${replay.id}:${index}`}
+            initial={practice}
+            seat={replay.seat}
+            respond={(state) =>
+              chooseCpuMove(
+                cpuView(state),
+                'normal',
+                seededRandom(1201 + state.history.length),
+                replay.players[1 - replay.seat].botStyle ?? 'balanced',
+              )
+            }
+            restartLabel="Reset position"
+          >
+            {card && recorded && (
+              <p className="menu-window replay-recorded-move">
+                <span>Recorded move</span>
+                <NoTranslate>
+                  {card.name} · {cellName(recorded.cell)}
+                </NoTranslate>
+              </p>
+            )}
+          </PracticePosition>
+        </section>
+      </LocaleView>
+    );
+  }
   return (
     <LocaleView>
       <section className="replay-player" aria-label="Match replay">
@@ -153,6 +204,20 @@ export function ReplayPlayer({
               <option value="2">2×</option>
             </select>
           </label>
+          <div
+            className="replay-practice-action"
+            title={!practice ? 'Available on your turns.' : undefined}
+          >
+            <Button
+              disabled={!practice}
+              onClick={() => {
+                setPlaying(false);
+                setPracticing(true);
+              }}
+            >
+              Try another move
+            </Button>
+          </div>
         </div>
         <div className="replay-workspace">
           <section className="replay-board-panel" aria-label="Replay board">

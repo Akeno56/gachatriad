@@ -11,6 +11,7 @@ import {
   seededRandom,
 } from '@gacha-triad/engine';
 import { DailyPuzzles, makePuzzle, puzzleValue, puzzleDay } from './daily-puzzle';
+import { puzzleReview } from '@gacha-triad/shared/puzzle';
 let p: Awaited<ReturnType<typeof createPlatform>>,
   serial = 0;
 beforeAll(async () => {
@@ -65,6 +66,47 @@ it('makes deterministic uniquely winning endgames with valid real cards', () => 
     expect(a.turn).toBe(0);
     expect(legalMoves(a).filter((move) => puzzleValue(applyMove(a, move)) > 5)).toHaveLength(1);
   }
+});
+it('archives only stored past boards and provides a valid winning line without creating a run', async () => {
+  const a = await account(false);
+  const state = makePuzzle(42);
+  const days = Array.from({ length: 14 }, (_, offset) => puzzleDay(Date.now() - offset * 86400000));
+  await p.db.read((sql) =>
+    sql(
+      'INSERT INTO daily_puzzles(day,initial_state) SELECT day,$2::jsonb FROM unnest($1::date[]) AS day ON CONFLICT DO NOTHING',
+      [days, JSON.stringify(state)],
+    ),
+  );
+  const archive = (path = '') =>
+    p.app.inject({
+      url: `/api/puzzles/archive${path}`,
+      headers: { authorization: `Bearer ${a.token}` },
+    });
+  expect((await p.app.inject({ url: '/api/puzzles/archive' })).statusCode).toBe(401);
+  expect((await archive()).json()).toEqual({ days: days.slice(1, 13), nextBefore: days[12] });
+  expect((await archive(`?before=${days[12]}`)).json()).toEqual({
+    days: [days[13]],
+    nextBefore: null,
+  });
+  expect((await archive('?before=2025-02-30')).statusCode).toBe(400);
+  for (const day of [days[0], puzzleDay(Date.now() + 86400000), '2025-02-30', '2000-01-01'])
+    expect((await archive(`/${day}`)).statusCode).toBe(404);
+
+  const entry = (await archive(`/${days[1]}`)).json();
+  expect(entry).toEqual({ day: days[1], state });
+  const review = puzzleReview(entry.state)!;
+  expect(review.line).toHaveLength(3);
+  const finished = review.line.reduce((position, { move }) => applyMove(position, move), state);
+  expect(winner(finished)).toBe(0);
+  expect(review.score[0]).toBe(puzzleValue(state));
+  expect(review.alternative?.value).toBe(puzzleValue(applyMove(state, review.alternative!.move)));
+  expect(review.alternative?.value).toBeLessThanOrEqual(5);
+  expect(
+    await p.db.read((sql) =>
+      sql('SELECT 1 FROM daily_puzzle_runs WHERE profile_id=$1', [a.profile.id]),
+    ),
+  ).toEqual([]);
+  expect((await p.store.profile(a.actor)).prisms).toBe(a.profile.prisms);
 });
 it('keeps new Ranked losses free of card transfers and allows immediate requeue', async () => {
   const a = await account(),

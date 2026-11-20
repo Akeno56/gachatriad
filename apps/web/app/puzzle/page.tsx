@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { scores, winner } from '@gacha-triad/engine';
 import type { DailyPuzzleView } from '@gacha-triad/shared/puzzle';
 import { api } from '../../lib/platform';
-import { Card } from '../../components/card';
+import { PracticeBoard, PracticeHands } from '../../components/practice-position';
 import { LocaleView, NoTranslate } from '../../components/i18n';
 import { useSession } from '../../components/session';
 import { usePageRefresh } from '../../components/use-page-refresh';
@@ -142,9 +142,14 @@ export default function PuzzlePage() {
             <h1>Daily Triad puzzle</h1>
             <p className="page-description">Force a win · Same · Plus · Combo · All Open.</p>
           </div>
-          <div className="puzzle-reward menu-window">
-            <strong>◇ {view?.reward ?? 100}</strong>
-            <span>{view?.rewarded ? 'Reward claimed' : 'First solve reward'}</span>
+          <div className="puzzle-heading-actions">
+            <div className="puzzle-reward menu-window">
+              <strong>◇ {view?.reward ?? 100}</strong>
+              <span>{view?.rewarded ? 'Reward claimed' : 'First solve reward'}</span>
+            </div>
+            <Link className="outline-button" href="/puzzle/archive">
+              Puzzle archive
+            </Link>
           </div>
         </header>
         <p className="error-message" role="alert">
@@ -208,71 +213,24 @@ export default function PuzzlePage() {
               </div>
             ) : (
               <div className="puzzle-play-layout">
-                <section
-                  className="menu-window puzzle-table"
-                  aria-label="Daily puzzle board"
-                  aria-describedby="puzzle-turn-status"
-                >
-                  <div className="puzzle-board-space">
-                    <div className="puzzle-board">
-                      {state.board.map((placed, cell) => (
-                        <button
-                          className={`puzzle-cell ${!placed && selected ? 'is-legal' : ''}`}
-                          data-testid={`puzzle-cell-${cell}`}
-                          key={cell}
-                          disabled={busy || !!placed || state.status === 'complete' || !selected}
-                          aria-label={
-                            placed ? `Occupied cell ${cell + 1}` : `Place card in cell ${cell + 1}`
-                          }
-                          onClick={() => {
-                            if (selected)
-                              void act('move', { cardId: selected, cell, version: view.version });
-                          }}
-                        >
-                          {placed ? (
-                            <Card card={placed.card} owner={placed.owner} />
-                          ) : (
-                            <span>
-                              {String.fromCharCode(65 + Math.floor(cell / 3))}
-                              {(cell % 3) + 1}
-                            </span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </section>
+                <PracticeBoard
+                  state={state}
+                  selected={selected}
+                  busy={busy}
+                  label="Daily puzzle board"
+                  statusId="puzzle-turn-status"
+                  onPlace={(cell) => {
+                    if (selected)
+                      void act('move', { cardId: selected, cell, version: view.version });
+                  }}
+                />
                 <aside className="puzzle-sidebar">
-                  <div className="puzzle-reserves">
-                    <section className="menu-window puzzle-reserve">
-                      <h2>Your puzzle hand</h2>
-                      <div className="puzzle-hand" aria-label="Your puzzle hand">
-                        {state.hands[0].map((card) => (
-                          <button
-                            key={card.id}
-                            disabled={busy || state.status === 'complete'}
-                            aria-label={`Select ${card.name}`}
-                            aria-pressed={selected === card.id}
-                            onClick={() => setSelected(card.id)}
-                          >
-                            <Card card={card} owner={0} />
-                          </button>
-                        ))}
-                        {!state.hands[0].length && <p>No cards remaining.</p>}
-                      </div>
-                    </section>
-                    <section className="menu-window puzzle-reserve">
-                      <h2>Opponent’s remaining cards</h2>
-                      <div className="puzzle-hand" aria-label="Opponent’s remaining cards">
-                        {state.hands[1].map((card) => (
-                          <div key={card.id}>
-                            <Card card={card} owner={1} />
-                          </div>
-                        ))}
-                        {!state.hands[1].length && <p>No cards remaining.</p>}
-                      </div>
-                    </section>
-                  </div>
+                  <PracticeHands
+                    state={state}
+                    selected={selected}
+                    busy={busy}
+                    onSelect={setSelected}
+                  />
                   <section
                     className={`puzzle-outcome menu-window ${view.solved ? 'is-solved' : ''}`}
                   >

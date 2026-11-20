@@ -851,6 +851,14 @@ export async function createPlatform(
       p = await store.identity(actor, requested);
     return puzzles.view(p.id, p.registered, actor.id);
   });
+  app.get('/api/puzzles/archive', async (req) => {
+    await profile(req);
+    return puzzles.archive((req.query as { before?: string }).before);
+  });
+  app.get('/api/puzzles/archive/:day', async (req) => {
+    await profile(req);
+    return puzzles.archived((req.params as { day: string }).day);
+  });
   for (const action of ['start', 'move', 'claim'] as const)
     app.post(
       `/api/puzzles/daily/${action}`,

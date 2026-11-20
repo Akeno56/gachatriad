@@ -16,7 +16,11 @@ import {
   type GameState,
   type Player,
 } from '@gacha-triad/engine';
-import type { ReplayList, ReplayView } from '@gacha-triad/shared/replays';
+import {
+  replayPracticePosition,
+  type ReplayList,
+  type ReplayView,
+} from '@gacha-triad/shared/replays';
 
 let p: Awaited<ReturnType<typeof createPlatform>>,
   replays: MatchReplays,
@@ -67,7 +71,15 @@ async function legacy(a: User, b?: User, completedAt = new Date(), mode = 'custo
   ) as [Card[], Card[]];
   let state = createGame(
     decks,
-    { ...STANDARD, same: true, plus: true, combo: true },
+    {
+      ...STANDARD,
+      allOpen: false,
+      threeOpen: true,
+      elemental: true,
+      same: true,
+      plus: true,
+      combo: true,
+    },
     seededRandom(18),
   );
   for (let i = 0; i < 6; i++)
@@ -90,6 +102,32 @@ async function legacy(a: User, b?: User, completedAt = new Date(), mode = 'custo
   );
   return { id, state, decks };
 }
+it('starts a branch from the exact archived position for either seat, including Three Open', async () => {
+  const a = await user(),
+    b = await user();
+  const { id, state, decks } = await legacy(a, b);
+  for (const player of [a, b]) {
+    const response = await request(player, `/replays/${id}`);
+    expect(response.statusCode, response.body).toBe(200);
+    const replay = response.json<ReplayView>();
+    expect(replay.revealed).toEqual(state.revealed);
+    const frame = replay.frames.findIndex(
+      (frame, index) => index > 0 && frame.turn === replay.seat,
+    );
+    expect(replayPracticePosition(replay, frame - 1)).toBeNull();
+    const practice = replayPracticePosition(replay, frame)!;
+    expect(practice.history).toEqual(state.history.slice(0, frame));
+    expect(practice.firstPlayer).toBe(state.firstPlayer);
+    expect(practice.cellElements).toEqual(state.cellElements);
+    expect(practice.revealed).toEqual(state.revealed);
+    expect(practice.rules).toEqual(state.rules);
+    expect(scores(practice)).toEqual(replay.frames[frame].score);
+    expect(
+      replayFrames(applyMove(practice, legalMoves(practice)[0]), decks).slice(0, frame + 1),
+    ).toEqual(replay.frames.slice(0, frame + 1));
+    expect((await request(player, `/replays/${id}`)).json<ReplayView>()).toEqual(replay);
+  }
+});
 it('reconstructs every actual frame including special captures, both starters, partial games and Elemental/Holo values', () => {
   const reasons = new Set<string>();
   for (let seed = 0; seed < 90; seed++) {

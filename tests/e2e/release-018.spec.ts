@@ -241,6 +241,62 @@ test('plays stored frames, inspects cards, persists private favourites and handl
     await c.context.close();
   }
 });
+test('tries another move from a replay while keeping the archived frame intact', async ({
+  browser,
+}, info) => {
+  const c = await player(browser);
+  try {
+    const saved = await completed(c);
+    await c.page.goto(`${base}/replays/?match=${saved.id}`);
+    const ownMove = c.page.getByRole('button', { name: 'Try another move', exact: true });
+    const step = saved.states.findIndex((state, i) => i > 1 && state.turn === 0);
+    for (let n = 0; n < step; n++) {
+      if (saved.states[n].turn === 1) await expect(ownMove).toBeDisabled();
+      await c.page.getByRole('button', { name: 'Next turn', exact: true }).click();
+    }
+    await expect(ownMove).toBeEnabled();
+    await ownMove.click();
+    const state = saved.states[step];
+    const cells = c.page.locator('.puzzle-cell .playing-card');
+    await expect(cells).toHaveCount(step);
+    await expect(c.page.locator('.puzzle-reserves .card-back')).toHaveCount(state.hands[1].length);
+    const recorded = saved.states[step + 1].history.at(-1)!.move;
+    const different = legalMoves(state).find(
+      (move) => move.cardId !== recorded.cardId || move.cell !== recorded.cell,
+    )!;
+    const name = state.hands[0].find((card) => card.id === different.cardId)!.name;
+    await c.page.getByRole('button', { name: `Select ${name}`, exact: true }).click();
+    await c.page.getByTestId(`puzzle-cell-${different.cell}`).click();
+    await expect(cells).toHaveCount(step + 2);
+    await expect(c.page.getByTestId(`puzzle-cell-${different.cell}`)).toContainText(name);
+    await c.page.getByRole('button', { name: 'Reset position', exact: true }).click();
+    await expect(cells).toHaveCount(step);
+    if (info.project.name === 'desktop') {
+      for (const [width, height] of [
+        [1280, 720],
+        [1366, 768],
+        [1920, 1080],
+      ]) {
+        await c.page.setViewportSize({ width, height });
+        await c.page.evaluate(() => scrollTo(0, 0));
+        await fits(c.page);
+        await expect(c.page.locator('.puzzle-board')).toBeInViewport({ ratio: 1 });
+        await expect(c.page.locator('.puzzle-reserves')).toBeInViewport({ ratio: 1 });
+        await c.page.screenshot({ path: info.outputPath(`replay-practice-${width}.png`) });
+      }
+    }
+    await c.page.getByRole('button', { name: 'Back to replay', exact: true }).click();
+    await expect(c.page.getByRole('slider', { name: 'Replay turn' })).toHaveValue(String(step));
+    await frame(c.page, state);
+    await c.page.getByRole('button', { name: 'Next turn', exact: true }).click();
+    await frame(c.page, saved.states[step + 1]);
+    await french(c.page);
+    await expect(c.page.getByRole('button', { name: 'Essayer un autre coup' })).toBeDisabled();
+    await fits(c.page);
+  } finally {
+    await c.context.close();
+  }
+});
 test('sets up a styled practice match, opens its replay from results and keeps the home chat usable', async ({
   browser,
 }, info) => {

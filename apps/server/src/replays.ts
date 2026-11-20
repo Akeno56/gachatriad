@@ -114,6 +114,7 @@ export async function archiveReplay(sql: Sql, id: string) {
     decks,
     rules: m.rules,
     cellElements: [...(m.state?.cellElements ?? Array(9).fill(null))],
+    revealed: m.state?.revealed,
     frames: replayFrames(m.state, decks),
     winner: m.is_draw ? 'draw' : (m.winner ?? 0),
     endReason: m.end_reason,
@@ -158,8 +159,8 @@ export async function anonymizeReplays(sql: Sql, profiles: string[]) {
 export class MatchReplays {
   constructor(readonly db: Database) {}
   private async owned(sql: Sql, profileId: string, id: string): Promise<ReplayView> {
-    const [match] = await sql(
-      "SELECT 1 FROM matches WHERE id=$1 AND status='complete' AND (player0=$2 OR player1=$2)",
+    const [match] = await sql<{ revealed: GameState['revealed'] | null }>(
+      "SELECT state->'revealed' AS revealed FROM matches WHERE id=$1 AND status='complete' AND (player0=$2 OR player1=$2)",
       [id, profileId],
     );
     if (!match) throw new GameError('Replay not found.', 404);
@@ -169,7 +170,12 @@ export class MatchReplays {
       [id, profileId],
     );
     if (!row) throw new GameError('Replay not found.', 404);
-    return { ...row.payload, seat: row.seat, favorite: row.favorite };
+    return {
+      ...row.payload,
+      revealed: row.payload.revealed ?? match.revealed ?? undefined,
+      seat: row.seat,
+      favorite: row.favorite,
+    };
   }
   async get(profileId: string, id: string) {
     return this.db.tx((sql) => this.owned(sql, profileId, id));
