@@ -57,6 +57,7 @@ export function Game() {
   const receivedRef = useRef(receivedMatch);
   receivedRef.current = receivedMatch;
   const currentMatchId = useRef(matchId);
+  const leftResultId = useRef<string | null>(null);
   currentMatchId.current = matchId;
   useEffect(
     () => () => {
@@ -114,7 +115,8 @@ export function Game() {
     if (!profile) return;
     const query = new URLSearchParams(location.search).get('match');
     const watch = new URLSearchParams(location.search).get('spectate');
-    const target = profile.pendingTrade?.matchId ?? profile.activeMatchId;
+    const active = profile.activeMatchId === leftResultId.current ? null : profile.activeMatchId;
+    const target = profile.pendingTrade?.matchId ?? active;
     if (target && target !== matchId) {
       setWatchingId(null);
       setMatchId(target);
@@ -248,6 +250,7 @@ export function Game() {
         location.assign(appPath('/lobbies'));
         return;
       }
+      leftResultId.current = match.id;
       menu();
       if (next?.matchId) setMatchId(next.matchId);
       await refresh();
