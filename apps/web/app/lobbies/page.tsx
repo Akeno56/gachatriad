@@ -2,7 +2,7 @@
 import { LocaleView, NoTranslate } from '../../components/i18n';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { isRatedMode, type LobbyPreset, type LobbyView } from '@gacha-triad/shared/platform';
 import { STANDARD } from '@gacha-triad/engine';
@@ -37,6 +37,7 @@ export default function Lobbies() {
   const [presets, setPresets] = useState<LobbyPreset[]>([]);
   const [presetName, setPresetName] = useState('');
   const [presetBusy, setPresetBusy] = useState(false);
+  const presetRevision = useRef(0);
   const tradeEligible = visibility === 'closed' && same && plus && combo;
   const customRules = {
     ...STANDARD,
@@ -66,12 +67,13 @@ export default function Lobbies() {
   useEffect(() => {
     if (!create || !profile) return;
     let current = true;
+    const revision = presetRevision.current;
     void api<LobbyPreset[]>('/lobby-presets').then(
       (rows) => {
-        if (current) setPresets(rows);
+        if (current && revision === presetRevision.current) setPresets(rows);
       },
       (e: Error) => {
-        if (current) setError(e.message);
+        if (current && revision === presetRevision.current) setError(e.message);
       },
     );
     return () => {
@@ -97,6 +99,7 @@ export default function Lobbies() {
     try {
       if (removeId) {
         await api(`/lobby-presets/${removeId}`, undefined, 'DELETE');
+        presetRevision.current++;
         setPresets((rows) => rows.filter((row) => row.id !== removeId));
       } else {
         const saved = await api<LobbyPreset>('/lobby-presets', {
@@ -105,6 +108,7 @@ export default function Lobbies() {
           tradeRule: trade ? 'one' : 'none',
           allowBots,
         });
+        presetRevision.current++;
         setPresets((rows) =>
           [...rows.filter((row) => row.id !== saved.id), saved].sort((a, b) =>
             a.name.localeCompare(b.name),
