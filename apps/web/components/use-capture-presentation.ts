@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MatchView } from '@gacha-triad/shared/platform';
 import type { Sound } from '../lib/audio';
-import { capturePhases } from '../lib/capture-presentation';
+import { captureFrames, capturePhases } from '../lib/capture-presentation';
 export function useCapturePresentation(incoming: MatchView | null, sound: (sound: Sound) => void) {
   const [match, setMatch] = useState<MatchView | null>(incoming),
     [resolving, setResolving] = useState(false),
@@ -24,47 +24,52 @@ export function useCapturePresentation(incoming: MatchView | null, sound: (sound
       }
       const previous = shown.current;
       shown.current = next;
-      setMatch(next);
       if (
         !next?.game ||
         changedId ||
         !previous?.game ||
         next.game.history.length <= previous.game.history.length
       ) {
+        setMatch(next);
         setRevealed(null);
         setFlipping([]);
         setCallout('');
         setResolving(false);
         return;
       }
-      const turn = next.game.history.at(-1)!;
+      const frames = captureFrames(previous.game, next.game);
       running.current = true;
       const stamp = ++token.current;
       setResolving(true);
-      setRevealed(new Set());
-      setFlipping([]);
       const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
       void (async () => {
-        const visible = new Set<number>();
-        const phases = capturePhases(turn.captures);
-        if (!phases.length) {
-          sound('place');
-          await wait(220);
-        }
-        for (const phase of phases) {
+        for (const game of frames) {
           if (token.current !== stamp) return;
+          setMatch(game === next.game ? next : { ...next, status: 'playing', game });
+          setRevealed(new Set());
           setFlipping([]);
-          setCallout(phase.label);
-          if (phase.label) {
-            sound(phase.reason === 'combo' ? 'combo' : 'capture');
-            await wait(750);
+          setCallout('');
+          const visible = new Set<number>();
+          const phases = capturePhases(game.history.at(-1)!.captures);
+          if (!phases.length) {
+            sound('place');
+            await wait(220);
           }
-          if (token.current !== stamp) return;
-          for (const capture of phase.captures) visible.add(capture.cell);
-          setRevealed(new Set(visible));
-          setFlipping(phase.captures.map((c) => c.cell));
-          sound(phase.reason === 'combo' ? 'combo' : 'capture');
-          await wait(700 + Math.max(0, phase.captures.length - 1) * 160);
+          for (const phase of phases) {
+            if (token.current !== stamp) return;
+            setFlipping([]);
+            setCallout(phase.label);
+            if (phase.label) {
+              sound(phase.reason === 'combo' ? 'combo' : 'capture');
+              await wait(750);
+            }
+            if (token.current !== stamp) return;
+            for (const capture of phase.captures) visible.add(capture.cell);
+            setRevealed(new Set(visible));
+            setFlipping(phase.captures.map((c) => c.cell));
+            sound(phase.reason === 'combo' ? 'combo' : 'capture');
+            await wait(700 + Math.max(0, phase.captures.length - 1) * 160);
+          }
         }
         if (token.current !== stamp) return;
         running.current = false;

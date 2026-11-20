@@ -193,7 +193,11 @@ export function Game() {
     setBusy(true);
     setError('');
     try {
-      setMatch(await api<MatchView>(path, body));
+      const next = await api<MatchView>(path, body);
+      if (currentMatchId.current !== next.id) return;
+      setMatch((current) =>
+        current?.id === next.id && current.version > next.version ? current : next,
+      );
       setSelected(null);
       await refresh();
     } catch (e) {

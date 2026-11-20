@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { openStarterPacks } from './helpers';
 import { TRAINING_STEPS } from '../../packages/shared/src/training-duel';
+import { applyMove, legalMoves } from '../../packages/engine/src/index';
 async function prepared(page: Page, registered = false) {
   await page.goto('/boosters');
   await expect(page.locator('.account-control')).not.toHaveText('Connecting…');
@@ -241,20 +242,21 @@ test('fits compact lobby tiles and filters multiple rules together', async ({ pa
   await page.getByRole('button', { name: 'Clear rules' }).click();
   await expect(page.locator('.lobby-row')).toHaveCount(3);
 });
-test('plays visible Same, Plus and Combo flips with Holo and CRT motion off', async ({
-  page,
-}, info) => {
+test('plays Same, Plus and Combo flips before a bundled bot reply', async ({ page }, info) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await prepared(page);
   await page.evaluate(() => localStorage.setItem('triad-effects', 'off'));
   const solo = await (await page.request.post('/api/solo', { data: {} })).json();
   const original = await (await page.request.get(`/api/matches/${solo.matchId}`)).json();
   const lesson = TRAINING_STEPS[10];
+  const botReply = legalMoves(lesson.after!).find(
+    (move) => !applyMove(lesson.after!, move).history.at(-1)?.captures.length,
+  )!;
   const view = (state: typeof lesson.before, version: number) => ({
     ...original,
     version,
     seat: 0,
-    mode: 'custom',
+    mode: 'solo',
     rules: state.rules,
     game: {
       ...state,
@@ -265,7 +267,7 @@ test('plays visible Same, Plus and Combo flips with Holo and CRT motion off', as
   let fixture = view(lesson.before, 10000);
   await page.route(`**/api/matches/${solo.matchId}`, (route) => route.fulfill({ json: fixture }));
   await page.route(`**/api/matches/${solo.matchId}/move`, (route) => {
-    fixture = view(lesson.after!, 10001);
+    fixture = view(applyMove(lesson.after!, botReply), 10002);
     return route.fulfill({ json: fixture });
   });
   try {
@@ -316,7 +318,8 @@ test('plays visible Same, Plus and Combo flips with Holo and CRT motion off', as
                 .getAnimations()
                 .find(
                   (animation) =>
-                    animation instanceof CSSAnimation && animation.animationName === 'capture-turn',
+                    animation instanceof CSSAnimation &&
+                    animation.animationName === 'battle-card-turn',
                 );
               if (flip?.effect) {
                 const time = flip.currentTime;
@@ -350,7 +353,7 @@ test('plays visible Same, Plus and Combo flips with Holo and CRT motion off', as
     expect(phases.every((phase) => phase.aboveBoard)).toBe(true);
     for (const phase of phases) {
       expect(phase.animation).toBe('capture-splash');
-      expect(phase.flipAnimation).toBe('capture-turn');
+      expect(phase.flipAnimation).toBe('battle-card-turn');
       expect(phase.edgeRatio).toBeLessThan(0.2);
       expect(phase.flipDelay).toBeGreaterThanOrEqual(700);
     }
@@ -361,6 +364,7 @@ test('plays visible Same, Plus and Combo flips with Holo and CRT motion off', as
     await expect(splash).toHaveCount(0);
     for (const cell of [0, 2, 3, 5])
       await expect(page.getByTestId(`cell-${cell}`)).toHaveAttribute('data-owner', '0');
+    await expect(page.getByTestId(`cell-${botReply.cell}`).locator('.owned-cpu')).toBeVisible();
   } finally {
     await page.request.post(`/api/matches/${solo.matchId}/resign`, { data: {} });
   }

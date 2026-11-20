@@ -93,18 +93,18 @@ async function fits(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 }
 
-test('rotates a captured card for both players in a live match with system reduced motion', async ({
+test('rotates a captured card for both players in Unranked with system reduced motion', async ({
   browser,
 }, info) => {
   const host = await player(browser),
     guest = await player(browser);
   const players = [host, guest];
   try {
-    const { lobbyId } = await platform.store.createLobby(host.profile, {
-      mode: 'custom',
-      rules: { allOpen: true },
+    await platform.store.createLobby(host.profile, { mode: 'casual', allowBots: false });
+    const { matchId } = await platform.store.createLobby(guest.profile, {
+      mode: 'casual',
+      allowBots: false,
     });
-    const { matchId } = await platform.store.joinLobby(guest.profile, lobbyId!);
     // Read the live starting decks so the fixture works whichever player starts.
     const [initial] = await platform.db.read((sql) =>
       sql<{ state: GameState; version: number }>('SELECT state,version FROM matches WHERE id=$1', [
@@ -145,23 +145,34 @@ test('rotates a captured card for both players in a live match with system reduc
       players.map(async ({ page }) => {
         const cell = page.getByTestId(`cell-${opening.cell}`);
         const rotor = cell.locator('.capture-flip-rotor');
-        await expect(rotor).toHaveCSS('animation-name', 'capture-turn');
-        const ratio = await rotor.evaluate((element) => {
-          const flip = element
-            .getAnimations()
-            .find(
+        await expect(rotor).toHaveCSS('animation-name', 'battle-card-turn');
+        const rotation = await rotor.evaluate((element) => {
+          const animations = element
+            .getAnimations({ subtree: true })
+            .filter(
               (animation) =>
-                animation instanceof CSSAnimation && animation.animationName === 'capture-turn',
-            )!;
-          const time = flip.currentTime;
-          flip.currentTime = 0;
-          const face = element.getBoundingClientRect().width;
-          flip.currentTime = Number(flip.effect!.getTiming().duration) / 2;
-          const edge = element.getBoundingClientRect().width;
-          flip.currentTime = time;
-          return edge / face;
+                animation instanceof CSSAnimation && animation.animationName.startsWith('battle-'),
+            );
+          const times = animations.map((animation) => animation.currentTime);
+          const sample = (time: number) => {
+            for (const animation of animations) animation.currentTime = time;
+            return {
+              width: element.getBoundingClientRect().width,
+              oldFace: getComputedStyle(element.querySelector('.capture-flip-old')!).visibility,
+              newFace: getComputedStyle(element.querySelector('.capture-flip-new')!).visibility,
+            };
+          };
+          const first = sample(30);
+          const edge = sample(300);
+          const last = sample(570);
+          animations.forEach((animation, i) => {
+            animation.currentTime = times[i];
+          });
+          return { first, last, edgeRatio: edge.width / first.width };
         });
-        expect(ratio).toBeLessThan(0.2);
+        expect(rotation.first).toMatchObject({ oldFace: 'visible', newFace: 'hidden' });
+        expect(rotation.last).toMatchObject({ oldFace: 'hidden', newFace: 'visible' });
+        expect(rotation.edgeRatio).toBeLessThan(0.2);
         if (page === attacker && info.project.name === 'desktop')
           await page.screenshot({ path: info.outputPath('live-capture-flip.png') });
         await expect(cell.locator('.playing-card')).toHaveCount(1);
