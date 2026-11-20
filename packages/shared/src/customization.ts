@@ -23,7 +23,7 @@ export const PORTRAIT_FRAMES = [
   { id: 'gold', name: 'Gold', achievementId: 'hundred-wins', requirement: 'Win 100 duels.' },
 ] as const;
 export type PortraitFrame = (typeof PORTRAIT_FRAMES)[number]['id'];
-export type FeaturedMode = 'ranked' | 'draft' | 'shared-draft';
+export type FeaturedMode = import('./platform').RatedMode;
 export interface ProfileCustomization {
   revision: number;
   bio: string;

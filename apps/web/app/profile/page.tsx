@@ -49,6 +49,7 @@ function PlayerProfile() {
           profile?.name,
           profile?.played,
           profile?.rating,
+          profile?.rankedRandomRating,
           profile?.draftRating,
           profile?.sharedDraftRating,
           profile?.avatarCardId,
@@ -71,6 +72,7 @@ function PlayerProfile() {
     self = player?.id === profile?.id;
   const modes = [
     { id: 'ranked', name: 'Ranked', rating: player?.rating },
+    { id: 'ranked-random', name: 'Ranked Random', rating: player?.rankedRandomRating },
     { id: 'draft', name: 'Draft', rating: player?.draftRating },
     { id: 'shared-draft', name: 'Shared Draft', rating: player?.sharedDraftRating },
   ];

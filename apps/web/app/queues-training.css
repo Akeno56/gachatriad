@@ -1,14 +1,24 @@
 .mode-rules-dialog {
-  width: min(650px, calc(100vw - 28px));
-  padding: 28px;
+  width: min(560px, calc(100vw - 28px));
+  padding: 24px;
 }
 .mode-rules-dialog h2 {
   font: 36px/1.1 var(--pixel);
   color: var(--gold);
-  margin: 0 0 20px;
+  margin: 0 0 12px;
 }
 .mode-rules-dialog p {
   line-height: 1.6;
+}
+.queue-rule-badges {
+  margin-bottom: 12px;
+}
+.queue-rule-list {
+  margin: 0 0 16px;
+  padding-inline-start: 1.2em;
+  display: grid;
+  gap: 4px;
+  line-height: 1.35;
 }
 .matchmaking-panel {
   align-self: start;

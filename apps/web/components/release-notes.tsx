@@ -32,6 +32,8 @@ export function ReleaseNotes() {
           <li>Replay past daily puzzles from the archive.</li>
           <li>Review the winning first move after the daily reset.</li>
           <li>Try a different move in a saved replay against a bot.</li>
+          <li>Ranked adds Three Open and Elemental.</li>
+          <li>Ranked Random draws a legal deck from your collection.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

@@ -1,20 +1,23 @@
-﻿'use client';
+'use client';
 import { LocaleView } from './i18n';
 
 import { useEffect, useRef, useState } from 'react';
-import type { ProfileView } from '@gacha-triad/shared/platform';
+import { RANKED_RULES, UNRANKED_RULES } from '@gacha-triad/engine';
+import { isRankedMode, type ProfileView, type RatedMode } from '@gacha-triad/shared/platform';
 import { useSession } from './session';
 import { api } from '../lib/platform';
 import { GameDialog } from './ui';
-type QueueMode = 'casual' | 'ranked' | 'draft' | 'shared-draft';
-const preferenceKey = (id: string, mode: QueueMode) => `triad-hide-rules:${id}:${mode}:v14`;
+import { matchModeNames, ruleNames } from '../lib/rules';
+export type QueueMode = 'casual' | RatedMode;
+const preferenceKey = (id: string, mode: QueueMode) =>
+  `triad-hide-rules:${id}:${mode}:${isRankedMode(mode) ? 'v24' : 'v14'}`;
 type Request = { mode: QueueMode; resolve: (allow: boolean) => void };
-function confirm(mode: QueueMode, profile: ProfileView | null): Promise<boolean> {
+export function confirmQueueRules(mode: QueueMode, profile: ProfileView | null): Promise<boolean> {
   if (!profile || (mode !== 'casual' && !profile.registered)) return Promise.resolve(false);
   try {
     if (
       localStorage.getItem(preferenceKey(profile.id, mode)) === 'on' &&
-      (mode !== 'ranked' || profile.rankedAcknowledged)
+      (!isRankedMode(mode) || profile.rankedAcknowledged)
     )
       return Promise.resolve(true);
   } catch {}
@@ -24,10 +27,13 @@ function confirm(mode: QueueMode, profile: ProfileView | null): Promise<boolean>
     ),
   );
 }
-export const confirmRanked = (profile: ProfileView | null) => confirm('ranked', profile);
-export const confirmDraft = (profile: ProfileView | null) => confirm('draft', profile);
-export const confirmSharedDraft = (profile: ProfileView | null) => confirm('shared-draft', profile);
-export const confirmUnranked = (profile: ProfileView | null) => confirm('casual', profile);
+const queueTitles: Record<QueueMode, string> = {
+  casual: 'Unranked rules',
+  ranked: 'Ranked rules',
+  'ranked-random': 'Ranked Random rules',
+  draft: 'Draft rules · Ranked',
+  'shared-draft': 'Shared Draft rules · Ranked',
+};
 export function RankedWarning() {
   const { profile, refresh } = useSession(),
     heading = useRef<HTMLHeadingElement>(null),
@@ -56,9 +62,14 @@ export function RankedWarning() {
     setMode(null);
   }
   if (!mode) return null;
-  const ranked = mode === 'ranked',
+  const ranked = isRankedMode(mode),
     draft = mode === 'draft',
     shared = mode === 'shared-draft';
+  const rules = ranked
+    ? { ...RANKED_RULES, random: mode === 'ranked-random' }
+    : shared
+      ? { ...UNRANKED_RULES, allOpen: true, threeOpen: false }
+      : UNRANKED_RULES;
   return (
     <LocaleView>
       <GameDialog
@@ -71,67 +82,31 @@ export function RankedWarning() {
         className={`mode-rules-dialog ${ranked ? 'ranked-warning' : ''}`}
       >
         <h2 id="queue-rules-title" ref={heading} tabIndex={-1}>
-          {ranked
-            ? 'Ranked rules · No card loss'
-            : shared
-              ? 'Shared Draft rules · Ranked'
-              : draft
-                ? 'Draft rules · Ranked'
-                : 'Unranked rules'}
+          {queueTitles[mode]}
         </h2>
-        <p>
-          <strong>{ranked ? 'Closed hands' : shared ? 'All Open' : 'Three Open'}</strong> · Same ·
-          Plus · Combo
-        </p>
-        <p>
-          {ranked
-            ? 'Your hand stays hidden until cards are played.'
-            : shared
-              ? 'Draft picks are public, so both complete hands stay visible in battle.'
-              : 'Three randomly chosen cards from each starting hand are visible to the opponent.'}{' '}
-          Same matches touching numbers; Plus matches sums; both can start Combo chains.
-        </p>
-        {shared ? (
-          <p>
-            Four temporary boosters form one shared pool of 20 different cards. Both players finish
-            opening, then take turns picking five cards each within the rarity limit. Each pick
-            allows 45 seconds. Shared Draft rating changes only against human players. No card
-            trade; temporary cards never enter your collection. Each booster guarantees a 3★+ and a
-            4★+ card, with 5% Holo. Shared pools contain at least ten cards of 3★ or lower so both
-            players can finish legal hands.
-          </p>
-        ) : draft ? (
-          <p>
-            Open three private temporary boosters, then choose five of your 15 cards within the
-            rarity limit. Your opponent has a separate pool. Draft has its own Elo rating for human
-            matches. No card trade; temporary cards never enter your collection.
-          </p>
-        ) : ranked ? (
-          <>
-            <p>
-              <strong>No card loss in Ranked.</strong> Win or lose, your collection and saved deck
-              stay intact. Trade One remains available in custom games when both players choose to
-              stake cards.
-            </p>
-            <p>
-              The queue searches for human players. You can choose a practice bot while waiting;
-              practice games do not change Elo.
-            </p>
-          </>
-        ) : (
-          <p>
-            <strong>No card trade and no rating change.</strong> Matchmaking can pair you with a
-            player or an available populated bot.
+        <div className="rule-badges queue-rule-badges">
+          {ruleNames(rules).map((rule) => (
+            <span key={rule}>{rule}</span>
+          ))}
+        </div>
+        <ul className="queue-rule-list">
+          {mode === 'ranked-random' && (
+            <li>A legal deck is drawn from your collection each match.</li>
+          )}
+          {draft && <li>Open 3 private boosters and pick 5 cards.</li>}
+          {shared && <li>Alternate picks from 20 shared cards. 45 seconds per pick.</li>}
+          <li>
+            {mode === 'casual'
+              ? 'No Elo or card loss.'
+              : 'Player matches change Elo. No card loss.'}
+          </li>
+          <li>60 seconds per turn. Two missed turns in a row forfeit.</li>
+        </ul>
+        {error && (
+          <p className="error-message" role="alert">
+            {error}
           </p>
         )}
-        <p>
-          Turns last 60 seconds. Your first missed turn auto-plays one card. Miss your next turn too
-          and you lose immediately. Playing manually resets the warning. Disconnecting for 120
-          seconds also forfeits.
-        </p>
-        <p className="error-message" role="alert">
-          {error}
-        </p>
         <label className="check-label queue-hide-prompt">
           <input
             name="ranked-warning-input-1"
@@ -165,7 +140,7 @@ export function RankedWarning() {
               }
             }}
           >
-            {`Join ${ranked ? 'Ranked' : shared ? 'Shared Draft' : draft ? 'Draft' : 'Unranked'} queue`}
+            {`Join ${matchModeNames[mode]} queue`}
           </button>
           <button className="outline-button" disabled={busy} onClick={() => close(false)}>
             Cancel

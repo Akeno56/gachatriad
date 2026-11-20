@@ -451,6 +451,118 @@ test('practises an archived puzzle and reveals the winning line on request', asy
     await c.context.close();
   }
 });
+test('shows concise Ranked rules and plays, rematches, and requeues Ranked Random', async ({
+  browser,
+}, info) => {
+  test.setTimeout(90_000);
+  const a = await player(browser),
+    b = await player(browser);
+  const page = a.page;
+  try {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Start match (Ranked)', exact: true }).click();
+    const ranked = page.getByRole('dialog', { name: 'Ranked rules', exact: true });
+    await expect(ranked.locator('.queue-rule-badges span')).toHaveText([
+      'Three Open',
+      'Same',
+      'Plus',
+      'Combo',
+      'Elemental',
+    ]);
+    await expect(ranked.locator('.queue-rule-list li')).toHaveCount(2);
+    await ranked.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await page.getByRole('button', { name: 'Start match (Unranked)', exact: true }).click();
+    const casual = page.getByRole('dialog', { name: 'Unranked rules', exact: true });
+    await expect(casual.locator('.queue-rule-badges span')).toHaveText([
+      'Three Open',
+      'Same',
+      'Plus',
+      'Combo',
+    ]);
+    await casual.getByRole('button', { name: 'Cancel', exact: true }).click();
+    const start = page.getByRole('button', { name: 'Start match (Ranked Random)', exact: true });
+    await start.click();
+    const random = page.getByRole('dialog', { name: 'Ranked Random rules', exact: true });
+    await expect(random.locator('.queue-rule-list li')).toHaveCount(3);
+    await expect(random.locator('.queue-rule-badges span')).toHaveText([
+      'Three Open',
+      'Same',
+      'Plus',
+      'Combo',
+      'Random',
+      'Elemental',
+    ]);
+    if (info.project.name === 'desktop') {
+      for (const [width, height] of [
+        [1280, 720],
+        [1366, 768],
+        [1920, 1080],
+      ]) {
+        await page.setViewportSize({ width, height });
+        await expect(random).toBeInViewport({ ratio: 1 });
+        await expect(
+          random.getByRole('button', { name: 'Join Ranked Random queue' }),
+        ).toBeInViewport({ ratio: 1 });
+        await fits(page);
+        await page.screenshot({ path: info.outputPath(`ranked-random-en-${width}.png`) });
+      }
+    }
+    await random.getByRole('button', { name: 'Join Ranked Random queue', exact: true }).click();
+    await expect(
+      page.getByRole('complementary', { name: 'Ranked Random matchmaking queue' }),
+    ).toBeVisible();
+    const { matchId } = await platform.store.createLobby(b.profile, { mode: 'ranked-random' });
+    await page.goto(`/?match=${matchId}`);
+    await expect(page.locator('.board.elemental-board .board-cell')).toHaveCount(9);
+    await platform.store.resign(b.profile.id, matchId!);
+    const result = page.locator('.result-v15[open]');
+    await expect(result.locator('.rated-result')).toContainText('+16 Elo');
+    await b.page.goto(`/?match=${matchId}`);
+    await result.getByRole('button', { name: 'Rematch (no Elo)', exact: true }).click();
+    await b.page
+      .locator('.result-v15[open]')
+      .getByRole('button', { name: 'Accept rematch', exact: true })
+      .click();
+    await expect
+      .poll(async () => (await platform.store.view(a.profile.id, matchId!)).rematch.matchId)
+      .not.toBeNull();
+    const rematch = (await platform.store.view(a.profile.id, matchId!)).rematch.matchId!;
+    await expect(page.locator('.board.elemental-board .board-cell')).toHaveCount(9);
+    await platform.store.resign(b.profile.id, rematch);
+    await expect(result.locator('.rated-result')).toContainText('No Elo change.');
+    await result.getByRole('button', { name: 'Queue again', exact: true }).click();
+    await page.getByRole('button', { name: 'Leave Ranked Random queue', exact: true }).click();
+    await expect(start).toBeEnabled();
+    await french(page);
+    await page.setViewportSize(
+      info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1280, height: 720 },
+    );
+    await page.getByRole('button', { name: 'Jouer (classé aléatoire)', exact: true }).click();
+    const frenchRules = page.getByRole('dialog', {
+      name: 'Règles du Classé aléatoire',
+      exact: true,
+    });
+    await expect(frenchRules).toContainText(
+      'Un deck valide est tiré de votre collection à chaque partie.',
+    );
+    await expect(frenchRules).toBeInViewport({ ratio: 1 });
+    if (info.project.name === 'desktop') {
+      const join = await frenchRules
+        .getByRole('button', { name: 'Rejoindre la file' })
+        .boundingBox();
+      const cancel = await frenchRules.getByRole('button', { name: 'Annuler' }).boundingBox();
+      expect(Math.abs(join!.y - cancel!.y)).toBeLessThan(2);
+    }
+    await fits(page);
+    await page.screenshot({ path: info.outputPath('ranked-random-fr.png') });
+    await page.goto('/ladder');
+    await page.getByRole('tab', { name: 'Classé aléatoire', exact: true }).click();
+    await expect(page.getByRole('tabpanel', { name: 'Classé aléatoire' })).toContainText('1016');
+  } finally {
+    await a.context.close();
+    await b.context.close();
+  }
+});
 test('offers both ranked Draft queues, handles shared picks and displays separate ladder tabs', async ({
   browser,
 }, info) => {
@@ -464,7 +576,7 @@ test('offers both ranked Draft queues, handles shared picks and displays separat
     ).toBeVisible();
     await a.page.getByRole('button', { name: 'Start Shared Draft (Ranked)', exact: true }).click();
     const dialog = a.page.getByRole('dialog', { name: 'Shared Draft rules · Ranked' });
-    await expect(dialog).toContainText('20 different cards');
+    await expect(dialog).toContainText('20 shared cards');
     await dialog.getByRole('button', { name: 'Join Shared Draft queue', exact: true }).click();
     await expect(a.page.locator('.queue-status')).toContainText('Shared Draft');
     await fits(a.page);
@@ -515,7 +627,12 @@ test('offers both ranked Draft queues, handles shared picks and displays separat
     await fits(a.page);
     await platform.store.resign(b.profile.id, matchId!);
     await a.page.goto('/ladder');
-    await expect(a.page.locator('.ladder-tabs button')).toHaveCount(3);
+    await expect(a.page.locator('.ladder-tabs').getByRole('tab')).toHaveText([
+      'Ranked',
+      'Ranked Random',
+      'Draft',
+      'Shared Draft',
+    ]);
     await a.page.getByRole('tab', { name: 'Shared Draft', exact: true }).click();
     await expect(a.page.locator('.ladder-table tbody')).toContainText(a.profile.name);
     await a.page.getByRole('tab', { name: 'Draft', exact: true }).click();

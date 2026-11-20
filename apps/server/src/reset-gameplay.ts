@@ -7,7 +7,7 @@ export async function resetGameplay(store: GameStore, version = 'v0.12-holo-star
     await sql(`TRUNCATE TABLE deck_loadouts,daily_puzzle_runs,duel_invitations,friend_messages,friendships,chat_messages,battle_messages,chat_moderation_state,
       trade_offers,inventory_ledger,achievement_unlocks,lobbies,replay_owners,match_replays,match_ratings,matches,inventory,
       prism_ledger,booster_purchases,booster_packs,duplicate_actions,card_purchases,admin_grants,moderation_log`);
-    await sql(`UPDATE profiles SET rating=1000,draft_rating=1000,shared_draft_rating=1000,peak_rating=1000,
+    await sql(`UPDATE profiles SET rating=1000,ranked_random_rating=1000,draft_rating=1000,shared_draft_rating=1000,peak_rating=1000,
       wins=0,losses=0,draws=0,played=0,captures=0,same_captures=0,plus_captures=0,
       combo_captures=0,best_combo=0,perfect_wins=0,trade_wins=0,prisms=0,
       default_deck='[]',active_loadout_id=NULL,avatar_card=NULL,selected_title=NULL,best_ranked_position=NULL,

@@ -77,6 +77,14 @@ export const STANDARD: Rules = Object.freeze({
   plus: false,
   combo: false,
 });
+export const UNRANKED_RULES: Rules = Object.freeze({
+  ...STANDARD,
+  threeOpen: true,
+  same: true,
+  plus: true,
+  combo: true,
+});
+export const RANKED_RULES: Rules = Object.freeze({ ...UNRANKED_RULES, elemental: true });
 export const PRESETS = [
   {
     id: 'classic',
@@ -84,7 +92,12 @@ export const PRESETS = [
     description: 'Every card visible. Pure strategy.',
     rules: { ...STANDARD, allOpen: true },
   },
-  { id: 'standard', name: 'Standard', description: 'Keep your hand a secret.', rules: STANDARD },
+  {
+    id: 'standard',
+    name: 'Standard',
+    description: 'Three cards revealed per hand.',
+    rules: { ...STANDARD, threeOpen: true },
+  },
   {
     id: 'same',
     name: 'Same Clash',
@@ -107,13 +120,13 @@ export const PRESETS = [
     id: 'unranked',
     name: 'Unranked · Three Open',
     description: 'Three Open, Same, Plus and Combo. No card trade.',
-    rules: { ...STANDARD, threeOpen: true, same: true, plus: true, combo: true },
+    rules: UNRANKED_RULES,
   },
   {
     id: 'ranked',
-    name: 'Ranked · Same / Plus / Combo',
-    description: 'Closed hands, Same, Plus and Combo. No card loss.',
-    rules: { ...STANDARD, same: true, plus: true, combo: true },
+    name: 'Ranked',
+    description: 'Three Open, Same, Plus, Combo and Elemental.',
+    rules: RANKED_RULES,
   },
   {
     id: 'random',

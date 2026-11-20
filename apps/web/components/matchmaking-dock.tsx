@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { ProfileView } from '@gacha-triad/shared/platform';
+import { isRatedMode, type ProfileView } from '@gacha-triad/shared/platform';
 import { api } from '../lib/platform';
 import { matchModeNames } from '../lib/rules';
 import { LocaleView } from './i18n';
@@ -22,7 +22,7 @@ function WaitingLobby({ waiting }: { waiting: NonNullable<ProfileView['waitingLo
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const locked = useRef(false);
-  const rated = ['ranked', 'draft', 'shared-draft'].includes(waiting.mode);
+  const rated = isRatedMode(waiting.mode);
   const custom = waiting.mode === 'custom';
   const mode =
     waiting.mode === 'draft' || waiting.mode === 'shared-draft'
@@ -108,10 +108,7 @@ function WaitingLobby({ waiting }: { waiting: NonNullable<ProfileView['waitingLo
         dismissible={!busy}
       >
         <h2 id="practice-title">Practice with a bot?</h2>
-        <p>
-          Bot games use the same Ranked or Draft rules and never change Elo. A human opponent can
-          still match first.
-        </p>
+        <p>Same rules, no Elo. A player may match first.</p>
         <div className="result-actions">
           <Button variant="primary" disabled={busy} onClick={() => void update(true)}>
             Find practice bot

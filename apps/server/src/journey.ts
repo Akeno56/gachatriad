@@ -9,6 +9,7 @@ import {
   type SeasonRecord,
   type WeeklyView,
 } from '@gacha-triad/shared/journey';
+import { RATED_MODES, modeRatingField } from '@gacha-triad/shared/platform';
 import type { Database, Sql } from './database';
 import { GameError } from './errors';
 
@@ -105,8 +106,8 @@ export class PlayerJourney {
         FROM match_ratings r JOIN matches m ON m.id=r.match_id WHERE r.profile_id=$1 AND m.season=$2 GROUP BY mode`,
         [profileId, CURRENT_SEASON.id],
       );
-      const [p] = await sql<{ rating: number; draft_rating: number; shared_draft_rating: number }>(
-        'SELECT rating,draft_rating,shared_draft_rating FROM profiles WHERE id=$1',
+      const [p] = await sql<Record<ReturnType<typeof modeRatingField>, number>>(
+        'SELECT rating,ranked_random_rating,draft_rating,shared_draft_rating FROM profiles WHERE id=$1',
         [profileId],
       );
       return {
@@ -116,19 +117,14 @@ export class PlayerJourney {
           completed: stamps.some((s) => s.chapter === chapter.id),
         })),
         season: CURRENT_SEASON,
-        records: (['ranked', 'draft', 'shared-draft'] as const).map((mode) => ({
+        records: RATED_MODES.map((mode) => ({
           mode,
           games: 0,
           wins: 0,
           losses: 0,
           draws: 0,
           ...records.find((r) => r.mode === mode),
-          rating:
-            mode === 'ranked'
-              ? p.rating
-              : mode === 'draft'
-                ? p.draft_rating
-                : p.shared_draft_rating,
+          rating: p[modeRatingField(mode)],
         })),
       };
     });

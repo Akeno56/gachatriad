@@ -15,6 +15,8 @@ import {
   seededRandom,
   shuffle,
   STANDARD,
+  RANKED_RULES,
+  UNRANKED_RULES,
   supportsTradeOne,
   validateDeck,
   validateMove,
@@ -29,7 +31,9 @@ import { CARDS, ALL_CARDS } from '@gacha-triad/shared';
 import {
   ACHIEVEMENTS,
   ECONOMY,
+  RATED_MODES,
   isDraftMode,
+  isRankedMode,
   isRatedMode,
   modeRatingField,
   type AchievementView,
@@ -56,12 +60,20 @@ export interface Actor {
 }
 export type ProfileIdentity = Pick<
   ProfileView,
-  'id' | 'name' | 'registered' | 'isAdmin' | 'rating' | 'draftRating' | 'sharedDraftRating'
+  | 'id'
+  | 'name'
+  | 'registered'
+  | 'isAdmin'
+  | 'rating'
+  | 'rankedRandomRating'
+  | 'draftRating'
+  | 'sharedDraftRating'
 >;
 interface ProfileRow {
   id: string;
   name: string;
   rating: number;
+  ranked_random_rating: number;
   draft_rating: number;
   shared_draft_rating: number;
   wins: number;
@@ -101,6 +113,7 @@ interface MatchRow {
   rematch_requested_by: string | null;
   rematch_requested_at: Date | null;
   rematch_match_id: string | null;
+  unrated_rematch: boolean;
   departed: string[];
 }
 interface LobbyRow {
@@ -126,14 +139,9 @@ const cards = (ids: readonly string[]) =>
     if (!card) throw new GameError('Unknown card definition.');
     return card;
   });
-export const UNRANKED: Rules = {
-  ...STANDARD,
-  threeOpen: true,
-  same: true,
-  plus: true,
-  combo: true,
-};
-export const RANKED: Rules = { ...STANDARD, same: true, plus: true, combo: true };
+export const UNRANKED = UNRANKED_RULES;
+export const RANKED = RANKED_RULES;
+const RANKED_RANDOM: Rules = { ...RANKED, random: true };
 export function cleanRules(input: unknown): Rules {
   if (!input || typeof input !== 'object') return UNRANKED;
   const r = input as Record<string, unknown>;
@@ -200,6 +208,7 @@ export class GameStore {
       '021_player_journey.sql',
       '022_replays_bot_styles.sql',
       '023_profile_customization.sql',
+      '024_ranked_random.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -222,13 +231,14 @@ export class GameStore {
         id: string;
         name: string;
         rating: number;
+        ranked_random_rating: number;
         draft_rating: number;
         shared_draft_rating: number;
         last_seen_at: Date;
         suspended: boolean;
         admin: boolean;
       }>(
-        `SELECT p.id,p.name,p.rating,p.draft_rating,p.shared_draft_rating,p.last_seen_at,
+        `SELECT p.id,p.name,p.rating,p.ranked_random_rating,p.draft_rating,p.shared_draft_rating,p.last_seen_at,
         EXISTS(SELECT 1 FROM server_suspensions s WHERE s.auth_user_id=$1) AS suspended,
         EXISTS(SELECT 1 FROM server_admins a WHERE a.auth_user_id=$1) AS admin
         FROM profiles p JOIN profile_accounts a ON a.profile_id=p.id
@@ -253,6 +263,7 @@ export class GameStore {
         registered: !actor.isAnonymous,
         isAdmin: !actor.isAnonymous && p.admin,
         rating: p.rating,
+        rankedRandomRating: p.ranked_random_rating,
         draftRating: p.draft_rating,
         sharedDraftRating: p.shared_draft_rating,
       };
@@ -349,6 +360,7 @@ export class GameStore {
         name: p.name,
         registered: !actor.isAnonymous,
         rating: p.rating,
+        rankedRandomRating: p.ranked_random_rating,
         draftRating: p.draft_rating,
         sharedDraftRating: p.shared_draft_rating,
         played: p.played,
@@ -434,8 +446,18 @@ export class GameStore {
         409,
       );
   }
-  private async deck(sql: Sql, id: string, random = false) {
+  private async deck(sql: Sql, id: string, random = false, mode: Mode = 'solo') {
     const pool = await this.available(sql, id);
+    if (mode === 'ranked-random') {
+      try {
+        return randomDeck(pool, rng());
+      } catch {
+        throw new GameError(
+          'Your available collection cannot form a legal five-card deck. Open a booster or cancel reserved trade offers.',
+          428,
+        );
+      }
+    }
     const [p] = await sql<ProfileRow>('SELECT * FROM profiles WHERE id=$1', [id]);
     if (p.default_deck.length !== 5)
       throw new GameError(
@@ -523,6 +545,7 @@ export class GameStore {
     trade: 'none' | 'one',
     decks: [Card[], Card[]],
     difficulty: 'easy' | 'normal' | null = null,
+    unratedRematch = false,
   ) {
     const id = randomUUID();
     await this.requireSettlement(sql, a);
@@ -543,7 +566,7 @@ export class GameStore {
       }
     }
     await sql(
-      `INSERT INTO matches(id,mode,player0,player1,difficulty,state,decks,pools,rules,trade_rule,status,deadline) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8::jsonb,$9::jsonb,$10,$11,$12)`,
+      `INSERT INTO matches(id,mode,player0,player1,difficulty,state,decks,pools,rules,trade_rule,status,deadline,unrated_rematch) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8::jsonb,$9::jsonb,$10,$11,$12,$13)`,
       [
         id,
         mode,
@@ -559,6 +582,7 @@ export class GameStore {
         state
           ? Date.now() + (mode === 'solo' && state.turn === 1 ? 700 : 60_000)
           : Date.now() + 180_000,
+        unratedRematch,
       ],
     );
     await sql('UPDATE matches SET activity_at=$1::jsonb,disconnected_at=$2::jsonb WHERE id=$3', [
@@ -578,8 +602,8 @@ export class GameStore {
   async lobbies(includeRated = false): Promise<LobbyView[]> {
     return this.db.read(async (sql) => {
       const rows = await sql<LobbyRow & { host: string; bot_style: CpuStyle | null }>(
-        "SELECT l.*,p.name host,CASE WHEN p.is_bot THEN p.bot_style ELSE NULL END bot_style FROM lobbies l JOIN profiles p ON p.id=l.host_id WHERE l.status IN('waiting','playing') AND ($1 OR l.mode NOT IN('ranked','draft','shared-draft')) ORDER BY l.created_at DESC LIMIT 200",
-        [includeRated],
+        "SELECT l.*,p.name host,CASE WHEN p.is_bot THEN p.bot_style ELSE NULL END bot_style FROM lobbies l JOIN profiles p ON p.id=l.host_id WHERE l.status IN('waiting','playing') AND ($1 OR l.mode<>ALL($2::text[])) ORDER BY l.created_at DESC LIMIT 200",
+        [includeRated, RATED_MODES],
       );
       return rows.map((r) => ({
         id: r.id,
@@ -622,19 +646,21 @@ export class GameStore {
   ) {
     const { id } = profile;
     const mode = input.mode;
-    if (!['casual', 'custom', 'ranked', 'draft', 'shared-draft', 'roulette'].includes(mode))
+    if (!isRatedMode(mode) && !['casual', 'custom', 'roulette'].includes(mode))
       throw new GameError('Unknown mode.');
     const trade = mode === 'custom' && input.tradeRule === 'one' ? 'one' : 'none';
     if ((isRatedMode(mode) || trade === 'one') && !profile.registered)
       throw new GameError('Register an account for ranked, rated Draft, or Trade One.', 403);
     const rules =
-      mode === 'ranked'
-        ? RANKED
-        : mode === 'shared-draft'
-          ? { ...UNRANKED, allOpen: true, threeOpen: false }
-          : mode === 'custom'
-            ? cleanRules(input.rules)
-            : UNRANKED;
+      mode === 'ranked-random'
+        ? RANKED_RANDOM
+        : mode === 'ranked'
+          ? RANKED
+          : mode === 'shared-draft'
+            ? { ...UNRANKED, allOpen: true, threeOpen: false }
+            : mode === 'custom'
+              ? cleanRules(input.rules)
+              : UNRANKED;
     if (trade === 'one' && !supportsTradeOne(rules))
       throw new GameError(
         'Trade One requires Closed visibility with Same, Plus and Combo enabled.',
@@ -644,10 +670,10 @@ export class GameStore {
       const [actor] = await sql<{ is_bot: boolean }>('SELECT is_bot FROM profiles WHERE id=$1', [
         id,
       ]);
-      if (mode === 'ranked') await this.rankedEligible(sql, id);
+      if (isRankedMode(mode)) await this.rankedEligible(sql, id);
       const allowBots =
         input.invitedProfile || isRatedMode(mode) ? false : (input.allowBots ?? actor.is_bot);
-      if (!isDraftMode(mode)) await this.deck(sql, id, !!rules.random);
+      if (!isDraftMode(mode)) await this.deck(sql, id, !!rules.random, mode);
       if (mode !== 'custom') {
         const ratingField = modeRatingField(mode);
         const candidates = await sql<LobbyRow>(
@@ -655,11 +681,12 @@ export class GameStore {
           [
             mode,
             id,
-            mode === 'shared-draft'
-              ? profile.sharedDraftRating
-              : mode === 'draft'
-                ? profile.draftRating
-                : profile.rating,
+            {
+              ranked: profile.rating,
+              'ranked-random': profile.rankedRandomRating,
+              draft: profile.draftRating,
+              'shared-draft': profile.sharedDraftRating,
+            }[isRatedMode(mode) ? mode : 'ranked'],
             actor.is_bot,
             allowBots,
           ],
@@ -689,7 +716,7 @@ export class GameStore {
     });
   }
   private async joinRow(sql: Sql, p: ProfileIdentity, lobby: LobbyRow) {
-    if (lobby.mode === 'ranked') {
+    if (isRankedMode(lobby.mode)) {
       await this.rankedEligible(sql, p.id);
       await this.rankedEligible(sql, lobby.host_id);
     }
@@ -710,7 +737,7 @@ export class GameStore {
       (await sql<{ is_bot: boolean }>('SELECT is_bot FROM profiles WHERE id=$1', [p.id]))[0]?.is_bot
     )
       throw new GameError('Bots are not allowed at this table.', 403);
-    if (lobby.mode !== 'ranked' && lobby.trade_rule === 'one' && !supportsTradeOne(lobby.rules))
+    if (!isRankedMode(lobby.mode) && lobby.trade_rule === 'one' && !supportsTradeOne(lobby.rules))
       throw new GameError(
         'This table’s Trade One rules are no longer valid. Its host must create a Closed / Same / Plus / Combo table.',
       );
@@ -721,12 +748,14 @@ export class GameStore {
     if ((isRatedMode(lobby.mode) || lobby.trade_rule === 'one') && !p.registered)
       throw new GameError('A registered account is required for this table.', 403);
     let rules = lobby.mode === 'roulette' ? roulette() : lobby.rules;
+    if (lobby.mode === 'ranked-random') rules = RANKED_RANDOM;
+    if (lobby.mode === 'ranked') rules = RANKED;
     if (rules.combo && !rules.same && !rules.plus) rules = { ...rules, combo: false };
     const decks: [Card[], Card[]] = isDraftMode(lobby.mode)
       ? [[], []]
       : [
-          await this.deck(sql, lobby.host_id, !!rules.random),
-          await this.deck(sql, p.id, !!rules.random),
+          await this.deck(sql, lobby.host_id, !!rules.random, lobby.mode),
+          await this.deck(sql, p.id, !!rules.random, lobby.mode),
         ];
     const mid = await this.newMatch(
       sql,
@@ -734,7 +763,7 @@ export class GameStore {
       lobby.host_id,
       p.id,
       rules,
-      lobby.mode === 'ranked' ? 'none' : lobby.trade_rule,
+      isRankedMode(lobby.mode) ? 'none' : lobby.trade_rule,
       decks,
     );
     await sql(
@@ -769,8 +798,8 @@ export class GameStore {
   async enablePractice(profileId: string, lobbyId: string) {
     const rows = await this.db.read((sql) =>
       sql(
-        "UPDATE lobbies SET allow_bots=true WHERE id=$1 AND host_id=$2 AND status='waiting' AND mode IN('ranked','draft','shared-draft') AND invited_profile IS NULL RETURNING id",
-        [lobbyId, profileId],
+        "UPDATE lobbies SET allow_bots=true WHERE id=$1 AND host_id=$2 AND status='waiting' AND mode=ANY($3::text[]) AND invited_profile IS NULL RETURNING id",
+        [lobbyId, profileId, RATED_MODES],
       ),
     );
     if (!rows.length) throw new GameError('Your queue has ended. Refresh to see your match.', 409);
@@ -865,7 +894,7 @@ export class GameStore {
           count(*) FILTER(WHERE NOT m.is_draw AND m.winner<>CASE WHEN m.player0=$1 THEN 0 ELSE 1 END)::int AS losses,
           count(*) FILTER(WHERE m.is_draw)::int AS draws
           FROM matches m WHERE (m.player0=$1 OR m.player1=$1) AND m.status='complete' AND m.mode=$2 AND m.season=$3
-          AND m.player1 IS NOT NULL AND coalesce(m.end_reason,'')<>'admin test result'
+          AND m.player1 IS NOT NULL AND NOT m.unrated_rematch AND coalesce(m.end_reason,'')<>'admin test result'
           AND NOT EXISTS(SELECT 1 FROM profiles bot WHERE bot.is_bot AND bot.id IN(m.player0,m.player1))`,
           [profileId, m.mode, m.season],
         );
@@ -924,6 +953,7 @@ export class GameStore {
         chatAvailable: !spectator && !!m.player1 && !users.some((p) => p.is_bot),
         ratingApplies:
           !!m.player1 &&
+          !m.unrated_rematch &&
           isRatedMode(m.mode) &&
           !users.some((p) => p.is_bot) &&
           m.end_reason !== 'admin test result' &&
@@ -1155,11 +1185,11 @@ export class GameStore {
           );
         return;
       }
-      if (m.mode === 'ranked') {
+      if (isRankedMode(m.mode)) {
         await this.rankedEligible(sql, m.player0);
         await this.rankedEligible(sql, m.player1!);
       }
-      if (other.is_bot && !isDraftMode(m.mode)) {
+      if (other.is_bot && !isDraftMode(m.mode) && m.mode !== 'ranked-random') {
         const deck = buildBestDeck(await this.available(sql, opponent), rng());
         await sql('UPDATE profiles SET default_deck=$1::jsonb WHERE id=$2', [
           JSON.stringify(deck.map((c) => c.id)),
@@ -1169,8 +1199,8 @@ export class GameStore {
       const decks: [Card[], Card[]] = isDraftMode(m.mode)
         ? [[], []]
         : [
-            await this.deck(sql, m.player0, !!m.rules.random),
-            await this.deck(sql, m.player1!, !!m.rules.random),
+            await this.deck(sql, m.player0, !!m.rules.random, m.mode),
+            await this.deck(sql, m.player1!, !!m.rules.random, m.mode),
           ];
       const next = await this.newMatch(
         sql,
@@ -1181,6 +1211,7 @@ export class GameStore {
         m.trade_rule,
         decks,
         m.difficulty,
+        m.mode === 'ranked-random',
       );
       const [host] = await sql<{ name: string }>('SELECT name FROM profiles WHERE id=$1', [
         m.player0,
@@ -1208,7 +1239,7 @@ export class GameStore {
     match: MatchRow,
     viewer: string,
   ): Promise<string | null> {
-    if (isRatedMode(match.mode))
+    if (isRatedMode(match.mode) && match.mode !== 'ranked-random')
       return 'Rated matches use matchmaking. Join the queue for your next game.';
     if (match.departed?.length)
       return 'A player has left this match. Start a new game to play again.';
@@ -1379,6 +1410,7 @@ export class GameStore {
       );
       if (
         m.player1 &&
+        !m.unrated_rematch &&
         !profileRows.some((p) => p.is_bot) &&
         !(await this.sharedNetwork(sql, m.player0, m.player1)) &&
         isRatedMode(m.mode)
@@ -1550,6 +1582,7 @@ export class GameStore {
         botStyle: p.is_bot === true ? (p.bot_style as CpuStyle) : null,
         joinedAt: (p.created_at as Date).toISOString(),
         rating: p.rating,
+        rankedRandomRating: p.ranked_random_rating,
         draftRating: p.draft_rating,
         sharedDraftRating: p.shared_draft_rating,
         played: p.played,

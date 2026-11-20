@@ -9,7 +9,7 @@ import { monitorEventLoopDelay } from 'node:perf_hooks';
 import { Database } from './database';
 import { createAuth } from './auth';
 import { GameStore, GameError, cleanRules } from './store';
-import type { Mode } from '@gacha-triad/shared/platform';
+import { isRatedMode, type Mode } from '@gacha-triad/shared/platform';
 import { Trades } from './trades';
 import { BotPopulation } from './bots';
 import { allowedOrigins } from './config';
@@ -792,7 +792,7 @@ export async function createPlatform(
     const [lobby] = await db.read((sql) =>
       sql<{ mode: string }>('SELECT mode FROM lobbies WHERE id=$1', [id(req)]),
     );
-    if (lobby && ['ranked', 'draft', 'shared-draft'].includes(lobby.mode))
+    if (lobby && isRatedMode(lobby.mode))
       throw new GameError('Rated matches are queue only. Join matchmaking.', 403);
     const result = await store.joinLobby(await profile(req), id(req));
     notify();

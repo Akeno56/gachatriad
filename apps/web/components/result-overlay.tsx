@@ -1,7 +1,7 @@
 'use client';
 import { useRef } from 'react';
 import Link from 'next/link';
-import type { MatchView } from '@gacha-triad/shared/platform';
+import { isRatedMode, type MatchView } from '@gacha-triad/shared/platform';
 import { LocaleView, NoTranslate } from './i18n';
 import { Card } from './card';
 import { Avatar } from './avatar';
@@ -39,7 +39,8 @@ export function ResultOverlay({
   const rated = match.ratedResult;
   const delta = rated?.delta;
   const highlights = matchHighlights(match);
-  const queueable = ['casual', 'ranked', 'draft', 'shared-draft', 'roulette'].includes(match.mode);
+  const queueable = match.mode === 'casual' || match.mode === 'roulette' || isRatedMode(match.mode);
+  const randomRematch = match.mode === 'ranked-random';
   const rematchPending = match.rematch?.requestedBy === match.players[match.seat].id;
   const rematchButton = match.mode !== 'solo' && (
     <Button
@@ -52,7 +53,9 @@ export function ResultOverlay({
         ? 'Rematch requested'
         : match.rematch?.requestedBy
           ? 'Accept rematch'
-          : 'Rematch'}
+          : randomRematch
+            ? 'Rematch (no Elo)'
+            : 'Rematch'}
     </Button>
   );
   return (
@@ -226,6 +229,8 @@ export function ResultOverlay({
                     Cancel rematch
                   </Button>
                 </>
+              ) : randomRematch ? (
+                'Practice rematch requested. Both decks are drawn again.'
               ) : (
                 'Your opponent requested a rematch with the same rules.'
               )}

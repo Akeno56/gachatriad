@@ -11,7 +11,16 @@ import type {
 import type { Database, Sql } from './database';
 import { GameError } from './errors';
 const byId = new Map(ALL_CARDS.map((card) => [card.id, card]));
-const modes = ['solo', 'casual', 'custom', 'ranked', 'draft', 'shared-draft', 'roulette'];
+const modes = [
+  'solo',
+  'casual',
+  'custom',
+  'ranked',
+  'ranked-random',
+  'draft',
+  'shared-draft',
+  'roulette',
+];
 interface Row {
   id: string;
   mode: Mode;

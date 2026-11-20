@@ -131,22 +131,17 @@ export function RulesContent() {
         <div className="rule-grid">
           <article>
             <h3>Unranked</h3>
-            <p>
-              Three Open, Same, Plus and Combo. No card trade or rating change. Start matchmaking
-              from Play; you can meet another player or a populated bot.
-            </p>
+            <p>Three Open, Same, Plus and Combo. No Elo or card loss.</p>
           </article>
           <article>
             <h3>Ranked</h3>
-            <p>
-              Closed hands, Same, Plus and Combo. Human matches change Elo, but never transfer
-              cards. Your collection and saved deck stay intact after a loss or forfeit, so you can
-              queue again immediately. Trade One remains an opt-in rule for custom games.
-            </p>
-            <p>
-              The queue searches for humans. While waiting, you can choose a practice bot. Practice
-              games never change Elo.
-            </p>
+            <p>Three Open, Same, Plus, Combo and Elemental.</p>
+            <p>Player matches change Elo. No card loss.</p>
+          </article>
+          <article>
+            <h3>Ranked Random</h3>
+            <p>Ranked rules with a legal deck drawn from your available cards each match.</p>
+            <p>Separate Elo. Direct rematches draw new decks and are unrated.</p>
           </article>
           <article>
             <h3>Draft</h3>
@@ -218,8 +213,7 @@ export function RulesContent() {
           </li>
         </ul>
         <p className="rule-note">
-          Ranked, Draft and Shared Draft each have their own Season 0 rating and leaderboard. Only
-          games between human players change Elo. Practice bots are labeled [BOT].
+          Each ranked mode has its own Elo and leaderboard. Practice bots are labeled [BOT].
         </p>
       </div>
     </LocaleView>

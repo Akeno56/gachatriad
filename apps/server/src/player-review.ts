@@ -1,5 +1,6 @@
 import type { Database } from './database';
 import { GameError } from './errors';
+import { RATED_MODES } from '@gacha-triad/shared/platform';
 export class PlayerReview {
   constructor(readonly db: Database) {}
   async history(profileId: string, offset = 0) {
@@ -41,7 +42,7 @@ export class PlayerReview {
         `WITH results AS (
         SELECT CASE WHEN m.player0=$1 THEN m.player1 ELSE m.player0 END AS opponent_id,m.mode,m.completed_at,m.id,
         CASE WHEN m.is_draw THEN 'draw' WHEN m.winner=CASE WHEN m.player0=$1 THEN 0 ELSE 1 END THEN 'win' ELSE 'loss' END AS result
-        FROM matches m WHERE (m.player0=$1 OR m.player1=$1) AND m.status='complete' AND m.mode IN('ranked','draft','shared-draft') AND coalesce(m.end_reason,'')<>'admin test result'
+        FROM matches m WHERE (m.player0=$1 OR m.player1=$1) AND m.status='complete' AND m.mode=ANY($2::text[]) AND NOT m.unrated_rematch AND coalesce(m.end_reason,'')<>'admin test result'
       ), runs AS (
         SELECT *,sum(CASE WHEN result='win' THEN 0 ELSE 1 END) OVER(PARTITION BY opponent_id,mode ORDER BY completed_at,id) AS run FROM results
       ), streaks AS (
@@ -51,7 +52,7 @@ export class PlayerReview {
         coalesce(max(s.longest),0)::int AS longest_win_streak
         FROM results r LEFT JOIN profiles p ON p.id=r.opponent_id LEFT JOIN streaks s ON s.opponent_id=r.opponent_id AND s.mode=r.mode
         GROUP BY r.opponent_id,p.name,r.mode ORDER BY games DESC,opponent LIMIT 100`,
-        [profileId],
+        [profileId, RATED_MODES],
       );
       return { person, rows, total: total.count, offset, pairs };
     });

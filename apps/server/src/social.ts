@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { modeRatingField } from '@gacha-triad/shared/platform';
+import { isRatedMode, modeRatingField } from '@gacha-triad/shared/platform';
 import { CURRENT_SEASON } from '@gacha-triad/shared/journey';
 import { ALL_CARDS } from '@gacha-triad/shared';
 import { CHAT_CHANNELS, type ChatChannel } from '@gacha-triad/shared/social';
@@ -496,7 +496,7 @@ export class Social {
     return result;
   }
   async ladder(mode: unknown): Promise<LadderEntry[]> {
-    const kind = mode === 'shared-draft' ? 'shared-draft' : mode === 'draft' ? 'draft' : 'ranked',
+    const kind = typeof mode === 'string' && isRatedMode(mode) ? mode : 'ranked',
       rating = modeRatingField(kind);
     return this.store.db.read(async (sql) =>
       (

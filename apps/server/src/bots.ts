@@ -10,7 +10,13 @@ import {
   type CpuStyle,
 } from '@gacha-triad/engine';
 import { CARDS, STARTER_DECK, CPU_DECK } from '@gacha-triad/shared';
-import type { Mode, PopulationView } from '@gacha-triad/shared/platform';
+import {
+  isRankedMode,
+  isRatedMode,
+  RATED_MODES,
+  type Mode,
+  type PopulationView,
+} from '@gacha-triad/shared/platform';
 import { GameError, GameStore, type Actor } from './store';
 import { Trades } from './trades';
 import { DIFFICULTIES, distributeBots, validateMix } from './bot-difficulty';
@@ -157,7 +163,8 @@ export class BotPopulation {
       }
     await this.store.db.read((sql) =>
       sql(
-        "UPDATE lobbies SET status='closed' WHERE mode IN('ranked','draft','shared-draft') AND status='waiting' AND host_id IN(SELECT id FROM profiles WHERE is_bot)",
+        "UPDATE lobbies SET status='closed' WHERE mode=ANY($1::text[]) AND status='waiting' AND host_id IN(SELECT id FROM profiles WHERE is_bot)",
+        [RATED_MODES],
       ),
     );
     await this.store.db.read((sql) =>
@@ -231,7 +238,7 @@ export class BotPopulation {
             const { hands, ...publicView } = m.game;
             const move = chooseCpuMove(
               { ...publicView, hand: hands[m.seat].flatMap((c) => (c.card ? [c.card] : [])) },
-              difficulty === 'medium' || (m.mode === 'ranked' && difficulty === 'easy')
+              difficulty === 'medium' || (isRankedMode(m.mode) && difficulty === 'easy')
                 ? 'normal'
                 : difficulty,
               seededRandom(randomInt(2 ** 32)),
@@ -263,7 +270,7 @@ export class BotPopulation {
             l.status === 'waiting' &&
             l.allowBots &&
             !l.inviteOnly &&
-            (!['ranked', 'draft', 'shared-draft'].includes(l.mode) || difficulty !== 'easy') &&
+            (!isRatedMode(l.mode) || difficulty !== 'easy') &&
             !l.host.startsWith('[BOT]') &&
             Date.now() - Date.parse(l.createdAt) > 5000,
         );

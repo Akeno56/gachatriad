@@ -1,5 +1,5 @@
 import { ALL_CARDS } from '@gacha-triad/shared';
-import { ACHIEVEMENTS } from '@gacha-triad/shared/platform';
+import { ACHIEVEMENTS, isRatedMode } from '@gacha-triad/shared/platform';
 import {
   PORTRAIT_FRAMES,
   type CustomizationView,
@@ -87,7 +87,7 @@ export class ProfileCustomizations {
     )
       throw new GameError('Use up to 160 characters for your bio.');
     if (chatViolation(bio)) throw new GameError('Profile text blocked by automatic moderation.');
-    if (!['ranked', 'draft', 'shared-draft'].includes(featuredMode as string))
+    if (typeof featuredMode !== 'string' || !isRatedMode(featuredMode))
       throw new GameError('Choose a rated format.');
     if (avatarCardId !== null && typeof avatarCardId !== 'string')
       throw new GameError('Choose an owned card for your profile.');

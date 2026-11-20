@@ -242,6 +242,7 @@ export function ProfileEditor({
                         onChange={(e) => field('featuredMode', e.target.value as FeaturedMode)}
                       >
                         <option value="ranked">Ranked</option>
+                        <option value="ranked-random">Ranked Random</option>
                         <option value="draft">Draft</option>
                         <option value="shared-draft">Shared Draft</option>
                       </select>

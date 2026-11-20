@@ -1,7 +1,11 @@
 ALTER TABLE matches ADD COLUMN IF NOT EXISTS shared_draft JSONB;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS shared_draft_rating INTEGER NOT NULL DEFAULT 1000;
-ALTER TABLE lobbies DROP CONSTRAINT IF EXISTS lobbies_mode_check;
-ALTER TABLE lobbies ADD CONSTRAINT lobbies_mode_check CHECK(mode IN('casual','custom','ranked','draft','shared-draft','roulette'));
+DO $$ BEGIN
+ IF NOT EXISTS (SELECT 1 FROM schema_migrations WHERE version=24) THEN
+  ALTER TABLE lobbies DROP CONSTRAINT IF EXISTS lobbies_mode_check;
+  ALTER TABLE lobbies ADD CONSTRAINT lobbies_mode_check CHECK(mode IN('casual','custom','ranked','draft','shared-draft','roulette'));
+ END IF;
+END $$;
 UPDATE lobbies SET trade_rule='none' WHERE mode='ranked' AND status='waiting';
 UPDATE matches SET trade_rule='none' WHERE mode='ranked' AND status IN('playing','drafting');
 CREATE TABLE IF NOT EXISTS daily_puzzles(

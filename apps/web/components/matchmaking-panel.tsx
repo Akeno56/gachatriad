@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { useSession } from './session';
 import { api } from '../lib/platform';
-import { confirmRanked, confirmUnranked, confirmDraft, confirmSharedDraft } from './ranked-warning';
+import { confirmQueueRules, type QueueMode } from './ranked-warning';
+import { isDraftMode, RATED_MODES } from '@gacha-triad/shared/platform';
+import { matchModeNames } from '../lib/rules';
 import { Button } from './ui';
 import { PracticeSetup } from './practice-setup';
 export function MatchmakingPanel({
@@ -22,21 +24,12 @@ export function MatchmakingPanel({
     [soloOpen, setSoloOpen] = useState(false),
     [error, setError] = useState('');
   const lock = useRef(false);
-  async function queue(mode: 'casual' | 'ranked' | 'draft' | 'shared-draft') {
+  async function queue(mode: QueueMode) {
     if (lock.current) return;
     lock.current = true;
     setError('');
     try {
-      if (
-        !(await (mode === 'ranked'
-          ? confirmRanked(profile)
-          : mode === 'shared-draft'
-            ? confirmSharedDraft(profile)
-            : mode === 'draft'
-              ? confirmDraft(profile)
-              : confirmUnranked(profile)))
-      )
-        return;
+      if (!(await confirmQueueRules(mode, profile))) return;
       setBusy(true);
       const result = await api<{ matchId: string | null }>('/lobbies', {
         mode,
@@ -56,13 +49,13 @@ export function MatchmakingPanel({
     <LocaleView>
       <section className="setup-panel menu-window matchmaking-panel" aria-label="Match setup">
         <h2 className="window-label">Play a game</h2>
-        {(['casual', 'ranked', 'draft', 'shared-draft'] as const).map((mode) => {
+        {(['casual', ...RATED_MODES] as const).map((mode) => {
           const ranked = mode !== 'casual',
-            draft = mode === 'draft' || mode === 'shared-draft',
-            name = mode === 'shared-draft' ? 'Shared Draft' : 'Draft',
-            label = draft ? `${name} (Ranked)` : ranked ? 'Ranked' : 'Unranked',
-            action = draft ? `Start ${name} (Ranked)` : `Start match (${label})`,
-            own = profile?.waitingLobby?.mode === mode;
+            draft = isDraftMode(mode),
+            name = matchModeNames[mode],
+            action = draft ? `Start ${name} (Ranked)` : `Start match (${name})`,
+            own = profile?.waitingLobby?.mode === mode,
+            requiresSavedDeck = !draft && mode !== 'ranked-random';
           return (
             <div className="matchmaking-row" key={mode}>
               <Button
@@ -74,7 +67,7 @@ export function MatchmakingPanel({
                   !!profile.pendingTrade ||
                   !!profile.activeMatchId ||
                   !!profile.waitingLobbyId ||
-                  (!draft && profile.deck.length !== 5) ||
+                  (requiresSavedDeck && profile.deck.length !== 5) ||
                   (ranked && !profile.registered)
                 }
                 onClick={() => void queue(mode)}
@@ -82,8 +75,8 @@ export function MatchmakingPanel({
               >
                 <>
                   <span className="command-copy">
-                    <strong>{draft ? name : label}</strong>
-                    <small>{own ? 'In queue' : draft ? 'Ranked' : 'Start match'}</small>
+                    <strong>{name}</strong>
+                    {own && <small>In queue</small>}
                   </span>
                 </>
               </Button>

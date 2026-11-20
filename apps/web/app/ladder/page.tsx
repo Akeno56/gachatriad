@@ -9,10 +9,12 @@ import { useSession } from '../../components/session';
 import { Avatar } from '../../components/avatar';
 import { api } from '../../lib/platform';
 import { SeasonBanner } from '../../components/season-banner';
+import { RATED_MODES, type RatedMode } from '@gacha-triad/shared/platform';
+import { matchModeNames } from '../../lib/rules';
 export default function Ladder() {
   const { profile, revision } = useSession();
   const panelId = useId();
-  const [mode, setMode] = useState('ranked'),
+  const [mode, setMode] = useState<RatedMode>('ranked'),
     [rows, setRows] = useState<LadderEntry[]>([]),
     [error, setError] = useState('');
   useEffect(() => {
@@ -41,22 +43,16 @@ export default function Ladder() {
           className="ladder-tabs"
           label="Leaderboard"
           panelId={panelId}
-          items={[
-            { value: 'ranked', label: 'Ranked' },
-            { value: 'draft', label: 'Draft' },
-            { value: 'shared-draft', label: 'Shared Draft' },
-          ]}
+          items={RATED_MODES.map((value) => ({ value, label: matchModeNames[value] }))}
           value={mode}
-          onChange={setMode}
+          onChange={(value) => setMode(value as RatedMode)}
         />
         <p role="alert">{error}</p>
         <div
           className="menu-window ladder-table"
           id={panelId}
           role="tabpanel"
-          aria-label={
-            mode === 'ranked' ? 'Ranked' : mode === 'shared-draft' ? 'Shared Draft' : 'Draft'
-          }
+          aria-label={matchModeNames[mode]}
         >
           <table>
             <thead>

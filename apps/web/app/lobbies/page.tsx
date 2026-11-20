@@ -4,13 +4,13 @@ import { LocaleView, NoTranslate } from '../../components/i18n';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { LobbyView } from '@gacha-triad/shared/platform';
+import { isRatedMode, type LobbyView } from '@gacha-triad/shared/platform';
 import { STANDARD } from '@gacha-triad/engine';
 import { api } from '../../lib/platform';
 import { useSession } from '../../components/session';
 import { ruleNames } from '../../components/game';
 import { LocalBots } from '../../components/local-bots';
-import { confirmUnranked } from '../../components/ranked-warning';
+import { confirmQueueRules } from '../../components/ranked-warning';
 import { useAllowBots } from '../../lib/lobby-preferences';
 import { MainChat } from '../../components/main-chat';
 import { BotStyle } from '../../components/bot-style';
@@ -52,7 +52,7 @@ export default function Lobbies() {
   async function enter(path: string, body: unknown) {
     const requestedMode =
       (body as { mode?: string }).mode ?? rows.find((r) => path === `/lobbies/${r.id}/join`)?.mode;
-    if (requestedMode === 'casual' && !(await confirmUnranked(profile))) return;
+    if (requestedMode === 'casual' && !(await confirmQueueRules('casual', profile))) return;
     setBusy(true);
     setError('');
     try {
@@ -405,11 +405,7 @@ export default function Lobbies() {
                         !!profile?.waitingLobbyId ||
                         !!profile?.pendingTrade ||
                         row.id === profile?.waitingLobbyId ||
-                        ((row.mode === 'ranked' ||
-                          row.mode === 'draft' ||
-                          row.mode === 'shared-draft' ||
-                          row.tradeRule === 'one') &&
-                          !profile?.registered)
+                        ((isRatedMode(row.mode) || row.tradeRule === 'one') && !profile?.registered)
                       }
                       onClick={() => enter(`/lobbies/${row.id}/join`, {})}
                     >
@@ -427,8 +423,7 @@ export default function Lobbies() {
           )}
         </div>
         <p className="library-note">
-          Waiting lobbies expire after 15 minutes. Online turns allow 60 seconds; three missed turns
-          forfeit. <Link href="/rules">Read the rules</Link>
+          Waiting lobbies expire after 15 minutes. <Link href="/rules">Read the rules</Link>
         </p>
       </div>
     </LocaleView>

@@ -1,11 +1,21 @@
 import type { Card, GameState, Player, Rules, CpuStyle } from '@gacha-triad/engine';
 import type { BattleIdentity, TitleView } from './social';
 import type { PortraitFrame, FeaturedMode } from './customization';
-export type Mode = 'solo' | 'casual' | 'custom' | 'ranked' | 'draft' | 'shared-draft' | 'roulette';
+export const RATED_MODES = ['ranked', 'ranked-random', 'draft', 'shared-draft'] as const;
+export type RatedMode = (typeof RATED_MODES)[number];
+export type Mode = 'solo' | 'casual' | 'custom' | RatedMode | 'roulette';
 export const isDraftMode = (mode: string) => mode === 'draft' || mode === 'shared-draft';
-export const isRatedMode = (mode: string) => mode === 'ranked' || isDraftMode(mode);
+export const isRatedMode = (mode: string): mode is RatedMode =>
+  (RATED_MODES as readonly string[]).includes(mode);
+export const isRankedMode = (mode: string) => mode === 'ranked' || mode === 'ranked-random';
+const ratingFields = {
+  ranked: 'rating',
+  'ranked-random': 'ranked_random_rating',
+  draft: 'draft_rating',
+  'shared-draft': 'shared_draft_rating',
+} as const;
 export const modeRatingField = (mode: string) =>
-  mode === 'shared-draft' ? 'shared_draft_rating' : mode === 'draft' ? 'draft_rating' : 'rating';
+  isRatedMode(mode) ? ratingFields[mode] : 'rating';
 export interface HandCard {
   slotId: string;
   card: Card | null;
@@ -108,6 +118,7 @@ export interface ProfileView {
   name: string;
   registered: boolean;
   rating: number;
+  rankedRandomRating: number;
   draftRating: number;
   sharedDraftRating: number;
   played: number;
@@ -301,6 +312,7 @@ export interface PlayerProfileView {
   isBot: boolean;
   joinedAt: string;
   rating: number;
+  rankedRandomRating: number;
   draftRating: number;
   sharedDraftRating: number;
   played: number;

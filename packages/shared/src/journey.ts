@@ -122,7 +122,7 @@ export interface WeeklyView {
   objectives: { id: WeeklyObjectiveId; progress: number }[];
 }
 export interface SeasonRecord {
-  mode: 'ranked' | 'draft' | 'shared-draft';
+  mode: import('./platform').RatedMode;
   rating: number;
   games: number;
   wins: number;

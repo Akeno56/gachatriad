@@ -259,6 +259,7 @@ it('uses the actual rating ledger and separates the current season and all three
   const result = await view(u);
   expect(result.records.map((r) => ({ mode: r.mode, games: r.games, wins: r.wins }))).toEqual([
     { mode: 'ranked', games: 1, wins: 1 },
+    { mode: 'ranked-random', games: 0, wins: 0 },
     { mode: 'draft', games: 1, wins: 1 },
     { mode: 'shared-draft', games: 1, wins: 1 },
   ]);

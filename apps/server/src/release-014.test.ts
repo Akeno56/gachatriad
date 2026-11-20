@@ -12,6 +12,7 @@ import {
 } from '@gacha-triad/engine';
 import { DailyPuzzles, makePuzzle, puzzleValue, puzzleDay } from './daily-puzzle';
 import { puzzleReview } from '@gacha-triad/shared/puzzle';
+import { CARDS } from '@gacha-triad/shared';
 let p: Awaited<ReturnType<typeof createPlatform>>,
   serial = 0;
 beforeAll(async () => {
@@ -114,6 +115,17 @@ it('keeps new Ranked losses free of card transfers and allows immediate requeue'
   const before = await p.store.profile(b.actor);
   await p.store.createLobby(a.profile, { mode: 'ranked', tradeRule: 'one' });
   const { matchId } = await p.store.createLobby(b.profile, { mode: 'ranked' });
+  const playing = await p.store.view(a.profile.id, matchId!);
+  expect(playing.rules).toMatchObject({
+    allOpen: false,
+    threeOpen: true,
+    elemental: true,
+    same: true,
+    plus: true,
+    combo: true,
+  });
+  expect(playing.game?.cellElements?.some(Boolean)).toBe(true);
+  expect(playing.game?.hands[1].filter(({ card }) => card)).toHaveLength(3);
   await p.store.resign(b.profile.id, matchId!);
   const view = await p.store.view(b.profile.id, matchId!);
   expect(view.trade.rule).toBe('none');
@@ -125,6 +137,114 @@ it('keeps new Ranked losses free of card transfers and allows immediate requeue'
   const queued = await p.store.createLobby(after, { mode: 'ranked' });
   expect(queued.lobbyId).toBeTruthy();
   await p.store.cancelLobby(after.id, queued.lobbyId!);
+});
+it('draws Ranked Random decks from available owned cards on match start, rematch, and requeue', async () => {
+  const a = await account(false),
+    b = await account(false);
+  const request = (user: typeof a, url: string, payload: unknown) =>
+    p.app.inject({
+      method: 'POST',
+      url,
+      payload,
+      remoteAddress: user.ip,
+      headers: { authorization: `Bearer ${user.token}` },
+    });
+  expect((await request(a, '/api/lobbies', { mode: 'ranked-random' })).statusCode).toBe(428);
+  const pool = CARDS.filter((card) => card.enabled && card.rarity <= 3).slice(0, 10);
+  for (const { profile } of [a, b]) {
+    expect(profile.deck).toEqual([]);
+    await p.db.read((sql) =>
+      sql(
+        'INSERT INTO inventory(profile_id,card_id,quantity) SELECT $1,card_id,1 FROM unnest($2::text[]) AS card_id',
+        [profile.id, pool.map(({ id }) => id)],
+      ),
+    );
+  }
+  const queue = async () => {
+    const first = await request(a, '/api/lobbies', {
+      mode: 'ranked-random',
+      tradeRule: 'one',
+      rules: { allOpen: true },
+    });
+    expect(first.statusCode, first.body).toBe(200);
+    const { lobbyId } = first.json();
+    expect((await p.store.lobbies()).some(({ id }) => id === lobbyId)).toBe(false);
+    expect((await request(b, `/api/lobbies/${lobbyId}/join`, {})).statusCode).toBe(403);
+    const next = await request(b, '/api/lobbies', { mode: 'ranked-random' });
+    expect(next.statusCode, next.body).toBe(200);
+    return next.json().matchId as string;
+  };
+  const first = await queue();
+  const hands = async (id: string) =>
+    Promise.all(
+      [a, b].map(async ({ profile }) => {
+        const view = await p.store.view(profile.id, id);
+        expect(view.mode).toBe('ranked-random');
+        expect(view.rules).toMatchObject({
+          random: true,
+          threeOpen: true,
+          elemental: true,
+          allOpen: false,
+          same: true,
+          plus: true,
+          combo: true,
+        });
+        expect(view.trade.rule).toBe('none');
+        expect(view.game?.hands[1 - view.seat].filter(({ card }) => card)).toHaveLength(3);
+        const own = view.game!.hands[view.seat].map(({ card }) => card!);
+        expect(validateDeck(own)).toEqual([]);
+        expect(own.every((card) => pool.some(({ id }) => id === card.id))).toBe(true);
+        return own.map(({ id }) => id).sort();
+      }),
+    );
+  const original = await hands(first);
+  await p.store.resign(b.profile.id, first);
+  const rated = await p.store.profile(a.actor);
+  expect(rated).toMatchObject({ rating: 1000, rankedRandomRating: 1016, deck: [] });
+  await p.store.migrate(resolve('.'));
+  const reserve = async (held: string[][]) => {
+    for (const [seat, { profile }] of [a, b].entries())
+      await p.db.read((sql) =>
+        sql(
+          'UPDATE inventory SET reserved=CASE WHEN card_id=ANY($2::text[]) THEN quantity ELSE 0 END WHERE profile_id=$1',
+          [profile.id, held[seat]],
+        ),
+      );
+  };
+  await reserve(original);
+  await p.store.rematch(a.profile.id, first);
+  expect((await p.store.view(a.profile.id, first)).rematch.matchId).toBeNull();
+  await p.store.rematch(b.profile.id, first);
+  const rematch = (await p.store.view(a.profile.id, first)).rematch.matchId!;
+  const redrawn = await hands(rematch);
+  for (const seat of [0, 1])
+    expect(redrawn[seat].some((id) => original[seat].includes(id))).toBe(false);
+  expect((await p.store.view(a.profile.id, rematch)).ratingApplies).toBe(false);
+  await p.store.resign(b.profile.id, rematch);
+  expect((await p.store.view(a.profile.id, rematch)).ratedResult).toMatchObject({
+    delta: null,
+    rating: 1016,
+    wins: 1,
+  });
+  const ladder = await p.app.inject({
+    url: '/api/ladder?mode=ranked-random',
+    headers: { authorization: `Bearer ${a.token}` },
+  });
+  expect(ladder.json()).toContainEqual(
+    expect.objectContaining({ id: a.profile.id, rating: 1016, games: 1 }),
+  );
+  await reserve(redrawn);
+  const next = await queue();
+  expect(await hands(next)).toEqual(original);
+  await p.store.resign(b.profile.id, next);
+  await reserve([[], []]);
+  const final = await p.store.profile(a.actor);
+  expect(final.rating).toBe(1000);
+  expect(final.rankedRandomRating).toBeGreaterThan(1016);
+  expect(final.deck).toEqual([]);
+  expect(
+    Object.values(final.inventory).every(({ available, quantity }) => available === quantity),
+  ).toBe(true);
 });
 it('migrates active Ranked stakes while preserving already pending legacy settlements', async () => {
   const a = await account(),

@@ -8,6 +8,7 @@ import { usePageRefresh } from '../../components/use-page-refresh';
 import { SeasonBanner } from '../../components/season-banner';
 import { Tabs, Button } from '../../components/ui';
 import { api } from '../../lib/platform';
+import { matchModeNames } from '../../lib/rules';
 
 export default function JourneyPage() {
   const { profile, refresh, openAccount } = useSession();
@@ -267,13 +268,7 @@ export default function JourneyPage() {
             <div className="season-records">
               {data.records.map((record) => (
                 <article key={record.mode}>
-                  <h3>
-                    {record.mode === 'ranked'
-                      ? 'Ranked'
-                      : record.mode === 'draft'
-                        ? 'Draft'
-                        : 'Shared Draft'}
-                  </h3>
+                  <h3>{matchModeNames[record.mode]}</h3>
                   <strong>
                     {record.rating} <small>Elo</small>
                   </strong>
