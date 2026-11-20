@@ -8,7 +8,7 @@ import { isRatedMode, type LobbyView } from '@gacha-triad/shared/platform';
 import { STANDARD } from '@gacha-triad/engine';
 import { api } from '../../lib/platform';
 import { useSession } from '../../components/session';
-import { ruleNames } from '../../components/game';
+import { matchModeNames, ruleNames } from '../../lib/rules';
 import { LocalBots } from '../../components/local-bots';
 import { confirmQueueRules } from '../../components/ranked-warning';
 import { useAllowBots } from '../../lib/lobby-preferences';
@@ -22,6 +22,7 @@ export default function Lobbies() {
     [busy, setBusy] = useState(false),
     [mode, setMode] = useState('all'),
     [status, setStatus] = useState('all'),
+    [chatOpen, setChatOpen] = useState(false),
     [ruleFilters, setRuleFilters] = useState<Record<string, number>>({}),
     [create, setCreate] = useState(false),
     [name, setName] = useState(''),
@@ -89,79 +90,12 @@ export default function Lobbies() {
     setTrade(kind === 'trade');
     setRandom(kind === 'random');
     setElemental(false);
-    setCreate(true);
-    setName('');
     setError('');
-    requestAnimationFrame(() =>
-      document
-        .querySelector('.lobby-create')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
-    );
   }
   return (
     <LocaleView>
       <div className="content-page lobby-page">
-        <div className="eyebrow">THE CARD HALL</div>
         <h1>Find a table</h1>
-        <p className="page-description">
-          Join a public table or create your own custom game. Presets fill the setup without joining
-          a queue.
-        </p>
-        <div className="queue-options">
-          {(
-            [
-              {
-                kind: 'standard',
-                name: 'Standard rules',
-                text: 'Three Open · Same · Plus · Combo · No trade',
-              },
-              {
-                kind: 'trade',
-                name: 'Trade One rules',
-                text: 'Closed · Same · Plus · Combo · Trade One',
-              },
-              {
-                kind: 'open',
-                name: 'All Open rules',
-                text: 'Both hands visible · No trade',
-              },
-              {
-                kind: 'random',
-                name: 'Random deck rules',
-                text: 'Random deck · Same · Plus · Combo · No trade',
-              },
-            ] as const
-          ).map((q) => (
-            <button
-              key={q.kind}
-              className="menu-window queue-option"
-              disabled={
-                busy ||
-                !profile ||
-                !!profile.waitingLobbyId ||
-                !!profile.pendingTrade ||
-                (q.kind === 'trade' && !profile.registered)
-              }
-              onClick={() => preset(q.kind)}
-            >
-              <strong>{q.name}</strong>
-              <span>{q.text}</span>
-            </button>
-          ))}
-        </div>
-        <p className="stakes-note">
-          Trade One: the winner takes one card from the loser’s played deck, including on a forfeit.
-          Draws trade nothing. Trade One requires an account.
-        </p>
-        <label className="check-label">
-          <input
-            name="page-input-1"
-            type="checkbox"
-            checked={allowBots}
-            onChange={(e) => setAllowBots(e.target.checked)}
-          />
-          Allow bots to join my lobby
-        </label>
         <LocalBots />
         {waiting && (
           <div className="menu-window waiting-lobby" role="status">
@@ -174,7 +108,10 @@ export default function Lobbies() {
             </span>
           </div>
         )}
-        <MainChat compact />
+        <details className="lobby-chat" onToggle={(event) => setChatOpen(event.currentTarget.open)}>
+          <summary>Lobby chat</summary>
+          <MainChat compact visible={chatOpen} />
+        </details>
         <div className="lobby-tools">
           <div className="lobby-filters">
             <label>
@@ -282,6 +219,58 @@ export default function Lobbies() {
             }}
           >
             <h2>Your table, your rules</h2>
+            <div className="queue-options">
+              {(
+                [
+                  {
+                    kind: 'standard',
+                    name: 'Standard rules',
+                    text: 'Three Open · Same · Plus · Combo · No trade',
+                  },
+                  {
+                    kind: 'trade',
+                    name: 'Trade One rules',
+                    text: 'Closed · Same · Plus · Combo · Trade One',
+                  },
+                  {
+                    kind: 'open',
+                    name: 'All Open rules',
+                    text: 'Both hands visible · No trade',
+                  },
+                  {
+                    kind: 'random',
+                    name: 'Random deck rules',
+                    text: 'Random deck · Same · Plus · Combo · No trade',
+                  },
+                ] as const
+              ).map((q) => (
+                <button
+                  key={q.kind}
+                  type="button"
+                  className="menu-window queue-option"
+                  disabled={
+                    busy ||
+                    !profile ||
+                    !!profile.waitingLobbyId ||
+                    !!profile.pendingTrade ||
+                    (q.kind === 'trade' && !profile.registered)
+                  }
+                  onClick={() => preset(q.kind)}
+                >
+                  <strong>{q.name}</strong>
+                  <span>{q.text}</span>
+                </button>
+              ))}
+            </div>
+            <label className="check-label">
+              <input
+                name="page-input-1"
+                type="checkbox"
+                checked={allowBots}
+                onChange={(e) => setAllowBots(e.target.checked)}
+              />
+              Allow bots to join my lobby
+            </label>
             <div className="lobby-filters">
               <label>
                 Lobby name
@@ -355,7 +344,7 @@ export default function Lobbies() {
           {visible.length ? (
             visible.map((row) => (
               <article className="menu-window lobby-row" key={row.id}>
-                <div>
+                <div className="lobby-details">
                   <h2>
                     <NoTranslate>{row.name}</NoTranslate>
                   </h2>
@@ -363,25 +352,8 @@ export default function Lobbies() {
                     <Link href={`/profile?id=${row.hostId}`}>
                       <NoTranslate>{row.host}</NoTranslate>
                     </Link>{' '}
-                    · {row.mode === 'casual' ? 'Unranked' : row.mode}{' '}
-                    <BotStyle style={row.botStyle} />
+                    · {matchModeNames[row.mode]} <BotStyle style={row.botStyle} />
                   </p>
-                  <div className="rule-badges">
-                    {(row.mode === 'roulette' && row.status === 'waiting'
-                      ? ['Rules drawn at match start']
-                      : ruleNames(row.rules)
-                    ).map((r) => (
-                      <span key={r}>{r}</span>
-                    ))}
-                    <span>{row.tradeRule === 'one' ? 'Trade One' : 'No trade'}</span>
-                    <span>
-                      {row.inviteOnly
-                        ? 'Friend invitation'
-                        : row.allowBots
-                          ? 'Bots allowed'
-                          : 'Humans only'}
-                    </span>
-                  </div>
                 </div>
                 <div className="lobby-join">
                   <strong>
@@ -412,6 +384,22 @@ export default function Lobbies() {
                       Join table
                     </button>
                   )}
+                </div>
+                <div className="rule-badges">
+                  {(row.mode === 'roulette' && row.status === 'waiting'
+                    ? ['Rules drawn at match start']
+                    : ruleNames(row.rules)
+                  ).map((r) => (
+                    <span key={r}>{r}</span>
+                  ))}
+                  <span>{row.tradeRule === 'one' ? 'Trade One' : 'No trade'}</span>
+                  <span>
+                    {row.inviteOnly
+                      ? 'Friend invitation'
+                      : row.allowBots
+                        ? 'Bots allowed'
+                        : 'Humans only'}
+                  </span>
                 </div>
               </article>
             ))

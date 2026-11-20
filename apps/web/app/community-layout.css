@@ -358,9 +358,13 @@
 .capture-flip-new {
   transform: rotateY(180deg);
 }
-.effects-animated .capture-flip-rotor {
-  animation: capture-turn 0.6s ease-in-out both !important;
-  animation-delay: var(--capture-delay) !important;
+.effects-animated :is(.guided-tutorial, .combo-lesson) .capture-flip-rotor {
+  animation: capture-turn 0.6s ease-in-out var(--capture-delay, 0ms) both !important;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .arena-screen .capture-flip-rotor {
+    animation: capture-turn 0.6s ease-in-out var(--capture-delay, 0ms) both;
+  }
 }
 .capture-flip-scene .capture-badge {
   animation-delay: calc(var(--capture-delay) + 0.3s);

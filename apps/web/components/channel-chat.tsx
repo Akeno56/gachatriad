@@ -14,9 +14,11 @@ const labels = { general: 'General', trade: 'Trade', lobbies: 'Lobbies' };
 export function ChannelChat({
   compact = false,
   fitViewport = false,
+  visible = true,
 }: {
   compact?: boolean;
   fitViewport?: boolean;
+  visible?: boolean;
 }) {
   const { data, error: loadError, channel, setChannel } = useSocial(),
     { profile, refreshSocial, openAccount } = useSession();
@@ -76,8 +78,9 @@ export function ChannelChat({
     setError('');
   }, [channel]);
   useEffect(() => {
-    if (sticky.current && list.current) list.current.scrollTop = list.current.scrollHeight;
-  }, [messages.at(-1)?.id, channel]);
+    if (visible && sticky.current && list.current)
+      list.current.scrollTop = list.current.scrollHeight;
+  }, [messages.at(-1)?.id, channel, visible]);
   return (
     <LocaleView>
       <section

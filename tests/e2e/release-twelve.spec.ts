@@ -178,7 +178,7 @@ test('remembers hidden rules separately and provides a ranked Draft queue', asyn
   expect(profile.waitingLobby.mode).toBe('draft');
   await page.getByRole('button', { name: 'Leave Draft (Ranked) queue' }).click();
 });
-test('filters multiple required and excluded lobby rules together', async ({ page }) => {
+test('fits compact lobby tiles and filters multiple rules together', async ({ page }, info) => {
   await prepared(page);
   const profile = await (await page.request.get('/api/profile')).json();
   const defaults = {
@@ -193,20 +193,44 @@ test('filters multiple required and excluded lobby rules together', async ({ pag
     { id: 'filter-a', name: 'Elemental Plus Combo', rules: defaults },
     { id: 'filter-b', name: 'Elemental Same', rules: { ...defaults, same: true } },
     { id: 'filter-c', name: 'No Elemental', rules: { ...defaults, elemental: false } },
-  ].map((row) => ({
+  ].map((row, index) => ({
     ...row,
     hostId: 'filter-other',
-    host: 'Filter tester',
+    host: index === 2 ? 'LongLobbyHostNameThatMustWrapInsideTheCard' : 'Filter tester',
     mode: 'custom',
     tradeRule: 'none',
     allowBots: false,
-    players: 1,
-    status: 'waiting',
-    matchId: null,
+    players: index === 2 ? 2 : 1,
+    status: index === 2 ? 'playing' : 'waiting',
+    matchId: index === 2 ? 'filter-match' : null,
     createdAt: new Date().toISOString(),
   }));
   await page.route('**/api/lobbies', (route) => route.fulfill({ json: rows }));
   await page.goto('/lobbies');
+  const tiles = page.locator('.lobby-row');
+  await expect(tiles).toHaveCount(3);
+  await expect(tiles.first().getByRole('button', { name: 'Join table' })).toBeVisible();
+  await expect(tiles.last().getByRole('link', { name: 'Spectate' })).toBeVisible();
+  if (info.project.name === 'desktop') {
+    for (const [width, height, columns] of [
+      [1280, 720, 2],
+      [1366, 768, 2],
+      [1920, 1080, 3],
+    ]) {
+      await page.setViewportSize({ width, height });
+      await page.evaluate(() => scrollTo(0, 0));
+      const grid = await tiles.evaluateAll((elements) => {
+        const top = elements[0].getBoundingClientRect().top;
+        return {
+          firstRow: elements.filter((tile) => tile.getBoundingClientRect().top === top).length,
+          allFit: elements.every((tile) => tile.scrollWidth <= tile.clientWidth),
+        };
+      });
+      expect(grid).toEqual({ firstRow: columns, allFit: true });
+      for (let n = 0; n < rows.length; n++) await expect(tiles.nth(n)).toBeInViewport({ ratio: 1 });
+      await page.screenshot({ path: info.outputPath(`lobby-grid-${width}.png`) });
+    }
+  }
   await page.getByRole('button', { name: 'Elemental: Any', exact: true }).click();
   await page.getByRole('button', { name: 'Same: Any', exact: true }).click();
   await page.getByRole('button', { name: 'Same: Required', exact: true }).click();
@@ -217,9 +241,12 @@ test('filters multiple required and excluded lobby rules together', async ({ pag
   await page.getByRole('button', { name: 'Clear rules' }).click();
   await expect(page.locator('.lobby-row')).toHaveCount(3);
 });
-test('plays the Same, Plus and Combo splashes before each group flips', async ({ page }, info) => {
+test('plays visible Same, Plus and Combo flips with Holo and CRT motion off', async ({
+  page,
+}, info) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await prepared(page);
+  await page.evaluate(() => localStorage.setItem('triad-effects', 'off'));
   const solo = await (await page.request.post('/api/solo', { data: {} })).json();
   const original = await (await page.request.get(`/api/matches/${solo.matchId}`)).json();
   const lesson = TRAINING_STEPS[10];
@@ -243,6 +270,7 @@ test('plays the Same, Plus and Combo splashes before each group flips', async ({
   });
   try {
     await page.goto(`/?match=${solo.matchId}`);
+    await expect(page.locator('.game-shell')).not.toHaveClass(/effects-animated/);
     await page
       .getByTestId('player-card')
       .filter({ hasText: lesson.before.hands[0].find((c) => c.id === lesson.move!.cardId)!.name })
@@ -256,6 +284,7 @@ test('plays the Same, Plus and Combo splashes before each group flips', async ({
             owners: Array<string | null | undefined>;
             animation: string;
             flipAnimation?: string;
+            edgeRatio?: number;
             startsAt: number;
             flipDelay: number | null;
           }>
@@ -283,6 +312,21 @@ test('plays the Same, Plus and Combo splashes before each group flips', async ({
             } else if (!splash && current?.flipDelay === null && rotor) {
               current.flipDelay = performance.now() - current.startsAt;
               current.flipAnimation = getComputedStyle(rotor).animationName;
+              const flip = rotor
+                .getAnimations()
+                .find(
+                  (animation) =>
+                    animation instanceof CSSAnimation && animation.animationName === 'capture-turn',
+                );
+              if (flip?.effect) {
+                const time = flip.currentTime;
+                const { delay = 0, duration } = flip.effect.getTiming();
+                flip.currentTime = delay;
+                const width = rotor.getBoundingClientRect().width;
+                flip.currentTime = delay + Number(duration) / 2;
+                current.edgeRatio = rotor.getBoundingClientRect().width / width;
+                flip.currentTime = time;
+              }
               if (current.label === 'COMBO') finish();
             }
           });
@@ -307,6 +351,7 @@ test('plays the Same, Plus and Combo splashes before each group flips', async ({
     for (const phase of phases) {
       expect(phase.animation).toBe('capture-splash');
       expect(phase.flipAnimation).toBe('capture-turn');
+      expect(phase.edgeRatio).toBeLessThan(0.2);
       expect(phase.flipDelay).toBeGreaterThanOrEqual(700);
     }
     expect(phases[0].owners[0]).toBe('1');

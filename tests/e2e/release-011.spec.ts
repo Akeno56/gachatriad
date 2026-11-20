@@ -276,6 +276,7 @@ test('uses custom presets in Lobbies and fits more readable cards in the compact
     page = a.page;
   try {
     await page.goto('/lobbies');
+    await page.getByRole('button', { name: 'Create custom lobby' }).click();
     await expect(page.locator('.queue-options button')).toHaveCount(4);
     await expect(
       page.locator('.queue-options').getByRole('button', { name: /^Ranked|^Draft/ }),
@@ -287,6 +288,7 @@ test('uses custom presets in Lobbies and fits more readable cards in the compact
     ).toHaveCount(0);
     await page.getByRole('button', { name: /^All Open rules/ }).click();
     await expect(page.locator('.lobby-create')).toBeVisible();
+    await expect(page.getByRole('combobox', { name: 'Visibility' })).toHaveValue('allOpen');
     expect((await platform.store.profile(a.actor)).waitingLobbyId).toBeNull();
     await page.screenshot({ path: info.outputPath('custom-presets.png'), fullPage: true });
     const mobile = info.project.name === 'mobile';

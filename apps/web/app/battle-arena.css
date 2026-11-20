@@ -193,10 +193,6 @@ body:has(.arena-screen) .system-bar :is(.release-trigger, .player-navigation) {
   padding: clamp(8px, 1.5vw, 18px) clamp(18px, 4vw, 60px);
 }
 
-.game-shell:not(.effects-animated) .arena-screen .capture-splash {
-  animation: none;
-}
-
 .arena-screen .board {
   width: 100%;
   height: auto;
@@ -382,18 +378,8 @@ body:has(.arena-screen) .system-bar :is(.release-trigger, .player-navigation) {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .effects-animated .arena-screen [data-arriving='true'] > .playing-card {
+  .arena-screen [data-arriving='true'] > .playing-card {
     animation: card-land 180ms ease-out both;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .arena-screen .capture-splash {
-    animation: none;
-  }
-
-  .effects-animated .arena-screen .capture-flip-rotor {
-    animation: none !important;
   }
 }
 
