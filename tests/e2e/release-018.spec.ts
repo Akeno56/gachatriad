@@ -309,11 +309,59 @@ test('sets up a styled practice match, opens its replay from results and keeps t
       await c.page.setViewportSize({ width: 1280, height: 720 });
       await expect(c.page.locator('.main-chat .chat-compose')).toBeInViewport({ ratio: 1 });
     }
-    await c.page.getByRole('button', { name: 'Practice', exact: true }).click();
+    const noticeboard = c.page.getByRole('region', { name: 'Noticeboard' });
+    await expect(noticeboard.locator('.tavern-notice strong')).toHaveText([
+      'Daily Puzzle',
+      'Daily Booster',
+      'Practice',
+    ]);
+    if (info.project.name === 'desktop') {
+      for (const [width, height] of [
+        [1280, 720],
+        [1366, 768],
+        [1920, 1080],
+      ]) {
+        await c.page.setViewportSize({ width, height });
+        await expect(noticeboard).toBeInViewport({ ratio: 1 });
+      }
+      await c.page.setViewportSize({ width: 1280, height: 720 });
+    }
+    await expect(noticeboard.getByRole('link', { name: /Daily Booster/ })).toHaveAttribute(
+      'href',
+      /\/boosters\/?#daily-booster$/,
+    );
+    await c.page.getByRole('button', { name: /Friends and private chat/ }).click();
+    const social = c.page.getByRole('dialog', { name: 'Friends & messages' });
+    await expect(social.getByRole('link', { name: 'Your turn →' })).toHaveAttribute(
+      'href',
+      /\/correspondence\/?$/,
+    );
+    await social.getByRole('button', { name: 'Close', exact: true }).click();
+    await noticeboard.getByRole('button', { name: 'Practice', exact: true }).click();
     const setup = c.page.getByRole('dialog', { name: 'Practice', exact: true });
     await expect(setup).toBeVisible();
+    await expect(setup.getByRole('button', { name: 'Start practice', exact: true })).toBeInViewport(
+      {
+        ratio: 1,
+      },
+    );
+    const rules = setup.getByRole('combobox', { name: 'Rules', exact: true });
+    await expect(rules).toHaveValue('standard');
+    await expect(setup.getByRole('combobox', { name: 'Visibility' })).toHaveValue('threeOpen');
+    await expect(setup.getByRole('checkbox', { name: 'Same' })).toBeChecked();
+    await expect(setup.getByRole('checkbox', { name: 'Plus' })).toBeChecked();
+    await expect(setup.getByRole('checkbox', { name: 'Combo' })).toBeChecked();
+    await expect(setup.getByRole('checkbox', { name: 'Elemental' })).not.toBeChecked();
+    await rules.selectOption('ranked-random');
+    await expect(setup.getByRole('checkbox', { name: 'Random deck' })).toBeChecked();
+    await expect(setup.getByRole('checkbox', { name: 'Elemental' })).toBeChecked();
+    await setup.getByRole('checkbox', { name: 'Same' }).uncheck();
+    await setup.getByRole('checkbox', { name: 'Plus' }).uncheck();
+    await expect(rules).toHaveValue('custom');
+    await expect(setup.getByRole('checkbox', { name: 'Combo' })).not.toBeChecked();
+    await expect(setup.getByRole('checkbox', { name: 'Combo' })).toBeDisabled();
     await setup.getByRole('combobox', { name: 'Bot style', exact: true }).selectOption('combo');
-    await setup.getByRole('combobox', { name: 'Rules', exact: true }).selectOption('combo');
+    await rules.selectOption('combo');
     await setup.getByRole('combobox', { name: 'Difficulty', exact: true }).selectOption('normal');
     await expect(setup).toContainText('Prioritises Same, Plus and Combo.');
     await fits(c.page);
@@ -321,7 +369,17 @@ test('sets up a styled practice match, opens its replay from results and keeps t
     await expect(setup).not.toBeVisible();
     const current = await platform.store.profile(c.actor),
       id = current.activeMatchId!;
-    expect((await platform.store.view(c.profile.id, id)).cpuStyle).toBe('combo');
+    expect(await platform.store.view(c.profile.id, id)).toMatchObject({
+      cpuStyle: 'combo',
+      rules: {
+        allOpen: true,
+        same: true,
+        plus: true,
+        combo: true,
+        elemental: false,
+        random: false,
+      },
+    });
     for (let n = 0; n < 12; n++) {
       const [m] = await platform.db.read((sql) =>
         sql<{ state: GameState; version: number }>(

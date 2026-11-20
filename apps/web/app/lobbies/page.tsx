@@ -5,7 +5,13 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { isRatedMode, type LobbyPreset, type LobbyView } from '@gacha-triad/shared/platform';
-import { STANDARD } from '@gacha-triad/engine';
+import {
+  STANDARD,
+  UNRANKED_RULES,
+  UNRANKED_RANDOM_RULES,
+  supportsTradeOne,
+  type Rules,
+} from '@gacha-triad/engine';
 import { api } from '../../lib/platform';
 import { useSession } from '../../components/session';
 import { matchModeNames, ruleNames } from '../../lib/rules';
@@ -14,6 +20,7 @@ import { confirmQueueRules } from '../../components/ranked-warning';
 import { useAllowBots } from '../../lib/lobby-preferences';
 import { MainChat } from '../../components/main-chat';
 import { BotStyle } from '../../components/bot-style';
+import { RuleToggles, RuleVisibility } from '../../components/rule-options';
 export default function Lobbies() {
   const { profile, revision, refresh, error: connectionError } = useSession(),
     router = useRouter();
@@ -26,32 +33,14 @@ export default function Lobbies() {
     [ruleFilters, setRuleFilters] = useState<Record<string, number>>({}),
     [create, setCreate] = useState(false),
     [name, setName] = useState(''),
-    [visibility, setVisibility] = useState('threeOpen'),
-    [same, setSame] = useState(false),
-    [plus, setPlus] = useState(false),
-    [combo, setCombo] = useState(false),
-    [elemental, setElemental] = useState(false),
-    [random, setRandom] = useState(false),
+    [rules, setRules] = useState<Rules>({ ...STANDARD, threeOpen: true }),
     [trade, setTrade] = useState(false);
   const [allowBots, setAllowBots] = useAllowBots();
   const [presets, setPresets] = useState<LobbyPreset[]>([]);
   const [presetName, setPresetName] = useState('');
   const [presetBusy, setPresetBusy] = useState(false);
   const presetRevision = useRef(0);
-  const tradeEligible = visibility === 'closed' && same && plus && combo;
-  const customRules = {
-    ...STANDARD,
-    allOpen: visibility === 'allOpen',
-    threeOpen: visibility === 'threeOpen',
-    same,
-    plus,
-    combo,
-    random,
-    elemental,
-  };
-  useEffect(() => {
-    if (!same && !plus) setCombo(false);
-  }, [same, plus]);
+  const tradeEligible = supportsTradeOne(rules);
   useEffect(() => {
     if (!tradeEligible) setTrade(false);
   }, [tradeEligible]);
@@ -81,13 +70,7 @@ export default function Lobbies() {
     };
   }, [create, profile?.id]);
   function applyPreset(preset: LobbyPreset) {
-    const { rules } = preset;
-    setVisibility(rules.allOpen ? 'allOpen' : rules.threeOpen ? 'threeOpen' : 'closed');
-    setSame(rules.same);
-    setPlus(rules.plus);
-    setCombo(rules.combo);
-    setRandom(!!rules.random);
-    setElemental(!!rules.elemental);
+    setRules(preset.rules);
     setTrade(preset.tradeRule === 'one');
     setAllowBots(preset.allowBots);
     setPresetName(preset.name);
@@ -104,7 +87,7 @@ export default function Lobbies() {
       } else {
         const saved = await api<LobbyPreset>('/lobby-presets', {
           name: presetName,
-          rules: customRules,
+          rules,
           tradeRule: trade ? 'one' : 'none',
           allowBots,
         });
@@ -154,14 +137,15 @@ export default function Lobbies() {
       }),
   );
   const waiting = rows.find((r) => r.id === profile?.waitingLobbyId);
-  function preset(kind: string) {
-    setVisibility(kind === 'open' ? 'allOpen' : kind === 'trade' ? 'closed' : 'threeOpen');
-    setSame(kind !== 'open');
-    setPlus(kind !== 'open');
-    setCombo(kind !== 'open');
+  function preset(kind: 'standard' | 'open' | 'trade' | 'random') {
+    const presets = {
+      standard: UNRANKED_RULES,
+      open: { ...STANDARD, allOpen: true },
+      trade: { ...UNRANKED_RULES, threeOpen: false },
+      random: UNRANKED_RANDOM_RULES,
+    };
+    setRules(presets[kind]);
     setTrade(kind === 'trade');
-    setRandom(kind === 'random');
-    setElemental(false);
     setError('');
   }
   return (
@@ -275,7 +259,7 @@ export default function Lobbies() {
               void enter('/lobbies', {
                 mode: 'custom',
                 name: name || undefined,
-                rules: customRules,
+                rules,
                 tradeRule: trade ? 'one' : 'none',
                 allowBots,
               });
@@ -394,52 +378,30 @@ export default function Lobbies() {
                   onChange={(e) => setName(e.target.value)}
                 />
               </label>
+              <RuleVisibility rules={rules} onChange={setRules} />
+            </div>
+            <RuleToggles rules={rules} onChange={setRules}>
               <label>
-                Visibility
-                <select
-                  name="page-select-5"
-                  aria-label="Visibility"
-                  value={visibility}
-                  onChange={(e) => setVisibility(e.target.value)}
-                >
-                  <option value="threeOpen">Three Open</option>
-                  <option value="allOpen">All Open</option>
-                  <option value="closed">Closed</option>
-                </select>
+                <input
+                  name="tradeOne"
+                  type="checkbox"
+                  checked={trade}
+                  disabled={!profile?.registered || !tradeEligible}
+                  onChange={(e) => setTrade(e.target.checked)}
+                />
+                Trade One
               </label>
-            </div>
-            <div className="rule-toggles">
-              {[
-                { label: 'Same', value: same, set: setSame },
-                { label: 'Plus', value: plus, set: setPlus },
-                { label: 'Combo', value: combo, set: setCombo },
-                { label: 'Random deck', value: random, set: setRandom },
-                { label: 'Elemental', value: elemental, set: setElemental },
-                { label: 'Trade One', value: trade, set: setTrade },
-              ].map((t) => (
-                <label key={t.label}>
-                  <input
-                    name="page-input-6"
-                    type="checkbox"
-                    checked={t.value}
-                    disabled={
-                      (t.label === 'Trade One' && (!profile?.registered || !tradeEligible)) ||
-                      (t.label === 'Combo' && !same && !plus)
-                    }
-                    onChange={(e) => t.set(e.target.checked)}
-                  />
-                  {t.label}
-                </label>
-              ))}
-            </div>
+            </RuleToggles>
             <p className="eligibility-note">
               Trade One requires Closed visibility, Same, Plus and Combo. Extra rules may be added.{' '}
               {profile && !profile.registered ? 'Register an account to enable card stakes.' : ''}
             </p>
             <p>
-              {combo ? 'Combo chains follow Same and Plus captures. ' : ''}
-              {elemental ? 'Matching elemental cells grant +1; mismatches give −1. ' : ''}
-              {random ? 'Random draws a legal hand from each player’s available collection. ' : ''}
+              {rules.combo ? 'Combo chains follow Same and Plus captures. ' : ''}
+              {rules.elemental ? 'Matching elemental cells grant +1; mismatches give −1. ' : ''}
+              {rules.random
+                ? 'Random draws a legal hand from each player’s available collection. '
+                : ''}
               {trade
                 ? 'Winner selects one permanently transferred card from the losing deck.'
                 : 'No cards are traded.'}

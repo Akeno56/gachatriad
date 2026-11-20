@@ -1,6 +1,7 @@
 'use client';
 import { LocaleView, NoTranslate, LocalizedDate } from './i18n';
 
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { BattleIdentity } from '@gacha-triad/shared/social';
@@ -249,6 +250,16 @@ export function SocialPanel() {
                 </button>
               ))}
             </div>
+            {profile?.registered && (
+              <Link
+                href="/correspondence"
+                className="social-correspondence-link text-button"
+                title="Correspondence"
+                onClick={() => setOpen(false)}
+              >
+                Your turn →
+              </Link>
+            )}
             <p className="error-message" role="alert">
               {error || loadError}
             </p>

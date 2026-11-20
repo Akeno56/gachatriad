@@ -171,6 +171,7 @@ export default function Boosters() {
             </button>
           )}
           <button
+            id="daily-booster"
             className="outline-button daily-claim-button"
             disabled={busy || !daily?.available}
             title={

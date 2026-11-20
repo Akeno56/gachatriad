@@ -7,12 +7,12 @@ import type { DailyBooster } from '@gacha-triad/shared/platform';
 import type { DailyPuzzleView } from '@gacha-triad/shared/puzzle';
 import type { Card as CardData } from '@gacha-triad/engine';
 import { useSession } from './session';
-import { useSocial } from './social-state';
 import { LocaleView, NoTranslate } from './i18n';
 import { Avatar } from './avatar';
 import { Card } from './card';
 import { MainChat } from './main-chat';
 import { MatchmakingPanel } from './matchmaking-panel';
+import { PracticeSetup } from './practice-setup';
 import { HelpTip, Button } from './ui';
 import { api } from '../lib/platform';
 import { VERSION } from '../lib/release';
@@ -30,7 +30,7 @@ export function TavernHome({
   onInspect: (card: CardData) => void;
 }) {
   const { profile } = useSession();
-  const { data: social, ready } = useSocial();
+  const [practiceOpen, setPracticeOpen] = useState(false);
   const [notice, setNotice] = useState<{
     puzzle: DailyPuzzleView | null;
     booster: DailyBooster | null;
@@ -93,10 +93,10 @@ export function TavernHome({
                 ✦
               </span>
               <span>
-                <strong>Daily Triad puzzle</strong>
+                <strong>Daily Puzzle</strong>
                 <small>
                   {notice.puzzle?.rewarded
-                    ? 'Reward claimed · Practice available'
+                    ? 'Reward claimed'
                     : notice.puzzle?.solved
                       ? 'Puzzle solved · Claim your reward'
                       : 'Win today’s puzzle · 100 Prisms'}
@@ -106,56 +106,44 @@ export function TavernHome({
                 →
               </span>
             </Link>
-            <Link className="tavern-notice" href="/boosters">
+            <Link className="tavern-notice" href="/boosters#daily-booster">
               <span className="notice-symbol" aria-hidden="true">
                 ▤
               </span>
               <span>
-                <strong>The card shop</strong>
+                <strong>Daily Booster</strong>
                 <small>
-                  {profile.unopenedBoosters
-                    ? `${profile.unopenedBoosters} unopened boosters`
-                    : !profile.registered
-                      ? 'Explore boosters and new cards'
+                  {!profile.registered
+                    ? 'Sign in to claim'
+                    : notice.booster?.packId
+                      ? 'Daily booster claimed'
                       : notice.booster?.available
-                        ? 'Your free daily booster is ready'
-                        : notice.booster?.packId
-                          ? 'Daily booster claimed'
-                          : 'Browse boosters'}
+                        ? 'Ready to claim'
+                        : null}
                 </small>
               </span>
               <span className="notice-arrow" aria-hidden="true">
                 →
               </span>
             </Link>
-            <Link className="tavern-notice" href="/lobbies">
+            <button
+              type="button"
+              className="tavern-notice"
+              aria-label="Practice"
+              aria-haspopup="dialog"
+              onClick={() => setPracticeOpen(true)}
+            >
               <span className="notice-symbol" aria-hidden="true">
-                ♧
+                ⚔
               </span>
               <span>
-                <strong>Find a table</strong>
-                <small>
-                  {ready ? `${social.onlinePlayers.length} players online` : 'Gathering players…'}
-                </small>
+                <strong>Practice</strong>
+                <small>Play against a bot</small>
               </span>
               <span className="notice-arrow" aria-hidden="true">
                 →
               </span>
-            </Link>
-            {profile.registered && (
-              <Link className="tavern-notice" href="/correspondence">
-                <span className="notice-symbol" aria-hidden="true">
-                  ✉
-                </span>
-                <span>
-                  <strong>Your turn</strong>
-                  <small>Correspondence</small>
-                </span>
-                <span className="notice-arrow" aria-hidden="true">
-                  →
-                </span>
-              </Link>
-            )}
+            </button>
             {notice.error && (
               <div className="noticeboard-error" role="status">
                 Daily status unavailable.{' '}
@@ -205,6 +193,7 @@ export function TavernHome({
           <MainChat fitViewport />
         </section>
       </div>
+      <PracticeSetup open={practiceOpen} onClose={() => setPracticeOpen(false)} onMatch={onMatch} />
       <div className="build-label">
         {CARDS.length} CARDS · v{VERSION} Alpha{' '}
         <Link href="/credits" className="credits-button">

@@ -59,6 +59,11 @@
   white-space: normal;
 }
 
+.social-correspondence-link {
+  align-self: flex-start;
+  margin: 0 16px 8px;
+}
+
 .saved-lobby-presets {
   min-width: 0;
   padding: 0.6rem 0.75rem;

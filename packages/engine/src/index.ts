@@ -85,6 +85,8 @@ export const UNRANKED_RULES: Rules = Object.freeze({
   combo: true,
 });
 export const RANKED_RULES: Rules = Object.freeze({ ...UNRANKED_RULES, elemental: true });
+export const RANKED_RANDOM_RULES: Rules = Object.freeze({ ...RANKED_RULES, random: true });
+export const UNRANKED_RANDOM_RULES: Rules = Object.freeze({ ...UNRANKED_RULES, random: true });
 export const PRESETS = [
   {
     id: 'classic',
@@ -95,8 +97,8 @@ export const PRESETS = [
   {
     id: 'standard',
     name: 'Standard',
-    description: 'Three cards revealed per hand.',
-    rules: { ...STANDARD, threeOpen: true },
+    description: 'Three Open, Same, Plus and Combo.',
+    rules: UNRANKED_RULES,
   },
   {
     id: 'same',
@@ -131,8 +133,14 @@ export const PRESETS = [
   {
     id: 'random',
     name: 'Random',
-    description: 'A legal deck is drawn from the available collection.',
-    rules: { ...STANDARD, allOpen: true, random: true },
+    description: 'Standard rules with a random deck.',
+    rules: UNRANKED_RANDOM_RULES,
+  },
+  {
+    id: 'ranked-random',
+    name: 'Ranked Random',
+    description: 'Ranked rules with a legal deck drawn from your available cards each match.',
+    rules: RANKED_RANDOM_RULES,
   },
   {
     id: 'elemental',

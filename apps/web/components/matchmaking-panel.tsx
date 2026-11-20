@@ -9,7 +9,6 @@ import { confirmQueueRules, type QueueMode } from './ranked-warning';
 import { isDraftMode, RATED_MODES } from '@gacha-triad/shared/platform';
 import { matchModeNames } from '../lib/rules';
 import { Button } from './ui';
-import { PracticeSetup } from './practice-setup';
 export function MatchmakingPanel({
   onMatch,
   onRules,
@@ -21,7 +20,6 @@ export function MatchmakingPanel({
 }) {
   const { profile, refresh } = useSession();
   const [busy, setBusy] = useState(false),
-    [soloOpen, setSoloOpen] = useState(false),
     [error, setError] = useState('');
   const lock = useRef(false);
   async function queue(mode: QueueMode) {
@@ -96,9 +94,6 @@ export function MatchmakingPanel({
           <p className="queue-account-note">An account is required for Ranked.</p>
         )}
         <div className="setup-secondary">
-          <button className="text-button" onClick={() => setSoloOpen(true)}>
-            Practice
-          </button>
           <button className="text-button" onClick={onTutorial}>
             How to play
           </button>
@@ -109,7 +104,6 @@ export function MatchmakingPanel({
         <p className="error-message" role="alert">
           {error}
         </p>
-        <PracticeSetup open={soloOpen} onClose={() => setSoloOpen(false)} onMatch={onMatch} />
       </section>
     </LocaleView>
   );

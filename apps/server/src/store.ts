@@ -16,6 +16,7 @@ import {
   shuffle,
   STANDARD,
   RANKED_RULES,
+  RANKED_RANDOM_RULES,
   UNRANKED_RULES,
   supportsTradeOne,
   validateDeck,
@@ -144,7 +145,6 @@ const cards = (ids: readonly string[]) =>
   });
 export const UNRANKED = UNRANKED_RULES;
 export const RANKED = RANKED_RULES;
-const RANKED_RANDOM: Rules = { ...RANKED, random: true };
 export function cleanRules(input: unknown): Rules {
   if (!input || typeof input !== 'object') return UNRANKED;
   const r = input as Record<string, unknown>;
@@ -743,7 +743,7 @@ export class GameStore {
       throw new GameError('Register an account for ranked, rated Draft, or Trade One.', 403);
     const rules =
       mode === 'ranked-random'
-        ? RANKED_RANDOM
+        ? RANKED_RANDOM_RULES
         : mode === 'ranked'
           ? RANKED
           : mode === 'shared-draft'
@@ -838,7 +838,7 @@ export class GameStore {
     if ((isRatedMode(lobby.mode) || lobby.trade_rule === 'one') && !p.registered)
       throw new GameError('A registered account is required for this table.', 403);
     let rules = lobby.mode === 'roulette' ? roulette() : lobby.rules;
-    if (lobby.mode === 'ranked-random') rules = RANKED_RANDOM;
+    if (lobby.mode === 'ranked-random') rules = RANKED_RANDOM_RULES;
     if (lobby.mode === 'ranked') rules = RANKED;
     if (rules.combo && !rules.same && !rules.plus) rules = { ...rules, combo: false };
     const decks: [Card[], Card[]] = isDraftMode(lobby.mode)
