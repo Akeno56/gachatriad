@@ -6,7 +6,8 @@ import { ChatMessageContent } from './chat-message-content';
 import { useSession } from './session';
 import { api } from '../lib/platform';
 import { ChannelChat } from './channel-chat';
-import { useSocial, openFriendChat } from './social-state';
+import { useSocial } from './social-state';
+import { FriendChat } from './friend-chat';
 import { Avatar } from './avatar';
 import { NoTranslate } from './i18n';
 import { Tabs } from './ui';
@@ -21,6 +22,7 @@ export function BattleChat({ match }: { match: MatchView }) {
   const { data } = useSocial();
   const [tab, setTab] = useState(match.chatAvailable && !match.spectator ? 'battle' : 'general'),
     [expanded, setExpanded] = useState(false);
+  const [contact, setContact] = useState('');
   const [messages, setMessages] = useState<BattleMessage[]>([]),
     [message, setMessage] = useState(''),
     [error, setError] = useState(''),
@@ -81,12 +83,15 @@ export function BattleChat({ match }: { match: MatchView }) {
         />
         {tab === 'general' ? (
           <ChannelChat compact />
+        ) : tab === 'friends' &&
+          data.friends.some((friend) => friend.id === contact && friend.status === 'friend') ? (
+          <FriendChat embedded playerId={contact} select={setContact} />
         ) : tab === 'friends' ? (
           <div className="battle-contacts">
             {data.friends
               .filter((f) => f.status === 'friend')
               .map((f) => (
-                <button key={f.id} onClick={() => openFriendChat(f.id)}>
+                <button key={f.id} onClick={() => setContact(f.id)}>
                   <Avatar card={f.avatar} frameId={f.frameId} name={f.name} />
                   <span>
                     <NoTranslate>{f.name}</NoTranslate>

@@ -67,8 +67,8 @@ test('keeps mobile fields focusable while polling, supports private battle chat 
     const b = await (await other.request.get('/api/profile')).json();
     await page.request.post('/api/friends/request', { data: { playerId: b.id } });
     await other.request.post(`/api/friends/${a.id}/accept`, { data: {} });
-    await page.getByRole('button', { name: /Friends and private chat/ }).click();
-    await page.getByRole('tab', { name: 'Friend chat', exact: true }).click();
+    await page.locator('.social-navigation').click();
+    await page.getByRole('tab', { name: 'Messages', exact: true }).click();
     await page.locator('.conversation-choice').filter({ hasText: 'Other challenger' }).click();
     await typeInto(
       page.getByLabel('Message Other challenger', { exact: true }),
@@ -77,10 +77,6 @@ test('keeps mobile fields focusable while polling, supports private battle chat 
     await page.locator('.friend-chat').getByRole('button', { name: 'Send', exact: true }).click();
     await expect(page.locator('.friend-chat .private-message')).toContainText('Hello in private!');
     await page.screenshot({ path: info.outputPath('messenger.png') });
-    await page
-      .locator('.social-heading')
-      .getByRole('button', { name: 'Close', exact: true })
-      .click();
     const lobby = await (
       await page.request.post('/api/lobbies', { data: { mode: 'custom', allowBots: false } })
     ).json();

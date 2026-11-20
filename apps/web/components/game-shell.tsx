@@ -12,7 +12,7 @@ import { FirstDuelTutorial } from './tutorial';
 import { StarterBoosters } from './starter-boosters';
 import { useSession } from './session';
 import { RankedWarning } from './ranked-warning';
-import { SocialPanel } from './social-panel';
+import { SocialNavigation } from './social-navigation';
 import { SocialProvider } from './social-state';
 import { ActiveBattleReminder } from './active-battle-reminder';
 import { MatchmakingDock } from './matchmaking-dock';
@@ -187,262 +187,262 @@ export function GameShell({ children }: { children: React.ReactNode }) {
         <ActionNoticeProvider>
           <AudioContext.Provider value={play}>
             <MusicSceneContext.Provider value={changeMusicScene}>
-              <div
-                className={`game-shell ${crt ? 'crt-enabled' : ''} ${effects ? 'effects-animated' : ''} ${captureFlips ? 'capture-flips-enabled' : ''}`}
-              >
-                <a className="skip-link" href="#main">
-                  Skip to content
-                </a>
-                <div className="screen-grain" aria-hidden="true" />
-                <header ref={headerRoot} className="system-bar">
-                  <div className="system-brand">
-                    <Link href="/" aria-label="Gacha Triad home">
-                      <strong>Gacha Triad</strong>
-                    </Link>
-                    <ReleaseNotes />
-                  </div>
-                  <button
-                    ref={navigationToggle}
-                    className="mobile-navigation-toggle"
-                    aria-expanded={navigationOpen}
-                    aria-controls="main-navigation"
-                    onClick={() => setNavigationOpen((open) => !open)}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-                      <path d="M1 3h14M1 8h14M1 13h14" stroke="currentColor" strokeWidth="1.5" />
-                    </svg>
-                    Menu
-                  </button>
-                  <nav
-                    id="main-navigation"
-                    className={navigationOpen ? 'is-open' : ''}
-                    aria-label="Main navigation"
-                  >
-                    {[
-                      { href: '/', label: 'Play' },
-                      { href: '/cards', label: 'Cards' },
-                      { href: '/lobbies', label: 'Lobbies' },
-                      { href: '/collection', label: 'Collection' },
-                      { href: '/decks', label: 'Decks' },
-                      { href: '/market', label: 'Market' },
-                      { href: '/boosters', label: 'Boosters' },
-                      { href: '/journey', label: 'Journal' },
-                      { href: '/ladder', label: 'Ladder' },
-                      { href: '/rules', label: 'Rulebook' },
-                    ].map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        aria-current={pathname === item.href ? 'page' : undefined}
-                        onClick={() => {
-                          play('menu');
-                          setNavigationOpen(false);
-                        }}
-                      >
-                        {item.label}
+              <SocialProvider>
+                <div
+                  className={`game-shell ${crt ? 'crt-enabled' : ''} ${effects ? 'effects-animated' : ''} ${captureFlips ? 'capture-flips-enabled' : ''}`}
+                >
+                  <a className="skip-link" href="#main">
+                    Skip to content
+                  </a>
+                  <div className="screen-grain" aria-hidden="true" />
+                  <header ref={headerRoot} className="system-bar">
+                    <div className="system-brand">
+                      <Link href="/" aria-label="Gacha Triad home">
+                        <strong>Gacha Triad</strong>
                       </Link>
-                    ))}
-                  </nav>
-                  <div className="system-controls">
-                    <nav className="player-navigation" aria-label="Player navigation">
-                      <FeedbackPanel />
+                      <ReleaseNotes />
+                    </div>
+                    <button
+                      ref={navigationToggle}
+                      className="mobile-navigation-toggle"
+                      aria-expanded={navigationOpen}
+                      aria-controls="main-navigation"
+                      onClick={() => setNavigationOpen((open) => !open)}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M1 3h14M1 8h14M1 13h14" stroke="currentColor" strokeWidth="1.5" />
+                      </svg>
+                      Menu
+                    </button>
+                    <nav
+                      id="main-navigation"
+                      className={navigationOpen ? 'is-open' : ''}
+                      aria-label="Main navigation"
+                    >
                       {[
-                        { href: '/profile', label: 'Profile' },
-                        { href: '/achievements', label: 'Achievements' },
+                        { href: '/', label: 'Play' },
+                        { href: '/cards', label: 'Cards' },
+                        { href: '/lobbies', label: 'Lobbies' },
+                        { href: '/collection', label: 'Collection' },
+                        { href: '/decks', label: 'Decks' },
+                        { href: '/market', label: 'Market' },
+                        { href: '/boosters', label: 'Boosters' },
+                        { href: '/journey', label: 'Journal' },
+                        { href: '/ladder', label: 'Ladder' },
+                        { href: '/rules', label: 'Rulebook' },
                       ].map((item) => (
                         <Link
                           key={item.href}
                           href={item.href}
                           aria-current={pathname === item.href ? 'page' : undefined}
+                          onClick={() => {
+                            play('menu');
+                            setNavigationOpen(false);
+                          }}
                         >
                           {item.label}
                         </Link>
                       ))}
                     </nav>
-                    <Wallet />
-                    <LanguageSelector />
-                    <AccountMenu />
-                  </div>
-                </header>
-                <div ref={settingsRoot} className="settings-dock">
-                  <button
-                    className="outline-button settings-cog"
-                    aria-label="Game settings"
-                    aria-expanded={settingsOpen}
-                    onClick={() => setSettingsOpen(!settingsOpen)}
-                  >
-                    <svg viewBox="0 0 24 24" width="25" height="25" aria-hidden="true">
-                      <path
-                        d="m9 2-.6 2.4-2 .9-2.3-.7-2 3.5L4 9.7v2.6l-1.9 1.6 2 3.5 2.3-.7 2 .9L9 20h4l.6-2.4 2-.9 2.3.7 2-3.5-1.9-1.6V9.7l1.9-1.6-2-3.5-2.3.7-2-.9L13 2Z"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                      />
-                      <circle
-                        cx="11"
-                        cy="11"
-                        r="3.2"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                      />
-                    </svg>
-                  </button>
-                  {settingsOpen && (
-                    <aside
-                      className="menu-window settings-panel"
-                      role="dialog"
+                    <div className="system-controls">
+                      <nav className="player-navigation" aria-label="Player navigation">
+                        <FeedbackPanel />
+                        {[
+                          { href: '/profile', label: 'Profile' },
+                          { href: '/achievements', label: 'Achievements' },
+                        ].map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            aria-current={pathname === item.href ? 'page' : undefined}
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </nav>
+                      <SocialNavigation />
+                      <Wallet />
+                      <LanguageSelector />
+                      <AccountMenu />
+                    </div>
+                  </header>
+                  <div ref={settingsRoot} className="settings-dock">
+                    <button
+                      className="outline-button settings-cog"
                       aria-label="Game settings"
+                      aria-expanded={settingsOpen}
+                      onClick={() => setSettingsOpen(!settingsOpen)}
                     >
-                      <div className="settings-heading">
-                        <h2>Settings</h2>
-                        <button
-                          className="text-button"
-                          onClick={() => setSettingsOpen(false)}
-                          aria-label="Close settings"
-                        >
-                          ×
-                        </button>
-                      </div>
-                      <div className="settings-buttons">
-                        {' '}
-                        <button
-                          className="server-control"
-                          onClick={() => {
-                            setSettingsOpen(false);
-                            window.dispatchEvent(new Event('triad:connection-settings'));
-                          }}
-                        >
-                          Server
-                        </button>
-                        <button
-                          aria-label={`Music ${music ? 'on' : 'off'}`}
-                          aria-pressed={music}
-                          onClick={toggleMusic}
-                        >
-                          ♫ <span>MUSIC</span> {music ? 'ON' : 'OFF'}
-                        </button>
-                        <button
-                          aria-label={`Sound effects ${sfx ? 'on' : 'off'}`}
-                          aria-pressed={sfx}
-                          onClick={toggleSfx}
-                        >
-                          ♪ <span>SFX</span> {sfx ? 'ON' : 'OFF'}
-                        </button>
-                        <button
-                          aria-label={`CRT filter ${crt ? 'on' : 'off'}`}
-                          aria-pressed={crt}
-                          onClick={toggleCrt}
-                        >
-                          <span>CRT</span> {crt ? 'ON' : 'OFF'}
-                        </button>
-                        <div className="volume-controls">
-                          <h3>Volume &amp; effects</h3>
-                          <div className="menu-window volume-panel">
-                            <label className="effects-setting">
-                              <input
-                                name="game-shell-input-1"
-                                type="checkbox"
-                                checked={effects}
-                                onChange={(e) => {
-                                  setEffects(e.target.checked);
-                                  try {
-                                    localStorage.setItem(
-                                      'triad-effects',
-                                      e.target.checked ? 'on' : 'off',
-                                    );
-                                  } catch {}
-                                }}
-                              />
-                              Animate Holo &amp; CRT
-                            </label>
-                            <label className="effects-setting">
-                              <input
-                                name="capture-flips"
-                                type="checkbox"
-                                checked={captureFlips}
-                                onChange={(e) => {
-                                  const enabled = e.target.checked;
-                                  setCaptureFlips(enabled);
-                                  try {
-                                    localStorage.setItem(
-                                      'triad-capture-flips',
-                                      enabled ? 'on' : 'off',
-                                    );
-                                  } catch {}
-                                }}
-                              />
-                              Animate capture flips
-                            </label>
-                            <label>
-                              Music volume <output>{musicVolume}%</output>
-                              <input
-                                name="game-shell-input-2"
-                                aria-label="Music volume"
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={musicVolume}
-                                onChange={(e) => {
-                                  const value = Number(e.target.value);
-                                  setMusicVolume(value);
-                                  getAudio().setMusicVolume(value / 100);
-                                  try {
-                                    localStorage.setItem('triad-music-volume', String(value));
-                                  } catch {}
-                                }}
-                              />
-                            </label>
-                            <label>
-                              Sound effects volume <output>{sfxVolume}%</output>
-                              <input
-                                name="game-shell-input-3"
-                                aria-label="Sound effects volume"
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={sfxVolume}
-                                onChange={(e) => {
-                                  const value = Number(e.target.value);
-                                  setSfxVolume(value);
-                                  getAudio().setSfxVolume(value / 100);
-                                  try {
-                                    localStorage.setItem('triad-sfx-volume', String(value));
-                                  } catch {}
-                                }}
-                              />
-                            </label>
-                          </div>
+                      <svg viewBox="0 0 24 24" width="25" height="25" aria-hidden="true">
+                        <path
+                          d="m9 2-.6 2.4-2 .9-2.3-.7-2 3.5L4 9.7v2.6l-1.9 1.6 2 3.5 2.3-.7 2 .9L9 20h4l.6-2.4 2-.9 2.3.7 2-3.5-1.9-1.6V9.7l1.9-1.6-2-3.5-2.3.7-2-.9L13 2Z"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        />
+                        <circle
+                          cx="11"
+                          cy="11"
+                          r="3.2"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        />
+                      </svg>
+                    </button>
+                    {settingsOpen && (
+                      <aside
+                        className="menu-window settings-panel"
+                        role="dialog"
+                        aria-label="Game settings"
+                      >
+                        <div className="settings-heading">
+                          <h2>Settings</h2>
+                          <button
+                            className="text-button"
+                            onClick={() => setSettingsOpen(false)}
+                            aria-label="Close settings"
+                          >
+                            ×
+                          </button>
                         </div>
-                        <button
-                          className="fullscreen-control"
-                          aria-label={fullScreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-                          onClick={toggleFullscreen}
-                        >
-                          ⛶
-                        </button>
-                      </div>
-                    </aside>
-                  )}
-                </div>
-                <main id="main">
-                  <ServerConnection>
-                    <SocialProvider>
+                        <div className="settings-buttons">
+                          {' '}
+                          <button
+                            className="server-control"
+                            onClick={() => {
+                              setSettingsOpen(false);
+                              window.dispatchEvent(new Event('triad:connection-settings'));
+                            }}
+                          >
+                            Server
+                          </button>
+                          <button
+                            aria-label={`Music ${music ? 'on' : 'off'}`}
+                            aria-pressed={music}
+                            onClick={toggleMusic}
+                          >
+                            ♫ <span>MUSIC</span> {music ? 'ON' : 'OFF'}
+                          </button>
+                          <button
+                            aria-label={`Sound effects ${sfx ? 'on' : 'off'}`}
+                            aria-pressed={sfx}
+                            onClick={toggleSfx}
+                          >
+                            ♪ <span>SFX</span> {sfx ? 'ON' : 'OFF'}
+                          </button>
+                          <button
+                            aria-label={`CRT filter ${crt ? 'on' : 'off'}`}
+                            aria-pressed={crt}
+                            onClick={toggleCrt}
+                          >
+                            <span>CRT</span> {crt ? 'ON' : 'OFF'}
+                          </button>
+                          <div className="volume-controls">
+                            <h3>Volume &amp; effects</h3>
+                            <div className="menu-window volume-panel">
+                              <label className="effects-setting">
+                                <input
+                                  name="game-shell-input-1"
+                                  type="checkbox"
+                                  checked={effects}
+                                  onChange={(e) => {
+                                    setEffects(e.target.checked);
+                                    try {
+                                      localStorage.setItem(
+                                        'triad-effects',
+                                        e.target.checked ? 'on' : 'off',
+                                      );
+                                    } catch {}
+                                  }}
+                                />
+                                Animate Holo &amp; CRT
+                              </label>
+                              <label className="effects-setting">
+                                <input
+                                  name="capture-flips"
+                                  type="checkbox"
+                                  checked={captureFlips}
+                                  onChange={(e) => {
+                                    const enabled = e.target.checked;
+                                    setCaptureFlips(enabled);
+                                    try {
+                                      localStorage.setItem(
+                                        'triad-capture-flips',
+                                        enabled ? 'on' : 'off',
+                                      );
+                                    } catch {}
+                                  }}
+                                />
+                                Animate capture flips
+                              </label>
+                              <label>
+                                Music volume <output>{musicVolume}%</output>
+                                <input
+                                  name="game-shell-input-2"
+                                  aria-label="Music volume"
+                                  type="range"
+                                  min="0"
+                                  max="100"
+                                  value={musicVolume}
+                                  onChange={(e) => {
+                                    const value = Number(e.target.value);
+                                    setMusicVolume(value);
+                                    getAudio().setMusicVolume(value / 100);
+                                    try {
+                                      localStorage.setItem('triad-music-volume', String(value));
+                                    } catch {}
+                                  }}
+                                />
+                              </label>
+                              <label>
+                                Sound effects volume <output>{sfxVolume}%</output>
+                                <input
+                                  name="game-shell-input-3"
+                                  aria-label="Sound effects volume"
+                                  type="range"
+                                  min="0"
+                                  max="100"
+                                  value={sfxVolume}
+                                  onChange={(e) => {
+                                    const value = Number(e.target.value);
+                                    setSfxVolume(value);
+                                    getAudio().setSfxVolume(value / 100);
+                                    try {
+                                      localStorage.setItem('triad-sfx-volume', String(value));
+                                    } catch {}
+                                  }}
+                                />
+                              </label>
+                            </div>
+                          </div>
+                          <button
+                            className="fullscreen-control"
+                            aria-label={fullScreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                            onClick={toggleFullscreen}
+                          >
+                            ⛶
+                          </button>
+                        </div>
+                      </aside>
+                    )}
+                  </div>
+                  <main id="main">
+                    <ServerConnection>
                       <StarterBoosters />
                       {children}
                       <FirstDuelTutorial />
                       <RankedWarning />
                       <ActiveBattleReminder />
                       <MatchmakingDock />
-                      <SocialPanel />
-                    </SocialProvider>
-                  </ServerConnection>
-                </main>
-                <div className="system-message" role="status">
-                  {notice}
+                    </ServerConnection>
+                  </main>
+                  <div className="system-message" role="status">
+                    {notice}
+                  </div>
+                  <div className="crt-overlay" aria-hidden="true" />
                 </div>
-                <div className="crt-overlay" aria-hidden="true" />
-              </div>
+              </SocialProvider>
             </MusicSceneContext.Provider>
           </AudioContext.Provider>
         </ActionNoticeProvider>

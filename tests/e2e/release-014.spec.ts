@@ -729,8 +729,8 @@ test('offers both ranked Draft queues, handles shared picks and displays separat
       if (n === 0) {
         await confirm.scrollIntoViewIfNeeded();
         const box = (await confirm.boundingBox())!,
-          launcher = (await person.page.locator('.social-launcher').boundingBox())!;
-        expect(box.y + box.height).toBeLessThanOrEqual(launcher.y);
+          social = (await person.page.locator('.system-bar .social-navigation').boundingBox())!;
+        expect(social.y + social.height).toBeLessThanOrEqual(box.y);
         await person.page.screenshot({ path: info.outputPath('shared-confirm-en.png') });
       }
       await confirm.click();

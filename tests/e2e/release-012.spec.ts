@@ -338,8 +338,17 @@ test('keeps the friend preview beside its avatar and reviews the English/French 
       'preview-twelve-001',
     );
     await a.page.goto('/');
-    await a.page.getByRole('button', { name: /Friends and private chat/ }).click();
+    await expect(a.page.locator('.social-indicator')).toBeVisible();
+    await a.page.locator('.social-navigation').click();
+    await a.page.getByRole('button', { name: 'Read messages', exact: true }).click();
+    await expect(a.page.locator('.friend-chat').getByRole('log')).toContainText(
+      'Preview message beside an avatar',
+    );
+    await expect(a.page.locator('.social-indicator')).toHaveCount(0);
+    if (info.project.name === 'mobile')
+      await a.page.getByRole('button', { name: 'Back to conversations' }).click();
     const choice = a.page.locator('.conversation-choice').first();
+    await expect(choice).toBeVisible();
     await expect(choice).toContainText(b.profile.name);
     const distance = await choice.evaluate((el) => {
       const avatar = el.querySelector('.contact-avatar')!.getBoundingClientRect(),
@@ -349,7 +358,6 @@ test('keeps the friend preview beside its avatar and reviews the English/French 
     expect(distance).toBeGreaterThanOrEqual(0);
     expect(distance).toBeLessThanOrEqual(11);
     await a.page.screenshot({ path: info.outputPath('friend-preview.png'), fullPage: true });
-    await a.page.getByRole('button', { name: 'Close', exact: true }).click();
     await a.page.goto('/rules');
     await expect(a.page.getByRole('heading', { name: 'Taking turns', exact: true })).toBeVisible();
     await expect(

@@ -330,13 +330,10 @@ test('sets up a styled practice match, opens its replay from results and keeps t
       'href',
       /\/boosters\/?#daily-booster$/,
     );
-    await c.page.getByRole('button', { name: /Friends and private chat/ }).click();
-    const social = c.page.getByRole('dialog', { name: 'Friends & messages' });
-    await expect(social.getByRole('link', { name: 'Your turn →' })).toHaveAttribute(
+    await expect(c.page.getByRole('link', { name: 'Correspondence', exact: true })).toHaveAttribute(
       'href',
       /\/correspondence\/?$/,
     );
-    await social.getByRole('button', { name: 'Close', exact: true }).click();
     await noticeboard.getByRole('button', { name: 'Practice', exact: true }).click();
     const setup = c.page.getByRole('dialog', { name: 'Practice', exact: true });
     await expect(setup).toBeVisible();

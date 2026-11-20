@@ -30,17 +30,14 @@
   color: #ffe18d;
   text-shadow: 0 0 6px #e2c66799;
 }
-.chat-message .message-heading,
-.private-message .message-heading {
+.chat-message .message-heading {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
   gap: 1px;
 }
-.chat-message .message-heading > a,
-.private-message .message-heading > a,
-.private-message .message-heading > strong {
+.chat-message .message-heading > a {
   max-width: 100%;
 }
 .main-chat .chat-messages {
@@ -49,19 +46,15 @@
 .main-chat .chat-message {
   margin: 0 0 4px;
 }
-.chat-message,
-.friend-chat .private-message,
-.friend-chat .private-message.is-own {
+.chat-message {
   padding-block: 6px;
 }
-.chat-message .message-heading > .message-title,
-.private-message .message-heading > .message-title {
+.chat-message .message-heading > .message-title {
   max-width: 100%;
   font-size: 11px;
   margin: 0;
 }
-.chat-message .message-content,
-.private-message .message-content {
+.chat-message .message-content {
   grid-template-columns: 180px minmax(0, 1fr) auto;
   gap: 22px;
 }
@@ -487,8 +480,7 @@
   }
 }
 @media (max-width: 1100px) {
-  .chat-message .message-content,
-  .private-message .message-content {
+  .chat-message .message-content {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 4px 10px;
   }
@@ -514,8 +506,7 @@
     width: 40px;
     height: 36px;
   }
-  .chat-message .message-heading > .message-title,
-  .private-message .message-heading > .message-title {
+  .chat-message .message-heading > .message-title {
     max-width: none;
     font-size: 10px;
   }

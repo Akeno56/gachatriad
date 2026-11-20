@@ -29,9 +29,8 @@ test('fits the home chat beside setup, shares channel selection with Lobbies and
   const credits = page.getByRole('link', { name: 'Credits', exact: true });
   await credits.scrollIntoViewIfNeeded();
   await expect(credits).toBeInViewport();
-  expect((await credits.boundingBox())!.y + (await credits.boundingBox())!.height).toBeLessThan(
-    (await page.getByRole('button', { name: 'Friends and private chat' }).boundingBox())!.y,
-  );
+  const social = (await page.locator('.system-bar .social-navigation').boundingBox())!;
+  expect(social.y + social.height).toBeLessThan((await credits.boundingBox())!.y);
   await page.screenshot({ path: info.outputPath('home-channel-layout.png'), fullPage: true });
   await chat.getByRole('tab', { name: 'Trade', exact: true }).click();
   await navigateTo(page, 'Lobbies');

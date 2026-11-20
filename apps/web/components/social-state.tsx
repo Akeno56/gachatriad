@@ -71,6 +71,3 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
     </LocaleView>
   );
 }
-export function openFriendChat(playerId: string) {
-  window.dispatchEvent(new CustomEvent('triad:friend-chat', { detail: playerId }));
-}

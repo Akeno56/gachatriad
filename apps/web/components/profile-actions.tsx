@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import Link from 'next/link';
 import type { PlayerProfileView } from '@gacha-triad/shared/platform';
 import { useSession } from './session';
-import { useSocial, openFriendChat } from './social-state';
+import { useSocial } from './social-state';
 import { Button } from './ui';
 import { LocaleView } from './i18n';
 import { api } from '../lib/platform';
@@ -61,15 +61,18 @@ export function ProfileActions({ player }: { player: PlayerProfileView }) {
             )}
             {friend?.status === 'friend' && (
               <>
-                <Button onClick={() => openFriendChat(player.id)}>Message</Button>
+                <Link
+                  className="outline-button"
+                  href={`/social?tab=messages&player=${encodeURIComponent(player.id)}`}
+                >
+                  Message
+                </Link>
                 <Button
                   busy={busy}
                   disabled={
                     !!profile.activeMatchId || !!profile.waitingLobbyId || !!profile.pendingTrade
                   }
-                  onClick={() =>
-                    void act('/invites', 'Invitation sent. Open Friends & messages to manage it.')
-                  }
+                  onClick={() => void act('/invites', 'Invitation sent.')}
                 >
                   Invite to duel
                 </Button>

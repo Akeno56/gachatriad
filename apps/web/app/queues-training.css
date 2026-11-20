@@ -88,31 +88,8 @@
   color: #17233b;
   font: 18px/1 var(--pixel);
 }
-.duel-invite-toast {
-  position: fixed;
-  left: 16px;
-  bottom: 82px;
-  z-index: 40;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  width: min(460px, calc(100vw - 32px));
-  padding: 14px 16px;
-  border-color: #e2c77c;
-  box-shadow: 0 5px 25px #0009;
-}
-.duel-invite-toast > span {
-  flex: 1;
-  font-size: 16px;
-}
-.duel-invite-toast .text-button {
-  font-size: 19px;
-  white-space: nowrap;
-}
 /* Each sender column, message and time share a row; long messages may wrap. */
-.chat-message,
-.friend-chat .private-message,
-.friend-chat .private-message.is-own {
+.chat-message {
   align-items: center;
   margin: 0;
   min-height: 52px;
@@ -120,41 +97,34 @@
   border: 0;
   border-bottom: 1px solid #8199bd1a;
 }
-.chat-message:nth-of-type(odd),
-.friend-chat .private-message:nth-of-type(odd) {
+.chat-message:nth-of-type(odd) {
   background: #a0bce20d;
 }
-.chat-message:nth-of-type(even),
-.friend-chat .private-message:nth-of-type(even) {
+.chat-message:nth-of-type(even) {
   background: #040b1a1a;
 }
-.chat-message .message-content,
-.private-message .message-content {
+.chat-message .message-content {
   display: grid;
   grid-template-columns: 190px minmax(0, 1fr) auto;
   gap: 12px;
   align-items: center;
   min-width: 0;
 }
-.chat-message .message-heading,
-.private-message .message-heading {
+.chat-message .message-heading {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
   gap: 6px;
   min-width: 0;
 }
-.chat-message .message-heading > a,
-.private-message .message-heading > a,
-.private-message .message-heading > strong {
+.chat-message .message-heading > a {
   min-width: 0;
   font: 20px/1.2 var(--pixel);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.chat-message .message-heading > .message-title,
-.private-message .message-heading > .message-title {
+.chat-message .message-heading > .message-title {
   grid-row: auto;
   grid-column: auto;
   margin: 0;
@@ -164,15 +134,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.chat-message .message-content > p,
-.private-message .message-content > p {
+.chat-message .message-content > p {
   margin: 0;
   font-size: 15px;
   line-height: 1.35;
   min-width: 0;
 }
-.chat-message .message-time,
-.private-message .message-time {
+.chat-message .message-time {
   margin: 0;
   white-space: nowrap;
   color: #a8bad5;
@@ -472,23 +440,19 @@
   margin-top: 16px;
 }
 @media (max-width: 1100px) {
-  .chat-message .message-content,
-  .private-message .message-content {
+  .chat-message .message-content {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 3px 8px;
   }
-  .chat-message .message-heading,
-  .private-message .message-heading {
+  .chat-message .message-heading {
     grid-column: 1;
     grid-row: 1;
   }
-  .chat-message .message-content > p,
-  .private-message .message-content > p {
+  .chat-message .message-content > p {
     grid-column: 1/-1;
     grid-row: 2;
   }
-  .chat-message .message-time,
-  .private-message .message-time {
+  .chat-message .message-time {
     grid-column: 2;
     grid-row: 1;
   }
@@ -516,23 +480,11 @@
   .mode-rules-dialog {
     padding: 20px;
   }
-  .duel-invite-toast {
-    left: 12px;
-    bottom: 74px;
-    padding: 12px;
-    gap: 8px;
-    width: calc(100vw - 24px);
-  }
-  .duel-invite-toast > span {
-    font-size: 14px;
-  }
-  .chat-message .message-heading > .message-title,
-  .private-message .message-heading > .message-title {
+  .chat-message .message-heading > .message-title {
     max-width: 76px;
     font-size: 10px;
   }
-  .chat-message .message-heading > a,
-  .private-message .message-heading > a {
+  .chat-message .message-heading > a {
     font-size: 19px;
   }
   .draft-grid {

@@ -1,0 +1,457 @@
+.system-controls > .social-navigation {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: none;
+  min-height: 32px;
+  padding: 4px 7px;
+  border: 1px solid #536b90;
+  background: #14223b;
+  color: #e4dcc8;
+  text-decoration: none;
+}
+
+.system-controls > .social-navigation:hover,
+.system-controls > .social-navigation[aria-current='page'] {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.social-indicator,
+.private-comms .conversation-choice > b {
+  display: inline-grid;
+  min-width: 17px;
+  min-height: 17px;
+  padding-inline: 3px;
+  place-items: center;
+  color: #121b30;
+  background: #e7c777;
+  font: 16px/1 var(--pixel);
+}
+
+.title-screen .tavern-layout .matchmaking-panel .correspondence-shortcut {
+  display: grid;
+  place-items: center;
+  margin-top: 5px;
+  min-height: 34px;
+}
+
+.social-page {
+  max-width: 76rem;
+}
+
+.social-page-header,
+.social-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.social-page-header {
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.social-page-header h1 {
+  margin: 0;
+  font: 44px/1 var(--pixel);
+  text-shadow: 2px 3px #000;
+}
+
+.social-page .ui-tabs {
+  margin-bottom: 15px;
+}
+
+.social-section {
+  margin-block: 14px 18px;
+}
+
+.social-section h2,
+.social-invite-dialog h2 {
+  margin: 0 0 8px;
+  color: var(--gold);
+  font: 25px/1.15 var(--pixel);
+}
+
+.social-section > p,
+.social-account p {
+  margin: 6px 0 10px;
+  color: var(--muted);
+}
+
+.social-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  align-items: start;
+  gap: 10px;
+}
+
+.social-card {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 9px;
+  padding: 12px;
+}
+
+.social-card[data-incoming='true'] {
+  border-color: #cfb370;
+}
+
+.social-identity {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.social-identity .player-avatar {
+  width: 42px;
+  height: 42px;
+}
+
+.social-identity h3 {
+  margin: 0;
+  color: #e9dfbf;
+  font: 21px/1.1 var(--pixel);
+  overflow-wrap: anywhere;
+}
+
+.social-identity small,
+.social-invite-meta small,
+.conversation-person small {
+  display: block;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.social-invite-meta {
+  padding-block-start: 8px;
+  border-top: 1px solid #52688b;
+}
+
+.social-invite-meta strong,
+.social-message-preview {
+  overflow-wrap: anywhere;
+}
+
+.social-message-preview {
+  margin: 0;
+  color: #d4ddeb;
+}
+
+.social-card-actions button,
+.social-card > button {
+  min-height: 32px;
+  min-width: 0;
+  padding: 4px 8px;
+  font-size: 18px;
+}
+
+.social-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px 12px;
+  padding: 12px;
+}
+
+.social-search label {
+  flex: 0 1 26rem;
+  min-width: 0;
+}
+
+.social-search input,
+.social-invite-dialog select {
+  width: 100%;
+  min-width: 0;
+}
+
+.social-account {
+  padding: 14px;
+}
+
+.social-invite-dialog {
+  max-width: 420px;
+}
+
+.social-invite-dialog form {
+  display: grid;
+  gap: 10px;
+}
+
+.social-invite-dialog p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.social-accepted a {
+  color: var(--gold);
+  text-decoration: underline;
+}
+
+.private-comms {
+  display: grid;
+  grid-template-columns: minmax(210px, 28%) minmax(0, 1fr);
+  height: clamp(24rem, calc(100dvh - 208px), 39rem);
+  padding: 0;
+  min-width: 0;
+}
+
+.private-comms .conversation-list {
+  overflow: auto;
+  min-height: 0;
+  min-width: 0;
+  background: #10203a;
+  border-right: 1px solid #52688b;
+}
+
+.private-comms .conversation-list > p {
+  margin: 8px 12px;
+}
+
+.conversation-filter {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 9px;
+  background: #172847;
+}
+
+.conversation-filter input {
+  width: 100%;
+  min-width: 0;
+}
+
+.private-comms .conversation-choice {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  gap: 3px 8px;
+  padding: 9px;
+  text-align: left;
+  border: 0;
+  border-bottom: 1px solid #3c5173;
+  background: #142644;
+}
+
+.private-comms .conversation-choice:hover,
+.private-comms .conversation-choice.is-selected {
+  background: #243e61;
+}
+
+.private-comms .conversation-choice.is-selected {
+  box-shadow: inset 3px 0 var(--gold);
+}
+
+.private-comms .conversation-choice > span {
+  grid-row: 1 / 3;
+  min-width: 0;
+}
+
+.private-comms .conversation-choice strong,
+.private-comms .conversation-choice small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.private-comms .conversation-choice > time {
+  grid-column: 3;
+  grid-row: 1;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.private-comms .conversation-choice > b {
+  grid-column: 3;
+  grid-row: 2;
+  justify-self: end;
+}
+
+.contact-avatar {
+  position: relative;
+}
+
+.contact-avatar .player-avatar,
+.friend-conversation-heading .player-avatar {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+}
+
+.contact-avatar.is-online::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 8px;
+  height: 8px;
+  border: 1px solid #12213c;
+  background: #83d7a1;
+}
+
+.private-comms .conversation-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  padding: 9px;
+}
+
+.friend-conversation-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #52688b;
+}
+
+.conversation-person {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.conversation-back {
+  display: none;
+}
+
+.conversation-empty {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  color: var(--muted);
+  text-align: center;
+}
+
+.private-comms .conversation-body .chat-messages {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  max-height: none;
+  padding: 8px 4px;
+  overflow: auto;
+}
+
+.private-comms .private-message {
+  width: fit-content;
+  max-width: 88%;
+  margin: 0 auto 6px 0;
+  padding: 5px 8px;
+  border: 1px solid #4b6290;
+  background: #213654;
+  overflow-wrap: anywhere;
+}
+
+.private-comms .private-message.is-own {
+  margin: 0 0 6px auto;
+  background: #293f5c;
+}
+
+.private-comms .private-message .message-content {
+  display: block;
+}
+
+.private-comms .private-message .player-avatar,
+.private-comms .private-message .message-heading {
+  display: none;
+}
+
+.private-comms .private-message p {
+  margin: 0;
+}
+
+.private-comms .private-message time {
+  position: static;
+  display: block;
+  margin: 3px 0 0;
+  text-align: right;
+}
+
+.private-comms .chat-compose {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.private-comms .chat-compose input {
+  min-width: 0;
+}
+
+.private-comms .error-message:empty {
+  display: none;
+}
+
+.arena-comms .private-comms-embedded {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+
+.private-comms-embedded .conversation-body {
+  flex: 1;
+  padding: 4px 0 0;
+}
+
+.private-comms-embedded .conversation-back {
+  display: inline-block;
+  padding: 4px;
+}
+
+@media (max-width: 1350px) {
+  .social-navigation > span {
+    display: none;
+  }
+  .social-navigation .social-indicator {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 13px;
+    min-height: 14px;
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 1201px) and (max-width: 1400px) {
+  .system-controls .feedback-trigger {
+    padding-inline: 7px;
+  }
+  .system-controls .feedback-trigger > span {
+    display: none;
+  }
+}
+
+@media (min-width: 1001px) and (max-height: 800px) {
+  .title-screen .tavern-layout .tavern-noticeboard {
+    margin-top: 12px;
+  }
+  .title-screen .tavern-layout .matchmaking-row > button:first-child {
+    min-height: 41px;
+  }
+  .title-screen .tavern-layout .matchmaking-panel .correspondence-shortcut {
+    min-height: 32px;
+  }
+}
+
+@media (max-width: 680px) {
+  .private-comms {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .social-page .private-comms[data-active='true'] .conversation-list,
+  .social-page .private-comms[data-active='false'] .conversation-body {
+    display: none;
+  }
+  .private-comms .conversation-back {
+    display: inline-block;
+  }
+}

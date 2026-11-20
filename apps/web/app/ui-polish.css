@@ -1033,8 +1033,7 @@ textarea:hover {
   margin: 12px 0;
   line-height: 1.35;
 }
-.mobile-navigation-toggle,
-.social-launcher-icon {
+.mobile-navigation-toggle {
   display: none;
 }
 @media (max-width: 680px) {
@@ -1076,27 +1075,6 @@ textarea:hover {
     min-height: 44px;
     padding: 11px 12px;
     font: 18px/1.15 var(--pixel);
-  }
-  .social-launcher {
-    display: grid;
-    place-items: center;
-    width: 46px;
-    height: 46px;
-    padding: 9px;
-  }
-  .social-launcher .social-launcher-label {
-    display: none;
-  }
-  .social-launcher-icon {
-    display: block;
-  }
-  .social-launcher b {
-    position: absolute;
-    right: -5px;
-    top: -7px;
-    font-size: 15px;
-    min-width: 20px;
-    height: 20px;
   }
   .action-notice {
     left: 12px;

@@ -43,25 +43,15 @@
   color: var(--gold, #ecd594);
 }
 
-.correspondence-loading,
-.correspondence-invite-dialog form {
+.correspondence-loading {
   display: grid;
   justify-items: start;
   gap: 0.6rem;
   padding: 0.75rem;
 }
 
-.correspondence-invite-dialog form p {
-  margin: 0;
-}
-
 .correspondence-clock {
   white-space: normal;
-}
-
-.social-correspondence-link {
-  align-self: flex-start;
-  margin: 0 16px 8px;
 }
 
 .saved-lobby-presets {

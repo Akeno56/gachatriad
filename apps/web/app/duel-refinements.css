@@ -34,27 +34,6 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.private-message,
-.friend-conversation-heading {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-.private-message .message-content {
-  min-width: 0;
-}
-.friend-conversation-heading {
-  margin: 0 0 8px;
-  align-items: center;
-}
-.conversation-presence {
-  display: block;
-  margin: 8px 0 0;
-  color: #b7c8df;
-}
-.conversation-choice .friend-chat-title {
-  color: #dfc784;
-}
 .unranked-play-button {
   width: 100%;
   margin-top: 14px;
@@ -111,24 +90,11 @@
   margin-top: 0;
 }
 @media (max-width: 680px) {
-  .private-message .player-avatar {
-    width: 34px;
-    height: 34px;
-    flex-basis: 34px;
-  }
   .message-heading {
     column-gap: 8px;
   }
   .message-heading > a,
   .message-heading > strong {
     font-size: 22px;
-  }
-  .private-message {
-    padding: 12px 8px;
-    gap: 9px;
-    margin-right: 6px;
-  }
-  .private-message.is-own {
-    margin-left: 6px;
   }
 }

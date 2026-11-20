@@ -300,8 +300,7 @@ test('shows release notes and all navigation destinations on mobile in French', 
     if (await menu.isVisible()) {
       await menu.click();
       await expect(c.page.locator('#main-navigation a:visible')).toHaveCount(10);
-      const social = (await c.page.locator('.social-launcher').boundingBox())!;
-      expect(social.width).toBe(46);
+      await expect(c.page.getByRole('link', { name: 'Communauté', exact: true })).toBeInViewport();
       await c.page.screenshot({
         path: info.outputPath('mobile-navigation-fr.png'),
         caret: 'initial',

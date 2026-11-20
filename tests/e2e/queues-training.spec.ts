@@ -83,7 +83,12 @@ test('keeps the Unranked timer across pages and reload and cancels from the dock
   const start = page.getByRole('button', { name: 'Start match (Unranked)', exact: true });
   await start.click();
   const dialog = page.getByRole('dialog', { name: 'Unranked rules', exact: true });
-  await expect(dialog).toContainText('Same · Plus · Combo');
+  await expect(dialog.locator('.queue-rule-badges span')).toHaveText([
+    'Three Open',
+    'Same',
+    'Plus',
+    'Combo',
+  ]);
   const b = (await dialog.boundingBox())!,
     v = page.viewportSize()!;
   expect(Math.abs(b.x + b.width / 2 - v.width / 2)).toBeLessThan(3);
@@ -112,8 +117,8 @@ test('keeps the Unranked timer across pages and reload and cancels from the dock
       const dock = page.locator('.matchmaking-dock');
       await expect(dock).toBeInViewport({ ratio: 1 });
       const bounds = (await dock.boundingBox())!;
-      const friends = (await page.locator('.social-launcher').boundingBox())!;
-      expect(bounds.x + bounds.width).toBeLessThan(friends.x);
+      const social = (await page.locator('.system-bar .social-navigation').boundingBox())!;
+      expect(bounds.y).toBeGreaterThan(social.y + social.height);
     }
   }
   await page.screenshot({ path: info.outputPath('matchmaking-queue.png') });

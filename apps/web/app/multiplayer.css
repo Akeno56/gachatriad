@@ -59,71 +59,9 @@
   font-size: 13px;
 }
 
-.duel-invite-launcher {
-  position: fixed;
-  right: 18px;
-  bottom: max(70px, calc(62px + env(safe-area-inset-bottom)));
-  z-index: 13;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 6px 10px;
-  border-color: #c8ac70;
-  font-size: 19px;
-  color: #ffe3a5;
-}
-
-.duel-invite-launcher b {
-  display: grid;
-  place-items: center;
-  min-width: 19px;
-  padding: 0 3px;
-  color: #172441;
-  background: #e6ca83;
-}
-
-.messenger-drawer.is-invitations {
-  top: auto;
-  width: min(550px, calc(100vw - 36px));
-  height: auto;
-  max-height: min(440px, calc(100dvh - 95px));
-}
-
-.messenger-drawer.is-invitations > .duel-invite-inbox {
-  padding: 8px 12px 12px;
-}
-
-.duel-invite-inbox {
-  display: grid;
-  align-content: start;
-  gap: 7px;
-  min-height: 0;
-  overflow: auto;
-}
-
-.duel-invite-inbox > p {
-  margin: 0;
-}
-
-.duel-invite-inbox .friend-row {
-  min-width: 0;
-  padding: 8px;
-  background: #152441;
-}
-
-.duel-invite-inbox .friend-row > div {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
 @media (min-width: 681px) and (max-width: 1000px) {
   .matchmaking-dock.queue-status {
     bottom: 74px;
-  }
-
-  .duel-invite-launcher {
-    right: 252px;
-    bottom: 18px;
   }
 }
 
@@ -143,23 +81,5 @@
   .matchmaking-dock .matchmaking-practice {
     order: 1;
     width: 100%;
-  }
-
-  .duel-invite-launcher {
-    right: 66px;
-    bottom: calc(12px + env(safe-area-inset-bottom));
-    min-height: 40px;
-    max-width: calc(100vw - 132px);
-    padding: 5px 8px;
-    font-size: 17px;
-  }
-
-  .game-shell:has(.battle-screen) .duel-invite-launcher {
-    right: 10px;
-    bottom: calc(61px + env(safe-area-inset-bottom));
-  }
-
-  .messenger-drawer.is-invitations {
-    width: auto;
   }
 }

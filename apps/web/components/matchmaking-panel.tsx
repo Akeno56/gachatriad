@@ -84,6 +84,9 @@ export function MatchmakingPanel({
         <Link className="outline-button lobby-shortcut" href="/lobbies">
           Browse lobbies
         </Link>
+        <Link className="outline-button correspondence-shortcut" href="/correspondence">
+          Correspondence
+        </Link>
         {profile && profile.deck.length !== 5 && (
           <p className="deck-warning" role="status">
             Your active deck has {profile.deck.length}/5 cards.{' '}

@@ -24,7 +24,7 @@ test.afterAll(async () => {
   await platform?.app.close();
 });
 
-async function player(browser: Browser) {
+async function player(browser: Browser, name?: string) {
   const n = ++serial;
   const remoteAddress = `198.19.23.${n}`;
   const signup = await platform.app.inject({
@@ -33,7 +33,7 @@ async function player(browser: Browser) {
     remoteAddress,
     headers: { origin: 'http://127.0.0.1:3000' },
     payload: {
-      name: `Multiplayer tester ${n}`,
+      name: name ?? `Multiplayer tester ${n}`,
       email: `multiplayer-${n}@test.invalid`,
       password: 'isolated-multiplayer-password',
     },
@@ -83,7 +83,7 @@ async function player(browser: Browser) {
   };
 }
 
-test('keeps a duel invitation after the toast and skips profile and board reads for battle chat', async ({
+test('keeps a duel invitation in the top-bar inbox and skips profile and board reads for battle chat', async ({
   browser,
 }, info) => {
   const a = await player(browser);
@@ -96,10 +96,8 @@ test('keeps a duel invitation after the toast and skips profile and board reads 
     await expect(b.page.getByRole('button', { name: 'Logout' })).toBeVisible();
     await expect.poll(() => platform.store.isOnline?.(b.profile.id)).toBe(true);
     await a.request('/invites', { playerId: b.profile.id });
-    const toast = b.page.locator('.duel-invite-toast');
-    await expect(toast).toBeVisible();
-    await expect(toast).toHaveCount(0);
-    const shortcut = b.page.locator('.duel-invite-launcher');
+    const shortcut = b.page.locator('.social-navigation');
+    await expect(shortcut.locator('.social-indicator')).toHaveText('!');
     await expect(shortcut).toBeInViewport({ ratio: 1 });
     await navigateTo(b.page, 'Decks');
     await shortcut.click();
@@ -109,7 +107,7 @@ test('keeps a duel invitation after the toast and skips profile and board reads 
     await inbox.getByRole('button', { name: 'Accept duel' }).click();
     await expect(b.page.getByTestId('cell-0')).toBeVisible();
     await expect(a.page.getByTestId('cell-0')).toBeVisible();
-    await expect(shortcut).toHaveCount(0);
+    await expect(shortcut.locator('.social-indicator')).toHaveCount(0);
     if (info.project.name === 'mobile') await b.page.locator('.comms-mobile-toggle').click();
     const log = b.page.getByRole('log', { name: 'Battle chat messages' });
     await expect(log).toContainText('Only you and your opponent can read this chat.');
@@ -127,6 +125,98 @@ test('keeps a duel invitation after the toast and skips profile and board reads 
     expect(reads).toContain(`/api/matches/${matchId}/chat`);
     expect(reads).not.toContain(`/api/matches/${matchId}`);
     expect(reads).not.toContain('/api/profile');
+    await b.page.getByRole('tab', { name: 'Friends', exact: true }).click();
+    await b.page.getByRole('button', { name: new RegExp(a.profile.name) }).click();
+    const privateChat = b.page.locator('.arena-comms .private-comms-embedded');
+    await privateChat.getByRole('textbox').fill('We can chat here too.');
+    await privateChat.getByRole('button', { name: 'Send', exact: true }).click();
+    await expect(privateChat.getByRole('log')).toContainText('We can chat here too.');
+    await expect(b.page.getByTestId('cell-0')).toBeVisible();
+    await privateChat.getByRole('button', { name: 'Back to conversations' }).click();
+    await expect(privateChat).toHaveCount(0);
+  } finally {
+    await a.context.close();
+    await b.context.close();
+  }
+});
+
+test('fits French correspondence invitations and opens them through the new social page', async ({
+  browser,
+}, info) => {
+  const a = await player(browser, 'Akeno Correspondence Challenger');
+  const b = await player(browser);
+  try {
+    await a.page.goto('/social/');
+    await a.page.getByRole('searchbox', { name: 'Find a player' }).fill(b.profile.name);
+    await a.page.getByRole('button', { name: 'Search players' }).click();
+    await a.page
+      .getByRole('region', { name: 'Search results' })
+      .getByRole('button', { name: 'Add friend' })
+      .click();
+    await b.page.goto('/cards/');
+    await expect(b.page.locator('.social-indicator')).toBeVisible();
+    await b.page.locator('.social-navigation').click();
+    await b.page.getByRole('button', { name: 'Accept friend' }).click();
+    await expect(b.page.locator('.social-indicator')).toHaveCount(0);
+    await b.page.getByRole('tab', { name: 'Friends', exact: true }).click();
+    const identity = b.page.getByRole('region', { name: 'Your friends' }).getByRole('article');
+    await expect(identity).toContainText(a.profile.name);
+    expect(await identity.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    await a.page.getByRole('link', { name: 'Back to play', exact: true }).click();
+    const play = a.page.getByRole('region', { name: 'Match setup' });
+    const lobbies = play.getByRole('link', { name: 'Browse lobbies', exact: true });
+    const correspondence = play.getByRole('link', { name: 'Correspondence', exact: true });
+    await expect(correspondence).toBeVisible();
+    expect((await correspondence.boundingBox())!.y).toBeGreaterThan(
+      (await lobbies.boundingBox())!.y,
+    );
+    await correspondence.click();
+    await a.page.getByRole('link', { name: 'Invite a friend', exact: true }).click();
+    const friend = a.page.getByRole('region', { name: 'Your friends' }).getByRole('article');
+    await friend.getByRole('button', { name: 'Invite', exact: true }).click();
+    const dialog = a.page.getByRole('dialog', { name: 'Invite to play' });
+    await expect(dialog.getByRole('combobox', { name: 'Match type' })).toHaveValue(
+      'correspondence',
+    );
+    await dialog.getByRole('combobox', { name: 'Hours per turn' }).selectOption('72');
+    await dialog.getByRole('button', { name: 'Send invitation' }).click();
+    await expect(a.page.getByText('Correspondence · 72h per turn')).toBeVisible();
+    await b.page.goto('/cards/');
+    await b.page.getByRole('button', { name: 'Language: English', exact: true }).click();
+    await b.page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
+    const shortcut = b.page.locator('.social-navigation');
+    await expect(shortcut.locator('.social-indicator')).toBeVisible();
+    await shortcut.click();
+    const invitation = b.page.locator('.social-card[data-incoming=true]').first();
+    await expect(invitation).toContainText(a.profile.name);
+    await expect(invitation).toContainText('Correspondance · 72 h par tour');
+    const check = async () => {
+      await expect(invitation.getByRole('button', { name: 'Accepter la partie' })).toBeInViewport();
+      expect(
+        await invitation.evaluate((el) => {
+          const header = el.querySelector('.social-identity')!.getBoundingClientRect();
+          const actions = el.querySelector('.social-card-actions')!.getBoundingClientRect();
+          return el.scrollWidth <= el.clientWidth && actions.y >= header.bottom;
+        }),
+      ).toBe(true);
+      expect(await b.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+    };
+    if (info.project.name === 'desktop') {
+      for (const [width, height] of [
+        [1280, 720],
+        [1366, 768],
+        [1920, 1080],
+      ]) {
+        await b.page.setViewportSize({ width, height });
+        await check();
+        await b.page.screenshot({ path: info.outputPath(`correspondence-inbox-${width}.png`) });
+      }
+    } else await check();
+    await invitation.getByRole('button', { name: 'Accepter la partie' }).click();
+    await b.page.getByRole('link', { name: 'Ouvrir la correspondance' }).click();
+    await expect(b.page.getByRole('link', { name: 'Reprendre la partie' })).toBeVisible();
   } finally {
     await a.context.close();
     await b.context.close();

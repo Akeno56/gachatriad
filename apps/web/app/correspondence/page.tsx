@@ -98,12 +98,9 @@ export default function Correspondence() {
             <p>{profile ? 'Sign in to play correspondence matches.' : 'Loading…'}</p>
           ))}
         {profileId && (
-          <button
-            className="text-button"
-            onClick={() => window.dispatchEvent(new Event('triad:open-friends'))}
-          >
+          <Link className="outline-button" href="/social?tab=friends&invite=correspondence">
             Invite a friend
-          </button>
+          </Link>
         )}
         {(error || connectionError) && (
           <p className="error-message" role="alert">
