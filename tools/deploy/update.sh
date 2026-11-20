@@ -32,9 +32,12 @@ ln -sfnT "$release" "$base/current.next"
 mv -Tf "$base/current.next" "$base/current"
 sudo systemctl start gachatriad.service || true
 healthy=false
-for attempt in {1..30}; do
-    if curl --fail --silent --max-time 2 http://127.0.0.1:3001/api/health >/dev/null; then healthy=true; break; fi
-    sleep 1
+health_deadline=$((SECONDS + 150))
+echo 'Waiting up to 150 seconds for the game server to become healthy.'
+while (( (remaining = health_deadline - SECONDS) > 0 )); do
+    probe_timeout=$((remaining < 10 ? remaining : 10))
+    if curl --fail --silent --noproxy '*' --max-time "$probe_timeout" http://127.0.0.1:3001/api/health >/dev/null; then healthy=true; break; fi
+    sleep 2
 done
 if ! "$healthy"; then
     echo 'Health check failed; restoring the previous code release.' >&2
