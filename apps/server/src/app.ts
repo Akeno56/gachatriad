@@ -851,14 +851,18 @@ export async function createPlatform(
     social.battleMessages(await profile(req), id(req)),
   );
   app.post('/api/matches/:id/chat', async (req) => {
-    const p = await profile(req),
-      matchId = id(req);
-    const result = await social.postBattle(p, matchId, body(req).message, body(req).requestId);
-    const players = (await store.view(p.id, matchId)).players;
+    const { message, requestId, stampId } = body(req);
+    const { id: messageId, recipients } = await social.postBattle(
+      await profile(req),
+      id(req),
+      message,
+      requestId,
+      stampId,
+    );
     for (const socket of io.sockets.sockets.values())
-      if (players.some((player) => player.id === socket.data.profileId))
+      if (recipients.includes(socket.data.profileId))
         socket.emit('platform:changed', 'battle-chat');
-    return result;
+    return { id: messageId };
   });
   app.post('/api/matches/:id/move', async (req) => {
     const p = await profile(req),

@@ -1,10 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { COSMETIC_STYLES, type CosmeticStyle } from '@gacha-triad/shared/customization';
 import { assetPath } from '../lib/connection';
 import { LocaleView } from './i18n';
 import { Button, GameDialog } from './ui';
+
+export const OpenAppearance = createContext<() => void>(() => {});
+export const useOpenAppearance = () => useContext(OpenAppearance);
 
 export function useAppearancePreference(key: 'triad-board-theme' | 'triad-card-back') {
   const [value, setValue] = useState<CosmeticStyle>('classic');

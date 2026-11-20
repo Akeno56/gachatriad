@@ -180,7 +180,7 @@ it('moderates all public channels, private messages and battle chat, with persis
   expect(messages[0].body).toBe('Bien joué !');
   await expect(
     p.social.postBattle(a.profile, id, 'Bien joué !', 'allowed-battle'),
-  ).resolves.toEqual({ id: messages[0].id });
+  ).resolves.toMatchObject({ id: messages[0].id });
   await expect(p.social.postBattle(a.profile, id, 'Other text', 'allowed-battle')).rejects.toThrow(
     /another message/,
   );
@@ -190,6 +190,34 @@ it('moderates all public channels, private messages and battle chat, with persis
     ),
   );
   expect(row.n).toBeGreaterThanOrEqual(3);
+});
+it('validates battle stamps and shares chat privacy, rate limits and send IDs', async () => {
+  const { a, b, id } = await duel();
+  const outsider = await player();
+  await expect(
+    p.social.postBattle(outsider.profile, id, undefined, 'outsider-stamp', 'thanks'),
+  ).rejects.toThrow(/private/);
+  await expect(
+    p.social.postBattle(a.profile, id, undefined, 'invalid-stamp', 'arbitrary'),
+  ).rejects.toThrow(/valid battle stamp/);
+  await expect(
+    p.social.postBattle(a.profile, id, 'Hello', 'mixed-stamp', 'thanks'),
+  ).rejects.toThrow(/valid battle stamp/);
+  const first = await p.social.postBattle(a.profile, id, undefined, 'first-stamp', 'good-game');
+  expect(first.recipients).toEqual(expect.arrayContaining([a.profile.id, b.profile.id]));
+  await expect(
+    p.social.postBattle(a.profile, id, undefined, 'first-stamp', 'good-game'),
+  ).resolves.toEqual(first);
+  await expect(p.social.postBattle(a.profile, id, 'Good game!', 'first-stamp')).rejects.toThrow(
+    /another message/,
+  );
+  await expect(p.social.postBattle(a.profile, id, 'Next message', 'fast-text')).rejects.toThrow(
+    /three seconds/,
+  );
+  const received = await p.social.battleMessages(b.profile, id);
+  expect(received).toEqual([
+    expect.objectContaining({ id: first.id, stampId: 'good-game', body: 'Good game!' }),
+  ]);
 });
 it('blocks repeated spam across channels without blocking normal conversation', async () => {
   const a = await player();

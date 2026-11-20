@@ -100,6 +100,20 @@ export interface ChatMessage extends BattleIdentity {
   body: string;
   createdAt: string;
 }
+export const BATTLE_STAMPS = [
+  { id: 'good-luck', label: 'Good luck!', mark: '✦' },
+  { id: 'nice-play', label: 'Nice play!', mark: '◆' },
+  { id: 'good-game', label: 'Good game!', mark: 'GG' },
+  { id: 'thanks', label: 'Thanks!', mark: '♥' },
+] as const;
+export type BattleStampId = (typeof BATTLE_STAMPS)[number]['id'];
+export interface BattleMessage {
+  id: string;
+  senderId: string;
+  body: string;
+  createdAt: string;
+  stampId?: BattleStampId | null;
+}
 export interface DuelInvitation {
   id: string;
   sender: BattleIdentity;

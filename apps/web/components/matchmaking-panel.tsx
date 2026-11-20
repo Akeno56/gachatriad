@@ -9,16 +9,16 @@ import { confirmQueueRules, type QueueMode } from './ranked-warning';
 import { isDraftMode, RATED_MODES } from '@gacha-triad/shared/platform';
 import { matchModeNames } from '../lib/rules';
 import { Button } from './ui';
+import { useOpenAppearance } from './appearance-settings';
 export function MatchmakingPanel({
   onMatch,
-  onRules,
   onTutorial,
 }: {
   onMatch: (id: string) => void;
-  onRules: () => void;
   onTutorial: () => void;
 }) {
   const { profile, refresh } = useSession();
+  const openAppearance = useOpenAppearance();
   const [busy, setBusy] = useState(false),
     [error, setError] = useState('');
   const lock = useRef(false);
@@ -100,8 +100,16 @@ export function MatchmakingPanel({
           <button className="text-button" onClick={onTutorial}>
             How to play
           </button>
-          <button className="text-button" onClick={onRules}>
-            Rulebook
+          <button
+            type="button"
+            className="text-button"
+            aria-haspopup="dialog"
+            onClick={(event) => {
+              event.currentTarget.focus();
+              openAppearance();
+            }}
+          >
+            Customize
           </button>
         </div>
         <p className="error-message" role="alert">

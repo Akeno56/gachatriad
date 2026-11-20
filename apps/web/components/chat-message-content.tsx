@@ -1,16 +1,19 @@
 import { LocaleView, NoTranslate, LocalizedDate } from './i18n';
-import type { BattleIdentity } from '@gacha-triad/shared/social';
+import { BATTLE_STAMPS, type BattleIdentity, type BattleStampId } from '@gacha-triad/shared/social';
 import { Avatar } from './avatar';
 import { appPath } from '../lib/connection';
 export function ChatMessageContent({
   person,
   createdAt,
   body,
+  stampId,
 }: {
   person: BattleIdentity;
   createdAt?: string;
   body?: string;
+  stampId?: BattleStampId | null;
 }) {
+  const stamp = stampId && BATTLE_STAMPS.find(({ id }) => id === stampId);
   return (
     <LocaleView>
       <>
@@ -28,10 +31,19 @@ export function ChatMessageContent({
             )}
             {person.title && <small className="message-title">{person.title}</small>}
           </header>
-          {body !== undefined && (
-            <p>
-              <NoTranslate>{body}</NoTranslate>
+          {stamp ? (
+            <p className="battle-stamp-message" data-stamp={stamp.id}>
+              <span className="battle-stamp-mark" aria-hidden="true">
+                {stamp.mark}
+              </span>
+              <span>{stamp.label}</span>
             </p>
+          ) : (
+            body !== undefined && (
+              <p>
+                <NoTranslate>{body}</NoTranslate>
+              </p>
+            )
           )}
           {createdAt && (
             <time className="message-time" dateTime={createdAt}>

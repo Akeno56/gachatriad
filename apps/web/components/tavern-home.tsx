@@ -20,12 +20,10 @@ import { CURRENT_SEASON } from '@gacha-triad/shared/journey';
 
 export function TavernHome({
   onMatch,
-  onRules,
   onTutorial,
   onInspect,
 }: {
   onMatch: (id: string) => void;
-  onRules: () => void;
   onTutorial: () => void;
   onInspect: (card: CardData) => void;
 }) {
@@ -83,7 +81,7 @@ export function TavernHome({
               <span>GACHA</span>TRIAD
             </h1>
           </header>
-          <MatchmakingPanel onMatch={onMatch} onRules={onRules} onTutorial={onTutorial} />
+          <MatchmakingPanel onMatch={onMatch} onTutorial={onTutorial} />
           <section className="menu-window tavern-noticeboard" aria-labelledby="noticeboard-title">
             <h2 id="noticeboard-title" className="window-label">
               Noticeboard

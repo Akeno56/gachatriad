@@ -351,7 +351,6 @@ export function Game() {
         ) : !match ? (
           <TavernHome
             onMatch={setMatchId}
-            onRules={() => setDialog('rules')}
             onTutorial={() => window.dispatchEvent(new Event('triad:show-tutorial'))}
             onInspect={inspect}
           />

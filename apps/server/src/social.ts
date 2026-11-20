@@ -7,9 +7,11 @@ import {
 } from '@gacha-triad/shared/platform';
 import { CURRENT_SEASON } from '@gacha-triad/shared/journey';
 import { ALL_CARDS } from '@gacha-triad/shared';
-import { CHAT_CHANNELS, type ChatChannel } from '@gacha-triad/shared/social';
+import { BATTLE_STAMPS, CHAT_CHANNELS, type ChatChannel } from '@gacha-triad/shared/social';
 import type {
   BattleIdentity,
+  BattleMessage,
+  BattleStampId,
   ChatMessage,
   DuelInvitation,
   FriendView,
@@ -53,12 +55,13 @@ export class Social {
   }
   private async battleAccess(sql: Sql, p: ProfileIdentity, matchId: string, writing = false) {
     const [m] = await sql<{
-      status: string;
+      player0: string;
+      player1: string | null;
       completed_at: Date | null;
       departed: string[];
       opponent_bot: boolean;
     }>(
-      `SELECT m.*,coalesce(o.is_bot,true) AS opponent_bot FROM matches m
+      `SELECT m.player0,m.player1,m.completed_at,m.departed,coalesce(o.is_bot,true) AS opponent_bot FROM matches m
       LEFT JOIN profiles o ON o.id=CASE WHEN m.player0=$2 THEN m.player1 ELSE m.player0 END
       WHERE m.id=$1 AND (m.player0=$2 OR m.player1=$2)`,
       [matchId, p.id],
@@ -71,13 +74,14 @@ export class Social {
         (m.completed_at && Date.now() - new Date(m.completed_at).getTime() > 600000))
     )
       throw new GameError('Battle chat is closed.', 409);
+    return m;
   }
-  async battleMessages(p: ProfileIdentity, matchId: string) {
+  async battleMessages(p: ProfileIdentity, matchId: string): Promise<BattleMessage[]> {
     return this.store.db.read(async (sql) => {
       await this.battleAccess(sql, p, matchId);
       return (
-        await sql<{ id: string; senderId: string; body: string; createdAt: Date }>(
-          'SELECT id,sender_id AS "senderId",body,created_at AS "createdAt" FROM battle_messages WHERE match_id=$1 ORDER BY created_at DESC,id DESC LIMIT 80',
+        await sql<Omit<BattleMessage, 'createdAt'> & { createdAt: Date }>(
+          'SELECT id,sender_id AS "senderId",body,stamp_id AS "stampId",created_at AS "createdAt" FROM battle_messages WHERE match_id=$1 ORDER BY created_at DESC,id DESC LIMIT 80',
           [matchId],
         )
       )
@@ -85,23 +89,43 @@ export class Social {
         .map((m) => ({ ...m, createdAt: m.createdAt.toISOString() }));
     });
   }
-  async postBattle(p: ProfileIdentity, matchId: string, message: unknown, requestId: unknown) {
-    const text = this.messageText(message, requestId);
+  async postBattle(
+    p: ProfileIdentity,
+    matchId: string,
+    message: unknown,
+    requestId: unknown,
+    stampId?: unknown,
+  ) {
+    const stamp = BATTLE_STAMPS.find(({ id }) => id === stampId);
+    if (stampId !== undefined && (!stamp || message !== undefined))
+      throw new GameError('Choose one valid battle stamp.');
+    const text = this.messageText(stamp?.label ?? message, requestId);
+    const stampKey = stamp?.id ?? null;
     await this.store.db.read((sql) => this.battleAccess(sql, p, matchId, true));
     const previous = await this.store.db.read((sql) =>
       sql('SELECT id FROM battle_messages WHERE sender_id=$1 AND request_id=$2', [p.id, requestId]),
     );
     if (!previous.length) await this.filter.check(p.id, text);
     return this.store.db.tx(async (sql) => {
-      await this.battleAccess(sql, p, matchId, true);
-      const [previous] = await sql<{ id: string; match_id: string; body: string }>(
-        'SELECT * FROM battle_messages WHERE sender_id=$1 AND request_id=$2',
+      const match = await this.battleAccess(sql, p, matchId, true);
+      const recipients = [match.player0, match.player1];
+      const [previous] = await sql<{
+        id: string;
+        match_id: string;
+        body: string;
+        stamp_id: BattleStampId | null;
+      }>(
+        'SELECT id,match_id,body,stamp_id FROM battle_messages WHERE sender_id=$1 AND request_id=$2',
         [p.id, requestId],
       );
       if (previous) {
-        if (previous.match_id !== matchId || previous.body !== text)
+        if (
+          previous.match_id !== matchId ||
+          previous.body !== text ||
+          previous.stamp_id !== stampKey
+        )
           throw new GameError('This send request belongs to another message.', 409);
-        return { id: previous.id };
+        return { id: previous.id, recipients };
       }
       if (
         (
@@ -114,10 +138,10 @@ export class Social {
         throw new GameError('Wait three seconds between messages.', 429);
       const id = randomUUID();
       await sql(
-        'INSERT INTO battle_messages(id,match_id,sender_id,body,request_id) VALUES($1,$2,$3,$4,$5)',
-        [id, matchId, p.id, text, requestId],
+        'INSERT INTO battle_messages(id,match_id,sender_id,body,request_id,stamp_id) VALUES($1,$2,$3,$4,$5,$6)',
+        [id, matchId, p.id, text, requestId, stampKey],
       );
-      return { id };
+      return { id, recipients };
     });
   }
   private async requireFriend(

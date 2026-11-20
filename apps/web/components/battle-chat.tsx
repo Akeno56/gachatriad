@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import type { MatchView } from '@gacha-triad/shared/platform';
-import { LocaleView } from './i18n';
+import { BATTLE_STAMPS, type BattleMessage, type BattleStampId } from '@gacha-triad/shared/social';
+import { LocaleView, NoTranslate } from './i18n';
 import { ChatMessageContent } from './chat-message-content';
 import { useSession } from './session';
 import { api } from '../lib/platform';
@@ -9,14 +10,8 @@ import { ChannelChat } from './channel-chat';
 import { useSocial } from './social-state';
 import { FriendChat } from './friend-chat';
 import { Avatar } from './avatar';
-import { NoTranslate } from './i18n';
 import { Tabs } from './ui';
-interface BattleMessage {
-  id: string;
-  senderId: string;
-  body: string;
-  createdAt: string;
-}
+type ChatDraft = { message: string } | { stampId: BattleStampId };
 export function BattleChat({ match }: { match: MatchView }) {
   const { revision, battleChatRevision, refreshBattleChat } = useSession();
   const { data } = useSocial();
@@ -27,9 +22,12 @@ export function BattleChat({ match }: { match: MatchView }) {
     [message, setMessage] = useState(''),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
+  const [stampsOpen, setStampsOpen] = useState(false);
+  const stampsToggle = useRef<HTMLButtonElement>(null);
+  const sending = useRef(false);
   const list = useRef<HTMLDivElement>(null),
     sticky = useRef(true),
-    pending = useRef<{ text: string; id: string } | null>(null);
+    pending = useRef<{ key: string; id: string } | null>(null);
   useEffect(() => {
     if (!match.chatAvailable || match.spectator) return;
     setMessages([]);
@@ -57,6 +55,34 @@ export function BattleChat({ match }: { match: MatchView }) {
   useEffect(() => {
     if (sticky.current && list.current) list.current.scrollTop = list.current.scrollHeight;
   }, [messages.at(-1)?.id]);
+  function closeStamps() {
+    setStampsOpen(false);
+    stampsToggle.current?.focus({ preventScroll: true });
+  }
+  async function send(draft: ChatDraft) {
+    if (sending.current || !match.chatAvailable || match.spectator) return;
+    sending.current = true;
+    const key = 'message' in draft ? `text:${draft.message}` : `stamp:${draft.stampId}`;
+    if (pending.current?.key !== key) pending.current = { key, id: crypto.randomUUID() };
+    setBusy(true);
+    setError('');
+    try {
+      await api(`/matches/${match.id}/chat`, { ...draft, requestId: pending.current.id });
+      if ('message' in draft) {
+        setMessage((current) => (current.trim() === draft.message ? '' : current));
+      } else {
+        setStampsOpen(false);
+      }
+      pending.current = null;
+      sticky.current = true;
+      refreshBattleChat();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      sending.current = false;
+      setBusy(false);
+    }
+  }
   return (
     <LocaleView>
       <section
@@ -79,7 +105,10 @@ export function BattleChat({ match }: { match: MatchView }) {
             { value: 'friends', label: 'Friends' },
           ]}
           value={tab}
-          onChange={setTab}
+          onChange={(value) => {
+            setTab(value);
+            setStampsOpen(false);
+          }}
         />
         {tab === 'general' ? (
           <ChannelChat compact />
@@ -105,7 +134,52 @@ export function BattleChat({ match }: { match: MatchView }) {
           </div>
         ) : (
           <>
-            <h2 className="window-label">Battle chat</h2>
+            <div className="battle-chat-heading">
+              <h2 className="window-label">Battle chat</h2>
+              {match.chatAvailable && !match.spectator && (
+                <button
+                  type="button"
+                  ref={stampsToggle}
+                  className="outline-button battle-stamps-toggle"
+                  aria-expanded={stampsOpen}
+                  aria-controls="battle-stamps"
+                  onClick={() => setStampsOpen((open) => !open)}
+                >
+                  Stamps
+                </button>
+              )}
+            </div>
+            <div id="battle-stamps" hidden={!stampsOpen || !match.chatAvailable || match.spectator}>
+              {stampsOpen && match.chatAvailable && !match.spectator && (
+                <div
+                  className="battle-stamp-picker"
+                  role="group"
+                  aria-label="Battle stamps"
+                  onKeyDown={(event) => {
+                    if (event.key === 'Escape') closeStamps();
+                  }}
+                >
+                  {BATTLE_STAMPS.map((stamp) => (
+                    <button
+                      className="outline-button"
+                      data-stamp={stamp.id}
+                      key={stamp.id}
+                      type="button"
+                      disabled={busy}
+                      onClick={() => {
+                        stampsToggle.current?.focus({ preventScroll: true });
+                        void send({ stampId: stamp.id });
+                      }}
+                    >
+                      <span className="battle-stamp-mark" aria-hidden="true">
+                        {stamp.mark}
+                      </span>
+                      <span>{stamp.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             {!match.chatAvailable && (
               <p className="battle-chat-unavailable">
                 {match.spectator
@@ -132,6 +206,7 @@ export function BattleChat({ match }: { match: MatchView }) {
                   <ChatMessageContent
                     person={match.players.find((p) => p.id === m.senderId) ?? match.players[0]}
                     body={m.body}
+                    stampId={m.stampId}
                     createdAt={m.createdAt}
                   />
                 </article>
@@ -139,29 +214,10 @@ export function BattleChat({ match }: { match: MatchView }) {
             </div>
             <form
               className="chat-compose"
-              onSubmit={async (e) => {
+              onSubmit={(e) => {
                 e.preventDefault();
-                if (busy || !message.trim()) return;
-                if (!match.chatAvailable || match.spectator) return;
                 const text = message.trim();
-                if (pending.current?.text !== text)
-                  pending.current = { text, id: crypto.randomUUID() };
-                setBusy(true);
-                setError('');
-                try {
-                  await api(`/matches/${match.id}/chat`, {
-                    message: text,
-                    requestId: pending.current.id,
-                  });
-                  setMessage('');
-                  pending.current = null;
-                  sticky.current = true;
-                  refreshBattleChat();
-                } catch (e) {
-                  setError((e as Error).message);
-                } finally {
-                  setBusy(false);
-                }
+                if (text) void send({ message: text });
               }}
             >
               <label className="sr-only" htmlFor="battle-chat-message">

@@ -29,9 +29,8 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>Choose a board theme and card back in Appearance.</li>
-          <li>Choose a banner for your public profile.</li>
-          <li>Friend cards line up with and without titles.</li>
+          <li>Open board themes and card backs from Customize on Play.</li>
+          <li>Send stamps in battle chat.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

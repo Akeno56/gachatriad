@@ -3,7 +3,7 @@ import { mkdtemp } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createPlatform } from '../../apps/server/src/app';
 import { STANDARD } from '../../packages/engine/src/index';
-import { navigateTo } from './helpers';
+import { navigateTo, openNavigation } from './helpers';
 
 let platform: Awaited<ReturnType<typeof createPlatform>>;
 let origin: string;
@@ -126,6 +126,26 @@ test('keeps a duel invitation in the top-bar inbox and skips profile and board r
     expect(reads).toContain(`/api/matches/${matchId}/chat`);
     expect(reads).not.toContain(`/api/matches/${matchId}`);
     expect(reads).not.toContain('/api/profile');
+    if (info.project.name === 'mobile') await a.page.locator('.comms-mobile-toggle').click();
+    await a.page.getByRole('button', { name: 'Language: English', exact: true }).click();
+    await a.page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
+    const composer = b.page.getByRole('textbox', { name: 'Message your opponent' });
+    await composer.fill('A draft to keep');
+    const stamps = b.page.getByRole('button', { name: 'Stamps', exact: true });
+    await stamps.click();
+    const picker = b.page.getByRole('group', { name: 'Battle stamps' });
+    await expect(picker.getByRole('button')).toHaveCount(4);
+    expect(await picker.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
+      true,
+    );
+    await b.page.screenshot({ path: info.outputPath('battle-stamps.png') });
+    await picker.getByRole('button', { name: 'Nice play!' }).click();
+    await expect(picker).toHaveCount(0);
+    await expect(composer).toHaveValue('A draft to keep');
+    await expect(
+      a.page.getByRole('log', { name: 'Messages de la partie' }).locator('.battle-stamp-message'),
+    ).toContainText('Bien joué !');
+    await expect(b.page.getByTestId('cell-0')).toBeVisible();
     await b.page.getByRole('tab', { name: 'Friends', exact: true }).click();
     await b.page.getByRole('button', { name: new RegExp(a.profile.name) }).click();
     const privateChat = b.page.locator('.arena-comms .private-comms-embedded');
@@ -278,6 +298,21 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
   const b = await player(browser);
   const { page } = a;
   try {
+    await page.goto('/');
+    const setup = page.getByRole('region', { name: 'Match setup' });
+    const customize = setup.getByRole('button', { name: 'Customize', exact: true });
+    await expect(setup.getByRole('button', { name: 'Rulebook', exact: true })).toHaveCount(0);
+    await openNavigation(page);
+    await expect(
+      page.locator('#main-navigation').getByRole('link', { name: 'Rulebook' }),
+    ).toBeVisible();
+    await page.keyboard.press('Escape');
+    await customize.click();
+    const fromPlay = page.getByRole('dialog', { name: 'Appearance', exact: true });
+    await expect(fromPlay.getByRole('group', { name: 'Board theme' })).toBeVisible();
+    await expect(fromPlay.getByRole('group', { name: 'Card back' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(customize).toBeFocused();
     const match = await platform.store.solo(a.profile.id, 'easy', STANDARD);
     await page.goto(`/?match=${match}`);
     const board = page.locator('.arena-screen .board');
@@ -351,6 +386,10 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
     await expect(b.page.locator('.game-shell')).toHaveAttribute('data-board-theme', 'classic');
     await b.page.getByRole('button', { name: 'Language: English', exact: true }).click();
     await b.page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
+    await b.page.goto('/');
+    await b.page.getByRole('button', { name: 'Personnaliser', exact: true }).click();
+    await expect(b.page.getByRole('dialog', { name: 'Apparence', exact: true })).toBeVisible();
+    await b.page.keyboard.press('Escape');
     await b.page.getByRole('button', { name: 'Paramètres du jeu', exact: true }).click();
     await b.page.getByRole('button', { name: 'Apparence', exact: true }).click();
     await expect(b.page.getByRole('group', { name: 'Thème du plateau' })).toBeVisible();

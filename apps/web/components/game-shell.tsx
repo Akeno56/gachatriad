@@ -18,7 +18,7 @@ import { ActiveBattleReminder } from './active-battle-reminder';
 import { MatchmakingDock } from './matchmaking-dock';
 import { ActionNoticeProvider } from './action-notice';
 import { ReleaseNotes } from './release-notes';
-import { AppearanceSettings, useAppearancePreference } from './appearance-settings';
+import { AppearanceSettings, OpenAppearance, useAppearancePreference } from './appearance-settings';
 const AudioContext = createContext<(sound: Sound) => void>(() => {});
 const MusicSceneContext = createContext<(scene: MusicScene) => void>(() => {});
 export const useGameAudio = () => useContext(AudioContext);
@@ -39,6 +39,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
   const [notice, setNotice] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const openAppearance = useCallback(() => setAppearanceOpen(true), []);
   const boardTheme = useAppearancePreference('triad-board-theme');
   const cardBack = useAppearancePreference('triad-card-back');
   const [navigationOpen, setNavigationOpen] = useState(false);
@@ -351,7 +352,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                             onClick={() => {
                               settingsButton.current?.focus();
                               setSettingsOpen(false);
-                              setAppearanceOpen(true);
+                              openAppearance();
                             }}
                           >
                             Appearance
@@ -454,7 +455,9 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                   <main id="main">
                     <ServerConnection>
                       <StarterBoosters />
-                      {children}
+                      <OpenAppearance.Provider value={openAppearance}>
+                        {children}
+                      </OpenAppearance.Provider>
                       <FirstDuelTutorial />
                       <RankedWarning />
                       <ActiveBattleReminder />
