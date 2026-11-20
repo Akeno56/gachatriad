@@ -215,9 +215,9 @@
   top: 21px;
   right: 6px;
 }
-.elemental-board .board-cell[data-element] {
-  border-color: #b5c7d155;
-  background: radial-gradient(ellipse, #45597588, #142139);
+:where(.elemental-board) .board-cell[data-element]:not(:has(.playing-card)) {
+  border-color: var(--duel-cell-border, #b5c7d155);
+  background: var(--duel-cell-background, radial-gradient(ellipse, #45597588, #142139));
 }
 .playing-card.rarity-5 {
   border: 3px double #ffe2a4;

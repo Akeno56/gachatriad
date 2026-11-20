@@ -32,12 +32,7 @@ export function ChatMessageContent({
             {person.title && <small className="message-title">{person.title}</small>}
           </header>
           {stamp ? (
-            <p className="battle-stamp-message" data-stamp={stamp.id}>
-              <span className="battle-stamp-mark" aria-hidden="true">
-                {stamp.mark}
-              </span>
-              <span>{stamp.label}</span>
-            </p>
+            <p data-stamp={stamp.id}>{stamp.label}</p>
           ) : (
             body !== undefined && (
               <p>

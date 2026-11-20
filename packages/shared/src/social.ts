@@ -101,10 +101,10 @@ export interface ChatMessage extends BattleIdentity {
   createdAt: string;
 }
 export const BATTLE_STAMPS = [
-  { id: 'good-luck', label: 'Good luck!', mark: '✦' },
-  { id: 'nice-play', label: 'Nice play!', mark: '◆' },
-  { id: 'good-game', label: 'Good game!', mark: 'GG' },
-  { id: 'thanks', label: 'Thanks!', mark: '♥' },
+  { id: 'good-luck', label: 'Good luck!' },
+  { id: 'nice-play', label: 'Nice play!' },
+  { id: 'good-game', label: 'Good game!' },
+  { id: 'thanks', label: 'Thanks!' },
 ] as const;
 export type BattleStampId = (typeof BATTLE_STAMPS)[number]['id'];
 export interface BattleMessage {

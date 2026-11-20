@@ -2,7 +2,7 @@ import { expect, test, type Browser } from '@playwright/test';
 import { mkdtemp } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createPlatform } from '../../apps/server/src/app';
-import { STANDARD } from '../../packages/engine/src/index';
+import { RANKED_RULES, STANDARD, type GameState } from '../../packages/engine/src/index';
 import { navigateTo, openNavigation } from './helpers';
 
 let platform: Awaited<ReturnType<typeof createPlatform>>;
@@ -131,20 +131,21 @@ test('keeps a duel invitation in the top-bar inbox and skips profile and board r
     await a.page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
     const composer = b.page.getByRole('textbox', { name: 'Message your opponent' });
     await composer.fill('A draft to keep');
-    const stamps = b.page.getByRole('button', { name: 'Stamps', exact: true });
-    await stamps.click();
-    const picker = b.page.getByRole('group', { name: 'Battle stamps' });
+    await b.page.getByRole('button', { name: 'Quick chat', exact: true }).click();
+    const picker = b.page.getByRole('group', { name: 'Quick chat phrases' });
     await expect(picker.getByRole('button')).toHaveCount(4);
     expect(await picker.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
       true,
     );
-    await b.page.screenshot({ path: info.outputPath('battle-stamps.png') });
+    await b.page.screenshot({ path: info.outputPath('quick-chat.png') });
     await picker.getByRole('button', { name: 'Nice play!' }).click();
     await expect(picker).toHaveCount(0);
     await expect(composer).toHaveValue('A draft to keep');
     await expect(
-      a.page.getByRole('log', { name: 'Messages de la partie' }).locator('.battle-stamp-message'),
-    ).toContainText('Bien joué !');
+      a.page
+        .getByRole('log', { name: 'Messages de la partie' })
+        .locator('[data-stamp="nice-play"]'),
+    ).toHaveText('Bien joué !');
     await expect(b.page.getByTestId('cell-0')).toBeVisible();
     await b.page.getByRole('tab', { name: 'Friends', exact: true }).click();
     await b.page.getByRole('button', { name: new RegExp(a.profile.name) }).click();
@@ -395,6 +396,148 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
     await expect(b.page.getByRole('group', { name: 'Thème du plateau' })).toBeVisible();
     await expect(b.page.getByRole('group', { name: 'Dos de carte' })).toBeVisible();
     await b.page.screenshot({ path: info.outputPath('appearance-fr.png') });
+  } finally {
+    await Promise.all([a.context.close(), b.context.close()]);
+  }
+});
+
+test('keeps Elemental themes and bilingual battle controls aligned across desktop sizes', async ({
+  browser,
+}, info) => {
+  test.skip(info.project.name !== 'desktop');
+  test.setTimeout(60000);
+  const a = await player(browser, 'Northern Card Hall Challenger');
+  const b = await player(browser, 'Southern Card Hall Challenger');
+  const { page } = a;
+  try {
+    const lobby = await a.request('/lobbies', {
+      mode: 'custom',
+      rules: RANKED_RULES,
+      allowBots: false,
+    });
+    const { matchId } = await b.request(`/lobbies/${lobby.lobbyId}/join`, {});
+    await platform.db.tx(async (sql) => {
+      const [{ state }] = await sql<{ state: GameState }>('SELECT state FROM matches WHERE id=$1', [
+        matchId,
+      ]);
+      const [first, ...otherCards] = state.hands[0];
+      const element = first.element ?? 'fire';
+      const game = {
+        ...state,
+        turn: 0,
+        firstPlayer: 0,
+        hands: [[{ ...first, element }, ...otherCards], state.hands[1]],
+        cellElements: [
+          element,
+          element === 'fire' ? 'water' : 'fire',
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+        ],
+      };
+      await sql('UPDATE matches SET state=$2::jsonb WHERE id=$1', [matchId, JSON.stringify(game)]);
+      await sql("UPDATE profiles SET selected_title='professional' WHERE id=$1", [a.profile.id]);
+      await sql("UPDATE profiles SET selected_title='chain-reaction' WHERE id=$1", [b.profile.id]);
+    });
+    await page.goto(`/?match=${matchId}`);
+    const board = page.locator('.arena-screen .board');
+    const matching = page.getByTestId('cell-0');
+    const mismatched = page.getByTestId('cell-1');
+    const neutral = page.getByTestId('cell-2');
+    const picker = page.locator('.quick-chat-picker');
+    for (const [theme, background] of [
+      ['astral', 'rgb(38, 34, 61)'],
+      ['ember', 'rgb(58, 44, 40)'],
+    ]) {
+      for (const language of ['en', 'fr']) {
+        await page.evaluate(
+          ({ theme, language }) => {
+            localStorage.setItem('triad-board-theme', theme);
+            localStorage.setItem('triad-language', language);
+          },
+          { theme, language },
+        );
+        await page.reload();
+        await expect(page.locator('html')).toHaveAttribute('lang', language);
+        await expect(page.locator('.battle-mode strong')).toHaveText(
+          language === 'en' ? 'Custom game' : 'Partie personnalisée',
+        );
+        await expect(page.locator('#battle-chat-message')).toHaveAttribute(
+          'placeholder',
+          'Message…',
+        );
+        await expect(matching.locator('.cell-element')).toBeVisible();
+        await expect(neutral).toHaveCSS('background-color', background);
+        await expect(matching).toHaveCSS('background-color', background);
+        await expect(mismatched).toHaveCSS('background-color', background);
+        const border = await neutral.evaluate((el) => getComputedStyle(el).borderTopColor);
+        await expect(matching).toHaveCSS('border-top-color', border);
+        await page.getByTestId('player-card').first().click();
+        await expect(matching).toHaveAttribute('data-modifier', '1');
+        await expect(mismatched).toHaveAttribute('data-modifier', '-1');
+        await expect(matching).toHaveCSS('border-top-color', 'rgb(134, 227, 163)');
+        await expect(mismatched).toHaveCSS('border-top-color', 'rgb(249, 151, 153)');
+        await expect(matching).toHaveCSS('background-color', background);
+        await expect(mismatched).toHaveCSS('background-color', background);
+        await page
+          .getByRole('button', {
+            name: language === 'en' ? 'Quick chat' : 'Chat rapide',
+            exact: true,
+          })
+          .click();
+        await expect(picker.getByRole('button')).toHaveCount(4);
+        for (const [width, height] of [
+          [1280, 720],
+          [1366, 768],
+          [1920, 1080],
+        ]) {
+          await page.setViewportSize({ width, height });
+          await expect(board).toBeInViewport({ ratio: 1 });
+          await expect(picker).toBeInViewport({ ratio: 1 });
+          await page.evaluate(() => document.fonts.ready);
+          const layout = await page.evaluate(() => {
+            const selectors = [
+              '.match-toolbar',
+              '.player-heading',
+              '.turn-banner',
+              '.battle-layout',
+              '.hand-label',
+              '.card-inspector',
+              '.arena-comms',
+              '.arena-chat-tabs button',
+              '.battle-chat-heading',
+              '.quick-chat-picker button',
+              '.chat-compose',
+            ];
+            const clipped = selectors.flatMap((selector) =>
+              Array.from(document.querySelectorAll(selector))
+                .filter((element) => element.scrollWidth > element.clientWidth + 1)
+                .map((element) => `${selector}: ${element.textContent?.trim()}`),
+            );
+            const [hand, board, rival] = ['.player-hand', '.board', '.cpu-hand'].map((selector) =>
+              document.querySelector(selector)!.getBoundingClientRect(),
+            );
+            return {
+              clipped,
+              overlaps: hand.right > board.left + 1 || board.right > rival.left + 1,
+              pageOverflow: document.documentElement.scrollWidth > innerWidth,
+            };
+          });
+          expect
+            .soft(layout, `${theme}, ${language}, ${width}×${height}`)
+            .toEqual({ clipped: [], overlaps: false, pageOverflow: false });
+          if (width === 1280)
+            await page.screenshot({ path: info.outputPath(`elemental-${theme}-${language}.png`) });
+        }
+      }
+    }
+    await matching.click();
+    await expect(matching.locator('.element-modifier')).toHaveText('+1');
+    await expect(matching.locator('.cell-element')).toBeVisible();
   } finally {
     await Promise.all([a.context.close(), b.context.close()]);
   }

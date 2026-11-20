@@ -22,8 +22,8 @@ export function BattleChat({ match }: { match: MatchView }) {
     [message, setMessage] = useState(''),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
-  const [stampsOpen, setStampsOpen] = useState(false);
-  const stampsToggle = useRef<HTMLButtonElement>(null);
+  const [quickChatOpen, setQuickChatOpen] = useState(false);
+  const quickChatToggle = useRef<HTMLButtonElement>(null);
   const sending = useRef(false);
   const list = useRef<HTMLDivElement>(null),
     sticky = useRef(true),
@@ -55,9 +55,9 @@ export function BattleChat({ match }: { match: MatchView }) {
   useEffect(() => {
     if (sticky.current && list.current) list.current.scrollTop = list.current.scrollHeight;
   }, [messages.at(-1)?.id]);
-  function closeStamps() {
-    setStampsOpen(false);
-    stampsToggle.current?.focus({ preventScroll: true });
+  function closeQuickChat() {
+    setQuickChatOpen(false);
+    quickChatToggle.current?.focus({ preventScroll: true });
   }
   async function send(draft: ChatDraft) {
     if (sending.current || !match.chatAvailable || match.spectator) return;
@@ -71,7 +71,7 @@ export function BattleChat({ match }: { match: MatchView }) {
       if ('message' in draft) {
         setMessage((current) => (current.trim() === draft.message ? '' : current));
       } else {
-        setStampsOpen(false);
+        setQuickChatOpen(false);
       }
       pending.current = null;
       sticky.current = true;
@@ -107,7 +107,7 @@ export function BattleChat({ match }: { match: MatchView }) {
           value={tab}
           onChange={(value) => {
             setTab(value);
-            setStampsOpen(false);
+            setQuickChatOpen(false);
           }}
         />
         {tab === 'general' ? (
@@ -139,42 +139,41 @@ export function BattleChat({ match }: { match: MatchView }) {
               {match.chatAvailable && !match.spectator && (
                 <button
                   type="button"
-                  ref={stampsToggle}
-                  className="outline-button battle-stamps-toggle"
-                  aria-expanded={stampsOpen}
-                  aria-controls="battle-stamps"
-                  onClick={() => setStampsOpen((open) => !open)}
+                  ref={quickChatToggle}
+                  className="outline-button quick-chat-toggle"
+                  aria-expanded={quickChatOpen}
+                  aria-controls="battle-quick-chat"
+                  onClick={() => setQuickChatOpen((open) => !open)}
                 >
-                  Stamps
+                  Quick chat
                 </button>
               )}
             </div>
-            <div id="battle-stamps" hidden={!stampsOpen || !match.chatAvailable || match.spectator}>
-              {stampsOpen && match.chatAvailable && !match.spectator && (
+            <div
+              id="battle-quick-chat"
+              hidden={!quickChatOpen || !match.chatAvailable || match.spectator}
+            >
+              {quickChatOpen && match.chatAvailable && !match.spectator && (
                 <div
-                  className="battle-stamp-picker"
+                  className="quick-chat-picker"
                   role="group"
-                  aria-label="Battle stamps"
+                  aria-label="Quick chat phrases"
                   onKeyDown={(event) => {
-                    if (event.key === 'Escape') closeStamps();
+                    if (event.key === 'Escape') closeQuickChat();
                   }}
                 >
                   {BATTLE_STAMPS.map((stamp) => (
                     <button
                       className="outline-button"
-                      data-stamp={stamp.id}
                       key={stamp.id}
                       type="button"
                       disabled={busy}
                       onClick={() => {
-                        stampsToggle.current?.focus({ preventScroll: true });
+                        quickChatToggle.current?.focus({ preventScroll: true });
                         void send({ stampId: stamp.id });
                       }}
                     >
-                      <span className="battle-stamp-mark" aria-hidden="true">
-                        {stamp.mark}
-                      </span>
-                      <span>{stamp.label}</span>
+                      {stamp.label}
                     </button>
                   ))}
                 </div>
@@ -229,7 +228,7 @@ export function BattleChat({ match }: { match: MatchView }) {
                 maxLength={300}
                 autoComplete="off"
                 disabled={!match.chatAvailable}
-                placeholder="Message your opponent…"
+                placeholder="Message…"
                 onChange={(e) => setMessage(e.target.value)}
               />
               <button

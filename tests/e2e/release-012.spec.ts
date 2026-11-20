@@ -299,7 +299,9 @@ test('fits chat names and draft-stage chat, and supplies names for every form fi
       expect(box!.width).toBeLessThanOrEqual(561);
     } else await chat.locator('.comms-mobile-toggle').click();
     await chat.getByRole('tab', { name: 'Battle', exact: true }).click();
-    await chat.getByPlaceholder('Message your opponent…').fill('A chat message during Draft');
+    await chat
+      .getByRole('textbox', { name: 'Message your opponent' })
+      .fill('A chat message during Draft');
     await chat.getByRole('button', { name: 'Send', exact: true }).click();
     await expect(chat.locator('.message-heading').first()).toContainText(a.profile.name);
     await expect(chat.locator('.message-title').first()).toHaveText('Chain Reaction');

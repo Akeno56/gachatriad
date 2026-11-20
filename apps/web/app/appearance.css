@@ -35,6 +35,9 @@
   }
 
   .arena-screen .board {
+    --duel-cell-background:
+      radial-gradient(ellipse, var(--theme-light), transparent 75%), var(--theme-cell);
+    --duel-cell-border: var(--theme-cell-border);
     border-color: var(--theme-trim);
     background: var(--theme-board);
     box-shadow:
@@ -42,13 +45,7 @@
       0 4px 14px #0309199e;
   }
 
-  :is(.arena-screen .board-cell, .replay-cell, .puzzle-cell):not(
-    [data-element],
-    .legal-cell,
-    .is-legal,
-    .replay-last-move,
-    :has(.playing-card)
-  ) {
+  :is(.replay-cell, .puzzle-cell):not(.is-legal, .replay-last-move, :has(.playing-card)) {
     border-color: var(--theme-cell-border);
     background: radial-gradient(ellipse, var(--theme-light), transparent 75%), var(--theme-cell);
   }

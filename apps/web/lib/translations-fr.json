@@ -1363,6 +1363,7 @@
   "Not enough Stellar Prisms.": "Pas assez de Prismes stellaires.",
   "Practice": "Entraînement",
   "Custom": "Personnalisée",
+  "Custom game": "Partie personnalisée",
   "forfeit": "abandon",
   "completed games. Repeated wins are a review signal, not proof of win trading.": "parties terminées. Des victoires répétées justifient un examen, mais ne prouvent pas un échange de victoires arrangé.",
   "W / D / L": "V / N / D",
@@ -2057,13 +2058,13 @@
   "Choose a banner for your public profile.": "Choisissez une bannière pour votre profil public.",
   "Friend cards line up with and without titles.": "Les fiches d’amis s’alignent avec ou sans titre.",
   "Customize": "Personnaliser",
-  "Stamps": "Réactions",
-  "Battle stamps": "Réactions de combat",
+  "Quick chat": "Chat rapide",
+  "Quick chat phrases": "Phrases du chat rapide",
   "Good luck!": "Bonne chance !",
   "Nice play!": "Bien joué !",
   "Good game!": "Belle partie !",
   "Thanks!": "Merci !",
-  "Choose one valid battle stamp.": "Choisissez une réaction de combat valide.",
+  "Choose one valid battle stamp.": "Choisissez une phrase du chat rapide.",
   "Open board themes and card backs from Customize on Play.": "Ouvrez les thèmes et dos de carte depuis Personnaliser sur la page Jouer.",
-  "Send stamps in battle chat.": "Envoyez des réactions dans le chat de la partie."
+  "Send preset phrases with Quick chat during a duel.": "Envoyez des phrases prédéfinies avec le chat rapide pendant un duel."
 }

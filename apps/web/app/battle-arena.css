@@ -341,54 +341,27 @@ body:has(.arena-screen) .system-bar :is(.release-trigger, .player-navigation) {
   background: none;
 }
 
-.arena-comms .battle-stamps-toggle {
+.arena-comms .quick-chat-toggle {
   min-height: 26px;
   padding: 3px 8px;
   font-size: 17px;
 }
 
-.battle-stamp-picker {
+.quick-chat-picker {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 4px;
   margin-bottom: 6px;
 }
 
-.arena-comms .battle-stamp-picker button,
-.arena-comms .battle-stamp-message {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 5px;
-  text-align: left;
+.arena-comms .quick-chat-picker button {
+  min-width: 0;
+  min-height: 36px;
+  padding: 4px 6px;
+  text-align: center;
+  white-space: normal;
   font: 18px/1 var(--pixel);
   overflow-wrap: anywhere;
-}
-
-.arena-comms .battle-stamp-message {
-  width: fit-content;
-  max-width: 100%;
-  border: 1px solid #ad966d;
-  background: #15223b;
-  color: #eadbb1;
-}
-
-.battle-stamp-mark {
-  display: grid;
-  flex: 0 0 24px;
-  min-height: 22px;
-  place-items: center;
-  border: 1px solid currentColor;
-  color: #e8c783;
-  background: #101b30;
-}
-
-[data-stamp='nice-play'] .battle-stamp-mark {
-  color: #9ed5f1;
-}
-
-[data-stamp='thanks'] .battle-stamp-mark {
-  color: #e6a7ad;
 }
 
 .result-overlay.result-v15[open] {

@@ -1269,11 +1269,11 @@ kbd {
   min-width: 0;
   min-height: 0;
   padding: 0;
-  border: 1px solid #6c82a377;
+  border: 1px solid var(--duel-cell-border, #6c82a377);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse, #33476b55, #152238);
+  background: var(--duel-cell-background, radial-gradient(ellipse, #33476b55, #152238));
   border-radius: 1px;
 }
 .board-cell:has(.playing-card) {

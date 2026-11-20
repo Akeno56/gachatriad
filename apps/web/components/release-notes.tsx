@@ -30,7 +30,7 @@ export function ReleaseNotes() {
         </h2>
         <ul>
           <li>Open board themes and card backs from Customize on Play.</li>
-          <li>Send stamps in battle chat.</li>
+          <li>Send preset phrases with Quick chat during a duel.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>
