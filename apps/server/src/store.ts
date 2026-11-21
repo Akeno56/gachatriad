@@ -1395,7 +1395,7 @@ export class GameStore {
     });
   }
   async move(profileId: string, id: string, cardId: string, cell: number, version: number) {
-    await this.db.tx(async (sql) => {
+    return this.db.tx(async (sql) => {
       const m = await this.load(sql, id, profileId);
       if (await this.expireInactivity(sql, m)) return;
       if (m.status !== 'playing' || !m.state)
@@ -1418,6 +1418,8 @@ export class GameStore {
       await this.recordAction(sql, m, seat);
       const next = applyMove(m.state, move);
       await this.advance(sql, m, next);
+      if (next.status === 'playing' && m.mode !== 'correspondence')
+        return { update: { matchId: id, version: m.version + 1 }, players: [m.player0, m.player1] };
     });
   }
   private async recordAction(sql: Sql, m: MatchRow, seat: Player) {

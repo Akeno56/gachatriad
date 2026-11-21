@@ -3,6 +3,17 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Database } from './database';
 import { GameError } from './errors';
 
+const blockedNetwork = 'Access from this network has been blocked. Contact the administrator.';
+const addressQuery = `SELECT host($1::inet) AS ip,
+  CASE WHEN family($1::inet)=6 THEN network(set_masklen($1::inet,64))::text ELSE host($1::inet) END AS network`;
+type NetworkAddress = { ip: string; network: string };
+
+function checkedAddress(input: string) {
+  const raw = input.startsWith('::ffff:') ? input.slice(7) : input;
+  if (!isIP(raw)) throw new GameError('Your network address could not be verified.', 400);
+  return raw;
+}
+
 /** IPs come only from Fastify's trusted edge, never from auth payloads. */
 export class AccountSecurity {
   private signupTail = Promise.resolve();
@@ -15,41 +26,37 @@ export class AccountSecurity {
   }
   constructor(readonly db: Database) {}
   async address(input: string) {
-    const raw = input.startsWith('::ffff:') ? input.slice(7) : input;
-    if (!isIP(raw)) throw new GameError('Your network address could not be verified.', 400);
-    return this.db.read(
-      async (sql) =>
-        (
-          await sql<{ ip: string; network: string }>(
-            'SELECT host($1::inet) AS ip, CASE WHEN family($1::inet)=6 THEN network(set_masklen($1::inet,64))::text ELSE host($1::inet) END AS network',
-            [raw],
-          )
-        )[0],
-    );
+    const raw = checkedAddress(input);
+    return this.db.read(async (sql) => (await sql<NetworkAddress>(addressQuery, [raw]))[0]);
   }
   async assertAllowed(ip: string) {
     const address = await this.address(ip);
     const rows = await this.db.read((sql) =>
       sql('SELECT 1 FROM account_networks WHERE network=$1 AND blocked', [address.network]),
     );
-    if (rows.length)
-      throw new GameError(
-        'Access from this network has been blocked. Contact the administrator.',
-        403,
-      );
+    if (rows.length) throw new GameError(blockedNetwork, 403);
     return address;
   }
   async remember(userId: string, ip: string) {
-    const address = await this.assertAllowed(ip);
-    await this.db.read((sql) =>
-      sql(
-        `INSERT INTO account_ips(user_id,ip,network)
-      SELECT id,$2,$3 FROM "user" WHERE id=$1 AND NOT coalesce("isAnonymous",false)
-      ON CONFLICT(user_id,ip) DO UPDATE SET last_seen=now() WHERE account_ips.last_seen < now()-interval '5 minutes'`,
-        [userId, address.ip, address.network],
+    const raw = checkedAddress(ip);
+    const [{ blocked, ...address }] = await this.db.read((sql) =>
+      sql<NetworkAddress & { blocked: boolean }>(
+        `WITH address AS (${addressQuery}),
+        decision AS (
+          SELECT a.*, EXISTS(SELECT 1 FROM account_networks n WHERE n.network=a.network AND n.blocked) AS blocked
+          FROM address a
+        ), remembered AS (
+          INSERT INTO account_ips(user_id,ip,network)
+          SELECT u.id,d.ip,d.network FROM "user" u CROSS JOIN decision d
+          WHERE u.id=$2 AND NOT coalesce(u."isAnonymous",false) AND NOT d.blocked
+          ON CONFLICT(user_id,ip) DO UPDATE SET last_seen=now()
+          WHERE account_ips.last_seen < now()-interval '5 minutes'
+        ) SELECT ip,network,blocked FROM decision`,
+        [raw, userId],
       ),
     );
-    return address.ip;
+    if (blocked) throw new GameError(blockedNetwork, 403);
+    return address;
   }
   async signup<T>(ip: string, work: () => Promise<T>, existingLogin = false): Promise<T> {
     // Serialize the complete auth operation so simultaneous signups cannot both pass.

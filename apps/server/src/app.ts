@@ -9,7 +9,7 @@ import { monitorEventLoopDelay } from 'node:perf_hooks';
 import { Database } from './database';
 import { createAuth } from './auth';
 import { GameStore, GameError, cleanRules } from './store';
-import { isRatedMode, type Mode } from '@gacha-triad/shared/platform';
+import { isRatedMode, type BoardMoveUpdate, type Mode } from '@gacha-triad/shared/platform';
 import { Trades } from './trades';
 import { Wishlist } from './wishlist';
 import { BotPopulation } from './bots';
@@ -263,19 +263,30 @@ export async function createPlatform(
       socket.data.profileId = p.id;
       socket.data.name = p.name;
       socket.data.registered = p.registered;
+      socket.data.scopedMoves = socket.handshake.auth.scopedMoves === true;
       const ip =
         typeof socket.request.headers['x-forwarded-for'] === 'string' &&
         socket.request.socket.remoteAddress?.replace(/^::ffff:/, '') === '127.0.0.1'
           ? socket.request.headers['x-forwarded-for'].split(',').at(-1)!.trim()
           : socket.request.socket.remoteAddress || socket.handshake.address;
-      socket.data.ip = await security.remember(session.user.id, ip);
-      socket.data.network = (await security.address(ip)).network;
+      const address = await security.remember(session.user.id, ip);
+      socket.data.ip = address.ip;
+      socket.data.network = address.network;
       next();
     } catch {
       next(new Error('Session unavailable.'));
     }
   });
   const notify = () => io.emit('platform:changed');
+  function notifyMove(move: BoardMoveUpdate, players: readonly (string | null)[]) {
+    for (const socket of io.sockets.sockets.values()) {
+      if (!socket.data.scopedMoves) socket.emit('platform:changed');
+      else if (players.includes(socket.data.profileId))
+        socket.emit('platform:changed', 'match-move', move);
+      // Spectators already authorized by /spectate re-read their own board without receiving private IDs.
+      else socket.emit('platform:changed', 'spectator-move');
+    }
+  }
   store.isOnline = (profileId) =>
     Array.from(io.sockets.sockets.values()).some((socket) => socket.data.profileId === profileId);
   await store.recoverPresence();
@@ -869,8 +880,9 @@ export async function createPlatform(
       b = body(req);
     if (typeof b.cardId !== 'string' || !Number.isInteger(b.cell) || !Number.isInteger(b.version))
       throw new GameError('Invalid move.');
-    await store.move(p.id, id(req), b.cardId, b.cell as number, b.version as number);
-    notify();
+    const move = await store.move(p.id, id(req), b.cardId, b.cell as number, b.version as number);
+    if (move) notifyMove(move.update, move.players);
+    else notify();
     return store.view(p.id, id(req));
   });
   app.post('/api/matches/:id/draft', async (req) => {

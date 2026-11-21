@@ -3,7 +3,7 @@ import { LocaleView, NoTranslate } from './i18n';
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
-import type { ProfileView } from '@gacha-triad/shared/platform';
+import type { BoardMoveUpdate, ProfileView } from '@gacha-triad/shared/platform';
 import { api, session, resetSession, ApiError } from '../lib/platform';
 import { refreshScheduler } from '../lib/refresh-scheduler';
 import { SocialLogin } from './social-login';
@@ -42,6 +42,7 @@ const Context = createContext<{
   openAccount: () => {},
   closeAccount: () => {},
 });
+export const BOARD_MOVE_EVENT = 'triad:board-move';
 export const useSession = () => useContext(Context);
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<ProfileView | null>(null),
@@ -121,8 +122,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const automatic = useRef<ReturnType<typeof refreshScheduler> | null>(null);
   useEffect(() => {
     const scheduler = refreshScheduler(readProfile, {
-      // Each revision also refreshes match, chat and social data. A 250 ms
-      // interval can exhaust the shared IP budget during a busy battle.
+      // Full refreshes also invalidate match, chat and social data.
       interval: () => (inMatch.current ? 1000 : 2000),
       visible: () => !document.hidden && navigator.onLine,
     });
@@ -150,12 +150,17 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     if (!profile) return;
     const socket: Socket = io(socketURL(), {
       withCredentials: true,
-      auth: (callback) => callback({ profileId: profile.id, token: sessionToken() }),
+      auth: (callback) =>
+        callback({ profileId: profile.id, token: sessionToken(), scopedMoves: true }),
     });
-    socket.on('platform:changed', (scope?: string) => {
+    socket.on('platform:changed', (scope?: string, move?: BoardMoveUpdate) => {
       if (document.hidden) return;
       if (scope === 'social') refreshSocial();
       else if (scope === 'battle-chat') refreshBattleChat();
+      else if (scope === 'match-move' || scope === 'spectator-move')
+        window.dispatchEvent(
+          new CustomEvent<BoardMoveUpdate | null>(BOARD_MOVE_EVENT, { detail: move ?? null }),
+        );
       else automatic.current?.request();
     });
     socket.on('connect', () => {

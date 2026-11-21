@@ -245,6 +245,48 @@ test('fits French correspondence invitations and opens them through the new soci
   }
 });
 
+test('delivers a move to its opponent and spectator without reloading profiles or chat', async ({
+  browser,
+}) => {
+  const a = await player(browser);
+  const b = await player(browser);
+  const watcher = await player(browser);
+  try {
+    await a.request('/lobbies', { mode: 'casual', allowBots: false });
+    const { matchId } = await b.request('/lobbies', { mode: 'casual', allowBots: false });
+    await Promise.all([
+      a.page.goto(`/?match=${matchId}`),
+      b.page.goto(`/?match=${matchId}`),
+      watcher.page.goto(`/?spectate=${matchId}`),
+    ]);
+    const players = [a, b];
+    for (const client of [...players, watcher]) {
+      await expect(client.page.getByTestId('cell-0')).toBeVisible();
+      await expect.poll(() => platform.store.isOnline?.(client.profile.id)).toBe(true);
+    }
+    // Let the initial socket connection and profile hydration finish before counting move traffic.
+    await a.page.waitForTimeout(1700);
+    const match = await platform.store.view(a.profile.id, matchId);
+    const mover = players[match.game!.turn];
+    const opponent = players[1 - match.game!.turn];
+    const reads = [mover, opponent, watcher].map(({ page }) => {
+      const requests: string[] = [];
+      page.on('request', (request) => {
+        const path = new URL(request.url()).pathname;
+        if (request.method() === 'GET' && path.startsWith('/api/')) requests.push(path);
+      });
+      return requests;
+    });
+    await mover.page.getByTestId('player-card').first().click();
+    await mover.page.getByTestId('cell-0').click();
+    for (const client of [mover, opponent, watcher])
+      await expect(client.page.getByTestId('cell-0').locator('.playing-card')).toBeVisible();
+    expect(reads).toEqual([[], [`/api/matches/${matchId}`], [`/api/spectate/${matchId}`]]);
+  } finally {
+    await Promise.all([a.context.close(), b.context.close(), watcher.context.close()]);
+  }
+});
+
 test('aligns friend cards with and without titles in both languages', async ({ browser }, info) => {
   test.skip(info.project.name !== 'desktop');
   const viewer = await player(browser);

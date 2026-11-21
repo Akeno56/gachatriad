@@ -9,11 +9,12 @@ import {
   validateDeck,
   type Card as CardData,
 } from '@gacha-triad/engine';
-import type { MatchView } from '@gacha-triad/shared/platform';
+import type { BoardMoveUpdate, MatchView } from '@gacha-triad/shared/platform';
 import { api } from '../lib/platform';
+import { refreshScheduler } from '../lib/refresh-scheduler';
 import { useCapturePresentation } from './use-capture-presentation';
 import { appPath, assetPath } from '../lib/connection';
-import { useSession } from './session';
+import { BOARD_MOVE_EVENT, useSession } from './session';
 import { Card } from './card';
 import { CardDetail } from './card-detail';
 import { RulesContent } from './rules-content';
@@ -57,6 +58,7 @@ export function Game() {
   const receivedRef = useRef(receivedMatch);
   receivedRef.current = receivedMatch;
   const currentMatchId = useRef(matchId);
+  const pendingMove = useRef<Promise<MatchView> | null>(null);
   const leftResultId = useRef<string | null>(null);
   currentMatchId.current = matchId;
   useEffect(
@@ -145,6 +147,36 @@ export function Game() {
     if (matchId) void load(matchId);
   }, [matchId, revision, load]);
   useEffect(() => {
+    if (!matchId) return;
+    let active = true;
+    const updates = refreshScheduler(() => load(matchId), {
+      interval: () => (watchingId ? 1000 : 100),
+      visible: () => !document.hidden && navigator.onLine,
+    });
+    async function onMove(event: Event) {
+      const move = (event as CustomEvent<BoardMoveUpdate | null>).detail;
+      if (!move) {
+        if (watchingId) updates.request();
+        return;
+      }
+      if (watchingId || move.matchId !== matchId) return;
+      // A move response already includes the sender's board, even when its socket notice arrives first.
+      const posted = await pendingMove.current?.catch(() => null);
+      const latest = receivedRef.current;
+      if (
+        active &&
+        ![posted, latest].some((view) => view?.id === move.matchId && view.version >= move.version)
+      )
+        updates.request();
+    }
+    window.addEventListener(BOARD_MOVE_EVENT, onMove);
+    return () => {
+      active = false;
+      updates.close();
+      window.removeEventListener(BOARD_MOVE_EVENT, onMove);
+    };
+  }, [load, matchId, watchingId]);
+  useEffect(() => {
     if (matchId)
       history.replaceState(
         history.state,
@@ -176,10 +208,13 @@ export function Game() {
       window.visualViewport?.removeEventListener('resize', measure);
     };
   }, [match?.id, showBoard, showSharedDraft]);
+  const needsClock = !!match?.deadline && match.mode !== 'correspondence';
   useEffect(() => {
+    if (!needsClock) return;
+    setClock(Date.now());
     const timer = setInterval(() => setClock(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [needsClock]);
   useEffect(() => {
     if (dialog) dialogRef.current?.showModal();
     else dialogRef.current?.close();
@@ -204,18 +239,22 @@ export function Game() {
   async function action(path: string, body: unknown) {
     setBusy(true);
     setError('');
+    const move = path.endsWith('/move');
+    const request = api<MatchView>(path, body);
+    if (move) pendingMove.current = request;
     try {
-      const next = await api<MatchView>(path, body);
+      const next = await request;
       if (currentMatchId.current !== next.id) return;
       setMatch((current) =>
         current?.id === next.id && current.version > next.version ? current : next,
       );
       setSelected(null);
-      await refresh();
+      if (!move || next.status !== 'playing') await refresh();
     } catch (e) {
       setError((e as Error).message);
       if (matchId) await load(matchId);
     } finally {
+      if (pendingMove.current === request) pendingMove.current = null;
       setBusy(false);
     }
   }

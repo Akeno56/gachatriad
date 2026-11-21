@@ -29,8 +29,7 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>Open board themes and card backs from Customize on Play.</li>
-          <li>Send preset phrases with Quick chat during a duel.</li>
+          <li>Card moves update the board with fewer requests.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

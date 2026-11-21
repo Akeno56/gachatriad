@@ -36,6 +36,10 @@ export interface HandCard {
   slotId: string;
   card: Card | null;
 }
+export interface BoardMoveUpdate {
+  matchId: string;
+  version: number;
+}
 export interface MatchView {
   cpuStyle?: CpuStyle;
   sharedDraft?: {

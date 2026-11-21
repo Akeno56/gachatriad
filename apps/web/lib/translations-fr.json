@@ -2066,5 +2066,6 @@
   "Thanks!": "Merci !",
   "Choose one valid battle stamp.": "Choisissez une phrase du chat rapide.",
   "Open board themes and card backs from Customize on Play.": "Ouvrez les thèmes et dos de carte depuis Personnaliser sur la page Jouer.",
-  "Send preset phrases with Quick chat during a duel.": "Envoyez des phrases prédéfinies avec le chat rapide pendant un duel."
+  "Send preset phrases with Quick chat during a duel.": "Envoyez des phrases prédéfinies avec le chat rapide pendant un duel.",
+  "Card moves update the board with fewer requests.": "Le plateau se met à jour avec moins de requêtes après un coup."
 }
