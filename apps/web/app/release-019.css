@@ -51,26 +51,6 @@
 .frame-astral {
   --frame-accent: #c7c6ff;
 }
-.portrait-frame-art .astral-frame-light {
-  opacity: 0;
-}
-.astral-frame-light path {
-  stroke: #ffe1a0;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .effects-animated .astral-frame-light {
-    animation: astral-frame-glow 3.4s ease-in-out infinite;
-  }
-}
-@keyframes astral-frame-glow {
-  0%,
-  100% {
-    opacity: 0;
-  }
-  52% {
-    opacity: 1;
-  }
-}
 .profile-portrait .portrait-frame-art,
 .profile-editor-preview > .player-avatar .portrait-frame-art,
 .frame-choice .portrait-frame-art {

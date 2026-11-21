@@ -1,6 +1,7 @@
-import { expect, test, type Browser } from '@playwright/test';
+import { expect, test, type Browser, type Locator } from '@playwright/test';
 import { mkdtemp } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import sharp from 'sharp';
 import { createPlatform } from '../../apps/server/src/app';
 import { RANKED_RULES, STANDARD, type GameState } from '../../packages/engine/src/index';
 import { navigateTo, openNavigation } from './helpers';
@@ -504,6 +505,30 @@ test('previews and equips season rewards from the Journal in English and French'
   const a = await player(browser);
   const b = await player(browser);
   const { page } = a;
+  async function captureMotion(target: Locator, time: number, name: string) {
+    await target.evaluate((element, time) => {
+      for (const animation of element.getAnimations({ subtree: true })) {
+        animation.pause();
+        animation.currentTime = time;
+      }
+    }, time);
+    return sharp(await target.screenshot({ path: info.outputPath(name) }))
+      .removeAlpha()
+      .raw()
+      .toBuffer();
+  }
+  function countChangedPixels(first: Buffer, second: Buffer) {
+    expect(first.length).toBe(second.length);
+    let changed = 0;
+    for (let i = 0; i < first.length; i += 3) {
+      const difference =
+        Math.abs(first[i] - second[i]) +
+        Math.abs(first[i + 1] - second[i + 1]) +
+        Math.abs(first[i + 2] - second[i + 2]);
+      if (difference >= 35) changed++;
+    }
+    return changed;
+  }
   try {
     await page.goto('/journey/#season');
     const frameProgress = page.getByRole('progressbar', { name: 'Astral frame' });
@@ -515,32 +540,33 @@ test('previews and equips season rewards from the Journal in English and French'
     const crest = editor.locator('input[value="astral-crest"]');
     await expect(crest).toBeDisabled();
     await expect(editor).toContainText('Complete 15 full rated games in Astral');
-    await editor.getByRole('button', { name: 'Preview Astral Crest', exact: true }).click();
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(editor.locator('.astral-crest-comet').first()).toHaveCSS('animation-name', 'none');
+    await editor.getByRole('button', { name: 'Play Astral Crest animation', exact: true }).click();
     const profilePreview = editor.locator('.profile-editor-preview');
     await expect(profilePreview).toHaveAttribute('data-profile-banner', 'astral-crest');
-    await expect
-      .poll(() =>
-        profilePreview.evaluate((preview) => getComputedStyle(preview, '::before').animationName),
-      )
-      .toBe('astral-crest-light');
+    await expect(profilePreview.locator('.astral-crest-comet').first()).toHaveCSS(
+      'animation-name',
+      'astral-comet-flight',
+    );
+    await page.evaluate(() => document.fonts.ready);
+    const crestBefore = await captureMotion(profilePreview, 540, 'astral-comet-start.png');
+    const crestAfter = await captureMotion(profilePreview, 1670, 'astral-comet-crossing.png');
+    expect(countChangedPixels(crestBefore, crestAfter)).toBeGreaterThan(500);
     await expect(editor.getByRole('button', { name: 'Save profile' })).toBeDisabled();
     await editor.getByRole('tab', { name: 'Portrait frames' }).click();
     const lockedFrame = editor.getByRole('button', { name: 'Astral portrait frame', exact: true });
-    const lockedFrameLight = lockedFrame.locator('.astral-frame-light');
+    const lockedFrameLight = lockedFrame.locator('.astral-frame-spark');
     await expect(lockedFrame).toBeDisabled();
-    await expect(lockedFrameLight).toHaveCSS('animation-name', 'astral-frame-glow');
+    await expect(lockedFrameLight).toHaveCSS('animation-name', 'none');
+    await editor.getByRole('button', { name: 'Play Astral frame animation' }).click();
+    await expect(lockedFrameLight).toHaveCSS('animation-name', 'astral-frame-orbit');
+    await expect(profilePreview.locator('.frame-astral .astral-frame-spark')).toBeVisible();
     await expect(profilePreview).toHaveAttribute('data-profile-banner', 'classic');
-    await page.evaluate(() => document.fonts.ready);
-    const setFrameTime = (time: number) =>
-      lockedFrameLight.evaluate((light, seek) => {
-        const [animation] = light.getAnimations();
-        animation.pause();
-        animation.currentTime = seek;
-      }, time);
-    await setFrameTime(0);
-    const lavender = await lockedFrame.screenshot();
-    await setFrameTime(1768);
-    expect((await lockedFrame.screenshot()).equals(lavender)).toBe(false);
+    const frameBefore = await captureMotion(lockedFrame, 360, 'astral-orbit-top.png');
+    const frameAfter = await captureMotion(lockedFrame, 2000, 'astral-orbit-bottom.png');
+    expect(countChangedPixels(frameBefore, frameAfter)).toBeGreaterThan(100);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
 
     await platform.db.tx(async (sql) => {
       await sql(
@@ -568,21 +594,20 @@ test('previews and equips season rewards from the Journal in English and French'
     );
     await expect(page.locator('.profile-portrait .frame-astral')).toBeVisible();
     const banner = page.locator('.profile-header');
-    const frameLight = page.locator('.profile-portrait .astral-frame-light');
-    const crestAnimation = () =>
-      banner.evaluate((element) => getComputedStyle(element, '::before').animationName);
-    await expect.poll(crestAnimation).toBe('astral-crest-light');
-    await expect(frameLight).toHaveCSS('animation-name', 'astral-frame-glow');
+    const frameLight = page.locator('.profile-portrait .astral-frame-spark');
+    const comet = banner.locator('.astral-crest-comet').first();
+    await expect(comet).toHaveCSS('animation-name', 'astral-comet-flight');
+    await expect(frameLight).toHaveCSS('animation-name', 'astral-frame-orbit');
     await banner.screenshot({ path: info.outputPath('astral-crest-banner.png') });
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await expect.poll(crestAnimation).toBe('none');
+    await expect(comet).toHaveCSS('animation-name', 'none');
     await expect(frameLight).toHaveCSS('animation-name', 'none');
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await page.getByRole('button', { name: 'Game settings', exact: true }).click();
     const effects = page.getByLabel('Animate visual effects', { exact: true });
     await effects.uncheck();
-    await expect.poll(crestAnimation).toBe('none');
+    await expect(comet).toHaveCSS('animation-name', 'none');
     await expect(frameLight).toHaveCSS('animation-name', 'none');
     await effects.check();
     await page.keyboard.press('Escape');

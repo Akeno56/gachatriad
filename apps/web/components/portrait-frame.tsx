@@ -20,15 +20,17 @@ export function frameClass(id: PortraitFrame | null | undefined) {
 export function FrameArt({ frameId }: { frameId?: PortraitFrame | null }) {
   if (!frameId || frameId === 'classic' || !Object.hasOwn(paths, frameId)) return null;
   return (
-    <span className="portrait-frame-art" aria-hidden="true">
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-        <path d={paths[frameId]} />
-      </svg>
-      {frameId === 'astral' && (
-        <svg className="astral-frame-light" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <path d={paths.astral} />
+    <>
+      <span className="portrait-frame-art" aria-hidden="true">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path d={paths[frameId]} />
         </svg>
+      </span>
+      {frameId === 'astral' && (
+        <span className="astral-frame-effects" aria-hidden="true">
+          <span className="astral-frame-spark" />
+        </span>
       )}
-    </span>
+    </>
   );
 }

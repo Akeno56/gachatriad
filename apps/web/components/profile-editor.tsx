@@ -13,6 +13,7 @@ import {
 import { api, ApiError } from '../lib/platform';
 import { Button, GameDialog, Tabs } from './ui';
 import { Avatar } from './avatar';
+import { AstralCrestEffects } from './astral-crest-effects';
 import { ProfileCardPicker } from './profile-card-picker';
 import { AppearanceChoices } from './appearance-settings';
 import { LocaleView, NoTranslate } from './i18n';
@@ -40,6 +41,7 @@ export function ProfileEditor({
     [draft, setDraft] = useState<ProfileCustomization | null>(null),
     [tab, setTab] = useState<string>(initialTab),
     [previewCrest, setPreviewCrest] = useState(false),
+    [previewFrameMotion, setPreviewFrameMotion] = useState(false),
     [cardPicker, setCardPicker] = useState<'portrait' | number | null>(null),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
@@ -67,6 +69,10 @@ export function ProfileEditor({
     };
   }, [profile.id, loadRevision]);
   const dirty = !!draft && !!data && comparable(draft) !== comparable(data.settings);
+  const showCrestPreview = tab === 'banners' && previewCrest;
+  const showFramePreview = tab === 'frames' && previewFrameMotion;
+  const previewBanner = showCrestPreview ? ASTRAL_REWARDS.banner.id : draft?.bannerId;
+  const previewFrame = showFramePreview ? ASTRAL_REWARDS.frame.id : draft?.frameId;
   useEffect(() => {
     if (!dirty) return;
     const unload = (e: BeforeUnloadEvent) => {
@@ -173,7 +179,10 @@ export function ProfileEditor({
           <p role="status">Loading profile settings…</p>
         ) : (
           <>
-            <div className={`customizer-layout tab-${tab}`}>
+            <div
+              className={`customizer-layout tab-${tab}`}
+              data-astral-motion={showCrestPreview || showFramePreview || undefined}
+            >
               <div
                 id="profile-editor-panel"
                 role="tabpanel"
@@ -319,6 +328,16 @@ export function ProfileEditor({
                 )}
                 {tab === 'frames' && (
                   <div className="frame-picker" role="group" aria-label="Portrait frames">
+                    {data.frames.some((frame) => frame.id === ASTRAL_REWARDS.frame.id) && (
+                      <Button
+                        className="astral-frame-preview-button"
+                        aria-pressed={previewFrameMotion}
+                        disabled={busy}
+                        onClick={() => setPreviewFrameMotion((active) => !active)}
+                      >
+                        Play Astral frame animation
+                      </Button>
+                    )}
                     {data.frames.map((frame) => (
                       <button
                         type="button"
@@ -329,7 +348,10 @@ export function ProfileEditor({
                         aria-pressed={draft.frameId === frame.id}
                         aria-disabled={!frame.unlocked || busy}
                         onClick={() => {
-                          if (frame.unlocked && !busy) field('frameId', frame.id as PortraitFrame);
+                          if (frame.unlocked && !busy) {
+                            setPreviewFrameMotion(false);
+                            field('frameId', frame.id as PortraitFrame);
+                          }
                         }}
                       >
                         <Avatar card={card} name={profile.name} frameId={frame.id} />
@@ -363,23 +385,24 @@ export function ProfileEditor({
                           className="appearance-banner-preview"
                           data-profile-banner={style}
                           aria-hidden="true"
-                        />
+                        >
+                          <AstralCrestEffects bannerId={style} />
+                        </span>
                       )}
                     />
                     {data.banners?.some(
                       (banner) => banner.id === ASTRAL_REWARDS.banner.id && !banner.unlocked,
                     ) && (
-                      <>
-                        <p className="cosmetic-requirement">{ASTRAL_REWARDS.banner.requirement}</p>
-                        <Button
-                          variant="outline"
-                          aria-pressed={previewCrest}
-                          disabled={busy}
-                          onClick={() => setPreviewCrest((active) => !active)}
-                        >
-                          Preview Astral Crest
-                        </Button>
-                      </>
+                      <p className="cosmetic-requirement">{ASTRAL_REWARDS.banner.requirement}</p>
+                    )}
+                    {data.banners?.some((banner) => banner.id === ASTRAL_REWARDS.banner.id) && (
+                      <Button
+                        aria-pressed={previewCrest}
+                        disabled={busy}
+                        onClick={() => setPreviewCrest((active) => !active)}
+                      >
+                        Play Astral Crest animation
+                      </Button>
                     )}
                   </>
                 )}
@@ -387,12 +410,11 @@ export function ProfileEditor({
               <aside
                 className="menu-window profile-editor-preview"
                 aria-label="Profile preview"
-                data-profile-banner={
-                  tab === 'banners' && previewCrest ? ASTRAL_REWARDS.banner.id : draft.bannerId
-                }
+                data-profile-banner={previewBanner}
               >
+                <AstralCrestEffects bannerId={previewBanner} />
                 <span className="profile-preview-label">Preview</span>
-                <Avatar card={card} name={profile.name} frameId={draft.frameId} />
+                <Avatar card={card} name={profile.name} frameId={previewFrame} />
                 <h3>
                   <NoTranslate>{profile.name}</NoTranslate>
                 </h3>

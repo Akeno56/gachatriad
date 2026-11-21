@@ -1,0 +1,202 @@
+@media (prefers-reduced-motion: no-preference) {
+  .effects-animated {
+    --astral-frame-orbit: astral-frame-orbit;
+    --astral-frame-halo: astral-frame-halo;
+    --astral-crest-sweep: astral-crest-sweep;
+    --astral-comet-flight: astral-comet-flight;
+  }
+}
+
+[data-astral-motion] {
+  --astral-frame-orbit: astral-frame-orbit;
+  --astral-frame-halo: astral-frame-halo;
+  --astral-crest-sweep: astral-crest-sweep;
+  --astral-comet-flight: astral-comet-flight;
+}
+
+:is(.astral-frame-effects, .astral-crest-effects) {
+  --astral-starlight: polygon(50% 0, 64% 36%, 100% 50%, 64% 64%, 50% 100%, 36% 64%, 0 50%, 36% 36%);
+  position: absolute;
+  pointer-events: none;
+}
+
+.astral-frame-effects {
+  --astral-star-size: 11px;
+  inset: -2px;
+  z-index: 1;
+}
+
+:is(.profile-portrait, .profile-editor-preview, .frame-choice) .astral-frame-effects {
+  --astral-star-size: 18px;
+  inset: -5px;
+}
+
+.astral-frame-effects::before {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  box-shadow: 0 0 7px 2px #a78effcc;
+  opacity: 0;
+  content: '';
+  /* A deliberate preview can play through the system's reduced-motion stylesheet. */
+  animation: var(--astral-frame-halo, none) 3.6s ease-in-out infinite !important;
+}
+
+.astral-frame-spark {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  filter: drop-shadow(0 0 4px #d7b4ff);
+  animation: var(--astral-frame-orbit, none) 3.6s linear infinite !important;
+}
+
+.astral-frame-spark::before,
+.astral-crest-comet::before {
+  position: absolute;
+  width: var(--astral-star-size);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  clip-path: var(--astral-starlight);
+  background: linear-gradient(145deg, #fffdf1 40%, #ffda8b);
+  content: '';
+}
+
+.astral-frame-spark::before {
+  top: 0;
+  left: 0;
+}
+
+@keyframes astral-frame-orbit {
+  0%,
+  100% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(100%, 0);
+  }
+  50% {
+    transform: translate(100%, 100%);
+  }
+  75% {
+    transform: translate(0, 100%);
+  }
+}
+
+@keyframes astral-frame-halo {
+  0%,
+  100% {
+    opacity: 0.28;
+  }
+  50% {
+    opacity: 0.92;
+  }
+}
+
+.astral-crest-effects {
+  --astral-star-size: 18px;
+  z-index: -1;
+  inset: 0 0 0 32%;
+  overflow: hidden;
+}
+
+.appearance-banner-preview .astral-crest-effects {
+  --astral-star-size: 10px;
+}
+
+.season-reward-art .astral-crest-effects {
+  --astral-star-size: 7px;
+}
+
+.astral-crest-ray {
+  position: absolute;
+  inset: -18% -8%;
+  background: linear-gradient(
+    106deg,
+    transparent 29%,
+    #9876e235 38%,
+    #cfadff70 47%,
+    #ffe0a189 50%,
+    #ca9ef345 55%,
+    transparent 68%
+  );
+  opacity: 0;
+  animation: var(--astral-crest-sweep, none) 4.8s ease-in-out infinite !important;
+}
+
+.astral-crest-comet {
+  --comet-height: 74%;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  filter: drop-shadow(0 0 3px #dfb7ff);
+  animation: var(--astral-comet-flight, none) 3.4s linear infinite !important;
+}
+
+.profile-editor-preview .astral-crest-comet {
+  inset-inline-start: 50%;
+}
+
+.astral-crest-comet + .astral-crest-comet {
+  --comet-height: 53%;
+  --astral-star-size: 9px;
+  animation-delay: -1.8s !important;
+}
+
+.astral-crest-comet::before {
+  top: var(--comet-height);
+  left: 18%;
+}
+
+.astral-crest-comet::after {
+  position: absolute;
+  top: var(--comet-height);
+  right: 82%;
+  width: min(14%, 72px);
+  height: 2px;
+  transform: rotate(-13deg);
+  transform-origin: right;
+  background: linear-gradient(90deg, transparent, #d4b3ffb0, #fff0b8);
+  content: '';
+}
+
+@keyframes astral-crest-sweep {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateX(-64%);
+  }
+  14%,
+  52% {
+    opacity: 0.85;
+  }
+  74% {
+    opacity: 0;
+    transform: translateX(63%);
+  }
+}
+
+@keyframes astral-comet-flight {
+  0% {
+    opacity: 0;
+    transform: translate(-8%, 15%);
+  }
+  16%,
+  78% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(73%, -47%);
+  }
+}
+
+.astral-frame-preview-button {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.frame-choice.is-locked .frame-astral {
+  filter: none;
+  opacity: 1;
+}

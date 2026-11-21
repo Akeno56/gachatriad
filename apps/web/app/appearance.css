@@ -176,29 +176,6 @@
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .effects-animated
-    :is(
-      .profile-header,
-      .profile-editor-preview,
-      .appearance-banner-preview
-    )[data-profile-banner='astral-crest']::before {
-    animation: astral-crest-light 5s ease-in-out infinite;
-  }
-}
-
-@keyframes astral-crest-light {
-  0%,
-  100% {
-    transform: translateY(-50%) scale(0.92);
-    opacity: 0.5;
-  }
-  48% {
-    transform: translateY(-50%) scale(1.06);
-    opacity: 0.95;
-  }
-}
-
 .appearance-dialog {
   max-width: 480px;
 }
