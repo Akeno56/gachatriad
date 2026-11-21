@@ -1,0 +1,504 @@
+/* Shared game chrome. Each screen owns its layout and card sizes. */
+.system-bar {
+  background: linear-gradient(#121f37, #0c1529);
+  border-bottom-color: #6580a9;
+  box-shadow:
+    inset 0 -2px #233b62,
+    0 3px #050b18;
+}
+
+.system-bar nav a[aria-current='page'] {
+  background: linear-gradient(#263c61, #192946);
+  border-color: #758fb5;
+  box-shadow:
+    inset 0 1px #98afd044,
+    inset 0 -3px #e1c280;
+  color: #ffe1a4;
+}
+
+.system-bar nav a:hover:not([aria-current='page']) {
+  background: #243a5a;
+  border-color: #506b91;
+}
+
+.window-label {
+  background: #182b4d;
+  border-inline: 2px solid #507099;
+  color: #f3dfac;
+  text-shadow: 1px 2px #0a1329;
+}
+
+.content-page {
+  --window: linear-gradient(165deg, #213966, #132344 420px, #101d35 820px);
+}
+
+.content-page > :is(header:has(h1), .collection-release-heading, .collection-page-heading, h1) {
+  border-bottom: 1px solid #59759e;
+  box-shadow: 0 1px #0d1730;
+  padding-block-end: 9px;
+  margin-block-end: 12px;
+}
+
+.content-page > h1,
+.content-page > :is(header, .collection-release-heading, .collection-page-heading) h1 {
+  color: #f4e8cd;
+  font: 400 clamp(32px, 3.1vw, 46px) / 1 var(--pixel);
+  text-shadow: 2px 2px #0b1631;
+}
+
+.deck-workspace > .builder-page-heading {
+  margin-block-end: 0;
+  padding-block-end: 6px;
+}
+
+.deck-workspace > .builder-page-heading h1 {
+  font-size: 36px;
+}
+
+.content-page :is(.eyebrow, .section-kicker) {
+  color: #aac2e5;
+}
+
+.game-dialog .dialog-close {
+  box-shadow:
+    inset 0 1px #a6bde044,
+    inset 0 -2px #0c172e;
+}
+
+.game-dialog :is(.result-reward-card, .achievement-reward),
+.booster-hall-toolbar,
+.lobby-filters {
+  border-color: #5c769e;
+}
+
+.catalog-page .album-filters,
+.collection-toolbar,
+.market-page .market-primary-filters {
+  border: 1px solid #557199;
+  background: linear-gradient(#172c4c, #12223e);
+  box-shadow: inset 0 1px #97b1d026;
+}
+
+.market-workspace > * {
+  min-width: 0;
+}
+
+.market-workspace .market-primary-filters {
+  margin-top: 0;
+}
+
+.market-chat .main-chat {
+  margin-top: 12px;
+}
+
+.lobby-row.menu-window,
+.booster-type-tile.menu-window {
+  --window: linear-gradient(150deg, #203b65, #152641 64%);
+}
+
+@media (min-width: 1201px) {
+  .market-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(310px, 26vw, 390px);
+    gap: 20px;
+    align-items: start;
+  }
+
+  .market-chat .main-chat {
+    margin-top: 9px;
+    padding-inline: 10px;
+  }
+
+  .market-chat .public-chat-body {
+    grid-template-columns: minmax(0, 1fr) 96px;
+  }
+
+  .market-chat .main-chat :is(.chat-messages, .chat-user-list) {
+    height: 310px;
+    min-height: 310px;
+    max-height: 310px;
+  }
+
+  .market-chat .main-chat .chat-message {
+    gap: 6px;
+    padding: 5px 6px;
+  }
+
+  .market-chat .main-chat .chat-message .player-avatar {
+    width: 24px;
+    height: 24px;
+    flex-basis: 24px;
+  }
+
+  .market-chat .chat-message .message-content {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 3px 6px;
+  }
+
+  .market-chat .chat-message .message-heading > .chat-player-name {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    overflow: visible;
+  }
+
+  .market-chat .message-content > p {
+    grid-column: 1 / -1;
+  }
+
+  .market-chat .message-content > time {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .market-chat .chat-channel-tabs button {
+    padding-inline: 7px;
+  }
+}
+
+/* The masthead shares a row across the command menu and the deck. */
+.title-screen.play-page {
+  max-width: 1440px;
+  padding-block-start: 14px;
+}
+
+.title-screen .tavern-layout {
+  grid-template-columns: minmax(235px, 274px) minmax(0, 1fr);
+  grid-template-areas: 'masthead masthead' 'commands party';
+  align-items: start;
+  gap: 14px 20px;
+}
+
+.title-screen .tavern-masthead {
+  grid-area: masthead;
+  display: flex;
+  align-items: center;
+  gap: clamp(22px, 4vw, 64px);
+  min-height: 92px;
+  padding: 10px 22px;
+  background:
+    linear-gradient(90deg, #0b1630 16%, #0b1630a6 50%, transparent 84%),
+    url('../public/assets/ui/tavern-masthead.webp') right 66% / min(880px, 100%) auto no-repeat,
+    #0b1630;
+  border-color: #8e9cbd;
+  box-shadow:
+    inset 0 0 0 1px #0a1228,
+    inset 0 0 0 3px #4c618d,
+    inset 0 -5px #0b1934,
+    3px 4px #050a16;
+}
+
+.title-screen .tavern-masthead .tavern-sign {
+  flex: none;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.tavern-layout .play-command-column {
+  grid-area: commands;
+}
+
+.tavern-layout .title-party {
+  grid-area: party;
+}
+
+.title-screen .tavern-sign h1 {
+  font-size: clamp(38px, 4vw, 60px);
+  line-height: 0.88;
+  text-shadow:
+    0 2px #8eb2d9,
+    2px 4px #060d1e;
+}
+
+.title-screen .tavern-sign h1 > span {
+  margin-bottom: 5px;
+  font-size: 13px;
+  text-shadow: 1px 2px #071127;
+}
+
+.tavern-masthead .tavern-welcome {
+  border-inline-start: 1px solid #526b91;
+  padding-inline-start: clamp(14px, 2.2vw, 32px);
+}
+
+.tavern-masthead .tavern-welcome strong {
+  color: #f1e5cb;
+  font-size: 24px;
+  text-shadow: 1px 1px #080f24;
+}
+
+.tavern-masthead .tavern-welcome small {
+  margin-top: 3px;
+  letter-spacing: 0.4px;
+}
+
+.title-screen .tavern-deck {
+  min-width: 0;
+  padding: 7px 10px 10px;
+  background: linear-gradient(#192e50, #111f39);
+}
+
+.title-screen .tavern-deck .tavern-party-heading {
+  min-height: 0;
+  min-width: 0;
+  padding: 0 2px 4px;
+}
+
+.tavern-party-heading h2 {
+  margin: 0;
+  color: #f3dfac;
+  font: 22px/1.1 var(--pixel);
+}
+
+.tavern-party-heading .deck-edit-link {
+  padding-block: 0;
+}
+
+.title-screen .tavern-deck .title-roster {
+  min-height: 0;
+  padding-bottom: 0;
+}
+
+.title-screen .tavern-deck .title-roster::before {
+  inset: auto 3% 0;
+  height: 40%;
+  background: radial-gradient(ellipse at bottom, #385f9570, transparent 73%);
+}
+
+.title-screen .tavern-deck .title-card:hover,
+.title-screen .tavern-deck .title-card:focus-visible {
+  transform: translateY(-3px);
+}
+
+.title-screen .tavern-layout .main-chat {
+  margin-top: 14px;
+}
+
+.title-screen .tavern-layout .lobby-shortcut {
+  border-top-color: #a8bfdf;
+}
+
+.title-screen .tavern-noticeboard {
+  --window: linear-gradient(145deg, #1e345d, #152541);
+}
+
+.title-screen .build-label {
+  justify-content: end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  opacity: 1;
+}
+
+.title-screen .build-label .ui-help {
+  margin: 0;
+}
+
+.title-screen .build-label .credits-button {
+  position: static;
+  margin: 0;
+}
+
+@media (min-width: 1001px) {
+  .title-screen .chat-fits-viewport .chat-message {
+    min-height: 34px;
+    margin: 0;
+    padding-block: 2px;
+  }
+
+  .title-screen .chat-fits-viewport .chat-message .message-content > p {
+    margin: 0;
+  }
+
+  .title-screen .chat-fits-viewport .chat-message .message-content {
+    grid-template-columns: minmax(140px, 30%) minmax(0, 1fr) auto;
+    gap: 9px;
+  }
+
+  .title-screen .chat-fits-viewport .chat-message .message-heading {
+    flex-flow: row nowrap;
+    justify-content: start;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .title-screen .chat-fits-viewport .message-title {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+}
+
+/* Keep the arena and all cosmetic art inside the battle HUD. */
+.arena-screen .match-toolbar {
+  border-color: #7390b9;
+}
+
+.arena-screen .scoreboard .player-heading {
+  box-shadow:
+    inset 0 1px #b6cfee29,
+    inset 0 -2px #0b1730;
+}
+
+.arena-screen .scoreboard .player-heading.active-player {
+  box-shadow:
+    inset 0 1px #f7dba360,
+    inset 0 -2px #c4a76c;
+}
+
+.arena-screen .turn-banner {
+  background: linear-gradient(#1d3358, #121f3a);
+  border-block-color: #607ca7;
+}
+
+.arena-screen .turn-banner[data-side='player'] {
+  background: linear-gradient(#293b58, #172642);
+  border-block-color: #b39761;
+}
+
+@media (min-width: 1001px) and (max-height: 800px) {
+  .title-screen .tavern-layout {
+    grid-template-areas: 'masthead party' 'commands party';
+    grid-template-rows: min-content auto;
+    row-gap: 11px;
+  }
+
+  .title-screen .tavern-masthead {
+    gap: 10px;
+    min-height: 70px;
+    padding: 6px 10px;
+    background-size:
+      auto,
+      470px auto;
+  }
+
+  .title-screen .tavern-sign h1 {
+    font-size: 34px;
+    letter-spacing: 3px;
+  }
+
+  .title-screen .tavern-sign h1 > span {
+    font-size: 11px;
+    letter-spacing: 7px;
+  }
+
+  .tavern-masthead .tavern-welcome {
+    padding-inline-start: 9px;
+  }
+
+  .tavern-masthead .tavern-welcome .player-avatar {
+    display: none;
+  }
+
+  .tavern-masthead .tavern-welcome strong {
+    font-size: 18px;
+  }
+
+  .title-screen .tavern-layout .matchmaking-panel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .title-screen .tavern-layout .matchmaking-row {
+    margin: 0;
+  }
+
+  .title-screen .tavern-layout .matchmaking-row > button:first-child {
+    min-height: 39px;
+    padding-inline: 7px;
+  }
+
+  .title-screen .tavern-layout .command-copy strong {
+    font-size: 19px;
+  }
+
+  .title-screen
+    .matchmaking-panel
+    > :is(
+      .matchmaking-row:first-of-type,
+      .lobby-shortcut,
+      .correspondence-shortcut,
+      .setup-secondary,
+      p
+    ) {
+    grid-column: 1 / -1;
+  }
+
+  .title-screen .tavern-layout .matchmaking-panel :is(.lobby-shortcut, .correspondence-shortcut) {
+    margin: 0;
+  }
+
+  .title-screen .tavern-layout .matchmaking-panel .lobby-shortcut {
+    margin-top: 4px;
+  }
+
+  .title-screen .tavern-layout .main-chat {
+    margin-top: 11px;
+    padding-block: 8px;
+  }
+
+  .title-screen .chat-fits-viewport .channel-heading {
+    margin-bottom: 7px;
+  }
+
+  .title-screen .chat-fits-viewport .chat-channel-tabs button {
+    min-height: 28px;
+  }
+
+  .title-screen .chat-fits-viewport .chat-messages {
+    gap: 1px;
+    padding: 4px;
+  }
+
+  .title-screen .chat-fits-viewport .chat-message {
+    min-height: 24px;
+    padding-block: 1px;
+  }
+
+  .title-screen .chat-fits-viewport .chat-message .player-avatar {
+    width: 21px;
+    height: 21px;
+    flex-basis: 21px;
+  }
+
+  .title-screen .chat-fits-viewport .chat-message > .text-button {
+    margin: 0;
+    padding-block: 0;
+  }
+}
+
+@media (max-width: 1000px) {
+  .title-screen .tavern-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'masthead' 'commands' 'party';
+  }
+}
+
+@media (max-width: 680px) {
+  .title-screen .tavern-masthead {
+    align-items: center;
+    gap: 13px;
+    padding-inline: 12px;
+    background-size:
+      auto,
+      560px auto;
+  }
+
+  .title-screen .tavern-sign h1 {
+    font-size: 34px;
+    letter-spacing: 4px;
+  }
+
+  .title-screen .tavern-sign h1 > span {
+    font-size: 11px;
+    letter-spacing: 8px;
+  }
+
+  .tavern-masthead .tavern-welcome .player-avatar {
+    display: none;
+  }
+
+  .tavern-masthead .tavern-welcome strong {
+    font-size: 19px;
+  }
+}

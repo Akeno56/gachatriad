@@ -49,7 +49,6 @@ export default function Market() {
       <div className="content-page market-page">
         <h1>Market</h1>
         <LocalBots />
-        {tab === 'offers' && <MainChat compact />}
         {profile && !profile.registered && (
           <aside className="guest-market-notice menu-window" role="note">
             <div>
@@ -80,7 +79,12 @@ export default function Market() {
           aria-label={tabs.find((item) => item.value === tab)!.label}
         >
           {tab === 'offers' ? (
-            <MarketOffers cardId={cardId} clearCard={() => select('offers')} />
+            <div className="market-workspace">
+              <MarketOffers cardId={cardId} clearCard={() => select('offers')} />
+              <div className="market-chat">
+                <MainChat compact />
+              </div>
+            </div>
           ) : (
             <MarketCollections tab={tab} onViewListings={(card) => select('offers', card)} />
           )}

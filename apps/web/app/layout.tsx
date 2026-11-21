@@ -42,6 +42,7 @@ import './social.css';
 import './appearance.css';
 import './astral-effects.css';
 import './mini-profile.css';
+import './pixel-interface.css';
 
 export const metadata: Metadata = {
   title: 'Gacha Triad · Cross-world card battle',

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ALL_CARDS, CARDS } from '@gacha-triad/shared';
+import { ALL_CARDS } from '@gacha-triad/shared';
 import type { DailyBooster } from '@gacha-triad/shared/platform';
 import type { DailyPuzzleView } from '@gacha-triad/shared/puzzle';
 import type { Card as CardData } from '@gacha-triad/engine';
@@ -16,7 +16,6 @@ import { PracticeSetup } from './practice-setup';
 import { HelpTip, Button } from './ui';
 import { api } from '../lib/platform';
 import { useSiteRevision } from '../lib/site-updates';
-import { VERSION } from '../lib/release';
 import { CURRENT_SEASON } from '@gacha-triad/shared/journey';
 
 export function TavernHome({
@@ -77,12 +76,27 @@ export function TavernHome({
   return (
     <LocaleView>
       <div className="title-layout tavern-layout">
-        <div className="play-command-column">
-          <header className="game-title tavern-sign">
+        <header className="menu-window tavern-masthead">
+          <div className="game-title tavern-sign">
             <h1 translate="no">
               <span>GACHA</span>TRIAD
             </h1>
-          </header>
+          </div>
+          <div className="tavern-welcome">
+            <Avatar card={portrait} frameId={profile.frameId} name={profile.name} />
+            <span>
+              <strong>
+                <NoTranslate>{profile.name}</NoTranslate>
+              </strong>
+              <small>
+                <Link className="tavern-journey-link" href="/journey">
+                  Season {CURRENT_SEASON.id} · <span>Journal</span> →
+                </Link>
+              </small>
+            </span>
+          </div>
+        </header>
+        <div className="play-command-column">
           <MatchmakingPanel onMatch={onMatch} onTutorial={onTutorial} />
           <section className="menu-window tavern-noticeboard" aria-labelledby="noticeboard-title">
             <h2 id="noticeboard-title" className="window-label">
@@ -154,48 +168,37 @@ export function TavernHome({
             )}
           </section>
         </div>
-        <section className="title-party" aria-label="Your saved deck">
-          <div className="party-heading tavern-party-heading">
-            <div className="tavern-welcome">
-              <Avatar card={portrait} frameId={profile.frameId} name={profile.name} />
-              <span>
-                <small>
-                  <Link className="tavern-journey-link" href="/journey">
-                    Season {CURRENT_SEASON.id} · <span>Journal</span> →
-                  </Link>
-                </small>
-                <strong>
-                  <NoTranslate>{profile.name}</NoTranslate>
-                </strong>
-              </span>
-            </div>
-            <Link className="deck-edit-link" href="/decks">
-              Edit deck <span aria-hidden="true">→</span>
-            </Link>
-          </div>
-          <div className="title-roster" aria-label="Your active deck">
-            {deck.map((card, i) => (
-              <button
-                className={`title-card title-card-${i}`}
-                key={card.id}
-                onClick={() => onInspect(card)}
-                aria-label={`Inspect ${card.name}`}
-              >
-                <Card card={card} owner={0} />
-              </button>
-            ))}
-            {!deck.length && (
-              <Link className="tavern-empty-deck outline-button" href="/decks">
-                Build your first deck
+        <div className="title-party">
+          <section className="menu-window tavern-deck" aria-label="Your saved deck">
+            <div className="party-heading tavern-party-heading">
+              <h2>Your deck</h2>
+              <Link className="deck-edit-link" href="/decks">
+                Edit deck <span aria-hidden="true">→</span>
               </Link>
-            )}
-          </div>
+            </div>
+            <div className="title-roster" aria-label="Your active deck">
+              {deck.map((card, i) => (
+                <button
+                  className={`title-card title-card-${i}`}
+                  key={card.id}
+                  onClick={() => onInspect(card)}
+                  aria-label={`Inspect ${card.name}`}
+                >
+                  <Card card={card} owner={0} />
+                </button>
+              ))}
+              {!deck.length && (
+                <Link className="tavern-empty-deck outline-button" href="/decks">
+                  Build your first deck
+                </Link>
+              )}
+            </div>
+          </section>
           <MainChat fitViewport />
-        </section>
+        </div>
       </div>
       <PracticeSetup open={practiceOpen} onClose={() => setPracticeOpen(false)} onMatch={onMatch} />
       <div className="build-label">
-        {CARDS.length} CARDS · v{VERSION} Alpha{' '}
         <Link href="/credits" className="credits-button">
           Credits
         </Link>

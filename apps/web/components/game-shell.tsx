@@ -210,7 +210,6 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                   <a className="skip-link" href="#main">
                     Skip to content
                   </a>
-                  <div className="screen-grain" aria-hidden="true" />
                   <header ref={headerRoot} className="system-bar">
                     <div className="system-brand">
                       <Link href="/" aria-label="Gacha Triad home">

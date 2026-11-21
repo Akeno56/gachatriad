@@ -11,7 +11,10 @@
   --pixel: 'VT323', monospace;
   --sans: 'Rajdhani', 'Segoe UI', sans-serif;
   --triad-card-ratio: 3 / 4;
-  --window: linear-gradient(145deg, #243f79f5, #131f49f7 58%, #101833fa);
+  --window: linear-gradient(160deg, #213d70, #172b54 48%, #111d38 100%);
+  --window-edge: #8da6cc;
+  --window-frame:
+    inset 0 0 0 1px #080f24, inset 0 0 0 2px #48658e, inset 0 0 0 4px #111f3c, 3px 4px #050a16;
   color-scheme: dark;
 }
 * {
@@ -79,30 +82,9 @@ summary:focus-visible {
   min-height: 100svh;
   isolation: isolate;
   background:
-    radial-gradient(ellipse at 50% 30%, #24324f70, transparent 62%),
-    repeating-linear-gradient(
-      0deg,
-      #2e37580d 0px,
-      #2e37580d 1px,
-      transparent 1px,
-      transparent 40px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      #2e37580d 0px,
-      #2e37580d 1px,
-      transparent 1px,
-      transparent 40px
-    ),
-    #0b101d;
-}
-.screen-grain {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-  background-image: radial-gradient(#b5c6da17 0.5px, transparent 0.5px);
-  background-size: 4px 4px;
+    radial-gradient(ellipse at 50% 4%, #1c3460 0%, #111d34 38%, transparent 75%) top / 100% 760px
+      no-repeat,
+    #090f1c;
 }
 .crt-overlay {
   display: none;
@@ -210,14 +192,10 @@ summary:focus-visible {
 }
 .menu-window,
 dialog {
-  border: 2px solid #aeb7c6;
-  border-radius: 3px;
+  border: 2px solid var(--window-edge);
+  border-radius: 0;
   background: var(--window);
-  box-shadow:
-    inset 0 0 0 2px #485d81,
-    inset 0 0 0 4px #0c1430,
-    3px 4px 0 #0009,
-    0 10px 25px #0004;
+  box-shadow: var(--window-frame);
   position: relative;
 }
 .window-label {
@@ -1462,11 +1440,9 @@ kbd {
   max-width: 1000px;
   margin: 30px auto;
   padding: 30px 32px;
-  border: 2px solid #aeb7c6;
+  border: 2px solid var(--window-edge);
   background: var(--window);
-  box-shadow:
-    inset 0 0 0 3px #314a73,
-    4px 5px #0008;
+  box-shadow: var(--window-frame);
   position: relative;
 }
 .content-page > h1 {

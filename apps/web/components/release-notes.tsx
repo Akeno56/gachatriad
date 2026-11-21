@@ -29,8 +29,8 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>Earn the Astral frame and banner by completing rated games.</li>
-          <li>Track your progress in the Journal.</li>
+          <li>New pixel-art tavern and game menus.</li>
+          <li>Updated controls, dialogs, and battle HUD.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

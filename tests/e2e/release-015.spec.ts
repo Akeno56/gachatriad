@@ -115,16 +115,9 @@ test('shows real tavern notices, bounded chat and shared keyboard controls in bo
     if (new URL(request.url()).pathname === '/api/puzzles/daily') dailyReads++;
   });
   try {
-    await platform.store.economy.grant(
-      c.profile.id,
-      'boosters',
-      2,
-      crypto.randomUUID(),
-      'test-fixture',
-    );
     await c.page.goto('/');
     await expect(c.page.locator('.tavern-sign h1')).toBeVisible();
-    await expect(c.page.locator('.tavern-noticeboard')).toContainText('2 unopened boosters');
+    await expect(c.page.locator('.tavern-noticeboard')).toContainText('Ready to claim');
     await expect(c.page.locator('.title-card')).toHaveCount(5);
     await expect(c.page.locator('.tavern-sign h1')).toHaveText('GACHATRIAD');
     await expect(c.page.locator('.matchmaking-panel')).not.toContainText('Combo lesson');
@@ -152,9 +145,9 @@ test('shows real tavern notices, bounded chat and shared keyboard controls in bo
     await expect(c.page.getByRole('tooltip')).toBeHidden();
     if (info.project.name === 'desktop') {
       for (const [width, height] of [
-        [1894, 926],
-        [1440, 900],
         [1280, 720],
+        [1366, 768],
+        [1920, 1080],
       ]) {
         await c.page.setViewportSize({ width, height });
         await c.page.evaluate(() => scrollTo(0, 0));
@@ -173,7 +166,7 @@ test('shows real tavern notices, bounded chat and shared keyboard controls in bo
     await french(c.page);
     if (info.project.name === 'mobile') await c.page.setViewportSize({ width: 320, height: 844 });
     await expect(c.page.locator('.tavern-sign h1')).toHaveText('GACHATRIAD');
-    await expect(c.page.locator('.tavern-noticeboard')).toContainText('2 boosters non ouverts');
+    await expect(c.page.locator('.tavern-noticeboard')).toContainText('À récupérer');
     await fits(c.page);
     await c.page.evaluate(() => scrollTo(0, 0));
     await c.page.screenshot({
