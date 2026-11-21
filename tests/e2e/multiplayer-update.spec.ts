@@ -540,6 +540,14 @@ test('previews and equips season rewards from the Journal in English and French'
     }
     return changed;
   }
+  async function expectFramePlayback(art: Locator, name: string, minimum: number) {
+    await expect(art).toHaveCSS('background-image', /astral-frame-loop\.webp/);
+    await waitForArt(art);
+    const before = await captureArt(art, `${name}-first.png`);
+    await art.page().waitForTimeout(1100);
+    const after = await captureArt(art, `${name}-second.png`);
+    expect(countChangedPixels(before, after)).toBeGreaterThan(minimum);
+  }
   try {
     await page.goto('/journey/#season');
     const frameProgress = page.getByRole('progressbar', { name: 'Astral frame' });
@@ -575,9 +583,6 @@ test('previews and equips season rewards from the Journal in English and French'
     await page.waitForTimeout(1100);
     const frameAfter = await captureArt(lockedFrame, 'astral-frame-preview-second.png');
     expect(countChangedPixels(frameBefore, frameAfter)).toBeGreaterThan(100);
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await expect(lockedFrameArt).toHaveCSS('background-image', /astral-frame\.webp/);
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
 
     await platform.db.tx(async (sql) => {
       await sql(
@@ -611,16 +616,21 @@ test('previews and equips season rewards from the Journal in English and French'
     await expect(frameArt).toHaveCSS('background-image', /astral-frame-loop\.webp/);
     await Promise.all([waitForArt(crestArt), waitForArt(frameArt)]);
     await banner.screenshot({ path: info.outputPath('astral-crest-banner.png') });
+    await expectFramePlayback(frameArt, 'astral-own-profile', 100);
 
+    await b.context.addInitScript(() => localStorage.setItem('triad-effects', 'off'));
+    await b.page.emulateMedia({ reducedMotion: 'reduce' });
     await b.page.goto(`/profile/?id=${a.profile.id}`);
     const visitorBanner = b.page.locator('.profile-header');
+    await expect(b.page.locator('.game-shell')).not.toHaveClass(/effects-animated/);
     await expect(visitorBanner.locator('.astral-crest-art')).toHaveCSS(
       'background-image',
       /astral-crest-loop\.webp/,
     );
-    await expect(visitorBanner.locator('.astral-frame-art')).toHaveCSS(
-      'background-image',
-      /astral-frame-loop\.webp/,
+    await expectFramePlayback(
+      visitorBanner.locator('.astral-frame-art'),
+      'astral-visitor-profile',
+      100,
     );
     await a.request('/chat', {
       message: 'Astral season',
@@ -633,7 +643,7 @@ test('previews and equips season rewards from the Journal in English and French'
       .filter({ hasText: 'Astral season' })
       .locator('.astral-frame-art');
     await expect(chatFrame).toBeVisible();
-    await expect(chatFrame).toHaveCSS('background-image', /astral-frame-loop\.webp/);
+    await expectFramePlayback(chatFrame, 'astral-chat', 10);
 
     const lobby = await a.request('/lobbies', {
       mode: 'custom',
@@ -644,18 +654,23 @@ test('previews and equips season rewards from the Journal in English and French'
     await b.page.goto(`/?match=${matchId}`);
     const battleFrame = b.page.locator('.scoreboard .astral-frame-art');
     await expect(battleFrame).toBeVisible();
-    await expect(battleFrame).toHaveCSS('background-image', /astral-frame-loop\.webp/);
+    await expectFramePlayback(battleFrame, 'astral-battle', 20);
     await platform.store.resign(a.profile.id, matchId);
 
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await expect(crestArt).toHaveCSS('background-image', /astral-crest\.webp/);
-    await expect(frameArt).toHaveCSS('background-image', /astral-frame\.webp/);
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
     await page.getByRole('button', { name: 'Game settings', exact: true }).click();
     const effects = page.getByLabel('Animate visual effects', { exact: true });
     await effects.uncheck();
+    await expect(crestArt).toHaveCSS('background-image', /astral-crest-loop\.webp/);
+    await expect(frameArt).toHaveCSS('background-image', /astral-frame-loop\.webp/);
+    const seasonalMotion = page.getByLabel('Animate seasonal rewards', { exact: true });
+    await seasonalMotion.uncheck();
     await expect(crestArt).toHaveCSS('background-image', /astral-crest\.webp/);
     await expect(frameArt).toHaveCSS('background-image', /astral-frame\.webp/);
+    await page.goto('/profile/');
+    await expect(frameArt).toHaveCSS('background-image', /astral-frame\.webp/);
+    await page.getByRole('button', { name: 'Game settings', exact: true }).click();
+    await seasonalMotion.check();
+    await expect(frameArt).toHaveCSS('background-image', /astral-frame-loop\.webp/);
     await effects.check();
     await page.keyboard.press('Escape');
 

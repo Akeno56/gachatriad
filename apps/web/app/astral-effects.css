@@ -1,7 +1,7 @@
 .astral-art {
   position: absolute;
   pointer-events: none;
-  background: var(--astral-poster) right center / cover no-repeat;
+  background: var(--astral-loop) right center / cover no-repeat;
 }
 
 .astral-frame-art {
@@ -16,10 +16,8 @@
   z-index: -1;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .effects-animated .astral-art {
-    background-image: var(--astral-loop);
-  }
+.seasonal-motion-off .astral-art {
+  background-image: var(--astral-poster);
 }
 
 .frame-choice.is-locked .frame-astral {

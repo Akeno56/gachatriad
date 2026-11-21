@@ -29,6 +29,17 @@ PALETTES = {
     },
 }
 
+CREST_RIBBONS = (
+    ((119, 57, 207), (245, 184, 133)),
+    ((62, 137, 211), (185, 228, 255)),
+    ((172, 78, 213), (226, 180, 250)),
+)
+ASTRAL_RIBBONS = (
+    ((51, 98, 180), (152, 209, 255)),
+    ((75, 63, 184), (178, 169, 247)),
+    ((99, 96, 199), (199, 210, 255)),
+)
+
 
 def grid(width, height):
     return np.meshgrid(
@@ -60,19 +71,14 @@ def light(pixels, amount, color):
     pixels[:] = 1 - (1 - pixels) * (1 - amount[..., None] * np.array(color) / 255)
 
 
-def make_crest(x, y, phase):
+def aurora(x, y, phase, ribbons):
     pixels = np.full(x.shape + (3,), [12, 17, 35], dtype=np.float32) / 255
     mist = weave(x * 0.9 + 0.3, y * 0.75, phase)
     haze = gaussian(y - 0.54 + 0.15 * mist, 0.43) * smoothstep(0.1, 0.93, x)
     light(pixels, haze * 0.44, (87, 55, 163))
     light(pixels, gaussian(y - 0.29 - 0.16 * mist, 0.32) * x**2 * 0.35, (30, 103, 168))
 
-    palettes = [
-        ((119, 57, 207), (245, 184, 133)),
-        ((62, 137, 211), (185, 228, 255)),
-        ((172, 78, 213), (226, 180, 250)),
-    ]
-    for i, (body_color, rim_color) in enumerate(palettes):
+    for i, (body_color, rim_color) in enumerate(ribbons):
         flow = weave(x + i * 0.22, y + i * 0.19, phase + i * 1.9)
         fold = np.sin(5.8 * x + 0.6 * i + 0.85 * np.sin(phase + i * 1.4))
         center = 0.65 - 0.18 * i + 0.15 * fold + 0.14 * flow
@@ -86,7 +92,11 @@ def make_crest(x, y, phase):
         light(pixels, rim * 0.49, rim_color)
 
     falloff = 0.69 + 0.31 * gaussian(y - 0.52, 0.48)
-    pixels *= falloff[..., None]
+    return pixels * falloff[..., None]
+
+
+def make_crest(x, y, phase):
+    pixels = aurora(x, y, phase, CREST_RIBBONS)
     return Image.fromarray(np.uint8(np.clip(pixels, 0, 1) * 255))
 
 
@@ -171,6 +181,8 @@ def bevel_distance(x, y, half_width, half_height, chamfer):
 
 
 def theme_banner(x, y, theme, palette):
+    if theme == "astral":
+        return aurora(x, y, 4.3, ASTRAL_RIBBONS)
     field = theme_plate(x, y, theme, palette, 1.0)
     # Leave the profile name and bio on the dark end of the painting.
     field *= (0.61 + 0.39 * smoothstep(0.15, 0.78, x))[..., None]

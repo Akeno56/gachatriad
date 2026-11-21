@@ -34,6 +34,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
   const [sfx, setSfx] = useState(true);
   const [crt, setCrt] = useState(false);
   const [effects, setEffects] = useState(true);
+  const [seasonalMotion, setSeasonalMotion] = useState(true);
   const [captureFlips, setCaptureFlips] = useState(true);
   const [fullScreen, setFullScreen] = useState(false);
   const [notice, setNotice] = useState('');
@@ -105,6 +106,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
     try {
       setCrt(localStorage.getItem('triad-crt') === 'on');
       setEffects(localStorage.getItem('triad-effects') !== 'off');
+      setSeasonalMotion(localStorage.getItem('triad-seasonal-motion') !== 'off');
       setCaptureFlips(localStorage.getItem('triad-capture-flips') !== 'off');
       const enabled = localStorage.getItem('triad-sfx') !== 'off';
       setSfx(enabled);
@@ -195,7 +197,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
             <MusicSceneContext.Provider value={changeMusicScene}>
               <SocialProvider>
                 <div
-                  className={`game-shell ${crt ? 'crt-enabled' : ''} ${effects ? 'effects-animated' : ''} ${captureFlips ? 'capture-flips-enabled' : ''}`}
+                  className={`game-shell ${crt ? 'crt-enabled' : ''} ${effects ? 'effects-animated' : ''} ${captureFlips ? 'capture-flips-enabled' : ''} ${seasonalMotion ? '' : 'seasonal-motion-off'}`}
                   data-board-theme={boardTheme[0]}
                   data-card-back={cardBack[0]}
                 >
@@ -380,6 +382,24 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                                   }}
                                 />
                                 Animate visual effects
+                              </label>
+                              <label className="effects-setting">
+                                <input
+                                  name="seasonal-motion"
+                                  type="checkbox"
+                                  checked={seasonalMotion}
+                                  onChange={(e) => {
+                                    const enabled = e.target.checked;
+                                    setSeasonalMotion(enabled);
+                                    try {
+                                      localStorage.setItem(
+                                        'triad-seasonal-motion',
+                                        enabled ? 'on' : 'off',
+                                      );
+                                    } catch {}
+                                  }}
+                                />
+                                Animate seasonal rewards
                               </label>
                               <label className="effects-setting">
                                 <input
