@@ -52,12 +52,24 @@
 }
 
 [data-card-back='astral'] {
-  --back-field: #18162f;
-  --back-center: #51417c;
-  --back-trim: #b7a5d9;
+  --back-field: #14152e;
+  --back-center: #423663;
+  --back-trim: #bcb2ec;
   --back-pattern:
-    radial-gradient(circle, #eae2ff80 0 0.8px, transparent 1.5px) 0 0 / 19px 19px,
-    radial-gradient(circle, #b4a9ff80 0 0.6px, transparent 1.5px) 10px 5px / 23px 29px;
+    linear-gradient(135deg, #8980c138 0 18%, #d3c6ff7a 18% 19%, transparent 19%) top left / 55% 40%
+      no-repeat,
+    linear-gradient(315deg, #8980c138 0 18%, #d3c6ff7a 18% 19%, transparent 19%) bottom right / 55%
+      40% no-repeat,
+    linear-gradient(90deg, transparent 49.5%, #d6c6ff39 49.5% 50.5%, transparent 50.5%) center /
+      100% 88% no-repeat,
+    linear-gradient(
+      138deg,
+      transparent 29%,
+      #ab95f22d 29% 30%,
+      #ab95f214 30% 70%,
+      #ab95f22d 70% 71%,
+      transparent 71%
+    );
 }
 
 [data-card-back='ember'] {
@@ -86,12 +98,74 @@
   border-color: var(--back-trim, #b2a77d);
 }
 
+:is(
+  .game-shell[data-card-back='astral'] .card-back:not([data-card-back]),
+  .appearance-card-preview[data-card-back='astral']
+) {
+  .back-emblem {
+    --astral-compass: polygon(
+      50% 0,
+      59% 33%,
+      82% 18%,
+      67% 41%,
+      100% 50%,
+      67% 59%,
+      82% 82%,
+      59% 67%,
+      50% 100%,
+      41% 67%,
+      18% 82%,
+      33% 59%,
+      0 50%,
+      33% 41%,
+      18% 18%,
+      41% 33%
+    );
+    border-color: transparent;
+  }
+
+  .back-emblem::before,
+  .back-emblem::after {
+    position: absolute;
+    transform: rotate(-45deg);
+    clip-path: var(--astral-compass);
+    content: '';
+  }
+
+  .back-emblem::before {
+    inset: -36%;
+    background: linear-gradient(150deg, #f0dba8, #b5a4e9 60%, #686199);
+  }
+
+  .back-emblem::after {
+    inset: -24%;
+    background: linear-gradient(140deg, #4a3d74, #211f40);
+  }
+
+  .back-emblem img {
+    position: relative;
+    z-index: 1;
+  }
+}
+
 [data-profile-banner='astral'] {
-  --banner-edge: #a79acb;
+  --banner-edge: #9f9bd8;
   --banner-image:
-    radial-gradient(circle, #e5d7ff80 0 0.8px, transparent 1.6px) 4px 3px / 23px 23px,
-    radial-gradient(circle, #fff0bd69 0 0.7px, transparent 1.6px) 9px 7px / 31px 35px,
-    linear-gradient(120deg, #1a233d, #232744 42%, #453765);
+    radial-gradient(
+      ellipse 58% 162% at 92% 125%,
+      #7c80bf36 0 58%,
+      #c9c2ff96 58.5% 59%,
+      #9e96ff1f 59.5% 71%,
+      #afaaf859 71.5% 72%,
+      transparent 72.5%
+    ),
+    radial-gradient(
+      ellipse 82% 152% at 98% 144%,
+      transparent 70%,
+      #817bb948 70.5% 71%,
+      transparent 71.5%
+    ),
+    linear-gradient(118deg, #141b35, #232e55 62%, #393259);
 }
 
 [data-profile-banner='ember'] {
@@ -102,12 +176,25 @@
 }
 
 [data-profile-banner='astral-crest'] {
-  --banner-edge: #c7c6ff;
+  --banner-edge: #d8bd83;
   --banner-image:
-    radial-gradient(circle, #f2d892a0 0 1px, transparent 2px) 9px 7px / 37px 33px,
-    radial-gradient(circle, #c6bfff76 0 0.7px, transparent 1.6px) 3px 5px / 19px 22px,
-    repeating-linear-gradient(135deg, #d1c6ff24 0 1px, transparent 1px 34px),
-    linear-gradient(112deg, #141b34, #20274f 54%, #504c86);
+    linear-gradient(
+      118deg,
+      transparent 56%,
+      #ded7ff39 56.3% 56.7%,
+      transparent 57% 61%,
+      #d2b87e70 61.3% 61.7%,
+      #bda2ec24 62%
+    ),
+    linear-gradient(
+      62deg,
+      transparent 52%,
+      #c0a9f630 52.3% 52.7%,
+      transparent 53% 70%,
+      #dcc28b57 70.3% 70.7%,
+      #c6a8ec22 71%
+    ),
+    linear-gradient(112deg, #13192d, #242749 50%, #4a3a69);
 }
 
 :is(.profile-header, .profile-editor-preview, .appearance-banner-preview):is(
@@ -117,6 +204,52 @@
 ) {
   border-color: var(--banner-edge);
   background: var(--banner-image);
+}
+
+:is(
+  .profile-header,
+  .profile-editor-preview,
+  .appearance-banner-preview
+)[data-profile-banner='astral-crest'] {
+  position: relative;
+  isolation: isolate;
+
+  &::before {
+    position: absolute;
+    z-index: -1;
+    inset: 50% 10% auto auto;
+    width: min(28%, 90px);
+    aspect-ratio: 1;
+    transform: translateY(-50%);
+    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+    background: linear-gradient(135deg, #fae4af, #c0a0e6 55%, #806da7);
+    opacity: 0.6;
+    pointer-events: none;
+    content: '';
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .effects-animated
+    :is(
+      .profile-header,
+      .profile-editor-preview,
+      .appearance-banner-preview
+    )[data-profile-banner='astral-crest']::before {
+    animation: astral-crest-light 5s ease-in-out infinite;
+  }
+}
+
+@keyframes astral-crest-light {
+  0%,
+  100% {
+    transform: translateY(-50%) scale(0.92);
+    opacity: 0.5;
+  }
+  48% {
+    transform: translateY(-50%) scale(1.06);
+    opacity: 0.95;
+  }
 }
 
 .appearance-dialog {

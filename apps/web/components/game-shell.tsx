@@ -375,7 +375,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                                     } catch {}
                                   }}
                                 />
-                                Animate Holo &amp; CRT
+                                Animate visual effects
                               </label>
                               <label className="effects-setting">
                                 <input

@@ -424,8 +424,11 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
     await appearance
       .getByRole('group', { name: 'Card back' })
       .locator('label')
-      .filter({ hasText: 'Ember' })
+      .filter({ hasText: 'Astral' })
       .click();
+    await appearance
+      .locator('.appearance-card-preview[data-card-back="astral"]')
+      .screenshot({ path: info.outputPath('astral-card-back-preview.png') });
     await expect(appearance).toBeInViewport({ ratio: 1 });
     await page.screenshot({ path: info.outputPath('appearance.png') });
     await page.keyboard.press('Escape');
@@ -434,6 +437,13 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
     await page.reload();
     await expect(board).toHaveCSS('background-color', 'rgb(23, 20, 41)');
     await expect(hiddenCard).not.toHaveCSS('background-image', originalBack);
+    await expect
+      .poll(() =>
+        hiddenCard
+          .locator('.back-emblem')
+          .evaluate((emblem) => getComputedStyle(emblem, '::before').clipPath),
+      )
+      .toMatch(/^polygon/);
     if (info.project.name === 'desktop') {
       for (const [width, height] of [
         [1280, 720],
@@ -467,6 +477,7 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
     const banner = b.page.locator('.profile-header');
     await expect(banner).toHaveAttribute('data-profile-banner', 'astral');
     await expect(banner).toContainText(a.profile.name);
+    await banner.screenshot({ path: info.outputPath('astral-banner.png') });
     await expect(b.page.locator('.game-shell')).toHaveAttribute('data-board-theme', 'classic');
     await b.page.getByRole('button', { name: 'Language: English', exact: true }).click();
     await b.page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
@@ -529,6 +540,25 @@ test('previews and equips season rewards from the Journal in English and French'
       'astral-crest',
     );
     await expect(page.locator('.profile-portrait .frame-astral')).toBeVisible();
+    const banner = page.locator('.profile-header');
+    const frameLight = page.locator('.profile-portrait .astral-frame-light');
+    const crestAnimation = () =>
+      banner.evaluate((element) => getComputedStyle(element, '::before').animationName);
+    await expect.poll(crestAnimation).toBe('astral-crest-light');
+    await expect(frameLight).toHaveCSS('animation-name', 'astral-frame-sweep');
+    await banner.screenshot({ path: info.outputPath('astral-crest-banner.png') });
+
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect.poll(crestAnimation).toBe('none');
+    await expect(frameLight).toHaveCSS('animation-name', 'none');
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.getByRole('button', { name: 'Game settings', exact: true }).click();
+    const effects = page.getByLabel('Animate visual effects', { exact: true });
+    await effects.uncheck();
+    await expect.poll(crestAnimation).toBe('none');
+    await expect(frameLight).toHaveCSS('animation-name', 'none');
+    await effects.check();
+    await page.keyboard.press('Escape');
 
     for (const language of ['en', 'fr']) {
       if (language === 'en') await page.goto('/journey/#season');

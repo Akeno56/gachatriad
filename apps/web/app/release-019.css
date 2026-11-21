@@ -51,6 +51,37 @@
 .frame-astral {
   --frame-accent: #c7c6ff;
 }
+.portrait-frame-art .astral-frame-light {
+  stroke: #ffe0a9;
+  stroke-dasharray: 12 88;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .effects-animated
+    :is(
+      .profile-portrait,
+      .profile-editor-preview,
+      .season-reward-art,
+      .frame-choice:is(:hover, :focus-visible)
+    )
+    .astral-frame-light {
+    animation: astral-frame-sweep 4.8s linear infinite;
+  }
+}
+@keyframes astral-frame-sweep {
+  0% {
+    stroke-dashoffset: 14;
+    opacity: 0;
+  }
+  20%,
+  75% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -90;
+    opacity: 0;
+  }
+}
 .profile-portrait .portrait-frame-art,
 .profile-editor-preview > .player-avatar .portrait-frame-art,
 .frame-choice .portrait-frame-art {

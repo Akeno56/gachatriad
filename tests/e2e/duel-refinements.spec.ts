@@ -70,7 +70,7 @@ test('Holo and CRT visibly animate without hover in both OS motion settings and 
     const lineB = await page.screenshot({ clip });
     expect(await fractionChanged(lineA, lineB)).toBeGreaterThan(0.1);
     await openSettings(page);
-    await page.getByLabel('Animate Holo & CRT', { exact: true }).uncheck();
+    await page.getByLabel('Animate visual effects', { exact: true }).uncheck();
     await expect(page.locator('.crt-overlay')).toHaveCSS('animation-name', 'none');
     const stillA = await page.screenshot({ clip });
     await page.waitForTimeout(350);
@@ -98,7 +98,7 @@ test('Holo and CRT visibly animate without hover in both OS motion settings and 
     expect(await fractionChanged(stoppedA, await stoppedCard.screenshot())).toBe(0);
     await page.getByRole('button', { name: 'Close card detail' }).click();
     await openSettings(page);
-    await page.getByLabel('Animate Holo & CRT', { exact: true }).check();
+    await page.getByLabel('Animate visual effects', { exact: true }).check();
     await expect(page.locator('.crt-overlay')).toHaveCSS('animation-name', 'crt-scroll');
   }
 });

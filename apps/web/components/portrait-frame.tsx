@@ -23,6 +23,9 @@ export function FrameArt({ frameId }: { frameId?: PortraitFrame | null }) {
     <span className="portrait-frame-art" aria-hidden="true">
       <svg viewBox="0 0 100 100" preserveAspectRatio="none">
         <path d={paths[frameId]} />
+        {frameId === 'astral' && (
+          <path className="astral-frame-light" d={paths.astral} pathLength="100" />
+        )}
       </svg>
     </span>
   );
