@@ -40,8 +40,9 @@ export function ProfileEditor({
   const [data, setData] = useState<CustomizationView | null>(null),
     [draft, setDraft] = useState<ProfileCustomization | null>(null),
     [tab, setTab] = useState<string>(initialTab),
-    [previewCrest, setPreviewCrest] = useState(false),
-    [previewFrameMotion, setPreviewFrameMotion] = useState(false),
+    [previewReward, setPreviewReward] = useState<'frames' | 'banners' | null>(
+      initialTab === 'identity' ? null : initialTab,
+    ),
     [cardPicker, setCardPicker] = useState<'portrait' | number | null>(null),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
@@ -69,8 +70,8 @@ export function ProfileEditor({
     };
   }, [profile.id, loadRevision]);
   const dirty = !!draft && !!data && comparable(draft) !== comparable(data.settings);
-  const showCrestPreview = tab === 'banners' && previewCrest;
-  const showFramePreview = tab === 'frames' && previewFrameMotion;
+  const showCrestPreview = tab === 'banners' && previewReward === 'banners';
+  const showFramePreview = tab === 'frames' && previewReward === 'frames';
   const previewBanner = showCrestPreview ? ASTRAL_REWARDS.banner.id : draft?.bannerId;
   const previewFrame = showFramePreview ? ASTRAL_REWARDS.frame.id : draft?.frameId;
   useEffect(() => {
@@ -179,10 +180,7 @@ export function ProfileEditor({
           <p role="status">Loading profile settings…</p>
         ) : (
           <>
-            <div
-              className={`customizer-layout tab-${tab}`}
-              data-astral-motion={showCrestPreview || showFramePreview || undefined}
-            >
+            <div className={`customizer-layout tab-${tab}`}>
               <div
                 id="profile-editor-panel"
                 role="tabpanel"
@@ -328,16 +326,6 @@ export function ProfileEditor({
                 )}
                 {tab === 'frames' && (
                   <div className="frame-picker" role="group" aria-label="Portrait frames">
-                    {data.frames.some((frame) => frame.id === ASTRAL_REWARDS.frame.id) && (
-                      <Button
-                        className="astral-frame-preview-button"
-                        aria-pressed={previewFrameMotion}
-                        disabled={busy}
-                        onClick={() => setPreviewFrameMotion((active) => !active)}
-                      >
-                        Play Astral frame animation
-                      </Button>
-                    )}
                     {data.frames.map((frame) => (
                       <button
                         type="button"
@@ -349,7 +337,7 @@ export function ProfileEditor({
                         aria-disabled={!frame.unlocked || busy}
                         onClick={() => {
                           if (frame.unlocked && !busy) {
-                            setPreviewFrameMotion(false);
+                            setPreviewReward(null);
                             field('frameId', frame.id as PortraitFrame);
                           }
                         }}
@@ -377,7 +365,7 @@ export function ProfileEditor({
                       value={draft.bannerId}
                       disabled={busy}
                       onChange={(style) => {
-                        setPreviewCrest(false);
+                        setPreviewReward(null);
                         field('bannerId', style);
                       }}
                       preview={(style) => (
@@ -394,15 +382,6 @@ export function ProfileEditor({
                       (banner) => banner.id === ASTRAL_REWARDS.banner.id && !banner.unlocked,
                     ) && (
                       <p className="cosmetic-requirement">{ASTRAL_REWARDS.banner.requirement}</p>
-                    )}
-                    {data.banners?.some((banner) => banner.id === ASTRAL_REWARDS.banner.id) && (
-                      <Button
-                        aria-pressed={previewCrest}
-                        disabled={busy}
-                        onClick={() => setPreviewCrest((active) => !active)}
-                      >
-                        Play Astral Crest animation
-                      </Button>
                     )}
                   </>
                 )}

@@ -80,7 +80,7 @@ it('preserves existing avatars and titles, supplies safe defaults and authorizes
     avatarCardId: card,
     titleId: null,
   });
-  expect(initial.frames.filter((f) => f.unlocked).map((f) => f.id)).toEqual(['classic']);
+  expect(initial.frames.filter((f) => f.unlocked).map((f) => f.id)).toEqual(['classic', 'ember']);
   expect((await settings(b)).settings.frameId).toBe('classic');
   for (const path of ['/profile/customization', '/profile/frame'])
     expect(

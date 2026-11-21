@@ -18,6 +18,7 @@ export function frameClass(id: PortraitFrame | null | undefined) {
 
 export function FrameArt({ frameId }: { frameId?: PortraitFrame | null }) {
   if (frameId === 'astral') return <AstralArt kind="frame" />;
+  if (frameId === 'ember') return <span className="ember-frame-art" aria-hidden="true" />;
   if (!frameId || frameId === 'classic' || !Object.hasOwn(paths, frameId)) return null;
   return (
     <span className="portrait-frame-art" aria-hidden="true">

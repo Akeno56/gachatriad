@@ -36,6 +36,7 @@ export const PORTRAIT_FRAMES = [
     requirement: 'Make two Combo captures in one turn.',
   },
   { id: 'gold', name: 'Gold', achievementId: 'hundred-wins', requirement: 'Win 100 duels.' },
+  { id: 'ember', name: 'Ember', achievementId: null, requirement: 'Available to everyone.' },
   {
     id: ASTRAL_REWARDS.frame.id,
     name: 'Astral',

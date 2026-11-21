@@ -377,6 +377,15 @@ test('aligns friend cards with and without titles in both languages', async ({ b
   }
 });
 
+async function waitForArt(art: Locator) {
+  await art.evaluate(async (element) => {
+    const image = new Image();
+    image.src = getComputedStyle(element).backgroundImage.slice(5, -2);
+    await image.decode();
+    await document.fonts.ready;
+  });
+}
+
 test('previews and retains battle cosmetics and shows a saved banner on another player’s profile', async ({
   browser,
 }, info) => {
@@ -408,6 +417,7 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
     const match = await platform.store.solo(a.profile.id, 'easy', STANDARD);
     await page.goto(`/?match=${match}`);
     const board = page.locator('.arena-screen .board');
+    const table = page.locator('.arena-screen .battle-layout');
     const hiddenCard = page.locator('.cpu-hand .card-back').first();
     await expect(board).toHaveCSS('background-color', 'rgb(14, 25, 43)');
     await expect(hiddenCard).toBeVisible();
@@ -423,16 +433,14 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
         .getByRole('group', { name: 'Board theme' })
         .getByRole('radio', { name: 'Classic' }),
     ).toBeChecked();
-    await appearance
-      .getByRole('group', { name: 'Board theme' })
-      .locator('label')
-      .filter({ hasText: 'Astral' })
-      .click();
-    await appearance
-      .getByRole('group', { name: 'Card back' })
-      .locator('label')
-      .filter({ hasText: 'Astral' })
-      .click();
+    for (const theme of ['ember', 'astral']) {
+      for (const setting of ['board-theme', 'card-back']) {
+        await appearance.locator(`label:has(input[name="${setting}"][value="${theme}"])`).click();
+      }
+      await expect(table).toHaveCSS('background-image', new RegExp(`${theme}-board`));
+      await expect(hiddenCard).toHaveCSS('background-image', new RegExp(`${theme}-back`));
+      await Promise.all([waitForArt(table), waitForArt(hiddenCard)]);
+    }
     await appearance
       .locator('.appearance-card-preview[data-card-back="astral"]')
       .screenshot({ path: info.outputPath('astral-card-back-preview.png') });
@@ -464,20 +472,29 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
     await page.goto('/profile/');
     await page.getByRole('button', { name: 'Customize profile' }).click();
     const editor = page.getByRole('dialog', { name: 'Customize profile' });
+    await editor.getByRole('tab', { name: 'Portrait frames', exact: true }).click();
+    const emberFrame = editor.getByRole('button', { name: 'Ember portrait frame', exact: true });
+    await expect(emberFrame).toBeEnabled();
+    await emberFrame.click();
     await editor.getByRole('tab', { name: 'Banners', exact: true }).click();
-    await editor
-      .getByRole('group', { name: 'Profile banner' })
-      .locator('label:has(input[value="astral"])')
-      .click();
-    await expect(editor.locator('.profile-editor-preview')).toHaveAttribute(
-      'data-profile-banner',
-      'astral',
-    );
+    const preview = editor.locator('.profile-editor-preview');
+    for (const theme of ['ember', 'astral']) {
+      await editor
+        .getByRole('group', { name: 'Profile banner' })
+        .locator(`label:has(input[value="${theme}"])`)
+        .click();
+      await expect(preview).toHaveAttribute('data-profile-banner', theme);
+      await expect(preview).toHaveCSS('background-image', new RegExp(`${theme}-banner`));
+      await waitForArt(preview);
+      await preview.screenshot({ path: info.outputPath(`${theme}-customizer.png`) });
+    }
     await editor.getByRole('button', { name: 'Save profile' }).click();
     await expect(page.locator('.profile-header')).toHaveAttribute('data-profile-banner', 'astral');
     await b.page.goto(`/profile/?id=${a.profile.id}`);
     const banner = b.page.locator('.profile-header');
     await expect(banner).toHaveAttribute('data-profile-banner', 'astral');
+    await expect(banner.locator('.ember-frame-art')).toHaveCSS('background-image', /ember-frame/);
+    await waitForArt(banner.locator('.ember-frame-art'));
     await expect(banner).toContainText(a.profile.name);
     await banner.screenshot({ path: info.outputPath('astral-banner.png') });
     await expect(b.page.locator('.game-shell')).toHaveAttribute('data-board-theme', 'classic');
@@ -511,13 +528,6 @@ test('previews and equips season rewards from the Journal in English and French'
       .raw()
       .toBuffer();
   }
-  async function waitForArt(art: Locator) {
-    await art.evaluate(async (element) => {
-      const image = new Image();
-      image.src = getComputedStyle(element).backgroundImage.slice(5, -2);
-      await image.decode();
-    });
-  }
   function countChangedPixels(first: Buffer, second: Buffer) {
     expect(first.length).toBe(second.length);
     let changed = 0;
@@ -541,29 +551,22 @@ test('previews and equips season rewards from the Journal in English and French'
     const crest = editor.locator('input[value="astral-crest"]');
     await expect(crest).toBeDisabled();
     await expect(editor).toContainText('Complete 15 full rated games in Astral');
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await expect(editor.locator('.astral-crest-art')).toHaveCSS(
-      'background-image',
-      /astral-crest\.webp/,
-    );
-    await editor.getByRole('button', { name: 'Play Astral Crest animation', exact: true }).click();
     const profilePreview = editor.locator('.profile-editor-preview');
     await expect(profilePreview).toHaveAttribute('data-profile-banner', 'astral-crest');
     const bannerPreviewArt = profilePreview.locator('.astral-crest-art');
     await expect(bannerPreviewArt).toHaveCSS('background-image', /astral-crest-loop\.webp/);
     await waitForArt(bannerPreviewArt);
-    await page.evaluate(() => document.fonts.ready);
     const crestBefore = await captureArt(profilePreview, 'astral-crest-preview-first.png');
     await page.waitForTimeout(1100);
     const crestAfter = await captureArt(profilePreview, 'astral-crest-preview-second.png');
     expect(countChangedPixels(crestBefore, crestAfter)).toBeGreaterThan(500);
     await expect(editor.getByRole('button', { name: 'Save profile' })).toBeDisabled();
-    await editor.getByRole('tab', { name: 'Portrait frames' }).click();
+    await editor.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await page.goto('/journey/#season');
+    await page.getByRole('link', { name: 'Preview Astral frame', exact: true }).click();
     const lockedFrame = editor.getByRole('button', { name: 'Astral portrait frame', exact: true });
     const lockedFrameArt = lockedFrame.locator('.astral-frame-art');
     await expect(lockedFrame).toBeDisabled();
-    await expect(lockedFrameArt).toHaveCSS('background-image', /astral-frame\.webp/);
-    await editor.getByRole('button', { name: 'Play Astral frame animation' }).click();
     await expect(lockedFrameArt).toHaveCSS('background-image', /astral-frame-loop\.webp/);
     await expect(profilePreview.locator('.frame-astral .astral-frame-art')).toBeVisible();
     await expect(profilePreview).toHaveAttribute('data-profile-banner', 'classic');
@@ -572,6 +575,8 @@ test('previews and equips season rewards from the Journal in English and French'
     await page.waitForTimeout(1100);
     const frameAfter = await captureArt(lockedFrame, 'astral-frame-preview-second.png');
     expect(countChangedPixels(frameBefore, frameAfter)).toBeGreaterThan(100);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(lockedFrameArt).toHaveCSS('background-image', /astral-frame\.webp/);
     await page.emulateMedia({ reducedMotion: 'no-preference' });
 
     await platform.db.tx(async (sql) => {
@@ -606,6 +611,41 @@ test('previews and equips season rewards from the Journal in English and French'
     await expect(frameArt).toHaveCSS('background-image', /astral-frame-loop\.webp/);
     await Promise.all([waitForArt(crestArt), waitForArt(frameArt)]);
     await banner.screenshot({ path: info.outputPath('astral-crest-banner.png') });
+
+    await b.page.goto(`/profile/?id=${a.profile.id}`);
+    const visitorBanner = b.page.locator('.profile-header');
+    await expect(visitorBanner.locator('.astral-crest-art')).toHaveCSS(
+      'background-image',
+      /astral-crest-loop\.webp/,
+    );
+    await expect(visitorBanner.locator('.astral-frame-art')).toHaveCSS(
+      'background-image',
+      /astral-frame-loop\.webp/,
+    );
+    await a.request('/chat', {
+      message: 'Astral season',
+      channel: 'general',
+      requestId: 'astral-season-chat-test',
+    });
+    await b.page.goto('/');
+    const chatFrame = b.page
+      .locator('.chat-message')
+      .filter({ hasText: 'Astral season' })
+      .locator('.astral-frame-art');
+    await expect(chatFrame).toBeVisible();
+    await expect(chatFrame).toHaveCSS('background-image', /astral-frame-loop\.webp/);
+
+    const lobby = await a.request('/lobbies', {
+      mode: 'custom',
+      rules: RANKED_RULES,
+      allowBots: false,
+    });
+    const { matchId } = await b.request(`/lobbies/${lobby.lobbyId}/join`, {});
+    await b.page.goto(`/?match=${matchId}`);
+    const battleFrame = b.page.locator('.scoreboard .astral-frame-art');
+    await expect(battleFrame).toBeVisible();
+    await expect(battleFrame).toHaveCSS('background-image', /astral-frame-loop\.webp/);
+    await platform.store.resign(a.profile.id, matchId);
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await expect(crestArt).toHaveCSS('background-image', /astral-crest\.webp/);
@@ -698,8 +738,8 @@ test('keeps Elemental themes and bilingual battle controls aligned across deskto
     const neutral = page.getByTestId('cell-2');
     const picker = page.locator('.quick-chat-picker');
     for (const [theme, background] of [
-      ['astral', 'rgb(38, 34, 61)'],
-      ['ember', 'rgb(58, 44, 40)'],
+      ['astral', 'rgb(28, 27, 54)'],
+      ['ember', 'rgb(40, 25, 35)'],
     ]) {
       for (const language of ['en', 'fr']) {
         await page.evaluate(
@@ -722,6 +762,9 @@ test('keeps Elemental themes and bilingual battle controls aligned across deskto
         await expect(neutral).toHaveCSS('background-color', background);
         await expect(matching).toHaveCSS('background-color', background);
         await expect(mismatched).toHaveCSS('background-color', background);
+        const tileArt = await neutral.evaluate((el) => getComputedStyle(el).backgroundImage);
+        await expect(matching).toHaveCSS('background-image', tileArt);
+        await expect(mismatched).toHaveCSS('background-image', tileArt);
         const border = await neutral.evaluate((el) => getComputedStyle(el).borderTopColor);
         await expect(matching).toHaveCSS('border-top-color', border);
         await page.getByTestId('player-card').first().click();

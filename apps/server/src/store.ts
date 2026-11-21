@@ -217,6 +217,7 @@ export class GameStore {
       '027_profile_banners.sql',
       '028_battle_stamps.sql',
       '029_astral_cosmetics.sql',
+      '030_ember_frame.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>

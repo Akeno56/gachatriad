@@ -7,20 +7,29 @@
 
 [data-board-theme='astral'] {
   --theme-board: #171429;
-  --theme-table: #15192e;
-  --theme-trim: #ac9bce;
-  --theme-cell: #26223d;
-  --theme-cell-border: #77709e;
-  --theme-light: #786bc956;
+  --theme-board-art: url('../public/assets/ui/astral-board.webp');
+  --theme-trim: #aba8d6;
+  --theme-cell: #1c1b36;
+  --theme-cell-border: #7f80aa;
+  --theme-light: #8d9be351;
+  --theme-inlay: #c3d9ff2b;
 }
 
 [data-board-theme='ember'] {
   --theme-board: #241b1b;
-  --theme-table: #201b22;
-  --theme-trim: #c29a65;
-  --theme-cell: #3a2c28;
-  --theme-cell-border: #926c58;
-  --theme-light: #bd774b49;
+  --theme-board-art: url('../public/assets/ui/ember-board.webp');
+  --theme-trim: #c8996d;
+  --theme-cell: #281923;
+  --theme-cell-border: #a17565;
+  --theme-light: #cb785349;
+  --theme-inlay: #ffd8af33;
+}
+
+:is([data-board-theme='astral'], [data-board-theme='ember']) {
+  --theme-tile:
+    linear-gradient(145deg, var(--theme-inlay) 0 1px, transparent 1px) 4px 4px / calc(100% - 8px)
+      calc(100% - 8px) no-repeat,
+    radial-gradient(ellipse at 65% 85%, var(--theme-light), transparent 75%), var(--theme-cell);
 }
 
 .game-shell:is([data-board-theme='astral'], [data-board-theme='ember']) {
@@ -29,56 +38,42 @@
     box-shadow:
       inset 0 0 0 3px var(--theme-board),
       inset 0 0 0 4px var(--theme-cell-border);
-    background:
-      radial-gradient(ellipse at center, var(--theme-light), transparent 72%),
-      repeating-linear-gradient(135deg, #b9b2d114 0 1px, transparent 1px 6px), var(--theme-table);
+    background: var(--theme-board) var(--theme-board-art) center / 100% 100% no-repeat;
   }
 
   .arena-screen .board {
-    --duel-cell-background:
-      radial-gradient(ellipse, var(--theme-light), transparent 75%), var(--theme-cell);
+    --duel-cell-background: var(--theme-tile);
     --duel-cell-border: var(--theme-cell-border);
     border-color: var(--theme-trim);
     background: var(--theme-board);
     box-shadow:
+      inset 0 0 0 1px var(--theme-board),
       inset 0 0 0 2px var(--theme-cell-border),
       0 4px 14px #0309199e;
   }
 
+  .arena-screen .board-cell:not(:has(.playing-card), .legal-cell) {
+    box-shadow:
+      inset 0 0 0 3px var(--theme-board),
+      inset 0 0 0 4px var(--theme-inlay);
+  }
+
   :is(.replay-cell, .puzzle-cell):not(.is-legal, .replay-last-move, :has(.playing-card)) {
     border-color: var(--theme-cell-border);
-    background: radial-gradient(ellipse, var(--theme-light), transparent 75%), var(--theme-cell);
+    background: var(--theme-tile);
   }
 }
 
 [data-card-back='astral'] {
   --back-field: #14152e;
-  --back-center: #423663;
-  --back-trim: #bcb2ec;
-  --back-pattern:
-    linear-gradient(135deg, #8980c138 0 18%, #d3c6ff7a 18% 19%, transparent 19%) top left / 55% 40%
-      no-repeat,
-    linear-gradient(315deg, #8980c138 0 18%, #d3c6ff7a 18% 19%, transparent 19%) bottom right / 55%
-      40% no-repeat,
-    linear-gradient(90deg, transparent 49.5%, #d6c6ff39 49.5% 50.5%, transparent 50.5%) center /
-      100% 88% no-repeat,
-    linear-gradient(
-      138deg,
-      transparent 29%,
-      #ab95f22d 29% 30%,
-      #ab95f214 30% 70%,
-      #ab95f22d 70% 71%,
-      transparent 71%
-    );
+  --back-trim: #cfccff;
+  --back-art: url('../public/assets/ui/astral-back.webp');
 }
 
 [data-card-back='ember'] {
   --back-field: #361b23;
-  --back-center: #764233;
-  --back-trim: #e5b57e;
-  --back-pattern:
-    repeating-linear-gradient(135deg, #dfa56c20 0 1px, transparent 1px 8px),
-    repeating-linear-gradient(45deg, #dfa56c20 0 1px, transparent 1px 8px);
+  --back-trim: #f7d5a8;
+  --back-art: url('../public/assets/ui/ember-back.webp');
 }
 
 :is(
@@ -86,40 +81,34 @@
     .card-back:not([data-card-back]),
   .appearance-card-preview:is([data-card-back='astral'], [data-card-back='ember'])
 ) {
-  background:
-    var(--back-pattern), radial-gradient(ellipse, var(--back-center), var(--back-field) 78%);
+  background: var(--back-field) var(--back-art) center / 100% 100% no-repeat;
   border-color: var(--back-trim);
   color: var(--back-trim);
-  box-shadow:
-    inset 0 0 0 3px var(--back-field),
-    inset 0 0 0 4px var(--back-trim);
+  box-shadow: inset 0 0 0 1px var(--back-field);
 }
 
 [data-profile-banner='astral'] {
   --banner-edge: #9f9bd8;
-  --banner-image:
-    radial-gradient(
-      ellipse 58% 162% at 92% 125%,
-      #7c80bf36 0 58%,
-      #c9c2ff96 58.5% 59%,
-      #9e96ff1f 59.5% 71%,
-      #afaaf859 71.5% 72%,
-      transparent 72.5%
-    ),
-    radial-gradient(
-      ellipse 82% 152% at 98% 144%,
-      transparent 70%,
-      #817bb948 70.5% 71%,
-      transparent 71.5%
-    ),
-    linear-gradient(118deg, #141b35, #232e55 62%, #393259);
+  --banner-image: #11172e url('../public/assets/ui/astral-banner.webp') right center / cover
+    no-repeat;
 }
 
 [data-profile-banner='ember'] {
   --banner-edge: #c69265;
-  --banner-image:
-    repeating-linear-gradient(135deg, #f0b89518 0 1px, transparent 1px 9px),
-    linear-gradient(120deg, #272338, #35263a 42%, #673b36);
+  --banner-image: #241722 url('../public/assets/ui/ember-banner.webp') right center / cover
+    no-repeat;
+}
+
+.player-avatar.frame-ember {
+  --frame-accent: #eab582;
+}
+
+.ember-frame-art {
+  position: absolute;
+  inset: -18%;
+  z-index: 1;
+  pointer-events: none;
+  background: url('../public/assets/ui/ember-frame.webp') center / 100% 100% no-repeat;
 }
 
 [data-profile-banner='astral-crest'] {
@@ -234,21 +223,21 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2px;
-  width: min(55px, 100%);
+  width: min(64px, 100%);
   aspect-ratio: 1;
   padding: 3px;
   border: 1px solid var(--theme-trim);
-  background: var(--theme-board);
+  background: var(--theme-board) var(--theme-board-art, none) center / 100% 100% no-repeat;
 }
 
 .appearance-board-preview > span {
   border: 1px solid var(--theme-cell-border);
-  background: var(--theme-cell);
+  background: var(--theme-tile, var(--theme-cell));
 }
 
 .appearance-card-preview {
-  width: min(43px, 100%);
-  height: 57px;
+  width: min(48px, 100%);
+  aspect-ratio: 3 / 4;
   padding: 0;
   border: 1px solid #9eabc1;
 }
@@ -256,6 +245,7 @@
 .appearance-card-preview .card-back-wordmark {
   font-size: 12px;
   letter-spacing: 0.04em;
+  max-width: calc(100% - 6px);
 }
 
 .appearance-banner-preview {

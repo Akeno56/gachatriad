@@ -22,15 +22,6 @@
   }
 }
 
-[data-astral-motion] .astral-art {
-  background-image: var(--astral-loop);
-}
-
-.astral-frame-preview-button {
-  grid-column: 1 / -1;
-  justify-self: start;
-}
-
 .frame-choice.is-locked .frame-astral {
   filter: none;
   opacity: 1;
