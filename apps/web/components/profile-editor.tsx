@@ -39,6 +39,7 @@ export function ProfileEditor({
   const [data, setData] = useState<CustomizationView | null>(null),
     [draft, setDraft] = useState<ProfileCustomization | null>(null),
     [tab, setTab] = useState<string>(initialTab),
+    [previewCrest, setPreviewCrest] = useState(false),
     [cardPicker, setCardPicker] = useState<'portrait' | number | null>(null),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
@@ -353,7 +354,10 @@ export function ProfileEditor({
                       choices={data.banners ?? COSMETIC_STYLES}
                       value={draft.bannerId}
                       disabled={busy}
-                      onChange={(style) => field('bannerId', style)}
+                      onChange={(style) => {
+                        setPreviewCrest(false);
+                        field('bannerId', style);
+                      }}
                       preview={(style) => (
                         <span
                           className="appearance-banner-preview"
@@ -362,8 +366,20 @@ export function ProfileEditor({
                         />
                       )}
                     />
-                    {data.banners?.some((banner) => !banner.unlocked) && (
-                      <p className="cosmetic-requirement">{ASTRAL_REWARDS.banner.requirement}</p>
+                    {data.banners?.some(
+                      (banner) => banner.id === ASTRAL_REWARDS.banner.id && !banner.unlocked,
+                    ) && (
+                      <>
+                        <p className="cosmetic-requirement">{ASTRAL_REWARDS.banner.requirement}</p>
+                        <Button
+                          variant="outline"
+                          aria-pressed={previewCrest}
+                          disabled={busy}
+                          onClick={() => setPreviewCrest((active) => !active)}
+                        >
+                          Preview Astral Crest
+                        </Button>
+                      </>
                     )}
                   </>
                 )}
@@ -371,7 +387,9 @@ export function ProfileEditor({
               <aside
                 className="menu-window profile-editor-preview"
                 aria-label="Profile preview"
-                data-profile-banner={draft.bannerId}
+                data-profile-banner={
+                  tab === 'banners' && previewCrest ? ASTRAL_REWARDS.banner.id : draft.bannerId
+                }
               >
                 <span className="profile-preview-label">Preview</span>
                 <Avatar card={card} name={profile.name} frameId={draft.frameId} />

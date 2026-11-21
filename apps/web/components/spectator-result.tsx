@@ -142,7 +142,7 @@ export function SpectatorResult({
         </div>
         <footer className="spectator-summary-actions">
           <Button variant="primary" onClick={onReturn}>
-            Back to lobbies
+            Back to main menu
           </Button>
           <Button variant="ghost" onClick={onClose}>
             Review board

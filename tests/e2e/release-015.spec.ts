@@ -286,7 +286,7 @@ test('gives spectators a central exit and opens saved match details after the li
     await watcher.page.goto(`/?spectate=${matchId}`);
     await expect(watcher.page.locator('.spectator-screen .board-cell')).toHaveCount(9);
     await expect(watcher.page.locator('.spectator-summary')).toHaveCount(0);
-    await expect(watcher.page.locator('.spectator-screen .card-back')).toHaveCount(10);
+    await expect(watcher.page.locator('.spectator-screen .card-back')).toHaveCount(4);
     const exit = watcher.page.locator('.spectator-exit');
     await expect(exit).toBeInViewport({ ratio: 1 });
     await watcher.page.screenshot({ path: info.outputPath('spectator-live-exit.png') });
@@ -295,7 +295,7 @@ test('gives spectators a central exit and opens saved match details after the li
     expect(exitBox.y + exitBox.height).toBeLessThanOrEqual(score.y);
     expect(Math.abs(exitBox.x + exitBox.width / 2 - score.x - score.width / 2)).toBeLessThan(3);
     await exit.click();
-    await expect(watcher.page).toHaveURL(/\/lobbies\/?$/);
+    await expect(watcher.page).toHaveURL(/\/play\/?$/);
     await watcher.page.goto(`/?spectate=${matchId}`);
     await expect(watcher.page.locator('.board-cell')).toHaveCount(9);
     await platform.store.resign(b.profile.id, matchId!);
@@ -322,9 +322,9 @@ test('gives spectators a central exit and opens saved match details after the li
     }
     await expect(result.locator('.spectator-rating').nth(0)).toContainText('+16 Elo');
     await expect(result.locator('.spectator-rating').nth(1)).toContainText('-16 Elo');
-    await expect(result.locator('.rule-badges')).toContainText('Closed');
+    await expect(result.locator('.rule-badges')).toContainText('Three Open');
     await expect(
-      result.getByRole('button', { name: 'Back to lobbies', exact: true }),
+      result.getByRole('button', { name: 'Back to main menu', exact: true }),
     ).toBeInViewport({ ratio: 1 });
     await fits(watcher.page);
     await watcher.page.screenshot({ path: info.outputPath('spectator-result-en.png') });
@@ -340,11 +340,11 @@ test('gives spectators a central exit and opens saved match details after the li
     await expect(result).toBeVisible();
     await expect(result.getByText('Deck de départ', { exact: true })).toHaveCount(2);
     await fits(watcher.page);
-    const back = result.getByRole('button', { name: 'Retour aux salons', exact: true });
+    const back = result.getByRole('button', { name: 'Retour au menu principal', exact: true });
     await expect(back).toBeInViewport({ ratio: 1 });
     await watcher.page.screenshot({ path: info.outputPath('spectator-result-fr.png') });
     await back.click();
-    await expect(watcher.page).toHaveURL(/\/lobbies\/?$/);
+    await expect(watcher.page).toHaveURL(/\/play\/?$/);
     expect((await platform.store.profile(watcher.actor)).activeMatchId).toBeNull();
   } finally {
     await a.context.close();
@@ -377,7 +377,7 @@ test('shows spectators a draw with no Elo change and both original decks', async
     ]);
     await expect(result.locator('.spectator-final-score')).toContainText('5 — 5');
     await expect(
-      result.getByRole('button', { name: 'Back to lobbies', exact: true }),
+      result.getByRole('button', { name: 'Back to main menu', exact: true }),
     ).toBeInViewport({ ratio: 1 });
     await watcher.page.screenshot({ path: info.outputPath('spectator-draw.png') });
   } finally {
@@ -387,7 +387,7 @@ test('shows spectators a draw with no Elo change and both original decks', async
   }
 });
 
-test('shows saved win and draw rewards and returns to lobbies without awarding twice', async ({
+test('shows saved win and draw rewards and returns to the main menu without awarding twice', async ({
   browser,
 }, info) => {
   const a = await player(browser),
@@ -417,7 +417,7 @@ test('shows saved win and draw rewards and returns to lobbies without awarding t
         ratio: 1,
       });
       await expect(
-        result.getByRole('button', { name: 'Back to lobbies', exact: true }),
+        result.getByRole('button', { name: 'Back to main menu', exact: true }),
       ).toBeInViewport({ ratio: 1 });
       await a.page.screenshot({
         path: info.outputPath(target === 'draw' ? 'draw-result.png' : 'complete-victory.png'),
@@ -427,8 +427,9 @@ test('shows saved win and draw rewards and returns to lobbies without awarding t
       expect((await platform.store.profile(a.actor)).prisms - before.prisms).toBe(
         actual.prismReward,
       );
-      await result.getByRole('button', { name: 'Back to lobbies', exact: true }).click();
-      await expect(a.page.getByRole('heading', { name: 'Find a table' })).toBeVisible();
+      await result.getByRole('button', { name: 'Back to main menu', exact: true }).click();
+      await expect(a.page).toHaveURL(/\/play\/?$/);
+      await expect(a.page.locator('.tavern-sign')).toBeVisible();
       expect((await platform.store.profile(a.actor)).deck).toEqual(a.profile.deck);
     }
   } finally {
@@ -455,7 +456,7 @@ test('keeps custom Trade One settlement in the results and blocks leaving until 
     const result = a.page.locator('.result-v15[open]');
     await expect(result.locator('.trade-choices button')).toHaveCount(5);
     await expect(
-      result.getByRole('button', { name: 'Back to lobbies', exact: true }),
+      result.getByRole('button', { name: 'Back to main menu', exact: true }),
     ).toBeDisabled();
     await expect(result.getByRole('button', { name: 'Queue again', exact: true })).toHaveCount(0);
     await a.page.screenshot({ path: info.outputPath('trade-one-result.png') });
@@ -465,11 +466,12 @@ test('keeps custom Trade One settlement in the results and blocks leaving until 
     await result.getByRole('button', { name: `Claim ${card.name}`, exact: true }).click();
     await expect(result.locator('.trade-choices')).toHaveCount(0);
     await expect(
-      result.getByRole('button', { name: 'Back to lobbies', exact: true }),
+      result.getByRole('button', { name: 'Back to main menu', exact: true }),
     ).toBeEnabled();
     expect((await platform.store.profile(a.actor)).inventory[card.id].quantity).toBe(before + 1);
-    await result.getByRole('button', { name: 'Back to lobbies', exact: true }).click();
-    await expect(a.page.getByRole('heading', { name: 'Find a table' })).toBeVisible();
+    await result.getByRole('button', { name: 'Back to main menu', exact: true }).click();
+    await expect(a.page).toHaveURL(/\/play\/?$/);
+    await expect(a.page.locator('.tavern-sign')).toBeVisible();
   } finally {
     await a.context.close();
     await b.context.close();

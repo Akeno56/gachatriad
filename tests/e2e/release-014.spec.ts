@@ -308,6 +308,7 @@ test('highlights the current navigation page with exported trailing-slash URLs',
   try {
     for (const route of [
       '/',
+      '/play',
       '/cards',
       '/lobbies',
       '/collection',
@@ -321,7 +322,7 @@ test('highlights the current navigation page with exported trailing-slash URLs',
       await c.page.goto(route === '/' ? '/' : `${route}/`);
       const active = c.page.locator('.system-bar a[aria-current="page"]');
       await expect(active).toHaveCount(1);
-      await expect(active).toHaveAttribute('href', route === '/' ? '/' : `${route}/`);
+      await expect(active).toHaveAttribute('href', route === '/' ? '/play/' : `${route}/`);
     }
     await french(c.page);
     await c.page.reload();

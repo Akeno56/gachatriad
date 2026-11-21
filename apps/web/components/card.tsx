@@ -11,7 +11,6 @@ import {
 import { UNIVERSES } from '@gacha-triad/shared';
 import { artworkPath } from '../lib/artwork';
 import { ElementIcon } from './element-icon';
-import { assetPath } from '../lib/connection';
 
 export function CardArt({ card }: { card: CardData }) {
   const [failed, setFailed] = useState(false);
@@ -63,10 +62,9 @@ export function Card({
     return (
       <LocaleView>
         <div className={`playing-card card-back ${compact ? 'compact' : ''}`}>
-          <div className="back-emblem" aria-hidden="true">
-            <img src={assetPath('/assets/ui/triad-logo.webp')} alt="" draggable={false} />
-          </div>
-          <small>GACHA TRIAD</small>
+          <span className="card-back-wordmark" translate="no">
+            GACHA TRIAD
+          </span>
         </div>
       </LocaleView>
     );

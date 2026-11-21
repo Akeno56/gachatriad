@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from './session';
 export function ActiveBattleReminder() {
   const { profile } = useSession(),
-    pathname = usePathname(),
+    pathname = usePathname().replace(/\/+$/, '') || '/',
     router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null),
     seen = useRef('');
@@ -14,7 +14,7 @@ export function ActiveBattleReminder() {
   const pending = profile?.pendingTrade;
   useEffect(() => {
     const target = pending?.matchId ?? profile?.activeMatchId;
-    if (!target || pathname === '/') {
+    if (!target || pathname === '/' || pathname === '/play') {
       setOpen(false);
       seen.current = '';
       return;

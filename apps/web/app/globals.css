@@ -867,40 +867,16 @@ kbd {
   align-items: center;
   justify-content: center;
   padding: 10px;
+  color: #becbe0;
   box-shadow:
     inset 0 0 0 4px #172342,
     inset 0 0 0 5px #7181a6;
 }
-.back-emblem {
-  border: 1px solid #b2a77d;
-  transform: rotate(45deg);
-  width: 43px;
-  height: 43px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.back-emblem span {
-  font:
-    25px Georgia,
-    serif;
-  color: #cfbd86;
-  transform: rotate(-45deg);
-  letter-spacing: -9px;
-  position: absolute;
-  top: 3px;
-  left: 7px;
-}
-.back-emblem span + span {
-  top: 13px;
-  left: 19px;
-}
-.card-back > small {
-  font: 8px var(--pixel);
-  letter-spacing: 1px;
-  margin-top: 24px;
-  color: #becbe0;
+.card-back-wordmark {
+  font: 15px/1 var(--pixel);
+  letter-spacing: 0.09em;
+  text-align: center;
+  text-shadow: 0 1px #0a1223;
 }
 .capture-badge {
   position: absolute;
@@ -2352,23 +2328,8 @@ dialog::backdrop {
   .compact .ownership-mark {
     display: none;
   }
-  .compact.card-back .back-emblem {
-    width: 23px;
-    height: 23px;
-  }
-  .compact.card-back .back-emblem span {
-    font-size: 14px;
-    top: 0;
-    left: 4px;
-  }
-  .compact.card-back .back-emblem span + span {
-    top: 5px;
-    left: 10px;
-  }
-  .compact.card-back > small {
-    font-size: 5px;
-    margin-top: 13px;
-    letter-spacing: 0.5px;
+  .compact .card-back-wordmark {
+    font-size: 11px;
   }
   .cpu-hand .compact .card-values {
     transform: scale(0.55);

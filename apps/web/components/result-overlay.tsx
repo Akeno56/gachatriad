@@ -264,11 +264,7 @@ export function ResultOverlay({
               Watch replay
             </Link>
             <Button disabled={busy || match.trade.pending} onClick={onReturn}>
-              {match.mode === 'solo'
-                ? 'Back to the tavern'
-                : match.mode === 'correspondence'
-                  ? 'Back to correspondence'
-                  : 'Back to lobbies'}
+              Back to main menu
             </Button>
           </div>
           <div className="result-secondary-actions">

@@ -89,63 +89,10 @@
   background:
     var(--back-pattern), radial-gradient(ellipse, var(--back-center), var(--back-field) 78%);
   border-color: var(--back-trim);
+  color: var(--back-trim);
   box-shadow:
     inset 0 0 0 3px var(--back-field),
     inset 0 0 0 4px var(--back-trim);
-}
-
-:is(.game-shell .card-back, .appearance-card-preview) .back-emblem {
-  border-color: var(--back-trim, #b2a77d);
-}
-
-:is(
-  .game-shell[data-card-back='astral'] .card-back:not([data-card-back]),
-  .appearance-card-preview[data-card-back='astral']
-) {
-  .back-emblem {
-    --astral-compass: polygon(
-      50% 0,
-      59% 33%,
-      82% 18%,
-      67% 41%,
-      100% 50%,
-      67% 59%,
-      82% 82%,
-      59% 67%,
-      50% 100%,
-      41% 67%,
-      18% 82%,
-      33% 59%,
-      0 50%,
-      33% 41%,
-      18% 18%,
-      41% 33%
-    );
-    border-color: transparent;
-  }
-
-  .back-emblem::before,
-  .back-emblem::after {
-    position: absolute;
-    transform: rotate(-45deg);
-    clip-path: var(--astral-compass);
-    content: '';
-  }
-
-  .back-emblem::before {
-    inset: -36%;
-    background: linear-gradient(150deg, #f0dba8, #b5a4e9 60%, #686199);
-  }
-
-  .back-emblem::after {
-    inset: -24%;
-    background: linear-gradient(140deg, #4a3d74, #211f40);
-  }
-
-  .back-emblem img {
-    position: relative;
-    z-index: 1;
-  }
 }
 
 [data-profile-banner='astral'] {
@@ -360,13 +307,9 @@
   border: 1px solid #9eabc1;
 }
 
-.appearance-card-preview[data-card-back='classic'] .back-emblem {
-  border-color: #b2a77d;
-}
-
-.appearance-card-preview .back-emblem {
-  width: 19px;
-  height: 19px;
+.appearance-card-preview .card-back-wordmark {
+  font-size: 12px;
+  letter-spacing: 0.04em;
 }
 
 .appearance-banner-preview {

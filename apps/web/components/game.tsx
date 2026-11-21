@@ -68,6 +68,7 @@ export function Game() {
         !last?.spectator &&
         last?.mode !== 'correspondence' &&
         last?.id === matchId &&
+        last.id !== leftResultId.current &&
         last.status === 'complete' &&
         !last.trade.pending
       )
@@ -277,23 +278,25 @@ export function Game() {
       setBusy(false);
     }
   }
-  function menu() {
+  function returnToMainMenu() {
     currentMatchId.current = null;
     setWatchingId(null);
     setMatch(null);
     setMatchId(null);
     setSelected(null);
     setDraft([]);
-    history.replaceState(history.state, '', appPath('/'));
+    history.replaceState(null, '', appPath('/play/'));
+    window.scrollTo(0, 0);
   }
   const resultAction = useRef(false);
-  async function leaveResult(destination: 'tavern' | 'lobbies' | 'queue') {
+  async function leaveResult(destination: 'menu' | 'queue') {
     if (!match || match.trade.pending || resultAction.current) return;
     resultAction.current = true;
     setBusy(true);
     setError('');
     try {
       await api(`/matches/${match.id}/leave`, {});
+      leftResultId.current = match.id;
       const next =
         destination === 'queue'
           ? await api<{ matchId: string | null }>('/lobbies', {
@@ -301,12 +304,7 @@ export function Game() {
               allowBots: match.mode === 'casual' || match.mode === 'roulette',
             })
           : null;
-      if (destination === 'lobbies') {
-        location.assign(appPath('/lobbies'));
-        return;
-      }
-      leftResultId.current = match.id;
-      menu();
+      returnToMainMenu();
       if (next?.matchId) setMatchId(next.matchId);
       await refresh();
     } catch (e) {
@@ -409,12 +407,8 @@ export function Game() {
                 {match.trade.rule === 'one' && <span>Trade One</span>}
               </div>
               {match.spectator && (
-                <Button
-                  className="spectator-exit"
-                  variant="primary"
-                  onClick={() => location.assign(appPath('/lobbies'))}
-                >
-                  Back to lobbies
+                <Button className="spectator-exit" variant="primary" onClick={returnToMainMenu}>
+                  Back to main menu
                 </Button>
               )}
               <div className="battle-actions">
@@ -437,18 +431,19 @@ export function Game() {
                 <button className="text-button" onClick={() => setDialog('rules')}>
                   How to play
                 </button>
-                {correspondence && (
+                {correspondence && match.status === 'playing' && (
                   <button className="outline-button" onClick={returnToCorrespondence}>
                     Back to correspondence
                   </button>
                 )}
-                {!match.spectator && (!correspondence || match.status === 'playing') && (
+                {!match.spectator && (
                   <button
                     className="text-button"
                     onClick={() => {
                       if (match.status !== 'complete') setDialog('exit');
                       else if (match.trade.pending) setResultOpen(true);
-                      else void leaveResult(match.mode === 'solo' ? 'tavern' : 'lobbies');
+                      else if (correspondence) returnToMainMenu();
+                      else void leaveResult('menu');
                     }}
                     disabled={busy}
                   >
@@ -458,9 +453,7 @@ export function Game() {
                         : 'Leave match'
                       : match.trade.pending
                         ? 'View result'
-                        : match.mode === 'solo'
-                          ? 'Back to the tavern'
-                          : 'Back to lobbies'}
+                        : 'Back to main menu'}
                   </button>
                 )}
               </div>
@@ -930,7 +923,7 @@ export function Game() {
           <SpectatorResult
             match={match}
             onClose={() => setResultOpen(false)}
-            onReturn={() => location.assign(appPath('/lobbies'))}
+            onReturn={returnToMainMenu}
           />
         )}
         {!match?.spectator && match?.status === 'complete' && !resolving && resultOpen && (
@@ -940,11 +933,7 @@ export function Game() {
             onClose={() => setResultOpen(false)}
             onPlayAgain={start}
             onQueueAgain={() => void leaveResult('queue')}
-            onReturn={
-              correspondence
-                ? returnToCorrespondence
-                : () => void leaveResult(match.mode === 'solo' ? 'tavern' : 'lobbies')
-            }
+            onReturn={correspondence ? returnToMainMenu : () => void leaveResult('menu')}
             onClaim={(cardId) => action(`/matches/${match.id}/claim`, { cardId })}
             onRematch={() => action(`/matches/${match.id}/rematch`, {})}
             onCancelRematch={() => action(`/matches/${match.id}/rematch`, { cancel: true })}

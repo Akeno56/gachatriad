@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { COSMETIC_STYLES, type CosmeticStyle } from '@gacha-triad/shared/customization';
-import { assetPath } from '../lib/connection';
 import { LocaleView } from './i18n';
 import { Button, GameDialog } from './ui';
 
@@ -129,8 +128,8 @@ export function AppearanceSettings({
             data-card-back={id}
             aria-hidden="true"
           >
-            <span className="back-emblem">
-              <img src={assetPath('/assets/ui/triad-logo.webp')} alt="" draggable={false} />
+            <span className="card-back-wordmark" translate="no">
+              GACHA TRIAD
             </span>
           </span>
         )}

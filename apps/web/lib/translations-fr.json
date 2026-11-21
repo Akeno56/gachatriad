@@ -42,7 +42,7 @@
   "Turns last 60 seconds. The first missed turn auto-plays a card. Miss your next turn too and you lose immediately. A manual move resets the warning. Disconnecting for 120 seconds forfeits. In Draft, 120 seconds without revealing or choosing cards also forfeits. Ranked and Draft games against bots never change Elo. Trade One selection lasts two minutes, then a losing card is chosen automatically. A deck contains five different cards: at most one 5★ and one 4★, or two 4★ if it has no 5★. Local bots are clearly labeled [BOT] and use the same rules and inventory transfers.": "Les tours durent 60 secondes. Au premier tour manqué, une carte est jouée automatiquement. Si vous manquez également votre tour suivant, vous perdez immédiatement. Un coup manuel réinitialise l’avertissement. Une déconnexion de 120 secondes entraîne l’abandon. En Draft, 120 secondes sans révéler ni choisir de cartes entraînent également l’abandon. Les parties Ranked et Draft contre les bots ne changent jamais l’Elo. La sélection Trade One dure deux minutes, puis une carte du perdant est choisie automatiquement. Un deck contient cinq personnages différents : au plus une 5★ et une 4★, ou deux 4★ sans 5★. Les bots sont identifiés par [BOT] et suivent les mêmes règles et transferts de cartes.",
   "Spectate": "Observer",
   "Spectating": "Observation",
-  "Back to lobbies": "Retour aux salons",
+  "Back to main menu": "Retour au menu principal",
   "Players are drafting": "Les joueurs préparent leur Draft",
   "The battle starts when both hands are ready. Draft choices stay private.": "La partie commence lorsque les deux mains sont prêtes. Les choix du Draft restent privés.",
   "Battle": "Partie",

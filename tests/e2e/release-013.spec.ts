@@ -226,14 +226,10 @@ test('ignores a delayed battle response after returning to the menu', async ({ b
       await gate;
       await route.fulfill({ response });
     });
-    await platform.app.inject({
-      method: 'POST',
-      url: '/api/profile/avatar',
-      headers: { authorization: `Bearer ${c.token}` },
-      payload: { cardId: null },
-    });
+    await c.page.evaluate(() => window.dispatchEvent(new Event('online')));
     await held;
-    await c.page.getByRole('button', { name: 'Back to the tavern', exact: true }).click();
+    await c.page.getByRole('button', { name: 'Back to main menu', exact: true }).click();
+    await expect(c.page).toHaveURL(/\/play\/?$/);
     await expect(c.page.locator('.game-title')).toBeVisible();
     const delivered = c.page.waitForResponse(
       (response) => new URL(response.url()).pathname === `/api/matches/${matchId}`,

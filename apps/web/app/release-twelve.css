@@ -16,16 +16,6 @@
   height: 46px;
   object-fit: contain;
 }
-.back-emblem img {
-  width: 90%;
-  height: 90%;
-  object-fit: contain;
-  filter: drop-shadow(0 3px 5px #000a);
-}
-.card-back .back-emblem {
-  display: grid;
-  place-items: center;
-}
 .holo-bonus-value {
   color: #ffe18d;
   text-shadow: 0 0 6px #e2c66799;

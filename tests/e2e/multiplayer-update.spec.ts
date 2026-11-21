@@ -396,6 +396,12 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
     const fromPlay = page.getByRole('dialog', { name: 'Appearance', exact: true });
     await expect(fromPlay.getByRole('group', { name: 'Board theme' })).toBeVisible();
     await expect(fromPlay.getByRole('group', { name: 'Card back' })).toBeVisible();
+    await expect(fromPlay.locator('.appearance-card-preview')).toHaveText([
+      'GACHA TRIAD',
+      'GACHA TRIAD',
+      'GACHA TRIAD',
+    ]);
+    await expect(fromPlay.locator('.appearance-card-preview').locator('img, svg')).toHaveCount(0);
     await page.keyboard.press('Escape');
     await expect(customize).toBeFocused();
     const match = await platform.store.solo(a.profile.id, 'easy', STANDARD);
@@ -437,13 +443,8 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
     await page.reload();
     await expect(board).toHaveCSS('background-color', 'rgb(23, 20, 41)');
     await expect(hiddenCard).not.toHaveCSS('background-image', originalBack);
-    await expect
-      .poll(() =>
-        hiddenCard
-          .locator('.back-emblem')
-          .evaluate((emblem) => getComputedStyle(emblem, '::before').clipPath),
-      )
-      .toMatch(/^polygon/);
+    await expect(hiddenCard).toHaveText('GACHA TRIAD');
+    await expect(hiddenCard.locator('img, svg')).toHaveCount(0);
     if (info.project.name === 'desktop') {
       for (const [width, height] of [
         [1280, 720],
@@ -514,6 +515,32 @@ test('previews and equips season rewards from the Journal in English and French'
     const crest = editor.locator('input[value="astral-crest"]');
     await expect(crest).toBeDisabled();
     await expect(editor).toContainText('Complete 15 full rated games in Astral');
+    await editor.getByRole('button', { name: 'Preview Astral Crest', exact: true }).click();
+    const profilePreview = editor.locator('.profile-editor-preview');
+    await expect(profilePreview).toHaveAttribute('data-profile-banner', 'astral-crest');
+    await expect
+      .poll(() =>
+        profilePreview.evaluate((preview) => getComputedStyle(preview, '::before').animationName),
+      )
+      .toBe('astral-crest-light');
+    await expect(editor.getByRole('button', { name: 'Save profile' })).toBeDisabled();
+    await editor.getByRole('tab', { name: 'Portrait frames' }).click();
+    const lockedFrame = editor.getByRole('button', { name: 'Astral portrait frame', exact: true });
+    const lockedFrameLight = lockedFrame.locator('.astral-frame-light');
+    await expect(lockedFrame).toBeDisabled();
+    await expect(lockedFrameLight).toHaveCSS('animation-name', 'astral-frame-glow');
+    await expect(profilePreview).toHaveAttribute('data-profile-banner', 'classic');
+    await page.evaluate(() => document.fonts.ready);
+    const setFrameTime = (time: number) =>
+      lockedFrameLight.evaluate((light, seek) => {
+        const [animation] = light.getAnimations();
+        animation.pause();
+        animation.currentTime = seek;
+      }, time);
+    await setFrameTime(0);
+    const lavender = await lockedFrame.screenshot();
+    await setFrameTime(1768);
+    expect((await lockedFrame.screenshot()).equals(lavender)).toBe(false);
 
     await platform.db.tx(async (sql) => {
       await sql(
@@ -545,7 +572,7 @@ test('previews and equips season rewards from the Journal in English and French'
     const crestAnimation = () =>
       banner.evaluate((element) => getComputedStyle(element, '::before').animationName);
     await expect.poll(crestAnimation).toBe('astral-crest-light');
-    await expect(frameLight).toHaveCSS('animation-name', 'astral-frame-sweep');
+    await expect(frameLight).toHaveCSS('animation-name', 'astral-frame-glow');
     await banner.screenshot({ path: info.outputPath('astral-crest-banner.png') });
 
     await page.emulateMedia({ reducedMotion: 'reduce' });

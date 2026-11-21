@@ -228,7 +228,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                       aria-label="Main navigation"
                     >
                       {[
-                        { href: '/', label: 'Play' },
+                        { href: '/play', label: 'Play' },
                         { href: '/cards', label: 'Cards' },
                         { href: '/lobbies', label: 'Lobbies' },
                         { href: '/collection', label: 'Collection' },
@@ -242,7 +242,11 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                         <Link
                           key={item.href}
                           href={item.href}
-                          aria-current={pathname === item.href ? 'page' : undefined}
+                          aria-current={
+                            pathname === item.href || (item.href === '/play' && pathname === '/')
+                              ? 'page'
+                              : undefined
+                          }
                           onClick={() => {
                             play('menu');
                             setNavigationOpen(false);
