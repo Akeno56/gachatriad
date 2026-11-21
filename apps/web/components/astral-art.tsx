@@ -2,16 +2,21 @@ import { ASTRAL_REWARDS, type ProfileBanner } from '@gacha-triad/shared/customiz
 import type { CSSProperties } from 'react';
 import { assetPath } from '../lib/connection';
 
-export function AstralArt({ kind }: { kind: 'frame' | 'crest' }) {
-  const path = assetPath(`/assets/ui/astral-${kind}`);
-  const version = kind === 'frame' ? '?v=2' : '';
+export function AnimatedCosmeticArt({
+  asset,
+}: {
+  asset: 'astral-frame' | 'astral-crest' | 'regalia-frame' | 'regalia-banner';
+}) {
+  const path = assetPath(`/assets/ui/${asset}`);
+  const version = asset === 'astral-frame' || asset.startsWith('regalia-') ? '?v=2' : '';
+  const placement = asset.endsWith('-frame') ? 'frame' : 'banner';
   return (
     <span
-      className={`astral-art astral-${kind}-art`}
+      className={`cosmetic-animation cosmetic-animation-${placement} ${asset}-art`}
       style={
         {
-          '--astral-poster': `url("${path}.webp${version}")`,
-          '--astral-loop': `url("${path}-loop.webp${version}")`,
+          '--cosmetic-poster': `url("${path}.webp${version}")`,
+          '--cosmetic-loop': `url("${path}-loop.webp${version}")`,
         } as CSSProperties
       }
       aria-hidden="true"
@@ -19,6 +24,9 @@ export function AstralArt({ kind }: { kind: 'frame' | 'crest' }) {
   );
 }
 
-export function AstralCrestArt({ bannerId }: { bannerId?: ProfileBanner }) {
-  return bannerId === ASTRAL_REWARDS.banner.id ? <AstralArt kind="crest" /> : null;
+export function ProfileBannerArt({ bannerId }: { bannerId?: ProfileBanner }) {
+  if (bannerId === 'regalia') return <AnimatedCosmeticArt asset="regalia-banner" />;
+  return bannerId === ASTRAL_REWARDS.banner.id ? (
+    <AnimatedCosmeticArt asset="astral-crest" />
+  ) : null;
 }

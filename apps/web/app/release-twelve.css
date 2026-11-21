@@ -27,7 +27,7 @@
   justify-content: center;
   gap: 1px;
 }
-.chat-message .message-heading > a {
+.chat-message .message-heading > .chat-player-name {
   max-width: 100%;
 }
 .main-chat .chat-messages {

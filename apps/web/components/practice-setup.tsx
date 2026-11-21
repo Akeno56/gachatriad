@@ -1,14 +1,13 @@
 'use client';
 import { useRef, useState } from 'react';
 import { BOT_STYLES } from '@gacha-triad/shared/bots';
-import { PRESETS, UNRANKED_RULES, type CpuStyle, type Rules } from '@gacha-triad/engine';
+import { UNRANKED_RULES, type CpuStyle, type Rules } from '@gacha-triad/engine';
 import { LocaleView } from './i18n';
 import { Button, GameDialog } from './ui';
 import { api } from '../lib/platform';
 import { useSession } from './session';
-import { RuleToggles, RuleVisibility } from './rule-options';
+import { MatchRules, type MatchRulesPreset } from './rule-options';
 
-const practicePresets = PRESETS.filter((preset) => preset.id !== 'unranked');
 export function PracticeSetup({
   open,
   onClose,
@@ -21,7 +20,7 @@ export function PracticeSetup({
   const { profile, refresh } = useSession();
   const [difficulty, setDifficulty] = useState('normal'),
     [style, setStyle] = useState<CpuStyle>('balanced'),
-    [preset, setPreset] = useState('standard'),
+    [preset, setPreset] = useState<MatchRulesPreset>('standard'),
     [rules, setRules] = useState<Rules>(UNRANKED_RULES);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState('');
@@ -47,10 +46,6 @@ export function PracticeSetup({
       lock.current = false;
       setBusy(false);
     }
-  }
-  function customize(next: Rules) {
-    setPreset('custom');
-    setRules(next);
   }
   return (
     <LocaleView>
@@ -98,34 +93,17 @@ export function PracticeSetup({
               ))}
             </select>
           </label>
-          <label>
-            Rules
-            <select
-              name="practice-rules"
-              value={preset}
-              disabled={busy}
-              onChange={(e) => {
-                const next = practicePresets.find((item) => item.id === e.target.value);
-                if (next) {
-                  setPreset(next.id);
-                  setRules(next.rules);
-                }
-              }}
-            >
-              {preset === 'custom' && <option value="custom">Custom</option>}
-              {practicePresets.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <RuleVisibility rules={rules} onChange={customize} disabled={busy} />
         </div>
         <p className="practice-style-note">
           {BOT_STYLES.find((item) => item.id === style)!.description}
         </p>
-        <RuleToggles rules={rules} onChange={customize} disabled={busy} />
+        <MatchRules
+          preset={preset}
+          onPreset={setPreset}
+          rules={rules}
+          onChange={setRules}
+          disabled={busy}
+        />
         {error && (
           <p className="error-message" role="alert">
             {error}

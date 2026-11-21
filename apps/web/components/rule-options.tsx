@@ -1,12 +1,65 @@
 import type { ReactNode } from 'react';
-import type { Rules } from '@gacha-triad/engine';
+import { UNRANKED_RANDOM_RULES, UNRANKED_RULES, type Rules } from '@gacha-triad/engine';
 import { LocaleView } from './i18n';
+import { ruleNames } from '../lib/rules';
 
 type RuleProps = {
   rules: Rules;
   onChange: (rules: Rules) => void;
   disabled?: boolean;
 };
+export const MATCH_RULE_PRESETS = {
+  standard: { label: 'Standard rules', rules: UNRANKED_RULES },
+  random: { label: 'Random deck rules', rules: UNRANKED_RANDOM_RULES },
+} as const;
+export type MatchRulesPreset = keyof typeof MATCH_RULE_PRESETS | 'custom';
+
+export function MatchRules({
+  preset,
+  onPreset,
+  rules,
+  onChange,
+  disabled,
+}: RuleProps & { preset: MatchRulesPreset; onPreset: (preset: MatchRulesPreset) => void }) {
+  return (
+    <LocaleView>
+      <div className="match-rules">
+        <label>
+          Rules
+          <select
+            name="rules-preset"
+            value={preset}
+            disabled={disabled}
+            onChange={(event) => {
+              const choice = event.target.value as MatchRulesPreset;
+              onPreset(choice);
+              if (choice !== 'custom') onChange(MATCH_RULE_PRESETS[choice].rules);
+            }}
+          >
+            {Object.entries(MATCH_RULE_PRESETS).map(([id, choice]) => (
+              <option key={id} value={id}>
+                {choice.label}
+              </option>
+            ))}
+            <option value="custom">Custom rules</option>
+          </select>
+        </label>
+        {preset === 'custom' ? (
+          <>
+            <RuleVisibility rules={rules} onChange={onChange} disabled={disabled} />
+            <RuleToggles rules={rules} onChange={onChange} disabled={disabled} />
+          </>
+        ) : (
+          <div className="rule-badges">
+            {ruleNames(rules).map((rule) => (
+              <span key={rule}>{rule}</span>
+            ))}
+          </div>
+        )}
+      </div>
+    </LocaleView>
+  );
+}
 
 export function RuleVisibility({ rules, onChange, disabled }: RuleProps) {
   return (

@@ -223,9 +223,39 @@ def bevel_distance(x, y, half_width, half_height, chamfer):
     )
 
 
+def ribbon_field(x, y, theme, palette, phase=0.0):
+    field = np.full(x.shape + (3,), palette["base"], dtype=np.float32) / 255
+    folds = weave(x * 1.4, y * 0.83, phase)
+    if theme == "eclipse":
+        domain = y + 0.42 * x + 0.14 * np.sin(5.6 * x - 0.7) + 0.11 * folds
+        for center in (0.11, 0.42, 0.71, 1.0, 1.29):
+            edge = domain - center
+            light(field, gaussian(edge, 0.12) * 0.34, palette["body"])
+            light(field, gaussian(edge - 0.02, 0.013) * 0.25, palette["light"])
+            light(field, gaussian(edge + 0.052, 0.021) * 0.16, palette["echo"])
+        return field
+    # Gold threads follow two crossing ribbons across the enamel.
+    for direction in (-1, 1):
+        domain = y + direction * 0.40 * x + 0.09 * folds
+        flow = 0.42 + 0.28 * np.cos(9 * x + direction * 5 * y - phase + direction)
+        for center in (-0.14, 0.13, 0.40, 0.67, 0.94, 1.21, 1.48):
+            edge = domain - center
+            light(field, gaussian(edge, 0.09) * 0.32, palette["body"])
+            light(field, gaussian(edge - 0.033, 0.009) * flow, palette["metal"])
+            light(field, gaussian(edge + 0.019, 0.012) * 0.20, palette["echo"])
+    return field
+
+
+def finish_banner(field, x):
+    # Keep the portrait, name and long bios readable against the banner.
+    return field * (0.54 + 0.46 * smoothstep(0.1, 0.88, x))[..., None]
+
+
 def theme_banner(x, y, theme, palette):
     if theme == "astral":
         return aurora(x, y, 4.3, ASTRAL_RIBBONS)
+    if theme in ("eclipse", "regalia"):
+        return finish_banner(ribbon_field(x, y, theme, palette), x)
     field = theme_plate(x, y, theme, palette, 0.64 if theme == "slate" else 1.0)
     # Leave the profile name and bio on the dark end of the painting.
     field *= (0.61 + 0.39 * smoothstep(0.15, 0.78, x))[..., None]
@@ -250,9 +280,13 @@ def theme_back(x, y, theme, palette):
     # Reflect the enamel about both axes so the back reads in either direction.
     end_x = np.where(y < 0.5, x, 1 - x)
     end_y = np.minimum(y, 1 - y) * 2
-    end_field = theme_plate(end_x, end_y, theme, palette, 0.96)
     base = 0.65 * np.array(palette["base"], dtype=np.float32) / 255
-    field = base + (end_field - base) * smoothstep(0.028, 0.15, np.abs(y - 0.5))[..., None]
+    if theme in ("eclipse", "regalia"):
+        field = ribbon_field(x, y, theme, palette)
+        field = base + (field - base) * (1 - 0.66 * gaussian(y - 0.5, 0.105))[..., None]
+    else:
+        end_field = theme_plate(end_x, end_y, theme, palette, 0.96)
+        field = base + (end_field - base) * smoothstep(0.028, 0.15, np.abs(y - 0.5))[..., None]
     edge = bevel_distance(x, y, 0.455, 0.464, 0.072)
     light(field, gaussian(edge, 0.006) * 0.7, palette["metal"])
     if THEME_DETAIL[theme] > 0:
@@ -268,7 +302,7 @@ def theme_back(x, y, theme, palette):
     return field
 
 
-def static_frame(x, y, theme, palette):
+def static_frame(x, y, theme, palette, phase=None):
     detail = THEME_DETAIL[theme]
     edge = bevel_distance(x, y, 0.394 + 0.004 * detail, 0.394 + 0.004 * detail, 0.046)
     angle = np.arctan2(y - 0.5, x - 0.5)
@@ -297,8 +331,22 @@ def static_frame(x, y, theme, palette):
             light(field, setting * 0.86, palette["metal"])
             light(field, gaussian(corner_setting, 0.024) * 0.66, palette["light"])
             alpha = np.maximum(alpha, setting)
+    if phase is not None:
+        angle = np.arctan2(y - 0.5, x - 0.5)
+        gleam = (0.5 + 0.5 * np.cos(2 * angle - phase)) ** 3
+        light(field, gaussian(edge + 0.013, 0.014) * gleam * 0.9, palette["metal"])
+        light(field, gaussian(edge - 0.027, 0.023) * gleam * 0.73, (255, 211, 144))
+        alpha = np.maximum(alpha, gaussian(edge - 0.033, 0.029) * gleam * 0.68)
     alpha *= opening * (1 - smoothstep(0.469, 0.495, corner))
     return np.dstack((field, alpha))
+
+
+def regalia_banner(x, y, phase):
+    return Image.fromarray(np.uint8(finish_banner(ribbon_field(x, y, "regalia", PALETTES["regalia"], phase), x) * 255))
+
+
+def regalia_frame(x, y, phase):
+    return Image.fromarray(np.uint8(static_frame(x, y, "regalia", PALETTES["regalia"], phase) * 255))
 
 
 def save_static(name, pixels, size):
@@ -328,6 +376,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seasonal", action="store_true", help="Also rebuild the animated rewards.")
     parser.add_argument("--frame", action="store_true", help="Also rebuild the animated frame.")
+    parser.add_argument("--regalia", action="store_true", help="Also rebuild the Regalia animations.")
     args = parser.parse_args()
     save_themes()
     if args.seasonal or args.frame:
@@ -335,3 +384,6 @@ if __name__ == "__main__":
     if args.seasonal:
         # Independently encode each crest frame to keep gradients consistent at the loop seam.
         save_cosmetic("astral-crest", 856, 264, make_crest, quality=90, keyframe_interval=1)
+    if args.regalia:
+        save_cosmetic("regalia-banner", 768, 236, regalia_banner, quality=85, keyframe_interval=1)
+        save_cosmetic("regalia-frame", 144, 144, regalia_frame, quality=78)

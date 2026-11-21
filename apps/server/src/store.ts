@@ -45,6 +45,7 @@ import {
   type Mode,
   type ProfileView,
   type PlayerProfileView,
+  type PlayerMiniProfile,
 } from '@gacha-triad/shared/platform';
 import { Database, type Sql } from './database';
 import { GameError } from './errors';
@@ -143,6 +144,21 @@ interface LobbyRow {
 }
 const rng = () => seededRandom(randomInt(0, 2 ** 32));
 const byId = new Map(ALL_CARDS.map((c) => [c.id, c]));
+function miniProfile(p: ProfileRow): PlayerMiniProfile {
+  return {
+    id: p.id,
+    name: p.name,
+    isBot: p.is_bot === true,
+    avatar: typeof p.avatar_card === 'string' ? (byId.get(p.avatar_card) ?? null) : null,
+    frameId: (p.portrait_frame as PortraitFrame) ?? 'classic',
+    bannerId: (p.profile_banner as ProfileBanner) ?? 'classic',
+    title: titleName(p.selected_title),
+    rating: p.rating,
+    rankedRandomRating: p.ranked_random_rating,
+    draftRating: p.draft_rating,
+    sharedDraftRating: p.shared_draft_rating,
+  };
+}
 const cards = (ids: readonly string[]) =>
   ids.map((id) => {
     const card = byId.get(id);
@@ -226,6 +242,7 @@ export class GameStore {
       '030_ember_frame.sql',
       '031_cosmetic_milestones.sql',
       '032_cosmetic_achievements.sql',
+      '033_invitation_rules.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -677,6 +694,7 @@ export class GameStore {
     sender: string,
     recipient: string,
     hours: CorrespondenceHours,
+    rules: Rules = UNRANKED,
   ) {
     const participants = [sender, recipient];
     const active = await sql<{ player0: string; player1: string }>(
@@ -694,10 +712,15 @@ export class GameStore {
     const decks: [Card[], Card[]] = [[], []];
     for (const seat of [0, 1] as const) {
       try {
-        decks[seat] = await this.deck(sql, participants[seat], false, 'correspondence');
+        decks[seat] = await this.deck(sql, participants[seat], !!rules.random, 'correspondence');
       } catch (e) {
-        if (!(e instanceof GameError)) throw e;
-        throw new GameError('Both players need a legal saved deck.', 428);
+        if (!rules.random && !(e instanceof GameError)) throw e;
+        throw new GameError(
+          rules.random
+            ? 'Both players need a legal saved deck and enough cards for random play.'
+            : 'Both players need a legal saved deck.',
+          428,
+        );
       }
     }
     return this.newMatch(
@@ -705,7 +728,7 @@ export class GameStore {
       'correspondence',
       sender,
       recipient,
-      UNRANKED,
+      rules,
       'none',
       decks,
       null,
@@ -1688,6 +1711,17 @@ export class GameStore {
       return { profileId, granted: granted.length > 0 };
     });
   }
+  async playerMiniProfile(id: string): Promise<PlayerMiniProfile> {
+    return this.db.read(async (sql) => {
+      const [p] = await sql<ProfileRow>(
+        `SELECT id,name,is_bot,avatar_card,portrait_frame,profile_banner,selected_title,
+                rating,ranked_random_rating,draft_rating,shared_draft_rating FROM profiles WHERE id=$1`,
+        [id],
+      );
+      if (!p) throw new GameError('Player not found.', 404);
+      return miniProfile(p);
+    });
+  }
   async playerProfile(id: string): Promise<PlayerProfileView> {
     return this.db.read(async (sql) => {
       const [p] = await sql<ProfileRow>('SELECT * FROM profiles WHERE id=$1', [id]);
@@ -1714,31 +1748,21 @@ export class GameStore {
         unlockedAt: a.unlocked_at.toISOString(),
       }));
       return {
-        id: p.id,
+        ...miniProfile(p),
         bio: String(p.profile_bio ?? ''),
-        frameId: (p.portrait_frame as PortraitFrame) ?? 'classic',
-        bannerId: (p.profile_banner as ProfileBanner) ?? 'classic',
         featuredMode: (p.featured_mode as FeaturedMode) ?? 'ranked',
         featuredCards: showcase.flatMap((id) => (owned.has(id) ? (byId.get(id) ?? []) : [])),
         featuredAchievements: ((p.showcase_achievements ?? []) as string[]).flatMap(
           (id) => achievementViews.find((a) => a.id === id) ?? [],
         ),
         titleId: typeof p.selected_title === 'string' ? p.selected_title : null,
-        title: titleName(p.selected_title),
         titles: await titlesFor(sql, p.id),
-        name: p.name,
-        isBot: p.is_bot === true,
         botStyle: p.is_bot === true ? (p.bot_style as CpuStyle) : null,
         joinedAt: (p.created_at as Date).toISOString(),
-        rating: p.rating,
-        rankedRandomRating: p.ranked_random_rating,
-        draftRating: p.draft_rating,
-        sharedDraftRating: p.shared_draft_rating,
         played: p.played,
         wins: p.wins,
         losses: p.losses,
         draws: p.draws,
-        avatar: typeof p.avatar_card === 'string' ? (byId.get(p.avatar_card) ?? null) : null,
         collection,
         achievements: achievementViews,
       };

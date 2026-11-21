@@ -142,7 +142,7 @@
   min-width: 0;
   width: 100%;
 }
-.arena-comms .message-heading a,
+.arena-comms .message-heading .chat-player-name,
 .arena-comms .message-heading strong,
 .arena-comms .message-title {
   display: block;
@@ -153,7 +153,7 @@
   text-overflow: clip;
   overflow-wrap: anywhere;
 }
-.arena-comms .message-heading a,
+.arena-comms .message-heading .chat-player-name,
 .arena-comms .message-heading strong {
   font-size: 17px;
   line-height: 1.1;

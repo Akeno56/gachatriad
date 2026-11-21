@@ -210,18 +210,20 @@
   --banner-image: linear-gradient(112deg, #0c1123, #222045);
 }
 
-:is(.profile-header, .profile-editor-preview, .appearance-banner-preview)[data-profile-banner]:not(
-    [data-profile-banner='classic']
-  ) {
+:is(
+    .profile-header,
+    .profile-editor-preview,
+    .appearance-banner-preview,
+    .mini-profile-heading
+  )[data-profile-banner]:not([data-profile-banner='classic']) {
   border-color: var(--banner-edge);
   background: var(--banner-image);
 }
 
-:is(
-  .profile-header,
-  .profile-editor-preview,
-  .appearance-banner-preview
-)[data-profile-banner='astral-crest'] {
+:is(.profile-header, .profile-editor-preview, .appearance-banner-preview, .mini-profile-heading):is(
+  [data-profile-banner='astral-crest'],
+  [data-profile-banner='regalia']
+) {
   position: relative;
   isolation: isolate;
 }

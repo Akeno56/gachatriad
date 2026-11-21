@@ -1,0 +1,2 @@
+ALTER TABLE duel_invitations ADD COLUMN IF NOT EXISTS rules JSONB;
+INSERT INTO schema_migrations(version) VALUES(33) ON CONFLICT DO NOTHING;

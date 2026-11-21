@@ -346,7 +346,7 @@ textarea:hover {
   .title-screen .main-chat .chat-message {
     padding-block: 4px;
   }
-  .title-screen .main-chat .message-heading > a {
+  .title-screen .main-chat .message-heading > .chat-player-name {
     line-height: 1.1;
   }
   .title-screen .main-chat .message-title {

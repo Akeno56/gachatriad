@@ -381,6 +381,20 @@ export interface AchievementView {
   progress: number;
   unlockedAt: string | null;
 }
+export type PlayerMiniProfile = Pick<
+  PlayerProfileView,
+  | 'id'
+  | 'name'
+  | 'isBot'
+  | 'avatar'
+  | 'frameId'
+  | 'bannerId'
+  | 'title'
+  | 'rating'
+  | 'rankedRandomRating'
+  | 'draftRating'
+  | 'sharedDraftRating'
+>;
 export interface TradeOfferView {
   id: string;
   ownerId: string;

@@ -5,13 +5,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { isRatedMode, type LobbyPreset, type LobbyView } from '@gacha-triad/shared/platform';
-import {
-  STANDARD,
-  UNRANKED_RULES,
-  UNRANKED_RANDOM_RULES,
-  supportsTradeOne,
-  type Rules,
-} from '@gacha-triad/engine';
+import { STANDARD, UNRANKED_RULES, supportsTradeOne, type Rules } from '@gacha-triad/engine';
 import { api } from '../../lib/platform';
 import { useSession } from '../../components/session';
 import { publishSiteUpdate, useSiteRevision } from '../../lib/site-updates';
@@ -21,7 +15,7 @@ import { confirmQueueRules } from '../../components/ranked-warning';
 import { useAllowBots } from '../../lib/lobby-preferences';
 import { MainChat } from '../../components/main-chat';
 import { BotStyle } from '../../components/bot-style';
-import { RuleToggles, RuleVisibility } from '../../components/rule-options';
+import { MATCH_RULE_PRESETS, RuleToggles, RuleVisibility } from '../../components/rule-options';
 export default function Lobbies() {
   const { profile, revision, refreshProfile, error: connectionError } = useSession(),
     router = useRouter();
@@ -150,10 +144,10 @@ export default function Lobbies() {
   const waiting = rows.find((r) => r.id === profile?.waitingLobbyId);
   function preset(kind: 'standard' | 'open' | 'trade' | 'random') {
     const presets = {
-      standard: UNRANKED_RULES,
+      standard: MATCH_RULE_PRESETS.standard.rules,
       open: { ...STANDARD, allOpen: true },
       trade: { ...UNRANKED_RULES, threeOpen: false },
-      random: UNRANKED_RANDOM_RULES,
+      random: MATCH_RULE_PRESETS.random.rules,
     };
     setRules(presets[kind]);
     setTrade(kind === 'trade');
@@ -282,7 +276,7 @@ export default function Lobbies() {
                 [
                   {
                     kind: 'standard',
-                    name: 'Standard rules',
+                    name: MATCH_RULE_PRESETS.standard.label,
                     text: 'Three Open · Same · Plus · Combo · No trade',
                   },
                   {
@@ -297,7 +291,7 @@ export default function Lobbies() {
                   },
                   {
                     kind: 'random',
-                    name: 'Random deck rules',
+                    name: MATCH_RULE_PRESETS.random.label,
                     text: 'Random deck · Same · Plus · Combo · No trade',
                   },
                 ] as const

@@ -9,7 +9,7 @@ import { useSession } from './session';
 import { ChatMessageContent } from './chat-message-content';
 import { Avatar } from './avatar';
 import { api } from '../lib/platform';
-import { appPath } from '../lib/connection';
+import { ChatPlayerName } from './mini-profile';
 const labels = { general: 'General', trade: 'Trade', lobbies: 'Lobbies' };
 export function ChannelChat({
   compact = false,
@@ -155,16 +155,19 @@ export function ChannelChat({
               Online <span>{onlinePlayers.length}</span>
             </h3>
             <div>
-              {onlinePlayers.map((p) => (
-                <a key={p.id} href={appPath(`/profile?id=${p.id}`)}>
-                  <Avatar card={p.avatar} frameId={p.frameId} name={p.name} />
-                  <span>
-                    <NoTranslate>{p.name}</NoTranslate>
-                    {p.id === profile?.id ? ' (you)' : ''}
-                    {p.title && <small>{p.title}</small>}
-                  </span>
-                </a>
-              ))}
+              {onlinePlayers.map(
+                (p) =>
+                  p.id && (
+                    <ChatPlayerName key={p.id} id={p.id} className="chat-online-name">
+                      <Avatar card={p.avatar} frameId={p.frameId} name={p.name} />
+                      <span>
+                        <NoTranslate>{p.name}</NoTranslate>
+                        {p.id === profile?.id ? ' (you)' : ''}
+                        {p.title && <small>{p.title}</small>}
+                      </span>
+                    </ChatPlayerName>
+                  ),
+              )}
             </div>
           </aside>
         </div>

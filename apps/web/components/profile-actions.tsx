@@ -7,10 +7,12 @@ import { useSocial } from './social-state';
 import { Button } from './ui';
 import { LocaleView } from './i18n';
 import { api } from '../lib/platform';
+import { InviteMatchDialog } from './invite-match-dialog';
 export function ProfileActions({ player }: { player: PlayerProfileView }) {
-  const { profile, refresh, refreshSocial } = useSession(),
+  const { profile, refreshSocial } = useSession(),
     { data: social, ready } = useSocial();
   const [busy, setBusy] = useState(false),
+    [inviteOpen, setInviteOpen] = useState(false),
     [error, setError] = useState(''),
     [notice, setNotice] = useState('');
   const lock = useRef(false),
@@ -21,12 +23,8 @@ export function ProfileActions({ player }: { player: PlayerProfileView }) {
     setBusy(true);
     setError('');
     try {
-      await api(
-        path,
-        path === '/friends/request' || path === '/invites' ? { playerId: player.id } : {},
-      );
-      if (path.startsWith('/friends')) refreshSocial();
-      else await refresh();
+      await api(path, path === '/friends/request' ? { playerId: player.id } : {});
+      refreshSocial();
       setNotice(notice);
     } catch (e) {
       setError((e as Error).message);
@@ -68,19 +66,14 @@ export function ProfileActions({ player }: { player: PlayerProfileView }) {
                 >
                   Message
                 </Link>
-                <Button
-                  busy={busy}
-                  disabled={
-                    !!profile.activeMatchId || !!profile.waitingLobbyId || !!profile.pendingTrade
-                  }
-                  onClick={() => void act('/invites', 'Invitation sent.')}
-                >
+                <Button busy={busy} onClick={() => setInviteOpen(true)}>
                   Invite to duel
                 </Button>
               </>
             )}
           </>
         )}
+        {inviteOpen && <InviteMatchDialog player={player} onClose={() => setInviteOpen(false)} />}
         {notice && <span role="status">{notice}</span>}
         {error && (
           <p className="error-message" role="alert">

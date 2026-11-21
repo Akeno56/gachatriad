@@ -1,0 +1,146 @@
+.chat-player-name {
+  background: none;
+  border: 0;
+  padding: 0;
+  min-width: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chat-player-name:hover,
+.chat-player-name[aria-expanded='true'] {
+  color: var(--gold);
+  text-decoration: underline;
+}
+
+.chat-online-name {
+  width: 100%;
+}
+
+.mini-profile {
+  position: fixed;
+  z-index: 80;
+  width: min(352px, calc(100vw - 16px));
+  max-height: calc(100dvh - 16px);
+  overflow: auto;
+  padding: 4px;
+}
+
+.mini-profile .dialog-close {
+  top: 9px;
+  right: 9px;
+  z-index: 2;
+}
+
+.mini-profile-heading {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 13px;
+  align-items: center;
+  border: 1px solid #7184a9;
+  padding: 13px 40px 13px 12px;
+  background: linear-gradient(125deg, #253d68, #131e35);
+}
+
+.mini-profile-heading .player-avatar {
+  width: 58px;
+  height: 58px;
+}
+
+.mini-profile-heading a {
+  display: block;
+  color: #fff0c9;
+  font: 25px/1.1 var(--pixel);
+  overflow-wrap: anywhere;
+  text-shadow: 1px 1px #071222;
+}
+
+.mini-profile-heading a:hover {
+  text-decoration: underline;
+}
+
+.mini-profile-heading small {
+  display: block;
+  margin-top: 4px;
+  color: #e8d1a2;
+  text-shadow: 1px 1px #101827;
+}
+
+.mini-profile-ratings {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 9px 0;
+  margin: 0;
+  background: #0d182d;
+  text-align: center;
+}
+
+.mini-profile-ratings > div + div {
+  border-left: 1px solid #63769775;
+}
+
+.mini-profile-ratings > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.mini-profile-ratings dd {
+  order: -1;
+  color: #e8d2a0;
+  margin: 0;
+  font: 23px/1 var(--pixel);
+}
+
+.mini-profile-ratings dt {
+  margin-top: 3px;
+  color: #bacbe1;
+  font: 600 12px/1.1 var(--sans);
+  overflow-wrap: anywhere;
+}
+
+.mini-profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 4px 4px;
+  align-items: center;
+}
+
+.mini-profile-actions > :is(button, a) {
+  flex: 1 1 auto;
+  text-align: center;
+  padding: 5px 8px;
+  font-size: 18px;
+}
+
+.mini-profile-status {
+  padding: 10px 32px 10px 8px;
+  margin: 0;
+}
+
+.match-rules,
+.match-rules > label,
+.invite-match-fields > label {
+  display: grid;
+  gap: 6px;
+}
+
+.match-rules .rule-toggles {
+  margin: 2px 0;
+}
+
+.practice-setup .match-rules {
+  margin-bottom: 12px;
+}
+
+.invite-match-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.invite-match-fields > :only-child {
+  grid-column: 1 / -1;
+}

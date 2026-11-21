@@ -122,7 +122,7 @@
   height: 34px;
   flex-basis: 34px;
 }
-.main-chat .message-heading > a {
+.main-chat .message-heading > .chat-player-name {
   font-size: 21px;
 }
 .main-chat .message-title {
@@ -175,13 +175,13 @@
   overflow-y: auto;
   padding: 4px 8px;
 }
-.chat-user-list a {
+.chat-user-list .chat-online-name {
   display: flex;
   gap: 7px;
   padding: 5px 0;
   align-items: center;
 }
-.chat-user-list a > span:not(.player-avatar) {
+.chat-user-list .chat-online-name > span:not(.player-avatar) {
   min-width: 0;
   overflow-wrap: anywhere;
   font-size: 14px;
@@ -446,7 +446,7 @@
   .chat-channel-tabs button {
     padding: 4px 9px;
   }
-  .chat-user-list a .player-avatar {
+  .chat-user-list .chat-online-name .player-avatar {
     display: none;
   }
   .chat-compact .chat-messages,

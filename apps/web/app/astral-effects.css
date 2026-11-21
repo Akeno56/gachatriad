@@ -1,26 +1,26 @@
-.astral-art {
+.cosmetic-animation {
   position: absolute;
   pointer-events: none;
-  background: var(--astral-loop) right center / cover no-repeat;
+  background: var(--cosmetic-loop) right center / cover no-repeat;
 }
 
-.astral-frame-art {
+.cosmetic-animation-frame {
   /* The inner rail meets the square portrait edge at this inset. */
   inset: -18%;
   z-index: 2;
   background-size: 100% 100%;
 }
 
-.astral-crest-art {
+.cosmetic-animation-banner {
   inset: 0;
   z-index: -1;
 }
 
-.seasonal-motion-off .astral-art {
-  background-image: var(--astral-poster);
+.seasonal-motion-off .cosmetic-animation {
+  background-image: var(--cosmetic-poster);
 }
 
-.frame-choice.is-locked .frame-astral {
+.frame-choice.is-locked :is(.frame-astral, .frame-regalia) {
   filter: none;
   opacity: 1;
 }

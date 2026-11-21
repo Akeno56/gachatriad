@@ -1,7 +1,7 @@
 import { LocaleView, NoTranslate, LocalizedDate } from './i18n';
 import { BATTLE_STAMPS, type BattleIdentity, type BattleStampId } from '@gacha-triad/shared/social';
 import { Avatar } from './avatar';
-import { appPath } from '../lib/connection';
+import { ChatPlayerName } from './mini-profile';
 export function ChatMessageContent({
   person,
   createdAt,
@@ -21,9 +21,9 @@ export function ChatMessageContent({
         <div className="message-content">
           <header className="message-heading">
             {person.id ? (
-              <a href={appPath(`/profile?id=${person.id}`)} title={person.name} translate="no">
+              <ChatPlayerName id={person.id}>
                 <NoTranslate>{person.name}</NoTranslate>
-              </a>
+              </ChatPlayerName>
             ) : (
               <strong>
                 <NoTranslate>{person.name}</NoTranslate>

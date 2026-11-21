@@ -5,7 +5,7 @@
   column-gap: 14px;
   row-gap: 2px;
 }
-.message-heading > a,
+.message-heading > .chat-player-name,
 .message-heading > strong {
   font: 24px/1.1 var(--pixel);
   color: var(--gold);
@@ -93,7 +93,7 @@
   .message-heading {
     column-gap: 8px;
   }
-  .message-heading > a,
+  .message-heading > .chat-player-name,
   .message-heading > strong {
     font-size: 22px;
   }

@@ -15,6 +15,7 @@ import { RankedWarning } from './ranked-warning';
 import { SocialNavigation } from './social-navigation';
 import { SocialProvider } from './social-state';
 import { ActiveBattleReminder } from './active-battle-reminder';
+import { MiniProfiles } from './mini-profile';
 import { MatchmakingDock } from './matchmaking-dock';
 import { ActionNoticeProvider } from './action-notice';
 import { ReleaseNotes } from './release-notes';
@@ -404,7 +405,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                                     } catch {}
                                   }}
                                 />
-                                Animate seasonal rewards
+                                Animate cosmetic rewards
                               </label>
                               <label className="effects-setting">
                                 <input
@@ -485,7 +486,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                     <ServerConnection>
                       <StarterBoosters />
                       <OpenAppearance.Provider value={openAppearance}>
-                        {children}
+                        <MiniProfiles>{children}</MiniProfiles>
                       </OpenAppearance.Provider>
                       <FirstDuelTutorial />
                       <RankedWarning />

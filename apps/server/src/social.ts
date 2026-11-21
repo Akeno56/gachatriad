@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import type { Rules } from '@gacha-triad/engine';
 import {
   CORRESPONDENCE_HOURS,
   isRatedMode,
@@ -22,7 +23,7 @@ import type {
 } from '@gacha-triad/shared/social';
 import type { ProfileIdentity } from './store';
 import type { GameStore } from './store';
-import { UNRANKED } from './store';
+import { cleanRules, UNRANKED } from './store';
 import type { Sql } from './database';
 import { GameError } from './errors';
 import { titleName } from './titles';
@@ -402,6 +403,7 @@ export class Social {
         recipient_id: string;
         lobby_id: string | null;
         turn_hours: CorrespondenceHours | null;
+        rules: Rules | null;
         expires_at: Date;
       }>(
         "SELECT * FROM duel_invitations WHERE status='pending' AND (sender_id=$1 OR recipient_id=$1) ORDER BY created_at DESC LIMIT 20",
@@ -419,6 +421,7 @@ export class Social {
           recipient: identity(people.find((p) => p.id === invitation.recipient_id)!),
           lobbyId: invitation.lobby_id,
           turnHours: invitation.turn_hours ?? undefined,
+          rules: invitation.rules ?? UNRANKED,
           expiresAt: invitation.expires_at.toISOString(),
         });
       }
@@ -449,9 +452,10 @@ export class Social {
       };
     });
   }
-  async invite(p: ProfileIdentity, target: unknown, turnHours?: unknown) {
+  async invite(p: ProfileIdentity, target: unknown, turnHours?: unknown, inputRules?: unknown) {
     registered(p);
     if (typeof target !== 'string' || target === p.id) throw new GameError('Choose a friend.');
+    const rules = cleanRules(inputRules);
     if (turnHours !== undefined) {
       const hours = CORRESPONDENCE_HOURS.find((hours) => hours === turnHours);
       if (!hours) throw new GameError('Choose 24, 48, or 72 hours per turn.');
@@ -478,8 +482,8 @@ export class Social {
           throw new GameError('You have 12 pending correspondence invitations.', 409);
         const id = randomUUID();
         await sql(
-          "INSERT INTO duel_invitations(id,sender_id,recipient_id,turn_hours,expires_at) VALUES($1,$2,$3,$4,now()+interval '7 days')",
-          [id, p.id, target, hours],
+          "INSERT INTO duel_invitations(id,sender_id,recipient_id,turn_hours,rules,expires_at) VALUES($1,$2,$3,$4,$5::jsonb,now()+interval '7 days')",
+          [id, p.id, target, hours, JSON.stringify(rules)],
         );
         return { id, lobbyId: null };
       });
@@ -489,7 +493,7 @@ export class Social {
     );
     const lobby = await this.store.createLobby(p, {
       mode: 'custom',
-      rules: UNRANKED,
+      rules,
       name: `${p.name} · Friend invitation`,
       allowBots: false,
       invitedProfile: target,
@@ -498,8 +502,8 @@ export class Social {
       const id = randomUUID();
       await this.store.db.tx((sql) =>
         sql(
-          "INSERT INTO duel_invitations(id,sender_id,recipient_id,lobby_id,expires_at) VALUES($1,$2,$3,$4,now()+interval '5 minutes')",
-          [id, p.id, target, lobby.lobbyId],
+          "INSERT INTO duel_invitations(id,sender_id,recipient_id,lobby_id,rules,expires_at) VALUES($1,$2,$3,$4,$5::jsonb,now()+interval '5 minutes')",
+          [id, p.id, target, lobby.lobbyId, JSON.stringify(rules)],
         ),
       );
       return { id, lobbyId: lobby.lobbyId };
@@ -518,6 +522,7 @@ export class Social {
         recipient_id: string;
         lobby_id: string | null;
         turn_hours: CorrespondenceHours | null;
+        rules: Rules | null;
         match_id: string | null;
       }>('SELECT * FROM duel_invitations WHERE id=$1', [id]);
       if (!invitation || ![invitation.sender_id, invitation.recipient_id].includes(p.id))
@@ -536,6 +541,7 @@ export class Social {
           invitation.sender_id,
           p.id,
           invitation.turn_hours,
+          invitation.rules ?? UNRANKED,
         );
         await sql("UPDATE duel_invitations SET status='accepted',match_id=$2 WHERE id=$1", [
           id,

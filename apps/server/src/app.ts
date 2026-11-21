@@ -460,7 +460,8 @@ export async function createPlatform(
     return { ok: true };
   });
   app.post('/api/invites', async (req) => {
-    const result = await social.invite(await profile(req), body(req).playerId, body(req).turnHours);
+    const { playerId, turnHours, rules } = body(req);
+    const result = await social.invite(await profile(req), playerId, turnHours, rules);
     notify();
     return result;
   });
@@ -656,6 +657,10 @@ export async function createPlatform(
   app.get('/api/players/:id', async (req) => {
     await profile(req);
     return store.playerProfile(id(req));
+  });
+  app.get('/api/players/:id/mini', async (req) => {
+    await profile(req);
+    return store.playerMiniProfile(id(req));
   });
   app.post('/api/profile/avatar', async (req) => {
     const p = await profile(req),

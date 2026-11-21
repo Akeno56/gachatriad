@@ -4,17 +4,17 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useRef, useState } from 'react';
 import type { BattleIdentity, FriendView } from '@gacha-triad/shared/social';
-import { CORRESPONDENCE_HOURS, type CorrespondenceHours } from '@gacha-triad/shared/platform';
 import { Avatar } from '../../components/avatar';
 import { FriendChat } from '../../components/friend-chat';
 import { LocaleView, LocalizedDate, NoTranslate } from '../../components/i18n';
 import { useSession } from '../../components/session';
 import { useSocial } from '../../components/social-state';
 import { useActionNotice } from '../../components/action-notice';
-import { Button, GameDialog, Tabs } from '../../components/ui';
+import { Button, Tabs } from '../../components/ui';
+import { InviteMatchDialog } from '../../components/invite-match-dialog';
+import { ruleNames } from '../../lib/rules';
 import { api } from '../../lib/platform';
 
-type InviteMode = 'live' | 'correspondence';
 function SocialIdentity({ player, status }: { player: BattleIdentity; status?: string }) {
   return (
     <LocaleView>
@@ -50,8 +50,6 @@ function SocialPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [inviteFriend, setInviteFriend] = useState<FriendView | null>(null);
-  const [inviteMode, setInviteMode] = useState<InviteMode>('live');
-  const [hours, setHours] = useState<CorrespondenceHours>(48);
   const [acceptedCorrespondence, setAcceptedCorrespondence] = useState(false);
   const lock = useRef(false);
 
@@ -84,10 +82,6 @@ function SocialPage() {
   }
   function openInvite(friend: FriendView) {
     setError('');
-    setInviteMode(
-      inviteBusy || params.get('invite') === 'correspondence' ? 'correspondence' : 'live',
-    );
-    setHours(48);
     setInviteFriend(friend);
   }
   async function act(path: string, body: unknown, message?: string, method?: string) {
@@ -313,6 +307,13 @@ function SocialPage() {
                                   ? `Correspondence · ${invitation.turnHours}h per turn`
                                   : 'Live duel'}
                               </strong>
+                              {invitation.rules && (
+                                <div className="rule-badges">
+                                  {ruleNames(invitation.rules).map((rule) => (
+                                    <span key={rule}>{rule}</span>
+                                  ))}
+                                </div>
+                              )}
                               <small>
                                 Expires{' '}
                                 <LocalizedDate
@@ -424,87 +425,14 @@ function SocialPage() {
             </div>
           </>
         )}
-        <GameDialog
-          open={!!inviteFriend}
-          onClose={() => {
-            setInviteFriend(null);
-            setError('');
-          }}
-          labelledBy="social-invite-title"
-          className="social-invite-dialog"
-          dismissible={!busy}
-        >
-          <h2 id="social-invite-title">Invite to play</h2>
-          <form
-            onSubmit={async (event) => {
-              event.preventDefault();
-              if (!inviteFriend || (inviteMode === 'live' && inviteBusy)) return;
-              const body =
-                inviteMode === 'live'
-                  ? { playerId: inviteFriend.id }
-                  : { playerId: inviteFriend.id, turnHours: hours };
-              if (await act('/invites', body, 'Invitation sent.')) {
-                setInviteFriend(null);
-                select('inbox');
-              }
-            }}
-          >
-            <p>
-              <NoTranslate>{inviteFriend?.name}</NoTranslate>
-            </p>
-            <label>
-              Match type
-              <select
-                name="inviteMode"
-                value={inviteMode}
-                disabled={busy}
-                onChange={(event) =>
-                  setInviteMode(event.target.value === 'live' ? 'live' : 'correspondence')
-                }
-              >
-                <option value="live" disabled={inviteBusy}>
-                  Live duel
-                </option>
-                <option value="correspondence">Correspondence</option>
-              </select>
-            </label>
-            {inviteMode === 'correspondence' && (
-              <label>
-                Hours per turn
-                <select
-                  name="turnHours"
-                  value={hours}
-                  disabled={busy}
-                  onChange={(event) => {
-                    const selected = CORRESPONDENCE_HOURS.find(
-                      (value) => value === Number(event.target.value),
-                    );
-                    if (selected) setHours(selected);
-                  }}
-                >
-                  {CORRESPONDENCE_HOURS.map((value) => (
-                    <option key={value} value={value}>
-                      {value}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-            {error && (
-              <p className="error-message" role="alert">
-                {error}
-              </p>
-            )}
-            <Button
-              type="submit"
-              variant="primary"
-              busy={busy}
-              disabled={inviteMode === 'live' && inviteBusy}
-            >
-              Send invitation
-            </Button>
-          </form>
-        </GameDialog>
+        {inviteFriend && (
+          <InviteMatchDialog
+            player={inviteFriend}
+            preferCorrespondence={params.get('invite') === 'correspondence'}
+            onClose={() => setInviteFriend(null)}
+            onSent={() => select('inbox')}
+          />
+        )}
       </div>
     </LocaleView>
   );

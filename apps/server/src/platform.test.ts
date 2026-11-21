@@ -16,6 +16,7 @@ import {
   legalMoves,
   randomDeck,
   seededRandom,
+  UNRANKED_RANDOM_RULES,
   type GameState,
   type Move,
 } from '@gacha-triad/engine';
@@ -182,7 +183,8 @@ it('resumes private correspondence matches alongside live play and enforces turn
   const a = await user(true),
     b = await user(true),
     outsider = await user(true, false);
-  const invite = { playerId: b.profile.id, turnHours: 48 };
+  const rules = { ...UNRANKED_RANDOM_RULES, allOpen: true, threeOpen: false, elemental: true };
+  const invite = { playerId: b.profile.id, turnHours: 48, rules };
   expect((await request(a, '/invites', invite)).statusCode).toBe(403);
   await ok(a, '/friends/request', { playerId: b.profile.id });
   await ok(b, `/friends/${a.profile.id}/accept`, {});
@@ -203,6 +205,7 @@ it('resumes private correspondence matches alongside live play and enforces turn
     trade: { rule: 'none' },
     ratingApplies: false,
     turnHours: 48,
+    rules,
   });
   expect(view.deadline! - Date.now()).toBeGreaterThan(47.99 * 3_600_000);
   expect(await ok<ProfileView>(a, '/profile')).toMatchObject({
@@ -1283,8 +1286,15 @@ it('public profiles contain no deck, inventory or email and only owned avatars c
   await ok(a, '/profile/avatar', { cardId: card });
   const publicView = await ok<Record<string, unknown>>(b, `/players/${a.profile.id}`);
   expect(publicView).toMatchObject({ id: a.profile.id, avatar: { id: card } });
-  for (const key of ['deck', 'inventory', 'email', 'auth_user_id'])
+  const miniPath = `/players/${a.profile.id}/mini`;
+  expect((await request(null, miniPath)).statusCode).toBe(401);
+  const mini = await ok<Record<string, unknown>>(b, miniPath);
+  expect(mini).toMatchObject({ id: a.profile.id, avatar: { id: card }, rating: 1000 });
+  for (const key of ['deck', 'inventory', 'email', 'auth_user_id']) {
     expect(publicView).not.toHaveProperty(key);
+    expect(mini).not.toHaveProperty(key);
+  }
+  expect(mini).not.toHaveProperty('collection');
   expect((await request(a, '/profile/avatar', { cardId: 'does-not-exist' })).statusCode).toBe(400);
 });
 it('authenticates two independent cookie-free clients with signed bearer tokens', async () => {
@@ -1685,6 +1695,7 @@ it('supports private friend requests, global chat with rate limits, and recipien
   expect((await request(b, `/chat/${chat.id}`, undefined, 'DELETE')).statusCode).toBe(403);
   const invite = await ok<{ id: string; lobbyId: string }>(a, '/invites', {
     playerId: b.profile.id,
+    rules: UNRANKED_RANDOM_RULES,
   });
   expect((await ok<ProfileView>(a, '/profile')).waitingLobby).toMatchObject({
     id: invite.lobbyId,
@@ -1703,6 +1714,7 @@ it('supports private friend requests, global chat with rate limits, and recipien
     same: true,
     plus: true,
     combo: true,
+    random: true,
   });
   expect((await ok<ProfileView>(a, '/profile')).waitingLobby).toBeNull();
   expect(

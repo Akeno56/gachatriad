@@ -391,6 +391,150 @@ async function waitForArt(art: Locator) {
   });
 }
 
+test('opens a mini profile from chat and sends custom correspondence rules', async ({
+  browser,
+}, info) => {
+  test.skip(info.project.name !== 'desktop');
+  const playerWithArt = await player(browser, 'Regalia friend');
+  const viewer = await player(browser, 'Chat tester');
+  const { page } = viewer;
+  try {
+    await platform.store.setAvatar(playerWithArt.profile.id, playerWithArt.profile.deck[0]);
+    await platform.db.read((sql) =>
+      sql(
+        `UPDATE profiles SET portrait_frame='regalia', profile_banner='regalia', selected_title='chain-reaction',
+              rating=1000,ranked_random_rating=1002,draft_rating=1004,shared_draft_rating=1006
+       WHERE id=$1`,
+        [playerWithArt.profile.id],
+      ),
+    );
+    await playerWithArt.request('/chat', {
+      message: 'Mini profile check',
+      requestId: 'mini-profile-chat-test',
+      channel: 'general',
+    });
+    const miniFetches: string[] = [];
+    page.on('request', (request) => {
+      const path = new URL(request.url()).pathname;
+      if (path.endsWith('/mini')) miniFetches.push(path);
+    });
+    await page.goto('/play/');
+    const sender = page
+      .locator('.chat-message')
+      .filter({ hasText: 'Mini profile check' })
+      .getByRole('button', { name: 'Regalia friend', exact: true });
+    await expect(sender).toBeVisible();
+    expect(miniFetches).toHaveLength(0);
+    await sender.hover();
+    const preview = page.getByRole('dialog', { name: 'Player preview' });
+    await expect(preview.locator('.mini-profile-ratings dd')).toHaveText([
+      '1000',
+      '1002',
+      '1004',
+      '1006',
+    ]);
+    await expect(preview.getByText('Chain Reaction', { exact: true })).toBeVisible();
+    await expect(preview.locator('.regalia-banner-art')).toHaveCSS(
+      'background-image',
+      /regalia-banner-loop\.webp/,
+    );
+    await expect(preview.locator('.regalia-frame-art')).toHaveCSS(
+      'background-image',
+      /regalia-frame-loop\.webp/,
+    );
+    await Promise.all([
+      waitForArt(preview.locator('.regalia-banner-art')),
+      waitForArt(preview.locator('.regalia-frame-art')),
+    ]);
+    await expect(preview).toBeInViewport({ ratio: 1 });
+    await preview.screenshot({ path: info.outputPath('mini-profile.png') });
+    await preview.hover();
+    await expect(preview.getByRole('button', { name: 'Add friend' })).toBeVisible();
+    await preview.getByRole('button', { name: 'Add friend' }).click();
+    await expect(preview.getByRole('status')).toHaveText('Friend request sent');
+    await playerWithArt.request(`/friends/${viewer.profile.id}/accept`, {});
+    await expect(preview.getByRole('button', { name: 'Invite to duel' })).toBeVisible();
+    await expect(preview.getByRole('link', { name: 'Message' })).toHaveAttribute(
+      'href',
+      /tab=messages/,
+    );
+    await page.keyboard.press('Escape');
+    await expect(preview).toHaveCount(0);
+    await sender.click();
+    await expect(preview).toBeVisible();
+    expect(miniFetches).toHaveLength(1);
+    for (const [width, height] of [
+      [1280, 720],
+      [1366, 768],
+      [1920, 1080],
+    ]) {
+      await page.setViewportSize({ width, height });
+      await expect(preview).toBeInViewport({ ratio: 1 });
+    }
+    const banner = preview.locator('.regalia-banner-art');
+    const frame = preview.locator('.regalia-frame-art');
+    const firstBanner = await banner.screenshot();
+    const firstFrame = await frame.screenshot();
+    await page.waitForTimeout(1100);
+    expect((await banner.screenshot()).equals(firstBanner)).toBe(false);
+    expect((await frame.screenshot()).equals(firstFrame)).toBe(false);
+    await preview.getByRole('button', { name: 'Invite to duel' }).click();
+    const invite = page.getByRole('dialog', { name: 'Invite to play' });
+    await invite.getByRole('combobox', { name: 'Match type' }).selectOption('correspondence');
+    await invite.getByRole('combobox', { name: 'Hours per turn' }).selectOption('24');
+    const presets = invite.getByRole('combobox', { name: 'Rules', exact: true });
+    await expect(presets.locator('option')).toHaveText([
+      'Standard rules',
+      'Random deck rules',
+      'Custom rules',
+    ]);
+    await presets.selectOption('custom');
+    await invite.getByRole('combobox', { name: 'Visibility' }).selectOption('allOpen');
+    await invite.getByRole('checkbox', { name: 'Elemental' }).check();
+    const sent = page.waitForResponse(
+      (response) => response.url().endsWith('/api/invites') && response.ok(),
+    );
+    await invite.getByRole('button', { name: 'Send invitation' }).click();
+    const { id } = await (await sent).json();
+    const { matchId } = await playerWithArt.request(`/invites/${id}/respond`, { accept: true });
+    expect(await platform.store.view(viewer.profile.id, matchId)).toMatchObject({
+      mode: 'correspondence',
+      turnHours: 24,
+      rules: {
+        allOpen: true,
+        threeOpen: false,
+        same: true,
+        plus: true,
+        combo: true,
+        elemental: true,
+      },
+    });
+
+    await page.getByRole('button', { name: 'Practice', exact: true }).click();
+    const practice = page.getByRole('dialog', { name: 'Practice' });
+    const practiceRules = practice.getByRole('combobox', { name: 'Rules', exact: true });
+    await expect(practiceRules.locator('option')).toHaveText([
+      'Standard rules',
+      'Random deck rules',
+      'Custom rules',
+    ]);
+    await expect(practice.locator('.rule-badges')).toContainText('Three Open');
+    await practiceRules.selectOption('random');
+    await expect(practice.locator('.rule-badges')).toContainText('Random');
+    await practiceRules.selectOption('custom');
+    await expect(practice.getByRole('checkbox', { name: 'Same', exact: true })).toBeChecked();
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Language: English', exact: true }).click();
+    await page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
+    await sender.click();
+    const frenchPreview = page.getByRole('dialog', { name: 'Aperçu du profil' });
+    await expect(frenchPreview.getByText('Classé aléatoire', { exact: true })).toBeVisible();
+    await expect(frenchPreview).toBeInViewport({ ratio: 1 });
+  } finally {
+    await Promise.all([playerWithArt.context.close(), viewer.context.close()]);
+  }
+});
+
 test('an admin can grant one cosmetic achievement to a player on the test server', async ({
   browser,
 }, info) => {
@@ -783,7 +927,7 @@ test('previews and equips season rewards from the Journal in English and French'
     await effects.uncheck();
     await expect(crestArt).toHaveCSS('background-image', /astral-crest-loop\.webp/);
     await expect(frameArt).toHaveCSS('background-image', /astral-frame-loop\.webp/);
-    const seasonalMotion = page.getByLabel('Animate seasonal rewards', { exact: true });
+    const seasonalMotion = page.getByLabel('Animate cosmetic rewards', { exact: true });
     await seasonalMotion.uncheck();
     await expect(crestArt).toHaveCSS('background-image', /astral-crest\.webp/);
     await expect(frameArt).toHaveCSS('background-image', /astral-frame\.webp/);
