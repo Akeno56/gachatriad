@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { AchievementView } from '@gacha-triad/shared/platform';
 import {
   ACHIEVEMENT_CATEGORIES,
+  COSMETIC_SETS,
   achievementCategory,
   type CustomizationView,
 } from '@gacha-triad/shared/customization';
@@ -47,7 +48,13 @@ function AchievementScreen() {
   const lock = useRef(false),
     heading = useRef<HTMLHeadingElement>(null);
   const signature = profile
-    ? JSON.stringify([profile.played, profile.wins, profile.draws, profile.inventory])
+    ? JSON.stringify([
+        profile.played,
+        profile.wins,
+        profile.draws,
+        profile.profileRevision,
+        profile.inventory,
+      ])
     : '';
   useEffect(() => {
     const media = matchMedia('(max-width: 900px)'),
@@ -101,6 +108,7 @@ function AchievementScreen() {
       ? items.find((a) => a.id === selected)
       : (visible.find((a) => a.id === selected) ?? visible[0])) ?? null;
   const featured = !!current && !!cosmetics?.settings.featuredAchievements.includes(current.id);
+  const cosmeticSet = COSMETIC_SETS.find(({ achievementId }) => achievementId === current?.id);
   async function featureAchievement() {
     if (!current?.unlockedAt || lock.current) return;
     lock.current = true;
@@ -135,6 +143,7 @@ function AchievementScreen() {
         {current.name}
       </h2>
       <p>{current.description}</p>
+      {cosmeticSet && <p>{`Unlocks the ${cosmeticSet.name} cosmetic set.`}</p>}
       <div className="achievement-detail-progress">
         <progress
           max={current.target}

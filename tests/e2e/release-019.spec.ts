@@ -222,7 +222,9 @@ test('saves a themed profile and shows only its public showcase to another playe
   try {
     await unlock(c);
     await platform.db.read((sql) =>
-      sql('UPDATE profiles SET rated_cosmetic_games=100 WHERE id=$1', [c.profile.id]),
+      sql("INSERT INTO achievement_unlocks(profile_id,achievement_id) VALUES($1,'rated-100')", [
+        c.profile.id,
+      ]),
     );
     const holo = ALL_CARDS.find((card) => card.baseCardId === c.cards[0].id)!;
     await platform.db.read((sql) =>
@@ -353,7 +355,7 @@ test('browses achievement categories and features an earned achievement', async 
   try {
     await unlock(c);
     await c.page.goto(`${base}/achievements/`);
-    await expect(c.page.locator('.achievement-row')).toHaveCount(11);
+    await expect(c.page.locator('.achievement-row')).toHaveCount(16);
     await c.page
       .getByRole('navigation', { name: 'Achievement categories' })
       .getByRole('button', { name: /Techniques/ })

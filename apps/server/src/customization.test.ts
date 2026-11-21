@@ -1,5 +1,6 @@
 import { beforeAll, afterAll, it, expect } from 'vitest';
 import { resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { createPlatform } from './app';
 import { ProfileCustomizations } from './customization';
 import { ALL_CARDS } from '@gacha-triad/shared';
@@ -237,18 +238,51 @@ it('unlocks milestone cosmetics through recorded games and saves showcase order 
   });
   expect(legacySave.statusCode, legacySave.body).toBe(200);
   expect(legacySave.json<CustomizationView>().settings.bannerId).toBe('astral');
-  for (const { id: setId, games } of COSMETIC_SETS) {
-    for (const played of [games - 1, games]) {
-      await p.db.read((sql) =>
-        sql('UPDATE profiles SET rated_cosmetic_games=$1 WHERE id=$2', [played, a.profile.id]),
-      );
-      const current = await settings(a);
-      expect(current.frames.find((frame) => frame.id === setId)?.unlocked).toBe(played === games);
-      expect(current.banners?.find((banner) => banner.id === setId)?.unlocked).toBe(
-        played === games,
-      );
-    }
+  expect(profile.unlockedCosmeticSets).toEqual(['slate']);
+  const slate = (await p.store.achievements(a.profile.id)).find(({ id }) => id === 'rated-25');
+  expect(slate).toMatchObject({ progress: 25, target: 25, unlockedAt: expect.any(String) });
+});
+it('backfills earned cosmetic achievements and keeps admin grants off the ordinary server', async () => {
+  const testers = await Promise.all(COSMETIC_SETS.map(() => user()));
+  for (const [i, { games }] of COSMETIC_SETS.entries())
+    await p.db.read((sql) =>
+      sql('UPDATE profiles SET rated_cosmetic_games=$1 WHERE id=$2', [
+        games,
+        testers[i].profile.id,
+      ]),
+    );
+  const migration = await readFile(
+    resolve('apps/server/migrations/032_cosmetic_achievements.sql'),
+    'utf8',
+  );
+  await p.db.read((sql) => sql('DELETE FROM schema_migrations WHERE version=32'));
+  await p.db.exec(migration);
+  await p.db.exec(migration);
+  for (const [i, tester] of testers.entries()) {
+    const expected = COSMETIC_SETS.slice(0, i + 1).map(({ id }) => id);
+    expect((await p.store.profile(tester.actor)).unlockedCosmeticSets).toEqual(expected);
+    const current = await settings(tester);
+    expect(
+      current.frames.filter(({ id, unlocked }) => id !== 'classic' && unlocked).map(({ id }) => id),
+    ).toEqual(expected);
+    expect(
+      current.banners
+        ?.filter(({ id, unlocked }) => id !== 'classic' && id !== 'astral' && unlocked)
+        .map(({ id }) => id),
+    ).toEqual(expected);
   }
+  const admin = testers[0];
+  await p.db.read((sql) =>
+    sql('INSERT INTO server_admins(auth_user_id) VALUES($1)', [admin.actor.id]),
+  );
+  expect(
+    (
+      await request(admin, '/admin/achievement-grants', {
+        profileId: admin.profile.id,
+        achievementId: 'rated-500',
+      })
+    ).statusCode,
+  ).toBe(404);
 });
 it('rejects stale and simultaneous edits, including legacy avatar/title endpoints', async () => {
   const a = await user(),
@@ -314,9 +348,7 @@ it('removes unavailable showcase cards without revealing the rest of the invento
 it('retains milestone frames and earned achievement bars after the collection shrinks', async () => {
   const a = await user();
   await earned(a, 'collector');
-  await p.db.read((sql) =>
-    sql('UPDATE profiles SET rated_cosmetic_games=100 WHERE id=$1', [a.profile.id]),
-  );
+  await earned(a, 'rated-100');
   const initial = await settings(a);
   await custom.equipFrame(a.profile.id, 'jade', initial.settings.revision);
   await p.db.read((sql) => sql('DELETE FROM inventory WHERE profile_id=$1', [a.profile.id]));
@@ -335,9 +367,7 @@ it('propagates equipped frames to social and battle identities and retains achie
   const a = await user(),
     b = await user();
   await earned(a, 'first-win');
-  await p.db.read((sql) =>
-    sql('UPDATE profiles SET rated_cosmetic_games=50 WHERE id=$1', [a.profile.id]),
-  );
+  await earned(a, 'rated-50');
   const initial = await settings(a);
   await custom.equipFrame(a.profile.id, 'ember', initial.settings.revision);
   const social = await p.social.view(a.profile, new Set([a.profile.id, b.profile.id]));

@@ -13,6 +13,8 @@ const localizedSlots: Record<string, number[]> = {
   '· Holo +1 {0}': [0],
   '{0} bots percentage': [0],
   '{0} progress': [0],
+  '{0} set': [0],
+  'Unlocks the {0} cosmetic set.': [0],
 };
 const patterns = Object.entries(messages)
   .filter(([key]) => /\{\d+\}/.test(key))

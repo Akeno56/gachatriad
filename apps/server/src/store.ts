@@ -55,7 +55,12 @@ import { draftTurn, legalDraftCards, type SharedDraft } from './shared-draft';
 import { pruneDeck } from './inventory';
 import { titleName, titlesFor, awardRankTitles } from './titles';
 import { archiveReplay } from './replays';
-import type { PortraitFrame, FeaturedMode, ProfileBanner } from '@gacha-triad/shared/customization';
+import {
+  COSMETIC_SETS,
+  type PortraitFrame,
+  type FeaturedMode,
+  type ProfileBanner,
+} from '@gacha-triad/shared/customization';
 export interface Actor {
   id: string;
   name: string;
@@ -220,6 +225,7 @@ export class GameStore {
       '029_astral_cosmetics.sql',
       '030_ember_frame.sql',
       '031_cosmetic_milestones.sql',
+      '032_cosmetic_achievements.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -350,12 +356,24 @@ export class GameStore {
         'SELECT p.id,p.name FROM profiles p JOIN profile_accounts a ON a.profile_id=p.id WHERE a.auth_user_id=$1 AND a.is_primary',
         [actor.id],
       );
-      const [account] = await sql<{ unopened: number; starter: number; admin: boolean }>(
+      const [account] = await sql<{
+        unopened: number;
+        starter: number;
+        admin: boolean;
+        cosmetic_achievements: string[];
+      }>(
         `SELECT count(*)::int AS unopened,
                 count(*) FILTER (WHERE pack_type='starter')::int AS starter,
-                NOT $3::boolean AND EXISTS(SELECT 1 FROM server_admins WHERE auth_user_id=$2) AS admin
+                NOT $3::boolean AND EXISTS(SELECT 1 FROM server_admins WHERE auth_user_id=$2) AS admin,
+                ARRAY(SELECT achievement_id FROM achievement_unlocks
+                 WHERE profile_id=$1 AND achievement_id=ANY($4::text[])) AS cosmetic_achievements
          FROM booster_packs WHERE profile_id=$1 AND opened_at IS NULL`,
-        [p.id, actor.id, !!actor.isAnonymous],
+        [
+          p.id,
+          actor.id,
+          !!actor.isAnonymous,
+          COSMETIC_SETS.map(({ achievementId }) => achievementId),
+        ],
       );
       return {
         rankedAcknowledged: p.ranked_acknowledged === true,
@@ -376,6 +394,9 @@ export class GameStore {
         sharedDraftRating: p.shared_draft_rating,
         played: p.played,
         ratedCosmeticGames: p.rated_cosmetic_games,
+        unlockedCosmeticSets: COSMETIC_SETS.filter(({ achievementId }) =>
+          account.cosmetic_achievements.includes(achievementId),
+        ).map(({ id }) => id),
         wins: p.wins,
         losses: p.losses,
         draws: p.draws,
@@ -1646,6 +1667,25 @@ export class GameStore {
         unlockedAt:
           unlocked.find((u) => u.achievement_id === a.id)?.unlocked_at.toISOString() ?? null,
       }));
+    });
+  }
+  async grantAchievement(actorId: string, profileId: unknown, achievementId: unknown) {
+    if (typeof profileId !== 'string' || !profileId) throw new GameError('Choose a player.');
+    const achievement = ACHIEVEMENTS.find(({ id }) => id === achievementId);
+    if (!achievement) throw new GameError('Choose a valid achievement.');
+    return this.db.tx(async (sql) => {
+      if (!(await sql('SELECT 1 FROM profiles WHERE id=$1 AND NOT is_bot', [profileId])).length)
+        throw new GameError('Player not found.', 404);
+      const granted = await sql(
+        `INSERT INTO achievement_unlocks(profile_id,achievement_id,granted_by)
+         VALUES($1,$2,$3) ON CONFLICT DO NOTHING RETURNING achievement_id`,
+        [profileId, achievement.id, actorId],
+      );
+      if (granted.length)
+        await sql('UPDATE profiles SET profile_revision=profile_revision+1 WHERE id=$1', [
+          profileId,
+        ]);
+      return { profileId, granted: granted.length > 0 };
     });
   }
   async playerProfile(id: string): Promise<PlayerProfileView> {

@@ -58,7 +58,8 @@ export async function createPlatform(
   const replays = new MatchReplays(db);
   const customizations = new ProfileCustomizations(db);
   const review = new PlayerReview(db);
-  if (process.env.TRIAD_LOCAL_TEST === 'true')
+  const achievementGrantsEnabled = process.env.TRIAD_LOCAL_TEST === 'true';
+  if (achievementGrantsEnabled)
     await security.action('127.0.0.1', 'allow-shared', 'Isolated PC test save');
   const guests = new GuestLifecycle(store);
   setGuestCleanup((ids) => guests.discard(ids));
@@ -516,6 +517,15 @@ export async function createPlatform(
     notify();
     return result;
   });
+  if (achievementGrantsEnabled)
+    app.post('/api/admin/achievement-grants', async (req) => {
+      const admin = await profile(req);
+      if (!admin.isAdmin) throw new GameError('Administrator access required.', 403);
+      const { profileId, achievementId } = body(req);
+      const result = await store.grantAchievement(admin.id, profileId, achievementId);
+      if (result.granted) notifySite(req, admin.id, ['profile'], [], [result.profileId]);
+      return { granted: result.granted };
+    });
   app.get('/api/local-control/users', async (req) => {
     requireHost(req);
     return {
@@ -636,7 +646,8 @@ export async function createPlatform(
   });
   app.get('/api/profile', async (req) => {
     const { actor, requested } = await sessionActor(req);
-    return store.profile(actor, requested);
+    const p = await store.profile(actor, requested);
+    return achievementGrantsEnabled ? { ...p, achievementGrantsEnabled: true } : p;
   });
   app.post('/api/tutorial/complete', async (req) => {
     await store.completeTutorial((await profile(req)).id);

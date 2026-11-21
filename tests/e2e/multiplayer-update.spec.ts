@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import sharp from 'sharp';
 import { createPlatform } from '../../apps/server/src/app';
 import { RANKED_RULES, STANDARD, type GameState } from '../../packages/engine/src/index';
+import { COSMETIC_SETS } from '../../packages/shared/src/customization';
 import { navigateTo, openNavigation } from './helpers';
 
 let platform: Awaited<ReturnType<typeof createPlatform>>;
@@ -11,12 +12,16 @@ let origin: string;
 let serial = 0;
 test.beforeAll(async () => {
   const previous = process.env.DATA_DIR;
+  const previousLocalTest = process.env.TRIAD_LOCAL_TEST;
   process.env.DATA_DIR = await mkdtemp(resolve('.cache/pw-multiplayer-'));
+  process.env.TRIAD_LOCAL_TEST = 'true';
   try {
     platform = await createPlatform(resolve('.'), { memory: true, timers: false });
   } finally {
     if (previous === undefined) delete process.env.DATA_DIR;
     else process.env.DATA_DIR = previous;
+    if (previousLocalTest === undefined) delete process.env.TRIAD_LOCAL_TEST;
+    else process.env.TRIAD_LOCAL_TEST = previousLocalTest;
   }
   await platform.bots.set(false);
   await platform.app.listen({ port: 0, host: '127.0.0.1' });
@@ -71,7 +76,7 @@ async function player(browser: Browser, name?: string) {
     profile: await platform.store.profile(actor),
     context,
     page: await context.newPage(),
-    async request(path: string, payload: Record<string, unknown>) {
+    async request(path: string, payload: Record<string, unknown>, expectedStatus = 200) {
       const result = await platform.app.inject({
         method: 'POST',
         url: `/api${path}`,
@@ -79,7 +84,7 @@ async function player(browser: Browser, name?: string) {
         remoteAddress,
         headers: { authorization: `Bearer ${token}` },
       });
-      expect(result.statusCode, result.body).toBe(200);
+      expect(result.statusCode, result.body).toBe(expectedStatus);
       return result.json();
     },
   };
@@ -386,6 +391,89 @@ async function waitForArt(art: Locator) {
   });
 }
 
+test('an admin can grant one cosmetic achievement to a player on the test server', async ({
+  browser,
+}, info) => {
+  test.skip(info.project.name !== 'desktop');
+  test.setTimeout(60_000);
+  const admin = await player(browser, 'Test administrator');
+  const recipient = await player(browser, 'Cosmetic tester');
+  const path = '/admin/achievement-grants';
+  const grant = { profileId: recipient.profile.id, achievementId: 'rated-500' };
+  try {
+    await platform.db.read((sql) =>
+      sql(
+        'INSERT INTO server_admins(auth_user_id) SELECT auth_user_id FROM profile_accounts WHERE profile_id=$1 AND is_primary',
+        [admin.profile.id],
+      ),
+    );
+    await recipient.request(path, grant, 403);
+    await admin.request(path, { ...grant, achievementId: 'invalid' }, 400);
+    const publicProfile = `/profile/?id=${recipient.profile.id}`;
+    await Promise.all([admin.page.goto(publicProfile), recipient.page.goto('/play/')]);
+    await expect.poll(() => platform.store.isOnline?.(recipient.profile.id)).toBe(true);
+    await recipient.page.getByRole('button', { name: 'Game settings', exact: true }).click();
+    await recipient.page.getByRole('button', { name: 'Appearance', exact: true }).click();
+    const appearance = recipient.page.getByRole('dialog', { name: 'Appearance' });
+    const board = appearance.locator('input[name="board-theme"][value="regalia"]');
+    const back = appearance.locator('input[name="card-back"][value="regalia"]');
+    await expect(board).toBeDisabled();
+    await expect(back).toBeDisabled();
+
+    const grants = admin.page.locator('.admin-grant');
+    await grants.locator('summary').click();
+    await grants.locator('select[name="admin-grant-select-1"]').selectOption('achievement');
+    await grants
+      .getByRole('combobox', { name: 'Achievement', exact: true })
+      .selectOption('rated-500');
+    await grants.getByRole('button', { name: 'Grant to Cosmetic tester' }).click();
+    await expect(grants.getByRole('status')).toHaveText('Achievement granted.');
+    await expect(board).toBeEnabled();
+    await expect(back).toBeEnabled();
+    await expect(appearance.locator('input[name="board-theme"][value="eclipse"]')).toBeDisabled();
+    await expect(appearance.getByText('0 rated games', { exact: true })).toBeVisible();
+    expect(await admin.request(path, grant)).toEqual({ granted: false });
+    const [record] = await platform.db.read((sql) =>
+      sql('SELECT granted_by FROM achievement_unlocks WHERE profile_id=$1 AND achievement_id=$2', [
+        recipient.profile.id,
+        'rated-500',
+      ]),
+    );
+    expect(record.granted_by).toBe(admin.profile.id);
+    await appearance.locator('label:has(input[name="board-theme"][value="regalia"])').click();
+    await appearance.locator('label:has(input[name="card-back"][value="regalia"])').click();
+    await appearance.getByRole('button', { name: 'Done' }).click();
+    await expect(recipient.page.locator('.game-shell')).toHaveAttribute(
+      'data-board-theme',
+      'regalia',
+    );
+    await expect(recipient.page.locator('.game-shell')).toHaveAttribute(
+      'data-card-back',
+      'regalia',
+    );
+
+    await recipient.page.goto('/achievements/?achievement=rated-500');
+    const achievement = recipient.page.getByRole('complementary', { name: 'Achievement details' });
+    await expect(achievement.getByText('Regalia set', { exact: true })).toBeVisible();
+    await expect(achievement.getByText('Unlocked', { exact: true })).toBeVisible();
+    await recipient.page.goto('/profile/');
+    await recipient.page.getByRole('button', { name: 'Customize profile' }).click();
+    const editor = recipient.page.getByRole('dialog', { name: 'Customize profile' });
+    await editor.getByRole('tab', { name: 'Portrait frames' }).click();
+    await editor.getByRole('button', { name: 'Regalia portrait frame' }).click();
+    await editor.getByRole('tab', { name: 'Banners' }).click();
+    await editor.locator('label:has(input[value="regalia"])').click();
+    await editor.getByRole('button', { name: 'Save profile' }).click();
+    await expect(recipient.page.locator('.profile-header')).toHaveAttribute(
+      'data-profile-banner',
+      'regalia',
+    );
+    await expect(recipient.page.locator('.profile-portrait .frame-regalia')).toBeVisible();
+  } finally {
+    await Promise.all([admin.context.close(), recipient.context.close()]);
+  }
+});
+
 test('previews and retains battle cosmetics and shows a saved banner on another player’s profile', async ({
   browser,
 }, info) => {
@@ -394,7 +482,10 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
   const { page } = a;
   try {
     await platform.db.read((sql) =>
-      sql('UPDATE profiles SET rated_cosmetic_games=500 WHERE id=$1', [a.profile.id]),
+      sql(
+        'INSERT INTO achievement_unlocks(profile_id,achievement_id) SELECT $1,unnest($2::text[])',
+        [a.profile.id, COSMETIC_SETS.map(({ achievementId }) => achievementId)],
+      ),
     );
     await b.context.addInitScript(() => {
       localStorage.setItem('triad-board-theme', 'regalia');
@@ -744,7 +835,9 @@ test('keeps Elemental themes and bilingual battle controls aligned across deskto
   const { page } = a;
   try {
     await platform.db.read((sql) =>
-      sql('UPDATE profiles SET rated_cosmetic_games=50 WHERE id=$1', [a.profile.id]),
+      sql("INSERT INTO achievement_unlocks(profile_id,achievement_id) VALUES($1,'rated-50')", [
+        a.profile.id,
+      ]),
     );
     const lobby = await a.request('/lobbies', {
       mode: 'custom',

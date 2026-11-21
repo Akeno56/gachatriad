@@ -25,12 +25,12 @@ export function AppearanceSurface({
   children: ReactNode;
 }) {
   const { profile } = useSession();
-  const played = profile?.ratedCosmeticGames ?? 0;
+  const unlockedSets = profile?.unlockedCosmeticSets;
   return (
     <div
       className={className}
-      data-board-theme={availableStyle(board, played)}
-      data-card-back={availableStyle(cardBack, played)}
+      data-board-theme={availableStyle(board, unlockedSets)}
+      data-card-back={availableStyle(cardBack, unlockedSets)}
     >
       {children}
     </div>
@@ -120,10 +120,11 @@ export function AppearanceSettings({
   const heading = useRef<HTMLHeadingElement>(null);
   const { profile } = useSession();
   const played = profile?.ratedCosmeticGames ?? 0;
+  const unlockedSets = profile?.unlockedCosmeticSets;
   const choices = COSMETIC_STYLES.map(({ id, name, games }) => ({
     id,
     name,
-    unlocked: played >= games,
+    unlocked: availableStyle(id, unlockedSets) === id,
     requirement: `${games} rated games`,
   }));
   return (
@@ -145,7 +146,7 @@ export function AppearanceSettings({
         label="Board theme"
         name="board-theme"
         choices={choices}
-        value={availableStyle(board[0], played)}
+        value={availableStyle(board[0], unlockedSets)}
         onChange={board[1]}
         preview={(id) => (
           <span className="appearance-board-preview" data-board-theme={id} aria-hidden="true">
@@ -159,7 +160,7 @@ export function AppearanceSettings({
         label="Card back"
         name="card-back"
         choices={choices}
-        value={availableStyle(cardBack[0], played)}
+        value={availableStyle(cardBack[0], unlockedSets)}
         onChange={cardBack[1]}
         preview={(id) => (
           <span

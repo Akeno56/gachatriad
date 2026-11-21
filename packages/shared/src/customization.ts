@@ -21,21 +21,26 @@ export const ASTRAL_REWARDS = {
   },
 } as const;
 export const COSMETIC_SETS = [
-  { id: 'slate', name: 'Slate', games: 25 },
-  { id: 'ember', name: 'Ember', games: 50 },
-  { id: 'jade', name: 'Jade', games: 100 },
-  { id: 'eclipse', name: 'Eclipse', games: 200 },
-  { id: 'regalia', name: 'Regalia', games: 500 },
+  { id: 'slate', name: 'Slate', games: 25, achievementId: 'rated-25' },
+  { id: 'ember', name: 'Ember', games: 50, achievementId: 'rated-50' },
+  { id: 'jade', name: 'Jade', games: 100, achievementId: 'rated-100' },
+  { id: 'eclipse', name: 'Eclipse', games: 200, achievementId: 'rated-200' },
+  { id: 'regalia', name: 'Regalia', games: 500, achievementId: 'rated-500' },
 ] as const;
+export type CosmeticSetId = (typeof COSMETIC_SETS)[number]['id'];
 export const COSMETIC_STYLES = [
   { id: 'classic', name: 'Classic', games: 0 },
   ...COSMETIC_SETS,
   { id: 'astral', name: 'Astral', games: 0 },
 ] as const;
 export type CosmeticStyle = (typeof COSMETIC_STYLES)[number]['id'];
-export function availableStyle(style: CosmeticStyle, played: number): CosmeticStyle {
-  const choice = COSMETIC_STYLES.find(({ id }) => id === style);
-  return choice && played >= choice.games ? style : 'classic';
+export function availableStyle(
+  style: CosmeticStyle,
+  unlockedSets: readonly CosmeticSetId[] = [],
+): CosmeticStyle {
+  return style === 'classic' || style === 'astral' || unlockedSets.includes(style)
+    ? style
+    : 'classic';
 }
 export const PORTRAIT_FRAMES = [
   { id: 'classic', name: 'Classic', games: 0, requirement: 'Available to everyone.' },
@@ -76,12 +81,14 @@ export interface CustomizationView {
 export const ACHIEVEMENT_CATEGORIES = [
   { id: 'all', name: 'All achievements', sigil: '✦' },
   { id: 'duels', name: 'Duels', sigil: '⚔' },
+  { id: 'milestones', name: 'Rated milestones', sigil: '◇' },
   { id: 'techniques', name: 'Techniques', sigil: '＋' },
   { id: 'collection', name: 'Collection', sigil: '▥' },
   { id: 'exchanges', name: 'Exchanges', sigil: '⇄' },
 ] as const;
 export type AchievementCategory = (typeof ACHIEVEMENT_CATEGORIES)[number]['id'];
 export function achievementCategory(id: string): AchievementCategory {
+  if (COSMETIC_SETS.some(({ achievementId }) => achievementId === id)) return 'milestones';
   return id === 'collector'
     ? 'collection'
     : id === 'trade-one'

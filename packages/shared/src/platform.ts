@@ -1,6 +1,12 @@
 import type { Card, GameState, Player, Rules, CpuStyle } from '@gacha-triad/engine';
 import type { BattleIdentity, TitleView } from './social';
-import type { PortraitFrame, FeaturedMode, ProfileBanner } from './customization';
+import {
+  COSMETIC_SETS,
+  type CosmeticSetId,
+  type PortraitFrame,
+  type FeaturedMode,
+  type ProfileBanner,
+} from './customization';
 export const RATED_MODES = ['ranked', 'ranked-random', 'draft', 'shared-draft'] as const;
 export type RatedMode = (typeof RATED_MODES)[number];
 export type Mode = 'solo' | 'casual' | 'custom' | RatedMode | 'roulette' | 'correspondence';
@@ -156,6 +162,8 @@ export interface ProfileView {
   sharedDraftRating: number;
   played: number;
   ratedCosmeticGames?: number;
+  unlockedCosmeticSets?: CosmeticSetId[];
+  achievementGrantsEnabled?: boolean;
   wins: number;
   losses: number;
   draws: number;
@@ -330,6 +338,13 @@ export const ACHIEVEMENTS = [
     stat: 'collection',
     target: 50,
   },
+  ...COSMETIC_SETS.map(({ achievementId, name, games }) => ({
+    id: achievementId,
+    name: `${name} set`,
+    description: `Complete ${games} rated games.`,
+    stat: 'rated_cosmetic_games' as const,
+    target: games,
+  })),
 ] as const;
 export interface PlayerProfileView {
   bio: string;

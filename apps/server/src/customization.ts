@@ -2,6 +2,7 @@ import { ALL_CARDS } from '@gacha-triad/shared';
 import { ACHIEVEMENTS, isRatedMode } from '@gacha-triad/shared/platform';
 import {
   ASTRAL_REWARDS,
+  COSMETIC_SETS,
   PORTRAIT_FRAMES,
   PROFILE_BANNERS,
   type CustomizationView,
@@ -18,7 +19,6 @@ import { astralRewardGames } from './season-rewards';
 const cards = new Set(ALL_CARDS.map((c) => c.id));
 interface Row {
   id: string;
-  rated_cosmetic_games: number;
   profile_revision: number;
   profile_bio: string;
   portrait_frame: PortraitFrame;
@@ -49,6 +49,9 @@ export class ProfileCustomizations {
       [id],
     );
     const unlocked = new Set(earned.map((a) => a.achievement_id));
+    const unlockedSets = new Set(
+      COSMETIC_SETS.filter(({ achievementId }) => unlocked.has(achievementId)).map(({ id }) => id),
+    );
     const astralGames = await astralRewardGames(sql, id);
     const owned = new Set(
       (
@@ -75,9 +78,9 @@ export class ProfileCustomizations {
         name,
         requirement,
         unlocked:
-          (id === ASTRAL_REWARDS.frame.id || id === ASTRAL_REWARDS.staticFrame.id
-            ? astralGames
-            : p.rated_cosmetic_games) >= games,
+          id === ASTRAL_REWARDS.frame.id || id === ASTRAL_REWARDS.staticFrame.id
+            ? astralGames >= games
+            : id === 'classic' || unlockedSets.has(id),
       })),
       banners: PROFILE_BANNERS.map(({ id, name, games }) => ({
         id,
@@ -88,7 +91,10 @@ export class ProfileCustomizations {
             : games
               ? `${games} rated games`
               : undefined,
-        unlocked: (id === ASTRAL_REWARDS.banner.id ? astralGames : p.rated_cosmetic_games) >= games,
+        unlocked:
+          id === ASTRAL_REWARDS.banner.id
+            ? astralGames >= games
+            : id === 'classic' || id === 'astral' || unlockedSets.has(id),
       })),
       titles: await titlesFor(sql, id),
       achievements: earned.flatMap((a) => {

@@ -149,6 +149,7 @@ export async function createController(options = {}) {
       env: {
         ...process.env,
         DATA_DIR: dataDir,
+        TRIAD_LOCAL_TEST: String(localTest),
         SERVER_PORT: String(config.gamePort),
         SERVER_HOST: '127.0.0.1',
         NODE_ENV: 'production',
