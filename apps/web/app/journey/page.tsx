@@ -15,7 +15,7 @@ import { useSession } from '../../components/session';
 import { usePageRefresh } from '../../components/use-page-refresh';
 import { SeasonBanner } from '../../components/season-banner';
 import { Avatar } from '../../components/avatar';
-import { AstralCrestEffects } from '../../components/astral-crest-effects';
+import { AstralCrestArt } from '../../components/astral-art';
 import { Tabs, Button, GameDialog } from '../../components/ui';
 import { api } from '../../lib/platform';
 import { matchModeNames } from '../../lib/rules';
@@ -355,7 +355,7 @@ export default function JourneyPage() {
                               className="appearance-banner-preview"
                               data-profile-banner={reward.id}
                             >
-                              <AstralCrestEffects bannerId={ASTRAL_REWARDS.banner.id} />
+                              <AstralCrestArt bannerId={ASTRAL_REWARDS.banner.id} />
                             </span>
                           )}
                         </div>

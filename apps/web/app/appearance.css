@@ -124,24 +124,7 @@
 
 [data-profile-banner='astral-crest'] {
   --banner-edge: #d8bd83;
-  --banner-image:
-    linear-gradient(
-      118deg,
-      transparent 56%,
-      #ded7ff39 56.3% 56.7%,
-      transparent 57% 61%,
-      #d2b87e70 61.3% 61.7%,
-      #bda2ec24 62%
-    ),
-    linear-gradient(
-      62deg,
-      transparent 52%,
-      #c0a9f630 52.3% 52.7%,
-      transparent 53% 70%,
-      #dcc28b57 70.3% 70.7%,
-      #c6a8ec22 71%
-    ),
-    linear-gradient(112deg, #13192d, #242749 50%, #4a3a69);
+  --banner-image: linear-gradient(112deg, #0c1123, #222045);
 }
 
 :is(.profile-header, .profile-editor-preview, .appearance-banner-preview):is(
@@ -160,20 +143,6 @@
 )[data-profile-banner='astral-crest'] {
   position: relative;
   isolation: isolate;
-
-  &::before {
-    position: absolute;
-    z-index: -1;
-    inset: 50% 10% auto auto;
-    width: min(28%, 90px);
-    aspect-ratio: 1;
-    transform: translateY(-50%);
-    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
-    background: linear-gradient(135deg, #fae4af, #c0a0e6 55%, #806da7);
-    opacity: 0.6;
-    pointer-events: none;
-    content: '';
-  }
 }
 
 .appearance-dialog {

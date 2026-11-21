@@ -12,7 +12,7 @@ import { usePageRefresh } from '../../components/use-page-refresh';
 import { LocaleView, NoTranslate, LocalizedDate } from '../../components/i18n';
 import { Button } from '../../components/ui';
 import { Avatar } from '../../components/avatar';
-import { AstralCrestEffects } from '../../components/astral-crest-effects';
+import { AstralCrestArt } from '../../components/astral-art';
 import { Card } from '../../components/card';
 import { CardDetail } from '../../components/card-detail';
 import { BotStyle } from '../../components/bot-style';
@@ -131,7 +131,7 @@ function PlayerProfile() {
         {player && (
           <>
             <section className="menu-window profile-header" data-profile-banner={player.bannerId}>
-              <AstralCrestEffects bannerId={player.bannerId} />
+              <AstralCrestArt bannerId={player.bannerId} />
               <div className="profile-portrait">
                 <Avatar card={player.avatar} name={player.name} frameId={player.frameId} />
               </div>

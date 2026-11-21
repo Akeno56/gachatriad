@@ -13,7 +13,7 @@ import {
 import { api, ApiError } from '../lib/platform';
 import { Button, GameDialog, Tabs } from './ui';
 import { Avatar } from './avatar';
-import { AstralCrestEffects } from './astral-crest-effects';
+import { AstralCrestArt } from './astral-art';
 import { ProfileCardPicker } from './profile-card-picker';
 import { AppearanceChoices } from './appearance-settings';
 import { LocaleView, NoTranslate } from './i18n';
@@ -386,7 +386,7 @@ export function ProfileEditor({
                           data-profile-banner={style}
                           aria-hidden="true"
                         >
-                          <AstralCrestEffects bannerId={style} />
+                          <AstralCrestArt bannerId={style} />
                         </span>
                       )}
                     />
@@ -412,7 +412,7 @@ export function ProfileEditor({
                 aria-label="Profile preview"
                 data-profile-banner={previewBanner}
               >
-                <AstralCrestEffects bannerId={previewBanner} />
+                <AstralCrestArt bannerId={previewBanner} />
                 <span className="profile-preview-label">Preview</span>
                 <Avatar card={card} name={profile.name} frameId={previewFrame} />
                 <h3>
