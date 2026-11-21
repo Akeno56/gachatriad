@@ -148,6 +148,14 @@ test('keeps a duel invitation in the top-bar inbox and skips profile and board r
     const shortcut = b.page.locator('.social-navigation');
     await expect(shortcut.locator('.social-indicator')).toHaveText('!');
     await expect(shortcut).toBeInViewport({ ratio: 1 });
+    const popup = b.page.locator('.live-invite-popup');
+    await expect(popup).toContainText('Live duel invitation');
+    await expect(popup).toContainText(a.profile.name);
+    await expect(popup.getByRole('link')).toHaveAttribute('href', /\/social\/?\?tab=inbox$/);
+    await expect(popup).toBeInViewport({ ratio: 1 });
+    await expect(a.page.locator('.live-invite-popup')).toHaveCount(0);
+    await expect(popup).toHaveCount(0, { timeout: 12_000 });
+    await expect(shortcut.locator('.social-indicator')).toHaveText('!');
     await navigateTo(b.page, 'Decks');
     await shortcut.click();
     const inbox = b.page.getByRole('region', { name: 'Duel invitations' });
@@ -260,6 +268,7 @@ test('fits French correspondence invitations and opens them through the new soci
     const invitation = b.page.locator('.social-card[data-incoming=true]').first();
     await expect(invitation).toContainText(a.profile.name);
     await expect(invitation).toContainText('Correspondance · 72 h par tour');
+    await expect(b.page.locator('.live-invite-popup')).toHaveCount(0);
     const check = async () => {
       await expect(invitation.getByRole('button', { name: 'Accepter la partie' })).toBeInViewport();
       expect(
@@ -673,16 +682,39 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
         .getByRole('group', { name: 'Board theme' })
         .getByRole('radio', { name: 'Classic' }),
     ).toBeChecked();
+    const classicImage = await table.evaluate((el) => getComputedStyle(el).backgroundImage);
+    const classicThumbnail = appearance.locator(
+      '.appearance-board-preview[data-board-theme="classic"]',
+    );
+    await expect(classicThumbnail).toHaveCSS('background-image', classicImage);
     for (const theme of ['slate', 'ember', 'jade', 'eclipse', 'regalia', 'astral']) {
       for (const setting of ['board-theme', 'card-back']) {
         await appearance.locator(`label:has(input[name="${setting}"][value="${theme}"])`).click();
       }
       await expect(table).toHaveCSS('background-image', new RegExp(`${theme}-board`));
+      const thumbnail = appearance.locator(
+        `.appearance-board-preview[data-board-theme="${theme}"]`,
+      );
+      await expect(thumbnail).toHaveCSS(
+        'background-image',
+        await table.evaluate((el) => getComputedStyle(el).backgroundImage),
+      );
+      await expect(thumbnail.locator('.appearance-preview-grid > span')).toHaveCount(9);
+      expect(
+        await thumbnail.evaluate(
+          (el) => el.getBoundingClientRect().width > el.getBoundingClientRect().height,
+        ),
+      ).toBe(true);
       await expect(hiddenCard).toHaveCSS('background-image', new RegExp(`${theme}-back`));
       await Promise.all([waitForArt(table), waitForArt(hiddenCard)]);
-      if (theme === 'regalia')
-        await table.screenshot({ path: info.outputPath('regalia-arena.png') });
+      if (info.project.name === 'desktop')
+        await table.screenshot({
+          path: info.outputPath(`${theme}-arena.png`),
+          style:
+            'dialog.appearance-dialog, dialog.appearance-dialog::backdrop { visibility: hidden }',
+        });
     }
+    await expect(classicThumbnail).toHaveCSS('background-image', classicImage);
     await appearance
       .locator('.appearance-card-preview[data-card-back="astral"]')
       .screenshot({ path: info.outputPath('astral-card-back-preview.png') });

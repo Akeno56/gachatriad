@@ -3,7 +3,6 @@
   --duel-hand-card: clamp(76px, calc(var(--duel-card) * 0.74), 106px);
   --duel-board: calc(3 * var(--duel-card) + 24px);
   --duel-border: #78694e;
-  --duel-table: #101e33;
   grid-template-columns: minmax(0, 1fr) clamp(244px, 21vw, 305px);
   grid-template-rows: auto;
   align-items: start;
@@ -176,9 +175,6 @@ body:has(.arena-screen) .system-bar :is(.release-trigger, .player-navigation) {
   box-shadow:
     inset 0 0 0 3px #16213a,
     inset 0 0 0 4px #2d3f57;
-  background:
-    radial-gradient(ellipse at center, #29466183, transparent 69%),
-    repeating-linear-gradient(135deg, #718dad0a 0 1px, transparent 1px 6px), var(--duel-table);
 }
 
 .arena-screen .board-area {

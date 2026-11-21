@@ -198,20 +198,6 @@ def theme_plate(x, y, theme, palette, strength):
         light(pixels, gaussian(seam, 0.011) * gaussian(px, 0.31) * strength * 0.36, palette["light"])
         light(pixels, gaussian(seam + 0.10, 0.004) * gaussian(px, 0.25) * strength * 0.24,
               palette["echo"])
-    elif theme in ("eclipse", "regalia"):
-        px, py = (x - 0.73) * 1.8, y - 0.47
-        angle = np.arctan2(py, px)
-        radius = np.hypot(px, py)
-        band = gaussian(radius - 0.33, 0.14) * smoothstep(0.14, 0.84, x)
-        light(pixels, band * 0.56 * strength, palette["body"])
-        spokes = np.cos((12 if theme == "eclipse" else 18) * angle) ** 24
-        for ring, opacity in ((0.29, 0.65), (0.32, 0.28), (0.39, 0.41), (0.46, 0.19)):
-            light(pixels, gaussian(radius - ring, 0.005) * opacity * strength, palette["metal"])
-        light(pixels, gaussian(radius - 0.42, 0.043) * spokes * strength * 0.48, palette["metal"])
-        if theme == "regalia":
-            for offset in (0.18, 0.33, 0.48):
-                lattice = np.abs(px) + np.abs(py) - offset
-                light(pixels, gaussian(lattice, 0.005) * strength * 0.38, palette["light"])
     return pixels
 
 
@@ -263,16 +249,22 @@ def theme_banner(x, y, theme, palette):
 
 
 def theme_board(x, y, theme, palette):
-    field = theme_plate(x, y, theme, palette, 0.59)
-    edge = bevel_distance(x, y, 0.48, 0.465, 0.038)
-    light(field, gaussian(edge, 0.002) * 0.38, palette["metal"])
-    if THEME_DETAIL[theme] > 0:
-        light(field, gaussian(edge + 0.012, 0.002) * 0.20, palette["metal"])
-    if THEME_DETAIL[theme] > 2:
-        corner = gaussian(np.abs(x - 0.5) - 0.414, 0.034)
-        light(field, gaussian(edge + 0.012, 0.008) * corner * 0.45, palette["light"])
-    # Keep the table a dark surround for cards and board cells.
-    field *= (0.78 + 0.22 * gaussian(x - 0.5, 0.42))[..., None]
+    # The table reads as a dark, brushed surface around the grid and hand cards.
+    side_x = np.minimum(x, 1 - x)
+    detail = THEME_DETAIL[theme]
+    field = np.full(x.shape + (3,), palette["base"], dtype=np.float32) / 255
+    surround = 1 - smoothstep(0.16, 0.39, side_x)
+    brushed = 0.5 + 0.5 * np.sin(TAU * 88 * (y + 0.64 * side_x))
+    light(field, (0.06 + 0.10 * surround + 0.028 * surround * brushed), palette["body"])
+    light(field, 0.15 * surround * smoothstep(0.10, 0.98, y), palette["echo"])
+
+    # The continuous inset stays visible above and below either hand.
+    edge = bevel_distance(x, y, 0.475, 0.458, 0.025 + 0.003 * detail)
+    light(field, gaussian(edge + 0.007, 0.014) * 0.16, palette["body"])
+    trim = palette["light"] if theme == "eclipse" else palette["metal"]
+    light(field, gaussian(edge, 0.002) * (0.18 + 0.018 * detail), trim)
+    if detail >= 2:
+        light(field, gaussian(edge + 0.014, 0.0017) * 0.11, trim)
     return field
 
 

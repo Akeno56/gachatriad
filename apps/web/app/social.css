@@ -31,6 +31,70 @@
   font: 16px/1 var(--pixel);
 }
 
+.live-invite-notice {
+  position: fixed;
+  z-index: 6;
+  inset-block-start: calc(64px + env(safe-area-inset-top, 0px));
+  inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
+  pointer-events: none;
+}
+
+.live-invite-popup {
+  display: flex;
+  width: min(232px, calc(100vw - 24px));
+  align-items: start;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid #aa9767;
+  box-shadow:
+    inset 0 0 0 2px #293a59,
+    0 4px 12px #080d1b99;
+  background: #111d34;
+  pointer-events: auto;
+  animation: live-invite-fade linear both;
+}
+
+.live-invite-popup a {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+  padding: 4px 5px;
+  overflow-wrap: anywhere;
+}
+
+.live-invite-popup strong {
+  color: var(--gold);
+  font: 20px/1.05 var(--pixel);
+}
+
+.live-invite-popup span {
+  color: #d8e4f4;
+  font: 600 14px/1.2 var(--sans);
+}
+
+.system-controls .live-invite-popup button {
+  padding: 0 5px;
+  min-height: 22px;
+  font: 19px/1 var(--pixel);
+}
+
+@keyframes live-invite-fade {
+  0%,
+  96% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-invite-popup {
+    animation-name: none;
+  }
+}
+
 .title-screen .tavern-layout .matchmaking-panel .correspondence-shortcut {
   display: grid;
   place-items: center;

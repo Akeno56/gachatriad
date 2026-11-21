@@ -150,9 +150,11 @@ export function AppearanceSettings({
         onChange={board[1]}
         preview={(id) => (
           <span className="appearance-board-preview" data-board-theme={id} aria-hidden="true">
-            {Array.from({ length: 9 }, (_, index) => (
-              <span key={index} />
-            ))}
+            <span className="appearance-preview-grid">
+              {Array.from({ length: 9 }, (_, index) => (
+                <span key={index} />
+              ))}
+            </span>
           </span>
         )}
       />
