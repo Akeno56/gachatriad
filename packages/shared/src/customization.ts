@@ -1,4 +1,19 @@
 import type { TitleView } from './social';
+export const ASTRAL_REWARDS = {
+  seasonId: 0,
+  frame: {
+    id: 'astral',
+    name: 'Astral frame',
+    games: 5,
+    requirement: 'Complete 5 full rated games in Astral.',
+  },
+  banner: {
+    id: 'astral-crest',
+    name: 'Astral Crest',
+    games: 15,
+    requirement: 'Complete 15 full rated games in Astral for Astral Crest.',
+  },
+} as const;
 export const PORTRAIT_FRAMES = [
   { id: 'classic', name: 'Classic', achievementId: null, requirement: 'Available to everyone.' },
   {
@@ -21,6 +36,12 @@ export const PORTRAIT_FRAMES = [
     requirement: 'Make two Combo captures in one turn.',
   },
   { id: 'gold', name: 'Gold', achievementId: 'hundred-wins', requirement: 'Win 100 duels.' },
+  {
+    id: ASTRAL_REWARDS.frame.id,
+    name: 'Astral',
+    achievementId: null,
+    requirement: ASTRAL_REWARDS.frame.requirement,
+  },
 ] as const;
 export type PortraitFrame = (typeof PORTRAIT_FRAMES)[number]['id'];
 export const COSMETIC_STYLES = [
@@ -29,12 +50,17 @@ export const COSMETIC_STYLES = [
   { id: 'ember', name: 'Ember' },
 ] as const;
 export type CosmeticStyle = (typeof COSMETIC_STYLES)[number]['id'];
+export const PROFILE_BANNERS = [
+  ...COSMETIC_STYLES,
+  { id: ASTRAL_REWARDS.banner.id, name: ASTRAL_REWARDS.banner.name },
+] as const;
+export type ProfileBanner = (typeof PROFILE_BANNERS)[number]['id'];
 export type FeaturedMode = import('./platform').RatedMode;
 export interface ProfileCustomization {
   revision: number;
   bio: string;
   frameId: PortraitFrame;
-  bannerId?: CosmeticStyle;
+  bannerId?: ProfileBanner;
   featuredMode: FeaturedMode;
   featuredCards: string[];
   featuredAchievements: string[];
@@ -50,6 +76,7 @@ export interface CustomizationView {
     requirement: string;
     unlocked: boolean;
   }[];
+  banners?: { id: ProfileBanner; name: string; unlocked: boolean }[];
   titles: TitleView[];
   achievements: { id: string; name: string; unlockedAt: string }[];
 }

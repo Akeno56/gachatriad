@@ -176,4 +176,5 @@ export interface JourneyView {
   chapters: { id: JourneyChapterId; completed: boolean }[];
   season: typeof CURRENT_SEASON;
   records: SeasonRecord[];
+  seasonRewardGames?: number;
 }

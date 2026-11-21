@@ -2,11 +2,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ALL_CARDS, SIDE_NAMES } from '@gacha-triad/shared';
 import type { ProfileView } from '@gacha-triad/shared/platform';
-import type {
-  CustomizationView,
-  ProfileCustomization,
-  PortraitFrame,
-  FeaturedMode,
+import {
+  ASTRAL_REWARDS,
+  COSMETIC_STYLES,
+  type CustomizationView,
+  type ProfileCustomization,
+  type PortraitFrame,
+  type FeaturedMode,
 } from '@gacha-triad/shared/customization';
 import { api, ApiError } from '../lib/platform';
 import { Button, GameDialog, Tabs } from './ui';
@@ -24,17 +26,19 @@ const comparable = (settings: ProfileCustomization) =>
   });
 export function ProfileEditor({
   profile,
+  initialTab = 'identity',
   onClose,
   onSaved,
 }: {
   profile: ProfileView;
+  initialTab?: 'identity' | 'frames' | 'banners';
   onClose: () => void;
   onSaved: () => void;
 }) {
   const { refreshProfile } = useSession();
   const [data, setData] = useState<CustomizationView | null>(null),
     [draft, setDraft] = useState<ProfileCustomization | null>(null),
-    [tab, setTab] = useState('identity'),
+    [tab, setTab] = useState<string>(initialTab),
     [cardPicker, setCardPicker] = useState<'portrait' | number | null>(null),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
@@ -342,20 +346,26 @@ export function ProfileEditor({
                   </div>
                 )}
                 {tab === 'banners' && draft.bannerId && (
-                  <AppearanceChoices
-                    label="Profile banner"
-                    name="profile-banner"
-                    value={draft.bannerId}
-                    disabled={busy}
-                    onChange={(style) => field('bannerId', style)}
-                    preview={(style) => (
-                      <span
-                        className="appearance-banner-preview"
-                        data-profile-banner={style}
-                        aria-hidden="true"
-                      />
+                  <>
+                    <AppearanceChoices
+                      label="Profile banner"
+                      name="profile-banner"
+                      choices={data.banners ?? COSMETIC_STYLES}
+                      value={draft.bannerId}
+                      disabled={busy}
+                      onChange={(style) => field('bannerId', style)}
+                      preview={(style) => (
+                        <span
+                          className="appearance-banner-preview"
+                          data-profile-banner={style}
+                          aria-hidden="true"
+                        />
+                      )}
+                    />
+                    {data.banners?.some((banner) => !banner.unlocked) && (
+                      <p className="cosmetic-requirement">{ASTRAL_REWARDS.banner.requirement}</p>
                     )}
-                  />
+                  </>
                 )}
               </div>
               <aside

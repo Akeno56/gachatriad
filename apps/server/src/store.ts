@@ -55,7 +55,7 @@ import { draftTurn, legalDraftCards, type SharedDraft } from './shared-draft';
 import { pruneDeck } from './inventory';
 import { titleName, titlesFor, awardRankTitles } from './titles';
 import { archiveReplay } from './replays';
-import type { PortraitFrame, FeaturedMode, CosmeticStyle } from '@gacha-triad/shared/customization';
+import type { PortraitFrame, FeaturedMode, ProfileBanner } from '@gacha-triad/shared/customization';
 export interface Actor {
   id: string;
   name: string;
@@ -216,6 +216,7 @@ export class GameStore {
       '026_collection_choices.sql',
       '027_profile_banners.sql',
       '028_battle_stamps.sql',
+      '029_astral_cosmetics.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -1666,7 +1667,7 @@ export class GameStore {
         id: p.id,
         bio: String(p.profile_bio ?? ''),
         frameId: (p.portrait_frame as PortraitFrame) ?? 'classic',
-        bannerId: (p.profile_banner as CosmeticStyle) ?? 'classic',
+        bannerId: (p.profile_banner as ProfileBanner) ?? 'classic',
         featuredMode: (p.featured_mode as FeaturedMode) ?? 'ranked',
         featuredCards: showcase.flatMap((id) => (owned.has(id) ? (byId.get(id) ?? []) : [])),
         featuredAchievements: ((p.showcase_achievements ?? []) as string[]).flatMap(

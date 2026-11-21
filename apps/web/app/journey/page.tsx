@@ -1,6 +1,8 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { ALL_CARDS } from '@gacha-triad/shared';
+import { ASTRAL_REWARDS } from '@gacha-triad/shared/customization';
 import {
   JOURNEY_CHAPTERS,
   WEEKLY_ALTERNATIVES,
@@ -12,6 +14,7 @@ import { LocaleView, LocalizedDate } from '../../components/i18n';
 import { useSession } from '../../components/session';
 import { usePageRefresh } from '../../components/use-page-refresh';
 import { SeasonBanner } from '../../components/season-banner';
+import { Avatar } from '../../components/avatar';
 import { Tabs, Button, GameDialog } from '../../components/ui';
 import { api } from '../../lib/platform';
 import { matchModeNames } from '../../lib/rules';
@@ -31,6 +34,7 @@ export default function JourneyPage() {
   const [swapError, setSwapError] = useState('');
   const saving = useRef(false);
   const data = snapshot?.owner === profile?.id ? snapshot?.value : null;
+  const seasonRewardGames = data?.seasonRewardGames;
   useEffect(() => {
     if (!profile) return;
     let active = true;
@@ -327,6 +331,69 @@ export default function JourneyPage() {
                 View leaderboards <span aria-hidden="true">→</span>
               </Link>
             </header>
+            {data.season.id === ASTRAL_REWARDS.seasonId && seasonRewardGames !== undefined && (
+              <section className="season-rewards" aria-labelledby="season-rewards-title">
+                <h3 id="season-rewards-title">Astral rewards</h3>
+                <p>Full rated games count toward these rewards.</p>
+                <div className="season-reward-list">
+                  {(['frame', 'banner'] as const).map((kind) => {
+                    const reward = ASTRAL_REWARDS[kind];
+                    const progress = Math.min(seasonRewardGames, reward.games);
+                    const unlocked = progress === reward.games;
+                    return (
+                      <article key={reward.id} className="season-reward">
+                        <div className="season-reward-art" aria-hidden="true">
+                          {kind === 'frame' ? (
+                            <Avatar
+                              card={ALL_CARDS.find((card) => card.id === profile?.avatarCardId)}
+                              name={profile?.name ?? 'Astral'}
+                              frameId={ASTRAL_REWARDS.frame.id}
+                            />
+                          ) : (
+                            <span
+                              className="appearance-banner-preview"
+                              data-profile-banner={reward.id}
+                            />
+                          )}
+                        </div>
+                        <div className="season-reward-info">
+                          <h4>{reward.name}</h4>
+                          <div className="season-reward-progress">
+                            <progress
+                              value={progress}
+                              max={reward.games}
+                              aria-label={reward.name}
+                            />
+                            <span>
+                              {progress} / {reward.games}
+                            </span>
+                          </div>
+                        </div>
+                        <Link
+                          className="text-button"
+                          href={
+                            kind === 'frame'
+                              ? '/profile?customize=frames'
+                              : '/profile?customize=banners'
+                          }
+                          aria-label={
+                            kind === 'frame'
+                              ? unlocked
+                                ? 'Equip Astral frame'
+                                : 'Preview Astral frame'
+                              : unlocked
+                                ? 'Equip Astral Crest'
+                                : 'Preview Astral Crest'
+                          }
+                        >
+                          {unlocked ? 'Equip' : 'Preview'} <span aria-hidden="true">→</span>
+                        </Link>
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
             <div className="season-records">
               {data.records.map((record) => (
                 <article key={record.mode}>

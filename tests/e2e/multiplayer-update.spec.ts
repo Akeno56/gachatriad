@@ -455,8 +455,7 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
     await editor.getByRole('tab', { name: 'Banners', exact: true }).click();
     await editor
       .getByRole('group', { name: 'Profile banner' })
-      .locator('label')
-      .filter({ hasText: 'Astral' })
+      .locator('label:has(input[value="astral"])')
       .click();
     await expect(editor.locator('.profile-editor-preview')).toHaveAttribute(
       'data-profile-banner',
@@ -482,6 +481,82 @@ test('previews and retains battle cosmetics and shows a saved banner on another 
     await b.page.screenshot({ path: info.outputPath('appearance-fr.png') });
   } finally {
     await Promise.all([a.context.close(), b.context.close()]);
+  }
+});
+
+test('previews and equips season rewards from the Journal in English and French', async ({
+  browser,
+}, info) => {
+  test.skip(info.project.name !== 'desktop');
+  test.setTimeout(75000);
+  const a = await player(browser);
+  const b = await player(browser);
+  const { page } = a;
+  try {
+    await page.goto('/journey/#season');
+    const frameProgress = page.getByRole('progressbar', { name: 'Astral frame' });
+    const bannerProgress = page.getByRole('progressbar', { name: 'Astral Crest' });
+    await expect(frameProgress).toHaveAttribute('value', '0');
+    await expect(bannerProgress).toHaveAttribute('max', '15');
+    await page.getByRole('link', { name: 'Preview Astral Crest' }).click();
+    const editor = page.getByRole('dialog', { name: 'Customize profile' });
+    const crest = editor.locator('input[value="astral-crest"]');
+    await expect(crest).toBeDisabled();
+    await expect(editor).toContainText('Complete 15 full rated games in Astral');
+
+    await platform.db.tx(async (sql) => {
+      await sql(
+        `WITH games AS (
+          INSERT INTO matches(id,mode,player0,player1,decks,rules,status,completed_at,settlement_done)
+          SELECT 'season-cosmetic-' || n,'ranked',$1,$2,'[[],[]]','{}','complete',now(),true
+          FROM generate_series(1,15) AS series(n) RETURNING id
+        )
+        INSERT INTO match_ratings(match_id,profile_id,before_rating,after_rating)
+        SELECT id,$1,1000,1000 FROM games`,
+        [a.profile.id, b.profile.id],
+      );
+    });
+    await page.goto('/journey/#season');
+    await expect(frameProgress).toHaveAttribute('value', '5');
+    await expect(bannerProgress).toHaveAttribute('value', '15');
+    await page.getByRole('link', { name: 'Equip Astral frame' }).click();
+    await editor.getByRole('button', { name: 'Astral portrait frame', exact: true }).click();
+    await editor.getByRole('tab', { name: 'Banners' }).click();
+    await editor.locator('label:has(input[value="astral-crest"])').click();
+    await editor.getByRole('button', { name: 'Save profile' }).click();
+    await expect(page.locator('.profile-header')).toHaveAttribute(
+      'data-profile-banner',
+      'astral-crest',
+    );
+    await expect(page.locator('.profile-portrait .frame-astral')).toBeVisible();
+
+    for (const language of ['en', 'fr']) {
+      if (language === 'en') await page.goto('/journey/#season');
+      else {
+        await page.getByRole('button', { name: 'Language: English', exact: true }).click();
+        await page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
+      }
+      const rewards = page.getByRole('region', {
+        name: language === 'fr' ? 'Récompenses Astral' : 'Astral rewards',
+      });
+      await expect(rewards).toBeVisible();
+      for (const [width, height] of [
+        [1280, 720],
+        [1366, 768],
+        [1920, 1080],
+      ]) {
+        await page.setViewportSize({ width, height });
+        await rewards.scrollIntoViewIfNeeded();
+        const clipped = await rewards
+          .locator('.season-reward')
+          .evaluateAll((cards) => cards.some((card) => card.scrollWidth > card.clientWidth));
+        expect(clipped).toBe(false);
+        await rewards.screenshot({ path: info.outputPath(`astral-${language}-${width}.png`) });
+      }
+    }
+  } finally {
+    await a.context.close();
+    await b.context.close();
   }
 });
 

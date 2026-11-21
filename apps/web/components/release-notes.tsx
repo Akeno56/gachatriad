@@ -29,7 +29,8 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>Card moves update the board with fewer requests.</li>
+          <li>Earn the Astral frame and banner by completing rated games.</li>
+          <li>Track your progress in the Journal.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

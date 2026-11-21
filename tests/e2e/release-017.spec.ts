@@ -5,6 +5,7 @@ import { createPlatform } from '../../apps/server/src/app';
 import { applyMove, createGame, legalMoves, STANDARD } from '../../packages/engine/src/index';
 import { randomUUID } from 'node:crypto';
 import { CARDS } from '../../packages/shared/src/index';
+import { RATED_MODES } from '../../packages/shared/src/platform';
 let platform: Awaited<ReturnType<typeof createPlatform>>,
   origin: string,
   serial = 0;
@@ -203,7 +204,7 @@ test('links the tavern to readable weekly objectives and a persistent bilingual 
       'true',
     );
     await c.page.screenshot({ path: info.outputPath('weekly-fr.png'), fullPage: true });
-    await expect(c.page.locator('.season-records article')).toHaveCount(3);
+    await expect(c.page.locator('.season-records article')).toHaveCount(RATED_MODES.length);
     await fits(c.page);
     await c.page.getByRole('link', { name: 'Retour au jeu', exact: true }).click();
     await expect(c.page.locator('.tavern-sign')).toBeVisible();

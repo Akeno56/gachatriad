@@ -1,25 +1,27 @@
 import { ALL_CARDS } from '@gacha-triad/shared';
 import { ACHIEVEMENTS, isRatedMode } from '@gacha-triad/shared/platform';
 import {
-  COSMETIC_STYLES,
+  ASTRAL_REWARDS,
   PORTRAIT_FRAMES,
+  PROFILE_BANNERS,
   type CustomizationView,
   type ProfileCustomization,
   type PortraitFrame,
-  type CosmeticStyle,
+  type ProfileBanner,
   type FeaturedMode,
 } from '@gacha-triad/shared/customization';
 import type { Database, Sql } from './database';
 import { GameError } from './errors';
 import { titlesFor } from './titles';
 import { chatViolation } from './chat-filter';
+import { astralRewardGames } from './season-rewards';
 const cards = new Set(ALL_CARDS.map((c) => c.id));
 interface Row {
   id: string;
   profile_revision: number;
   profile_bio: string;
   portrait_frame: PortraitFrame;
-  profile_banner: CosmeticStyle;
+  profile_banner: ProfileBanner;
   featured_mode: FeaturedMode;
   showcase_cards: string[];
   showcase_achievements: string[];
@@ -46,6 +48,7 @@ export class ProfileCustomizations {
       [id],
     );
     const unlocked = new Set(earned.map((a) => a.achievement_id));
+    const astralGames = await astralRewardGames(sql, id);
     const owned = new Set(
       (
         await sql<{ card_id: string }>(
@@ -68,7 +71,15 @@ export class ProfileCustomizations {
       },
       frames: PORTRAIT_FRAMES.map((f) => ({
         ...f,
-        unlocked: !f.achievementId || unlocked.has(f.achievementId),
+        unlocked:
+          f.id === ASTRAL_REWARDS.frame.id
+            ? astralGames >= ASTRAL_REWARDS.frame.games
+            : !f.achievementId || unlocked.has(f.achievementId),
+      })),
+      banners: PROFILE_BANNERS.map((banner) => ({
+        ...banner,
+        unlocked:
+          banner.id !== ASTRAL_REWARDS.banner.id || astralGames >= ASTRAL_REWARDS.banner.games,
       })),
       titles: await titlesFor(sql, id),
       achievements: earned.flatMap((a) => {
@@ -82,7 +93,7 @@ export class ProfileCustomizations {
   }
   async save(id: string, input: Record<string, unknown>) {
     const { revision, bio, frameId, featuredMode, avatarCardId, titleId } = input;
-    const banner = COSMETIC_STYLES.find(({ id }) => id === input.bannerId);
+    const banner = PROFILE_BANNERS.find(({ id }) => id === input.bannerId);
     if (input.bannerId !== undefined && !banner) throw new GameError('Choose a profile banner.');
     if (!Number.isSafeInteger(revision) || Number(revision) < 0)
       throw new GameError('Invalid profile revision.');
@@ -110,6 +121,8 @@ export class ProfileCustomizations {
         throw new GameError('Your profile changed. Reload before saving.', 409);
       if (!current.frames.some((f) => f.id === frameId && f.unlocked))
         throw new GameError('Earn this frame before equipping it.');
+      if (banner && !current.banners?.some((b) => b.id === banner.id && b.unlocked))
+        throw new GameError('Earn this banner before equipping it.');
       if (titleId !== null && !current.titles.some((t) => t.id === titleId && t.unlocked))
         throw new GameError('Earn this title before equipping it.');
       const owned = new Set(

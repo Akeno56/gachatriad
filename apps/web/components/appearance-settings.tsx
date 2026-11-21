@@ -29,9 +29,10 @@ export function useAppearancePreference(key: 'triad-board-theme' | 'triad-card-b
   ] as const;
 }
 
-export function AppearanceChoices({
+export function AppearanceChoices<Style extends string>({
   label,
   name,
+  choices,
   value,
   onChange,
   preview,
@@ -39,9 +40,10 @@ export function AppearanceChoices({
 }: {
   label: string;
   name: string;
-  value: CosmeticStyle;
-  onChange: (value: CosmeticStyle) => void;
-  preview: (value: CosmeticStyle) => ReactNode;
+  choices: readonly { id: Style; name: string; unlocked?: boolean }[];
+  value: Style;
+  onChange: (value: Style) => void;
+  preview: (value: Style) => ReactNode;
   disabled?: boolean;
 }) {
   return (
@@ -49,19 +51,24 @@ export function AppearanceChoices({
       <fieldset className="appearance-choices" disabled={disabled}>
         <legend>{label}</legend>
         <div>
-          {COSMETIC_STYLES.map(({ id, name: style }) => (
-            <label key={id} className="appearance-option">
+          {choices.map(({ id, name: style, unlocked }) => (
+            <label
+              key={id}
+              className={`appearance-option${unlocked === false ? ' is-locked' : ''}`}
+            >
               <input
                 className="sr-only"
                 type="radio"
                 name={name}
                 value={id}
                 checked={id === value}
+                disabled={unlocked === false}
                 onChange={() => onChange(id)}
               />
               <span className="appearance-tile">
                 {preview(id)}
                 <span>{style}</span>
+                {unlocked === false && <small>Locked</small>}
               </span>
             </label>
           ))}
@@ -99,6 +106,7 @@ export function AppearanceSettings({
       <AppearanceChoices
         label="Board theme"
         name="board-theme"
+        choices={COSMETIC_STYLES}
         value={board[0]}
         onChange={board[1]}
         preview={(id) => (
@@ -112,6 +120,7 @@ export function AppearanceSettings({
       <AppearanceChoices
         label="Card back"
         name="card-back"
+        choices={COSMETIC_STYLES}
         value={cardBack[0]}
         onChange={cardBack[1]}
         preview={(id) => (

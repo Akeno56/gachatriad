@@ -13,6 +13,7 @@ import {
 import { RATED_MODES, modeRatingField } from '@gacha-triad/shared/platform';
 import type { Database, Sql } from './database';
 import { GameError } from './errors';
+import { astralRewardGames } from './season-rewards';
 
 export function weekWindow(now = Date.now()) {
   const start = new Date(now);
@@ -164,6 +165,7 @@ export class PlayerJourney {
           completed: stamps.some((s) => s.chapter === chapter.id),
         })),
         season: CURRENT_SEASON,
+        seasonRewardGames: await astralRewardGames(sql, profileId),
         records: RATED_MODES.map((mode) => ({
           mode,
           games: 0,

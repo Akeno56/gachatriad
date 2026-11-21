@@ -101,9 +101,19 @@
     linear-gradient(120deg, #272338, #35263a 42%, #673b36);
 }
 
+[data-profile-banner='astral-crest'] {
+  --banner-edge: #c7c6ff;
+  --banner-image:
+    radial-gradient(circle, #f2d892a0 0 1px, transparent 2px) 9px 7px / 37px 33px,
+    radial-gradient(circle, #c6bfff76 0 0.7px, transparent 1.6px) 3px 5px / 19px 22px,
+    repeating-linear-gradient(135deg, #d1c6ff24 0 1px, transparent 1px 34px),
+    linear-gradient(112deg, #141b34, #20274f 54%, #504c86);
+}
+
 :is(.profile-header, .profile-editor-preview, .appearance-banner-preview):is(
   [data-profile-banner='astral'],
-  [data-profile-banner='ember']
+  [data-profile-banner='ember'],
+  [data-profile-banner='astral-crest']
 ) {
   border-color: var(--banner-edge);
   background: var(--banner-image);
@@ -176,6 +186,22 @@
 .appearance-option input:focus-visible + .appearance-tile {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
+}
+
+.appearance-option.is-locked {
+  cursor: default;
+}
+.appearance-option.is-locked .appearance-tile {
+  border-color: #597094;
+  color: var(--muted);
+}
+.appearance-option.is-locked small,
+.cosmetic-requirement {
+  color: var(--muted);
+  font: 13px/1.2 var(--sans);
+}
+.appearance-choices:has([name='profile-banner']) > div {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .appearance-board-preview {

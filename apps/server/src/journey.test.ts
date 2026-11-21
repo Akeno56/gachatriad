@@ -1,5 +1,6 @@
 import { beforeAll, afterAll, it, expect } from 'vitest';
 import { randomUUID } from 'node:crypto';
+import type { CustomizationView } from '@gacha-triad/shared/customization';
 import { resolve } from 'node:path';
 import { createPlatform } from './app';
 import { PlayerJourney, weekWindow } from './journey';
@@ -297,6 +298,85 @@ it('uses the actual rating ledger and separates the current season and all three
   expect(result.season).toMatchObject({ id: 0, name: 'Astral', endAt: null });
   const ladder = (await request(u, '/ladder?mode=ranked')).json();
   expect(ladder.find((row: { id: string }) => row.id === u.profile.id)?.games).toBe(1);
+});
+
+it('unlocks Astral cosmetics at five and fifteen eligible games and checks them on save', async () => {
+  const owner = await user(),
+    rival = await user();
+  const unlocks = async () =>
+    (await request(owner, '/profile/customization')).json<CustomizationView>();
+  const recordRating = (id: string) =>
+    p.db.read((sql) =>
+      sql(
+        'INSERT INTO match_ratings(match_id,profile_id,before_rating,after_rating) VALUES($1,$2,1000,1000)',
+        [id, owner.profile.id],
+      ),
+    );
+  async function duel(mode: string, reason: string | null = null, season = 0) {
+    const id = await storedDuel(
+      owner,
+      mode,
+      new Date(),
+      reason,
+      reason ? 2 : 9,
+      rival.profile.id,
+      season,
+    );
+    await recordRating(id);
+  }
+  for (const mode of ['ranked', 'ranked-random', 'draft', 'shared-draft']) await duel(mode);
+  await duel('ranked', 'forfeit');
+  await duel('ranked', 'admin test result');
+  await duel('ranked', null, -1);
+  await storedDuel(owner, 'ranked', new Date(), null, 9, rival.profile.id);
+  expect((await view(owner)).seasonRewardGames).toBe(4);
+  let options = await unlocks();
+  expect(options.frames.find((frame) => frame.id === 'astral')?.unlocked).toBe(false);
+  expect(
+    (
+      await request(owner, '/profile/frame', {
+        frameId: 'astral',
+        revision: options.settings.revision,
+      })
+    ).statusCode,
+  ).toBe(400);
+  expect(
+    (
+      await request(owner, '/profile/customization', {
+        ...options.settings,
+        bannerId: 'astral-crest',
+      })
+    ).statusCode,
+  ).toBe(400);
+
+  await duel('ranked');
+  options = await unlocks();
+  expect(options.frames.find((frame) => frame.id === 'astral')?.unlocked).toBe(true);
+  expect(options.banners?.find((banner) => banner.id === 'astral-crest')?.unlocked).toBe(false);
+  const equipped = await request(owner, '/profile/frame', {
+    frameId: 'astral',
+    revision: options.settings.revision,
+  });
+  expect(equipped.statusCode, equipped.body).toBe(200);
+
+  for (let step = 0; step < 9; step++) await duel('draft');
+  options = await unlocks();
+  expect((await view(owner)).seasonRewardGames).toBe(14);
+  expect(options.banners?.find((banner) => banner.id === 'astral-crest')?.unlocked).toBe(false);
+  await duel('shared-draft');
+  options = await unlocks();
+  expect((await view(owner)).seasonRewardGames).toBe(15);
+  const saved = await request(owner, '/profile/customization', {
+    ...options.settings,
+    bannerId: 'astral-crest',
+  });
+  expect(saved.statusCode, saved.body).toBe(200);
+  await p.store.migrate(resolve('.'));
+  expect((await request(rival, `/players/${owner.profile.id}`)).json()).toMatchObject({
+    frameId: 'astral',
+    bannerId: 'astral-crest',
+  });
+  expect((await view(rival)).seasonRewardGames).toBe(0);
 });
 
 it('counts real puzzle, booster and loadout actions toward the five-objective reward', async () => {

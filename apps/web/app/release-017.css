@@ -158,7 +158,7 @@
   font: 14px/1.45 var(--sans);
   margin: 12px 0;
 }
-.weekly-objective progress {
+:is(.weekly-objective, .season-reward-progress) progress {
   display: block;
   appearance: none;
   width: 100%;
@@ -167,13 +167,13 @@
   background: #0e1930;
   color: #bca465;
 }
-.weekly-objective progress::-webkit-progress-bar {
+:is(.weekly-objective, .season-reward-progress) progress::-webkit-progress-bar {
   background: #0e1930;
 }
-.weekly-objective progress::-webkit-progress-value {
+:is(.weekly-objective, .season-reward-progress) progress::-webkit-progress-value {
   background: #c0a66c;
 }
-.weekly-objective progress::-moz-progress-bar {
+:is(.weekly-objective, .season-reward-progress) progress::-moz-progress-bar {
   background: #c0a66c;
 }
 .weekly-objective.is-complete {
@@ -254,6 +254,62 @@
 }
 .journey-season-record header > a {
   font-size: 19px;
+}
+.season-rewards {
+  margin-block: 14px;
+}
+.season-rewards h3 {
+  margin: 0;
+  color: var(--gold);
+  font: 25px/1 var(--pixel);
+}
+.season-rewards > p {
+  margin: 5px 0 9px;
+  color: var(--muted);
+}
+.season-reward-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.season-reward {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid #7289ad;
+  background: #0d193480;
+}
+.season-reward-art {
+  display: grid;
+  place-items: center;
+}
+.season-reward-art .player-avatar {
+  width: 35px;
+  height: 35px;
+}
+.season-reward-info h4 {
+  margin: 0 0 5px;
+  font: 21px/1.05 var(--pixel);
+}
+.season-reward-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.season-reward-progress progress {
+  min-width: 18px;
+}
+.season-reward-progress span {
+  white-space: nowrap;
+  color: var(--muted);
+}
+@media (max-width: 650px) {
+  .season-reward-list {
+    grid-template-columns: 1fr;
+  }
 }
 .season-records {
   display: grid;

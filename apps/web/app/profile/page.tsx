@@ -78,7 +78,12 @@ function PlayerProfile() {
     };
   }, [profile?.id, playerId, revision, selfVersion, identityRevision]);
   const player = snapshot && snapshot.id === playerId ? snapshot.value : null,
-    self = player?.id === profile?.id;
+    self = !!player && player.id === profile?.id;
+  const tabParam = params.get('customize');
+  const initialTab = tabParam === 'frames' || tabParam === 'banners' ? tabParam : undefined;
+  useEffect(() => {
+    if (self && initialTab) setEditing(true);
+  }, [self, initialTab]);
   const modes = [
     { id: 'ranked', name: 'Ranked', rating: player?.rating },
     { id: 'ranked-random', name: 'Ranked Random', rating: player?.rankedRandomRating },
@@ -287,6 +292,7 @@ function PlayerProfile() {
               <ProfileEditor
                 key={profile.id}
                 profile={profile}
+                initialTab={initialTab}
                 onClose={() => setEditing(false)}
                 onSaved={() => setEditing(false)}
               />

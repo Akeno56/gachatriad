@@ -48,6 +48,9 @@
 .frame-gold {
   --frame-accent: #f4d889;
 }
+.frame-astral {
+  --frame-accent: #c7c6ff;
+}
 .profile-portrait .portrait-frame-art,
 .profile-editor-preview > .player-avatar .portrait-frame-art,
 .frame-choice .portrait-frame-art {

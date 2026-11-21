@@ -106,9 +106,11 @@ function AchievementScreen() {
   const reward = current ? PORTRAIT_FRAMES.find((f) => f.achievementId === current.id) : null;
   const avatar = ALL_CARDS.find((c) => c.id === profile?.avatarCardId) ?? null;
   const featured = !!current && !!cosmetics?.settings.featuredAchievements.includes(current.id);
-  const ownedFrames = PORTRAIT_FRAMES.filter(
-    (f) => !f.achievementId || items.some((a) => a.id === f.achievementId && a.unlockedAt),
-  ).length;
+  const ownedFrames =
+    cosmetics?.frames.filter((frame) => frame.unlocked).length ??
+    PORTRAIT_FRAMES.filter(
+      (f) => f.id === 'classic' || items.some((a) => a.id === f.achievementId && a.unlockedAt),
+    ).length;
   async function action(kind: 'frame' | 'feature') {
     if (!current?.unlockedAt || lock.current) return;
     lock.current = true;
