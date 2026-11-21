@@ -31,7 +31,7 @@ export function ProfileEditor({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const { refresh } = useSession();
+  const { refreshProfile } = useSession();
   const [data, setData] = useState<CustomizationView | null>(null),
     [draft, setDraft] = useState<ProfileCustomization | null>(null),
     [tab, setTab] = useState('identity'),
@@ -98,7 +98,7 @@ export function ProfileEditor({
         featuredCards: draft.featuredCards.filter(Boolean),
         featuredAchievements: draft.featuredAchievements.filter(Boolean),
       });
-      await refresh();
+      await refreshProfile();
       onSaved();
     } catch (e) {
       setError((e as Error).message);

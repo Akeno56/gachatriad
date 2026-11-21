@@ -46,7 +46,7 @@ export async function closeMarketRequests(
   ids: string[],
   status: 'fulfilled' | 'cancelled',
 ) {
-  if (!ids.length) return;
+  if (!ids.length) return [];
   await sql("UPDATE market_requests SET status=$2 WHERE id=ANY($1::text[]) AND status='open'", [
     ids,
     status,
@@ -60,6 +60,7 @@ export async function closeMarketRequests(
       offer.owner_id,
       offer.offered_card,
     ]);
+  return released.map((offer) => offer.owner_id);
 }
 export class Trades {
   constructor(readonly db: Database) {}
@@ -195,7 +196,7 @@ export class Trades {
     });
   }
   async cancelRequest(p: ProfileIdentity, id: string) {
-    await this.db.tx(async (sql) => {
+    return this.db.tx(async (sql) => {
       if (
         !(
           await sql(
@@ -205,7 +206,7 @@ export class Trades {
         ).length
       )
         throw new GameError('Request is no longer open.', 409);
-      await closeMarketRequests(sql, [id], 'cancelled');
+      return closeMarketRequests(sql, [id], 'cancelled');
     });
   }
   private async sameAccount(sql: Sql, a: string, b: string) {
@@ -234,7 +235,7 @@ export class Trades {
   }
   async accept(p: ProfileIdentity, id: string) {
     if (!p.registered) throw new GameError('Register an account to exchange cards.', 403);
-    await this.db.tx(async (sql) => {
+    return this.db.tx(async (sql) => {
       const [o] = await sql<Offer>('SELECT * FROM trade_offers WHERE id=$1', [id]);
       if (!o || o.status !== 'open') throw new GameError('Offer is no longer open.', 409);
       if (
@@ -324,13 +325,16 @@ export class Trades {
         "UPDATE trade_offers SET status='accepted',taker_id=$1,settled_at=now() WHERE id=$2",
         [p.id, id],
       );
-      if (o.market_request_id) await closeMarketRequests(sql, [o.market_request_id], 'fulfilled');
+      const released = o.market_request_id
+        ? await closeMarketRequests(sql, [o.market_request_id], 'fulfilled')
+        : [];
       for (const who of [p.id, o.owner_id]) await pruneDeck(sql, who);
       for (const who of [p.id, o.owner_id])
         await sql(
           "INSERT INTO achievement_unlocks(profile_id,achievement_id) SELECT $1,'collector' WHERE (SELECT count(DISTINCT coalesce(d.definition->>'baseCardId',i.card_id)) FROM inventory i JOIN card_definitions d ON d.id=i.card_id WHERE i.profile_id=$1 AND i.quantity>0)>=50 ON CONFLICT DO NOTHING",
           [who],
         );
+      return [p.id, o.owner_id, ...released];
     });
   }
 }

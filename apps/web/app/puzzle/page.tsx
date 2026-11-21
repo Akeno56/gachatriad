@@ -10,7 +10,7 @@ import { useSession } from '../../components/session';
 import { usePageRefresh } from '../../components/use-page-refresh';
 import { useGameAudio } from '../../components/game-shell';
 export default function PuzzlePage() {
-  const { profile, refresh, openAccount } = useSession(),
+  const { profile, refreshProfile, openAccount } = useSession(),
     play = useGameAudio();
   const [revision, reload] = usePageRefresh(60000);
   const [view, setView] = useState<DailyPuzzleView | null>(null),
@@ -85,14 +85,15 @@ export default function PuzzlePage() {
             : 'select',
         );
       }
-      if (next.rewarded && !view.rewarded) await refresh();
+      if (next.rewarded && !view.rewarded) await refreshProfile();
+      return;
     } catch (e) {
       setError((e as Error).message);
     } finally {
       locked.current = false;
       setBusy(false);
-      void load();
     }
+    void load();
   }
   const state = view?.state,
     result = state?.status === 'complete' ? winner(state) : null;

@@ -31,7 +31,7 @@ export default function Achievements() {
   );
 }
 function AchievementScreen() {
-  const { profile, refresh, error: connectionError } = useSession(),
+  const { profile, refreshProfile, error: connectionError } = useSession(),
     params = useSearchParams(),
     [revision, refreshPage] = usePageRefresh();
   const [snapshot, setSnapshot] = useState<{ owner: string; items: AchievementView[] } | null>(
@@ -134,7 +134,7 @@ function AchievementScreen() {
         });
       }
       setCosmetics(next);
-      await refresh();
+      await refreshProfile();
       setNotice(kind === 'frame' ? 'Frame equipped.' : 'Achievement showcase saved.');
     } catch (e) {
       setActionError((e as Error).message);

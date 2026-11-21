@@ -10,6 +10,7 @@ import { useGameAudio } from './game-shell';
 import { api } from '../lib/platform';
 import { preloadArtwork } from '../lib/artwork';
 import { assetPath } from '../lib/connection';
+import { publishSiteUpdate } from '../lib/site-updates';
 export function AutomaticBoosterOpening({
   packs,
   onClose,
@@ -17,7 +18,7 @@ export function AutomaticBoosterOpening({
   packs: BoosterView[];
   onClose: () => void;
 }) {
-  const { profile, refresh } = useSession(),
+  const { profile, refreshProfile } = useSession(),
     play = useGameAudio();
   const dialog = useRef<HTMLDialogElement>(null),
     source = useRef(packs),
@@ -69,7 +70,8 @@ export function AutomaticBoosterOpening({
         const opened = await task.current;
         if (!active) return;
         setResults(opened);
-        await refresh();
+        publishSiteUpdate('boosters');
+        void refreshProfile();
         const cards = opened.flatMap((p) => p.cards);
         for (let i = start; i < cards.length; i++) {
           if (!active) return;
@@ -112,7 +114,7 @@ export function AutomaticBoosterOpening({
       active = false;
       wake.current?.();
     };
-  }, [retry, refresh, play, sessionKey]);
+  }, [retry, refreshProfile, play, sessionKey]);
   function close() {
     if (!results.length && !error) return;
     sessionStorage.removeItem(sessionKey);

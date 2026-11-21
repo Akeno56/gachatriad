@@ -346,21 +346,21 @@ export class GameStore {
         'SELECT p.id,p.name FROM profiles p JOIN profile_accounts a ON a.profile_id=p.id WHERE a.auth_user_id=$1 AND a.is_primary',
         [actor.id],
       );
+      const [account] = await sql<{ unopened: number; starter: number; admin: boolean }>(
+        `SELECT count(*)::int AS unopened,
+                count(*) FILTER (WHERE pack_type='starter')::int AS starter,
+                NOT $3::boolean AND EXISTS(SELECT 1 FROM server_admins WHERE auth_user_id=$2) AS admin
+         FROM booster_packs WHERE profile_id=$1 AND opened_at IS NULL`,
+        [p.id, actor.id, !!actor.isAnonymous],
+      );
       return {
         rankedAcknowledged: p.ranked_acknowledged === true,
         frameId: (p.portrait_frame as PortraitFrame) ?? 'classic',
         profileRevision: Number(p.profile_revision ?? 0),
         titleId: typeof p.selected_title === 'string' ? p.selected_title : null,
-        isAdmin:
-          !actor.isAnonymous &&
-          (await sql('SELECT 1 FROM server_admins WHERE auth_user_id=$1', [actor.id])).length > 0,
+        isAdmin: account.admin,
         prisms: Number(p.prisms ?? 0),
-        unopenedBoosters: (
-          await sql<{ n: number }>(
-            'SELECT count(*)::int n FROM booster_packs WHERE profile_id=$1 AND opened_at IS NULL',
-            [p.id],
-          )
-        )[0].n,
+        unopenedBoosters: account.unopened,
         id: p.id,
         avatarCardId: typeof p.avatar_card === 'string' ? p.avatar_card : null,
         tutorialCompleted: p.tutorial_completed === true,
@@ -393,12 +393,7 @@ export class GameStore {
             }
           : null,
         waitingLobbyId: waiting[0]?.id ?? null,
-        starterBoosters: (
-          await sql<{ n: number }>(
-            "SELECT count(*)::int n FROM booster_packs WHERE profile_id=$1 AND pack_type='starter' AND opened_at IS NULL",
-            [p.id],
-          )
-        )[0].n,
+        starterBoosters: account.starter,
         waitingLobby: waiting[0]
           ? {
               id: waiting[0].id,
@@ -874,7 +869,7 @@ export class GameStore {
     });
   }
   async cancelLobby(profileId: string, id: string) {
-    await this.db.tx(async (sql) => {
+    return this.db.tx(async (sql) => {
       const [lobby] = await sql<LobbyRow>('SELECT * FROM lobbies WHERE id=$1', [id]);
       if (!lobby) throw new GameError('Lobby not found.', 404);
       if (lobby.host_id !== profileId)
@@ -882,10 +877,11 @@ export class GameStore {
       if (lobby.status === 'playing')
         throw new GameError('The duel has already started. Return to the match to leave it.', 409);
       await sql("UPDATE lobbies SET status='closed' WHERE id=$1", [id]);
-      await sql(
-        "UPDATE duel_invitations SET status='expired' WHERE lobby_id=$1 AND status='pending'",
+      const expired = await sql<{ recipient_id: string }>(
+        "UPDATE duel_invitations SET status='expired' WHERE lobby_id=$1 AND status='pending' RETURNING recipient_id",
         [id],
       );
+      return expired.map((invite) => invite.recipient_id);
     });
   }
   async enablePractice(profileId: string, lobbyId: string) {
@@ -1654,14 +1650,13 @@ export class GameStore {
         [id],
       );
       const showcase = (p.showcase_cards ?? []) as string[];
-      const owned = new Set(
-        (
-          await sql<{ card_id: string }>(
+      const ownedShowcase = showcase.length
+        ? await sql<{ card_id: string }>(
             'SELECT card_id FROM inventory WHERE profile_id=$1 AND quantity>0 AND card_id=ANY($2::text[])',
             [id, showcase],
           )
-        ).map((c) => c.card_id),
-      );
+        : [];
+      const owned = new Set(ownedShowcase.map((c) => c.card_id));
       const achievementViews = earned.map((a) => ({
         id: a.achievement_id,
         name: ACHIEVEMENTS.find((x) => x.id === a.achievement_id)?.name ?? a.achievement_id,
@@ -1769,6 +1764,7 @@ export class GameStore {
           m.id,
         ]);
       }
+      return matches.length > 0;
     });
   }
   async recoverPresence() {

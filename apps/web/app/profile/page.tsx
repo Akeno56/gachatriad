@@ -1,11 +1,12 @@
 'use client';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CARDS } from '@gacha-triad/shared';
 import type { Card as CardData } from '@gacha-triad/engine';
 import type { PlayerProfileView } from '@gacha-triad/shared/platform';
 import { api } from '../../lib/platform';
+import { useSiteRevision } from '../../lib/site-updates';
 import { useSession } from '../../components/session';
 import { usePageRefresh } from '../../components/use-page-refresh';
 import { LocaleView, NoTranslate, LocalizedDate } from '../../components/i18n';
@@ -38,25 +39,33 @@ function PlayerProfile() {
     params = useSearchParams(),
     [revision, refreshPage] = usePageRefresh();
   const playerId = params.get('id') || profile?.id;
+  const publicIdentityRevision = useSiteRevision('identity', playerId);
+  const identityRevision = playerId === profile?.id ? 0 : publicIdentityRevision;
   const [snapshot, setSnapshot] = useState<{ id: string; value: PlayerProfileView } | null>(null),
     [error, setError] = useState(''),
     [editing, setEditing] = useState(false),
     [detail, setDetail] = useState<CardData | null>(null);
-  const selfVersion =
-    playerId === profile?.id
-      ? JSON.stringify([
-          profile?.profileRevision,
-          profile?.name,
-          profile?.played,
-          profile?.rating,
-          profile?.rankedRandomRating,
-          profile?.draftRating,
-          profile?.sharedDraftRating,
-          profile?.avatarCardId,
-          profile?.titleId,
-          profile?.inventory,
-        ])
-      : '';
+  const selfVersion = useMemo(
+    () =>
+      playerId === profile?.id
+        ? JSON.stringify([
+            profile?.profileRevision,
+            profile?.name,
+            profile?.played,
+            profile?.rating,
+            profile?.rankedRandomRating,
+            profile?.draftRating,
+            profile?.sharedDraftRating,
+            profile?.avatarCardId,
+            profile?.titleId,
+            Object.entries(profile?.inventory ?? {})
+              .filter(([, card]) => card.quantity > 0)
+              .map(([id, card]) => `${id}:${card.quantity}`)
+              .sort(),
+          ])
+        : '',
+    [playerId, profile],
+  );
   useEffect(() => {
     if (!profile || !playerId) return;
     let active = true;
@@ -67,7 +76,7 @@ function PlayerProfile() {
     return () => {
       active = false;
     };
-  }, [profile?.id, playerId, revision, selfVersion]);
+  }, [profile?.id, playerId, revision, selfVersion, identityRevision]);
   const player = snapshot && snapshot.id === playerId ? snapshot.value : null,
     self = player?.id === profile?.id;
   const modes = [
@@ -279,10 +288,7 @@ function PlayerProfile() {
                 key={profile.id}
                 profile={profile}
                 onClose={() => setEditing(false)}
-                onSaved={() => {
-                  setEditing(false);
-                  refreshPage();
-                }}
+                onSaved={() => setEditing(false)}
               />
             )}
           </>

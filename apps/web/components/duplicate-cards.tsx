@@ -11,7 +11,7 @@ import { api, ApiError } from '../lib/platform';
 type Quote = { kind: 'recycle' | 'trade-up'; cards: DuplicateInput[]; id?: string };
 const definitions = new Map(ALL_CARDS.map((c) => [c.id, c]));
 export function DuplicateCards() {
-  const { profile, refresh } = useSession(),
+  const { profile, refreshProfile } = useSession(),
     play = useGameAudio();
   const [holo, setHolo] = useState(false),
     [quote, setQuote] = useState<Quote | null>(null),
@@ -114,7 +114,7 @@ export function DuplicateCards() {
       setQuote(null);
       setResult(receipt);
       play(receipt.card ? 'victory' : 'menu');
-      await refresh();
+      await refreshProfile();
     } catch (e) {
       if (e instanceof ApiError && [400, 403, 404, 409].includes(e.status)) {
         sessionStorage.removeItem(key);

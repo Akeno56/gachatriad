@@ -21,7 +21,7 @@ import { useActionNotice } from '../../components/action-notice';
 import { useBrowseState, useBrowseScroll } from '../../components/browse-preferences';
 import { useWishlist } from '../../components/use-wishlist';
 export default function CardsPage() {
-  const { profile, error, refresh } = useSession();
+  const { profile, error, refreshProfile } = useSession();
   const wishlist = useWishlist(profile?.id);
   const saved = new Set(wishlist.rows?.map((entry) => entry.cardId));
   const notify = useActionNotice();
@@ -375,7 +375,7 @@ export default function CardsPage() {
                         cardId: purchase.id,
                         requestId: purchaseId.current,
                       });
-                      await refresh();
+                      await refreshProfile();
                       setPurchased(true);
                       notify('Purchase complete.');
                       setMessage(`${purchase.name} added to your collection.`);

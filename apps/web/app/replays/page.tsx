@@ -8,6 +8,7 @@ import { Button } from '../../components/ui';
 import { BotStyle } from '../../components/bot-style';
 import { ReplayPlayer } from '../../components/replay-player';
 import { api } from '../../lib/platform';
+import { useSiteRevision } from '../../lib/site-updates';
 import type { ReplayList, ReplayView } from '@gacha-triad/shared/replays';
 const modes = [
   ['all', 'All modes'],
@@ -38,6 +39,7 @@ function Replays() {
   const { profile } = useSession(),
     params = useSearchParams();
   const match = params.get('match');
+  const replayRevision = useSiteRevision('replays');
   const [mode, setMode] = useState('all'),
     [favorites, setFavorites] = useState(false),
     [offset, setOffset] = useState(0),
@@ -49,7 +51,7 @@ function Replays() {
   } | null>(null);
   const [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
-  const key = JSON.stringify([profile?.id, match, mode, favorites, offset, revision]);
+  const key = JSON.stringify([profile?.id, match, mode, favorites, offset]);
   const current = snapshot?.key === key ? snapshot : null;
   useEffect(() => {
     if (!profile) return;
@@ -79,7 +81,7 @@ function Replays() {
     return () => {
       active = false;
     };
-  }, [key, profile?.id, match]);
+  }, [key, profile?.id, match, revision, replayRevision]);
   async function favorite(id: string, value: boolean) {
     if (busy) return;
     setBusy(true);

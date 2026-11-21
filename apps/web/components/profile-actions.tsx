@@ -8,7 +8,7 @@ import { Button } from './ui';
 import { LocaleView } from './i18n';
 import { api } from '../lib/platform';
 export function ProfileActions({ player }: { player: PlayerProfileView }) {
-  const { profile, refresh } = useSession(),
+  const { profile, refresh, refreshSocial } = useSession(),
     { data: social, ready } = useSocial();
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
@@ -25,7 +25,8 @@ export function ProfileActions({ player }: { player: PlayerProfileView }) {
         path,
         path === '/friends/request' || path === '/invites' ? { playerId: player.id } : {},
       );
-      await refresh();
+      if (path.startsWith('/friends')) refreshSocial();
+      else await refresh();
       setNotice(notice);
     } catch (e) {
       setError((e as Error).message);

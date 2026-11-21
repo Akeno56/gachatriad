@@ -14,6 +14,7 @@ import {
 } from '@gacha-triad/engine';
 import { api } from '../../lib/platform';
 import { useSession } from '../../components/session';
+import { publishSiteUpdate, useSiteRevision } from '../../lib/site-updates';
 import { matchModeNames, ruleNames } from '../../lib/rules';
 import { LocalBots } from '../../components/local-bots';
 import { confirmQueueRules } from '../../components/ranked-warning';
@@ -22,8 +23,9 @@ import { MainChat } from '../../components/main-chat';
 import { BotStyle } from '../../components/bot-style';
 import { RuleToggles, RuleVisibility } from '../../components/rule-options';
 export default function Lobbies() {
-  const { profile, revision, refresh, error: connectionError } = useSession(),
+  const { profile, revision, refreshProfile, error: connectionError } = useSession(),
     router = useRouter();
+  const lobbyRevision = useSiteRevision('lobbies');
   const [rows, setRows] = useState<LobbyView[]>([]),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
@@ -45,11 +47,19 @@ export default function Lobbies() {
     if (!tradeEligible) setTrade(false);
   }, [tradeEligible]);
   useEffect(() => {
-    if (profile)
-      void api<LobbyView[]>('/lobbies')
-        .then(setRows)
-        .catch((e) => setError(e.message));
-  }, [revision, profile?.id]);
+    if (!profile) return;
+    let active = true;
+    void api<LobbyView[]>('/lobbies')
+      .then((next) => {
+        if (active) setRows(next);
+      })
+      .catch((e) => {
+        if (active) setError(e.message);
+      });
+    return () => {
+      active = false;
+    };
+  }, [revision, profile?.id, lobbyRevision]);
   useEffect(() => {
     if (profile?.activeMatchId) router.push(`/?match=${profile.activeMatchId}`);
   }, [profile?.activeMatchId, router]);
@@ -113,7 +123,8 @@ export default function Lobbies() {
     setError('');
     try {
       const result = await api<{ matchId: string | null }>(path, body);
-      await refresh();
+      if (!result.matchId) publishSiteUpdate('lobbies');
+      await refreshProfile();
       setCreate(false);
       if (result.matchId) router.push(`/?match=${result.matchId}`);
     } catch (e) {

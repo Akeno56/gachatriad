@@ -3,9 +3,10 @@ import { LocaleView, NoTranslate } from './i18n';
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
-import type { BoardMoveUpdate, ProfileView } from '@gacha-triad/shared/platform';
-import { api, session, resetSession, ApiError } from '../lib/platform';
+import type { BoardMoveUpdate, ProfileView, SiteArea } from '@gacha-triad/shared/platform';
+import { api, session, resetSession, ApiError, setRequestSocket } from '../lib/platform';
 import { refreshScheduler } from '../lib/refresh-scheduler';
+import { dispatchSiteUpdate } from '../lib/site-updates';
 import { SocialLogin } from './social-login';
 import {
   serverConfigured,
@@ -22,6 +23,7 @@ const Context = createContext<{
   socialRevision: number;
   battleChatRevision: number;
   refresh: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
   refreshSocial: () => void;
   refreshBattleChat: () => void;
   changeAccount: (work: () => Promise<unknown>) => Promise<void>;
@@ -35,6 +37,7 @@ const Context = createContext<{
   socialRevision: 0,
   battleChatRevision: 0,
   refresh: async () => {},
+  refreshProfile: async () => {},
   refreshSocial: () => {},
   refreshBattleChat: () => {},
   changeAccount: async () => {},
@@ -55,7 +58,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [accountOpen, setAccountOpen] = useState(false);
   const openAccount = useCallback(() => setAccountOpen(true), []),
     closeAccount = useCallback(() => setAccountOpen(false), []);
-  const pending = useRef<Promise<void> | null>(null);
+  const pending = useRef<Promise<boolean> | null>(null);
   const changingAccount = useRef(false);
   const readProfile = useCallback(async () => {
     if (!serverConfigured() || changingAccount.current) return;
@@ -80,20 +83,27 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         }
         setProfile(next);
         setError('');
-        setRevision((v) => v + 1);
+        return true;
       } catch (e) {
         setError((e as Error).message);
+        return false;
       } finally {
         pending.current = null;
       }
     })();
     return pending.current;
   }, []);
-  const refresh = useCallback(async () => {
+  const readFreshProfile = useCallback(async () => {
     // A read started before the mutation may contain the old queue or match.
     if (pending.current) await pending.current;
-    await readProfile();
+    return readProfile();
   }, [readProfile]);
+  const refreshProfile = useCallback(async () => {
+    await readFreshProfile();
+  }, [readFreshProfile]);
+  const refresh = useCallback(async () => {
+    if (await readFreshProfile()) setRevision((v) => v + 1);
+  }, [readFreshProfile]);
   const changeAccount = useCallback(
     async (work: () => Promise<unknown>) => {
       if (changingAccount.current) return;
@@ -120,22 +130,38 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   );
   const socketConnected = useRef(false);
   const automatic = useRef<ReturnType<typeof refreshScheduler> | null>(null);
+  const fullRefresh = useRef(false);
+  const requestFullRefresh = useCallback(() => {
+    fullRefresh.current = true;
+    automatic.current?.request();
+  }, []);
   useEffect(() => {
-    const scheduler = refreshScheduler(readProfile, {
-      // Full refreshes also invalidate match, chat and social data.
-      interval: () => (inMatch.current ? 1000 : 2000),
-      visible: () => !document.hidden && navigator.onLine,
-    });
+    const scheduler = refreshScheduler(
+      async () => {
+        const full = fullRefresh.current;
+        fullRefresh.current = false;
+        if ((await readFreshProfile()) && full) setRevision((v) => v + 1);
+      },
+      {
+        // Full refreshes also invalidate match, chat and social data.
+        interval: () => (inMatch.current ? 1000 : 2000),
+        visible: () => !document.hidden && navigator.onLine,
+      },
+    );
     automatic.current = scheduler;
-    scheduler.request();
+    requestFullRefresh();
     const visible = () => {
-      if (!document.hidden) scheduler.request();
+      if (!document.hidden) requestFullRefresh();
     };
     document.addEventListener('visibilitychange', visible);
     window.addEventListener('online', visible);
-    const timer = setInterval(() => scheduler.request(), 15000);
+    let idleTicks = 0;
+    const timer = setInterval(() => {
+      idleTicks = (idleTicks + 1) % 3;
+      if (!socketConnected.current || awaitingDuel.current || idleTicks === 0) requestFullRefresh();
+    }, 15000);
     const duelFallback = setInterval(() => {
-      if (!socketConnected.current && awaitingDuel.current) scheduler.request();
+      if (!socketConnected.current && awaitingDuel.current) requestFullRefresh();
     }, 5000);
     return () => {
       scheduler.close();
@@ -145,36 +171,53 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       document.removeEventListener('visibilitychange', visible);
       window.removeEventListener('online', visible);
     };
-  }, [readProfile]);
+  }, [readFreshProfile, requestFullRefresh]);
   useEffect(() => {
     if (!profile) return;
     const socket: Socket = io(socketURL(), {
       withCredentials: true,
       auth: (callback) =>
-        callback({ profileId: profile.id, token: sessionToken(), scopedMoves: true }),
+        callback({
+          profileId: profile.id,
+          token: sessionToken(),
+          scopedMoves: true,
+          scopedSiteUpdates: true,
+        }),
     });
-    socket.on('platform:changed', (scope?: string, move?: BoardMoveUpdate) => {
-      if (document.hidden) return;
-      if (scope === 'social') refreshSocial();
-      else if (scope === 'battle-chat') refreshBattleChat();
-      else if (scope === 'match-move' || scope === 'spectator-move')
-        window.dispatchEvent(
-          new CustomEvent<BoardMoveUpdate | null>(BOARD_MOVE_EVENT, { detail: move ?? null }),
-        );
-      else automatic.current?.request();
-    });
+    socket.on(
+      'platform:changed',
+      (scope?: string, update?: BoardMoveUpdate | SiteArea[], identityId?: string) => {
+        if (document.hidden) return;
+        if (scope === 'social') refreshSocial();
+        else if (scope === 'battle-chat') refreshBattleChat();
+        else if (scope === 'site' && Array.isArray(update)) {
+          if (update.includes('profile')) automatic.current?.request();
+          if (update.includes('social')) refreshSocial();
+          dispatchSiteUpdate({ areas: update, identityId });
+        } else if (scope === 'match-move' || scope === 'spectator-move')
+          window.dispatchEvent(
+            new CustomEvent<BoardMoveUpdate | null>(BOARD_MOVE_EVENT, {
+              detail: Array.isArray(update) ? null : (update ?? null),
+            }),
+          );
+        else requestFullRefresh();
+      },
+    );
     socket.on('connect', () => {
       socketConnected.current = true;
-      automatic.current?.request();
+      setRequestSocket(socket.id);
+      requestFullRefresh();
     });
     socket.on('disconnect', () => {
       socketConnected.current = false;
+      setRequestSocket();
     });
     return () => {
       socketConnected.current = false;
+      setRequestSocket();
       socket.disconnect();
     };
-  }, [profile?.id, profile?.registered, refreshSocial, refreshBattleChat]);
+  }, [profile?.id, profile?.registered, refreshSocial, refreshBattleChat, requestFullRefresh]);
   return (
     <LocaleView>
       <Context.Provider
@@ -185,6 +228,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           socialRevision,
           battleChatRevision,
           refresh,
+          refreshProfile,
           refreshSocial,
           refreshBattleChat,
           changeAccount,

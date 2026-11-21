@@ -20,6 +20,10 @@ export class ApiError extends Error {
 const cooldowns = new Map<string, number>();
 const unavailable = 'The game server is temporarily unavailable. Reconnecting…';
 const rateLimited = 'Too many requests. Please wait a moment before trying again.';
+let requestSocket: string | undefined;
+export function setRequestSocket(id?: string) {
+  requestSocket = id;
+}
 export async function api<T>(
   path: string,
   body?: unknown,
@@ -43,6 +47,9 @@ export async function api<T>(
         ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(profile && !path.startsWith('/auth') ? { 'x-profile-id': profile } : {}),
+        ...(requestSocket && method !== 'GET' && !path.startsWith('/auth/')
+          ? { 'x-game-socket': requestSocket }
+          : {}),
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       ...(method === 'GET' ? { signal: AbortSignal.timeout(15000) } : {}),
@@ -59,7 +66,7 @@ export async function api<T>(
     // Keep the signed session when a gateway sends an empty/HTML restart response.
     if (response.status !== 429) {
       recordRequest(path, response.status, started, response.headers.get('server-timing'));
-      throw new ApiError(unavailable, 503);
+      throw new ApiError(unavailable, response.status >= 500 ? response.status : 503);
     }
   }
   recordRequest(path, response.status, started, response.headers.get('server-timing'));

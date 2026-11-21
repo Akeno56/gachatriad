@@ -15,6 +15,7 @@ import { MatchmakingPanel } from './matchmaking-panel';
 import { PracticeSetup } from './practice-setup';
 import { HelpTip, Button } from './ui';
 import { api } from '../lib/platform';
+import { useSiteRevision } from '../lib/site-updates';
 import { VERSION } from '../lib/release';
 import { CURRENT_SEASON } from '@gacha-triad/shared/journey';
 
@@ -28,6 +29,7 @@ export function TavernHome({
   onInspect: (card: CardData) => void;
 }) {
   const { profile } = useSession();
+  const dailyRevision = useSiteRevision('daily-booster');
   const [practiceOpen, setPracticeOpen] = useState(false);
   const [notice, setNotice] = useState<{
     puzzle: DailyPuzzleView | null;
@@ -66,7 +68,7 @@ export function TavernHome({
       clearInterval(timer);
       document.removeEventListener('visibilitychange', visible);
     };
-  }, [profile?.id, retry]);
+  }, [profile?.id, retry, dailyRevision]);
   if (!profile) return null;
   const deck = profile.deck
     .map((id) => ALL_CARDS.find((card) => card.id === id))

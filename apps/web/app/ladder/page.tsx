@@ -8,11 +8,13 @@ import type { LadderEntry } from '@gacha-triad/shared/social';
 import { useSession } from '../../components/session';
 import { Avatar } from '../../components/avatar';
 import { api } from '../../lib/platform';
+import { useSiteRevision } from '../../lib/site-updates';
 import { SeasonBanner } from '../../components/season-banner';
 import { RATED_MODES, type RatedMode } from '@gacha-triad/shared/platform';
 import { matchModeNames } from '../../lib/rules';
 export default function Ladder() {
   const { profile, revision } = useSession();
+  const ladderRevision = useSiteRevision('ladder');
   const panelId = useId();
   const [mode, setMode] = useState<RatedMode>('ranked'),
     [rows, setRows] = useState<LadderEntry[]>([]),
@@ -33,7 +35,7 @@ export default function Ladder() {
     return () => {
       active = false;
     };
-  }, [profile?.id, revision, mode]);
+  }, [profile?.id, revision, mode, ladderRevision]);
   return (
     <LocaleView>
       <div className="content-page ladder-page">

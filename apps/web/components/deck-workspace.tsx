@@ -13,6 +13,7 @@ import { DeckAnalysis } from './deck-analysis';
 import { DeckLeaveWarning } from './deck-editor';
 import { browseKey, useBrowseState } from './browse-preferences';
 import { api, ApiError } from '../lib/platform';
+import { useSiteRevision } from '../lib/site-updates';
 const byId = new Map(ALL_CARDS.map((c) => [c.id, c]));
 const same = (a: readonly string[], b: readonly string[]) => a.join('|') === b.join('|');
 const definitions = (ids: readonly string[]) =>
@@ -72,8 +73,9 @@ export function DeckWorkspace() {
   );
 }
 function Builder({ profile }: { profile: ProfileView }) {
-  const { refresh } = useSession(),
+  const { refreshProfile } = useSession(),
     key = browseKey('deck-workspace', profile.id);
+  const decksRevision = useSiteRevision('decks');
   const [data, setData] = useState<DeckLoadoutsView | null>(null),
     [loadError, setLoadError] = useState('');
   const generation = useRef(0),
@@ -207,7 +209,7 @@ function Builder({ profile }: { profile: ProfileView }) {
       clearInterval(timer);
       document.removeEventListener('visibilitychange', visible);
     };
-  }, [key]);
+  }, [key, decksRevision]);
   useEffect(() => {
     if (!initialized.current) return;
     try {
@@ -301,7 +303,7 @@ function Builder({ profile }: { profile: ProfileView }) {
           updatedAt: '',
         };
       if (use) await api(`/deck-loadouts/${row.id}/activate`, { revision: row.revision });
-      await Promise.all([load(), refresh()]);
+      await Promise.all([load(), refreshProfile()]);
       setFeedback(use ? 'Active deck updated.' : 'Loadout saved.');
       return true;
     } catch (e) {
@@ -334,7 +336,7 @@ function Builder({ profile }: { profile: ProfileView }) {
         baseCards: profile.deck,
       });
       setUndo([]);
-      await Promise.all([load(), refresh()]);
+      await Promise.all([load(), refreshProfile()]);
       setFeedback('Loadout deleted.');
     } catch (e) {
       setError((e as Error).message);

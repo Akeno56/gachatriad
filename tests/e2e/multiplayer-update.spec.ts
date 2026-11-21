@@ -84,6 +84,48 @@ async function player(browser: Browser, name?: string) {
   };
 }
 
+test('syncs boosters and Market listings only where they are needed', async ({ browser }) => {
+  const owner = await player(browser);
+  const viewer = await player(browser);
+  try {
+    for (const context of [owner.context, viewer.context])
+      await context.addInitScript(() => {
+        Object.defineProperty(document, 'hidden', { get: () => false });
+      });
+    const market = await viewer.context.newPage();
+    await Promise.all([
+      owner.page.goto('/boosters/'),
+      viewer.page.goto('/lobbies/'),
+      market.goto('/market/'),
+    ]);
+    await expect(owner.page.getByRole('button', { name: 'Claim daily booster' })).toBeEnabled();
+    await expect(market.getByRole('heading', { name: 'Market', exact: true })).toBeVisible();
+    await expect.poll(() => platform.store.isOnline?.(viewer.profile.id)).toBe(true);
+    // Let socket reconnect and initial navigation reads settle before counting mutation traffic.
+    await viewer.page.waitForTimeout(2250);
+    const requests = (page: typeof market) => {
+      const paths: string[] = [];
+      page.on('request', (request) => {
+        const path = new URL(request.url()).pathname;
+        if (request.method() === 'GET' && path.startsWith('/api/')) paths.push(path);
+      });
+      return paths;
+    };
+    const lobbyReads = requests(viewer.page),
+      marketReads = requests(market);
+    const daily = await owner.request('/boosters/daily', {});
+    await expect(owner.page.getByRole('button', { name: 'Daily claimed' })).toBeVisible();
+    await owner.request('/boosters/open-batch', { packIds: [daily.id] });
+    await owner.request('/trades', { offered: owner.profile.deck[0], price: 237 });
+    await expect(market.locator('.trade-offer').filter({ hasText: '237' })).toBeVisible();
+    expect(marketReads).toEqual(['/api/trades']);
+    expect(lobbyReads).toEqual([]);
+  } finally {
+    await owner.context.close();
+    await viewer.context.close();
+  }
+});
+
 test('keeps a duel invitation in the top-bar inbox and skips profile and board reads for battle chat', async ({
   browser,
 }, info) => {

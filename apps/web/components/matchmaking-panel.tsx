@@ -17,7 +17,7 @@ export function MatchmakingPanel({
   onMatch: (id: string) => void;
   onTutorial: () => void;
 }) {
-  const { profile, refresh } = useSession();
+  const { profile, refreshProfile } = useSession();
   const openAppearance = useOpenAppearance();
   const [busy, setBusy] = useState(false),
     [error, setError] = useState('');
@@ -33,11 +33,11 @@ export function MatchmakingPanel({
         mode,
         allowBots: mode === 'casual',
       });
-      await refresh();
+      await refreshProfile();
       if (result.matchId) onMatch(result.matchId);
     } catch (e) {
       setError((e as Error).message);
-      await refresh();
+      await refreshProfile();
     } finally {
       setBusy(false);
       lock.current = false;

@@ -40,6 +40,18 @@ export interface BoardMoveUpdate {
   matchId: string;
   version: number;
 }
+export type SiteArea =
+  | 'profile'
+  | 'identity'
+  | 'social'
+  | 'market'
+  | 'boosters'
+  | 'daily-booster'
+  | 'wishlist'
+  | 'replays'
+  | 'decks'
+  | 'lobbies'
+  | 'ladder';
 export interface MatchView {
   cpuStyle?: CpuStyle;
   sharedDraft?: {

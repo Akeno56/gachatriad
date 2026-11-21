@@ -10,6 +10,7 @@ import {
   type TradeOfferView,
 } from '@gacha-triad/shared/platform';
 import { api } from '../lib/platform';
+import { publishSiteUpdate, useSiteRevision } from '../lib/site-updates';
 import { useSession } from './session';
 import { useWishlist } from './use-wishlist';
 import { useActionNotice } from './action-notice';
@@ -37,9 +38,13 @@ export function MarketCollections({
   tab: 'wishlist' | 'requests';
   onViewListings: (cardId: string) => void;
 }) {
-  const { profile, revision, refresh, openAccount } = useSession();
+  const { profile, revision, refreshProfile, openAccount } = useSession();
+  const marketRevision = useSiteRevision('market');
   const [pulse, setPulse] = useState(0);
-  const wishlist = useWishlist(tab === 'wishlist' ? profile?.id : undefined, revision + pulse);
+  const wishlist = useWishlist(
+    tab === 'wishlist' ? profile?.id : undefined,
+    revision + pulse + marketRevision,
+  );
   const [requests, setRequests] = useState<{ owner: string; rows: MarketRequestView[] } | null>(
     null,
   );
@@ -71,7 +76,7 @@ export function MarketCollections({
     return () => {
       current = false;
     };
-  }, [owner, tab, revision, pulse]);
+  }, [owner, tab, revision, pulse, marketRevision]);
   useEffect(() => {
     setQuery('');
     setPage(0);
@@ -85,9 +90,13 @@ export function MarketCollections({
     try {
       await api(path, body, method);
       setDialog(null);
-      setPulse((value) => value + 1);
+      publishSiteUpdate('market');
       toast(message);
-      await refresh();
+      if (
+        path !== '/market/requests' &&
+        !(method === 'DELETE' && path.startsWith('/market/requests/'))
+      )
+        await refreshProfile();
     } catch (e) {
       setError((e as Error).message);
       setPulse((value) => value + 1);

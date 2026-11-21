@@ -9,6 +9,7 @@ import { useSession } from '../../components/session';
 import { LocalBots } from '../../components/local-bots';
 import { Card } from '../../components/card';
 import { api } from '../../lib/platform';
+import { publishSiteUpdate, useSiteRevision } from '../../lib/site-updates';
 import { MainChat } from '../../components/main-chat';
 import { useActionNotice } from '../../components/action-notice';
 import { useBrowseState, useBrowseScroll } from '../../components/browse-preferences';
@@ -90,7 +91,8 @@ export default function Market() {
 }
 
 function MarketOffers({ cardId, clearCard }: { cardId: string; clearCard: () => void }) {
-  const { profile, revision, refresh, error: connectionError } = useSession();
+  const { profile, revision, refreshProfile, error: connectionError } = useSession();
+  const marketRevision = useSiteRevision('market');
   const notify = useActionNotice(),
     actionLock = useRef(false);
   const [offers, setOffers] = useState<TradeOfferView[]>([]),
@@ -141,7 +143,7 @@ function MarketOffers({ cardId, clearCard }: { cardId: string; clearCard: () => 
     return () => {
       active = false;
     };
-  }, [offersKey, revision]);
+  }, [offersKey, revision, marketRevision]);
   const loaded = !!offersKey && loadedFor === offersKey;
   useBrowseScroll('market', loaded && !cardId);
   const confirmRef = useRef<HTMLDialogElement>(null);
@@ -220,7 +222,8 @@ function MarketOffers({ cardId, clearCard }: { cardId: string; clearCard: () => 
     setWorkingPath(path);
     try {
       await api(path, body, method);
-      await refresh();
+      publishSiteUpdate('market');
+      await refreshProfile();
       setError('');
       setSelected(null);
       notify(

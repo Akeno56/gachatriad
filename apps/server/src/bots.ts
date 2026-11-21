@@ -14,6 +14,7 @@ import {
   isRankedMode,
   isRatedMode,
   RATED_MODES,
+  type BoardMoveUpdate,
   type Mode,
   type PopulationView,
 } from '@gacha-triad/shared/platform';
@@ -82,7 +83,13 @@ export class BotPopulation {
         difficulty: PopulationView['difficulty'];
         mix: PopulationView['mix'] | null;
       }>('SELECT enabled,difficulty,mix FROM local_population WHERE id=1');
-      const [n] = await sql<{ n: number }>('SELECT count(*)::int n FROM profiles WHERE is_bot');
+      const [bots] = await sql<PopulationView['counts'] & { total: number }>(
+        `SELECT count(*)::int AS total,
+                count(*) FILTER (WHERE bot_difficulty='easy')::int AS easy,
+                count(*) FILTER (WHERE bot_difficulty='medium')::int AS medium,
+                count(*) FILTER (WHERE bot_difficulty='hard')::int AS hard
+         FROM profiles WHERE is_bot`,
+      );
       const [m] = await sql<{ n: number }>(
         "SELECT count(*)::int n FROM matches WHERE status IN('playing','drafting') AND (player0 IN(SELECT id FROM profiles WHERE is_bot) OR player1 IN(SELECT id FROM profiles WHERE is_bot))",
       );
@@ -92,23 +99,11 @@ export class BotPopulation {
           medium: e.difficulty === 'medium' ? 100 : 0,
           hard: e.difficulty === 'hard' ? 100 : 0,
         },
-        counts: Object.fromEntries(
-          await Promise.all(
-            DIFFICULTIES.map(async (d) => [
-              d,
-              (
-                await sql<{ n: number }>(
-                  'SELECT count(*)::int n FROM profiles WHERE is_bot AND bot_difficulty=$1',
-                  [d],
-                )
-              )[0].n,
-            ]),
-          ),
-        ) as PopulationView['counts'],
+        counts: { easy: bots.easy, medium: bots.medium, hard: bots.hard },
         difficulty: e.difficulty,
         available: this.available,
         enabled: this.available && e.enabled,
-        bots: n.n,
+        bots: bots.total,
         activeGames: m.n,
       };
     });
@@ -189,11 +184,18 @@ export class BotPopulation {
       ),
     );
   }
-  async tick() {
+  async tick(notifyMove?: (move: BoardMoveUpdate, players: readonly (string | null)[]) => void) {
     if (this.closing) return false;
-    const population = await this.status(),
-      enabled = population.enabled;
+    const enabled =
+      this.available &&
+      (
+        await this.store.db.read((sql) =>
+          sql<{ enabled: boolean }>('SELECT enabled FROM local_population WHERE id=1'),
+        )
+      )[0].enabled;
     const actors = await this.actors();
+    let lobbySnapshot: Awaited<ReturnType<GameStore['lobbies']>> | undefined;
+    let offerSnapshot: Awaited<ReturnType<Trades['list']>> | undefined;
     let changed = false;
     for (let i = 0; i < actors.length; i++) {
       if (this.closing) break;
@@ -245,8 +247,9 @@ export class BotPopulation {
               actor.bot_style,
             );
             if (move) {
-              await this.store.move(p.id, m.id, move.cardId, move.cell, m.version);
-              changed = true;
+              const result = await this.store.move(p.id, m.id, move.cardId, move.cell, m.version);
+              if (result && notifyMove) notifyMove(result.update, result.players);
+              else changed = true;
             }
           }
           continue;
@@ -264,7 +267,7 @@ export class BotPopulation {
         }
         if (!enabled) continue;
         // All idle bots can join human tables; keep an exhibition pair and some spare opponents.
-        const lobbies = await this.store.lobbies(true);
+        const lobbies = (lobbySnapshot ??= await this.store.lobbies(true));
         const humanTable = lobbies.find(
           (l) =>
             l.status === 'waiting' &&
@@ -275,12 +278,14 @@ export class BotPopulation {
             Date.now() - Date.parse(l.createdAt) > 5000,
         );
         if (humanTable) {
+          lobbySnapshot = undefined;
           if (p.waitingLobbyId) await this.store.cancelLobby(p.id, p.waitingLobbyId);
           await this.store.joinLobby(p, humanTable.id);
           changed = true;
           continue;
         }
         if (!p.waitingLobbyId && i !== 9 && i < 27) {
+          lobbySnapshot = undefined;
           try {
             await this.store.rebuildDeck(p.id);
           } catch {}
@@ -305,11 +310,12 @@ export class BotPopulation {
             (l) => l.name === '[BOT] Exhibition duel' && l.status === 'waiting',
           );
           if (table) {
+            lobbySnapshot = undefined;
             await this.store.joinLobby(p, table.id);
             changed = true;
           }
         }
-        const offers = await this.trades.list();
+        const offers = (offerSnapshot ??= await this.trades.list());
         if (offers.filter((o) => o.ownerId === p.id).length < 2) {
           const available = CARDS.filter(
             (c) => (p.inventory[c.id]?.available ?? 0) > 0 && !p.deck.includes(c.id),
@@ -328,6 +334,7 @@ export class BotPopulation {
                 : wanted.length
                   ? wanted[randomInt(wanted.length)]
                   : CARDS.find((c) => c.id !== offered.id)!;
+            offerSnapshot = undefined;
             await this.trades.create(p, offered.id, ask.id);
             changed = true;
           }
@@ -341,6 +348,7 @@ export class BotPopulation {
             (p.inventory[o.wanted.id]?.available ?? 0) > 0,
         );
         if (offer) {
+          offerSnapshot = undefined;
           await this.trades.accept(p, offer.id);
           changed = true;
         }

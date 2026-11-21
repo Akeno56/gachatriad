@@ -17,7 +17,7 @@ import { api } from '../../lib/platform';
 import { matchModeNames } from '../../lib/rules';
 
 export default function JourneyPage() {
-  const { profile, refresh, openAccount } = useSession();
+  const { profile, refreshProfile, openAccount } = useSession();
   const [revision, reload] = usePageRefresh(60000);
   const [snapshot, setSnapshot] = useState<{ owner: string; value: JourneyView } | null>(null);
   const [error, setError] = useState(''),
@@ -67,8 +67,7 @@ export default function JourneyPage() {
             }
           : current,
       );
-      await refresh();
-      reload();
+      await refreshProfile();
     } catch (e) {
       setError((e as Error).message);
       reload();
@@ -103,7 +102,6 @@ export default function JourneyPage() {
       );
       setSwapOpen(false);
       setNotice('Weekly objective swapped.');
-      reload();
     } catch (e) {
       setSwapError((e as Error).message);
       reload();

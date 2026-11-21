@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { WishlistEntry } from '@gacha-triad/shared/platform';
 import { api } from '../lib/platform';
+import { useSiteRevision } from '../lib/site-updates';
 
 export function useWishlist(owner: string | undefined, revision = 0) {
   const [snapshot, setSnapshot] = useState<{ owner: string; rows: WishlistEntry[] } | null>(null);
@@ -10,6 +11,7 @@ export function useWishlist(owner: string | undefined, revision = 0) {
   const [error, setError] = useState('');
   const saving = useRef(false);
   const version = useRef(0);
+  const wishlistRevision = useSiteRevision('wishlist');
   const rows = snapshot?.owner === owner ? snapshot?.rows : null;
   useEffect(() => {
     if (!owner) return;
@@ -29,7 +31,7 @@ export function useWishlist(owner: string | undefined, revision = 0) {
     return () => {
       active = false;
     };
-  }, [owner, revision]);
+  }, [owner, revision, wishlistRevision]);
 
   async function save(cardId: string, saved: boolean) {
     if (!rows || saving.current) return;

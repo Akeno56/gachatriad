@@ -314,29 +314,29 @@ export class Economy {
           `You need ${totalCost} Stellar Prisms to buy ${quantity} booster${quantity === 1 ? '' : 's'}.`,
           409,
         );
-      const packs: BoosterView[] = [];
-      for (let i = 0; i < quantity; i++) {
-        const packId = randomUUID();
-        const [pack] = await sql<PackRow>(
-          "INSERT INTO booster_packs(id,profile_id,source,request_id,cost,pack_type) VALUES($1,$2,'purchase',$3,$4,$5) RETURNING *",
-          [packId, profileId, i === 0 ? requestId : `${requestId}:${i}`, ECONOMY.packCost, type.id],
-        );
-        await sql(
-          "INSERT INTO prism_ledger(id,profile_id,delta,kind,reference) VALUES($1,$2,$3,'booster',$4)",
-          [randomUUID(), profileId, -ECONOMY.packCost, `pack:${packId}`],
-        );
-        packs.push(view(pack));
-      }
-      await sql(
-        'INSERT INTO booster_purchases(profile_id,request_id,quantity,total_cost,pack_ids,pack_type) VALUES($1,$2,$3,$4,$5::jsonb,$6)',
+      const ids = Array.from({ length: quantity }, () => randomUUID());
+      const rows = await sql<PackRow>(
+        `INSERT INTO booster_packs(id,profile_id,source,request_id,cost,pack_type)
+         SELECT id,$1,'purchase',request_id,$4,$5 FROM unnest($2::text[],$3::text[]) AS packs(id,request_id)
+         RETURNING *`,
         [
           profileId,
-          requestId,
-          quantity,
-          totalCost,
-          JSON.stringify(packs.map((p) => p.id)),
+          ids,
+          ids.map((_, i) => (i === 0 ? requestId : `${requestId}:${i}`)),
+          ECONOMY.packCost,
           type.id,
         ],
+      );
+      await sql(
+        `INSERT INTO prism_ledger(id,profile_id,delta,kind,reference)
+         SELECT id,$1,$4,'booster',reference FROM unnest($2::text[],$3::text[]) AS entries(id,reference)`,
+        [profileId, ids.map(() => randomUUID()), ids.map((id) => `pack:${id}`), -ECONOMY.packCost],
+      );
+      const byId = new Map(rows.map((pack) => [pack.id, pack]));
+      const packs = ids.map((id) => view(byId.get(id)!));
+      await sql(
+        'INSERT INTO booster_purchases(profile_id,request_id,quantity,total_cost,pack_ids,pack_type) VALUES($1,$2,$3,$4,$5::jsonb,$6)',
+        [profileId, requestId, quantity, totalCost, JSON.stringify(ids), type.id],
       );
       return { ...packs[0], packs, quantity, totalCost };
     });
@@ -370,6 +370,7 @@ export class Economy {
       'SELECT card_id FROM inventory WHERE profile_id=$1 AND quantity>0',
       [profileId],
     );
+    const ownedIds = new Set(owned.map((card) => card.card_id));
     const ownedBases = new Set(
       owned.map((c) => definitions.get(c.card_id)?.baseCardId ?? c.card_id),
     );
@@ -408,16 +409,19 @@ export class Economy {
         starter ? ECONOMY.starterHoloPer10000 : ECONOMY.holoPer10000,
       );
       selected.push(cardId);
-      if (!owned.some((c) => c.card_id === cardId)) newCardIds.push(cardId);
-      await sql(
-        'INSERT INTO inventory(profile_id,card_id,quantity) VALUES($1,$2,1) ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=inventory.quantity+1',
-        [profileId, cardId],
-      );
-      await sql(
-        "INSERT INTO inventory_ledger(id,profile_id,card_id,delta,kind) VALUES($1,$2,$3,1,'booster')",
-        [randomUUID(), profileId, cardId],
-      );
+      if (!ownedIds.has(cardId)) newCardIds.push(cardId);
     }
+    await sql(
+      `INSERT INTO inventory(profile_id,card_id,quantity)
+       SELECT $1,card_id,1 FROM unnest($2::text[]) AS cards(card_id)
+       ON CONFLICT(profile_id,card_id) DO UPDATE SET quantity=inventory.quantity+1`,
+      [profileId, selected],
+    );
+    await sql(
+      `INSERT INTO inventory_ledger(id,profile_id,card_id,delta,kind)
+       SELECT id,$1,card_id,1,'booster' FROM unnest($2::text[],$3::text[]) AS entries(id,card_id)`,
+      [profileId, selected.map(() => randomUUID()), selected],
+    );
     const [opened] = await sql<PackRow>(
       'UPDATE booster_packs SET cards=$1::jsonb,opened_at=now(),new_cards=$3::jsonb WHERE id=$2 RETURNING *',
       [JSON.stringify(selected), packId, JSON.stringify(newCardIds)],

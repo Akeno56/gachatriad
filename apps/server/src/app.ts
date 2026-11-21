@@ -9,7 +9,12 @@ import { monitorEventLoopDelay } from 'node:perf_hooks';
 import { Database } from './database';
 import { createAuth } from './auth';
 import { GameStore, GameError, cleanRules } from './store';
-import { isRatedMode, type BoardMoveUpdate, type Mode } from '@gacha-triad/shared/platform';
+import {
+  isRatedMode,
+  type BoardMoveUpdate,
+  type Mode,
+  type SiteArea,
+} from '@gacha-triad/shared/platform';
 import { Trades } from './trades';
 import { Wishlist } from './wishlist';
 import { BotPopulation } from './bots';
@@ -79,6 +84,7 @@ export async function createPlatform(
     origin: origins,
     methods: ['GET', 'HEAD', 'POST', 'DELETE', 'OPTIONS'],
     credentials: true,
+    maxAge: 600,
     exposedHeaders: ['set-auth-token', 'retry-after', 'x-retry-after', 'server-timing'],
   });
   await app.register(rateLimit, { max: 600, timeWindow: '1 minute' });
@@ -264,6 +270,7 @@ export async function createPlatform(
       socket.data.name = p.name;
       socket.data.registered = p.registered;
       socket.data.scopedMoves = socket.handshake.auth.scopedMoves === true;
+      socket.data.scopedSiteUpdates = socket.handshake.auth.scopedSiteUpdates === true;
       const ip =
         typeof socket.request.headers['x-forwarded-for'] === 'string' &&
         socket.request.socket.remoteAddress?.replace(/^::ffff:/, '') === '127.0.0.1'
@@ -278,6 +285,29 @@ export async function createPlatform(
     }
   });
   const notify = () => io.emit('platform:changed');
+  function notifySite(
+    req: FastifyRequest,
+    actorId: string,
+    own: readonly SiteArea[],
+    broadcast: readonly SiteArea[] = [],
+    recipients: readonly unknown[] = [actorId],
+  ) {
+    for (const socket of io.sockets.sockets.values()) {
+      const owner = socket.data.profileId;
+      const areas = recipients.includes(owner) ? [...broadcast, ...own] : broadcast;
+      if (!areas.length) continue;
+      if (!socket.data.scopedSiteUpdates) socket.emit('platform:changed');
+      else if (owner !== actorId || socket.id !== req.headers['x-game-socket'])
+        socket.emit(
+          'platform:changed',
+          'site',
+          areas,
+          areas.includes('identity') ? actorId : undefined,
+        );
+    }
+  }
+  const publicIdentity = ['identity', 'social', 'ladder'] as const;
+  const deckUpdates = ['decks', 'profile'] as const;
   function notifyMove(move: BoardMoveUpdate, players: readonly (string | null)[]) {
     for (const socket of io.sockets.sockets.values()) {
       if (!socket.data.scopedMoves) socket.emit('platform:changed');
@@ -291,18 +321,22 @@ export async function createPlatform(
     Array.from(io.sockets.sockets.values()).some((socket) => socket.data.profileId === profileId);
   await store.recoverPresence();
   io.on('connection', (socket) => {
-    void store
-      .presence(socket.data.profileId, true)
-      .then(notify)
-      .catch((error) => app.log.error(error));
-    notify();
+    const owner: string = socket.data.profileId;
+    const room = `presence:${owner}`;
+    const firstConnection = !io.sockets.adapter.rooms.has(room);
+    void socket.join(room);
+    const publishPresence = (online: boolean) => {
+      io.emit('platform:changed', 'social');
+      void store
+        .presence(owner, online)
+        .then((inMatch) => {
+          if (inMatch) notify();
+        })
+        .catch((error) => app.log.error(error));
+    };
+    if (firstConnection) publishPresence(true);
     socket.on('disconnect', () => {
-      if (!shuttingDown && !store.isOnline!(socket.data.profileId))
-        void store
-          .presence(socket.data.profileId, false)
-          .then(notify)
-          .catch((error) => app.log.error(error));
-      notify();
+      if (!shuttingDown && !io.sockets.adapter.rooms.has(room)) publishPresence(false);
     });
   });
   const body = (req: FastifyRequest) =>
@@ -374,18 +408,22 @@ export async function createPlatform(
     social.search(await profile(req), (req.query as { search?: string }).search),
   );
   app.post('/api/friends/request', async (req) => {
-    await social.friend(await profile(req), body(req).playerId, 'request');
-    notify();
+    const p = await profile(req),
+      target = body(req).playerId;
+    await social.friend(p, target, 'request');
+    notifySite(req, p.id, ['social'], [], [p.id, target]);
     return { ok: true };
   });
   app.post('/api/friends/:id/accept', async (req) => {
-    await social.friend(await profile(req), id(req), 'accept');
-    notify();
+    const p = await profile(req);
+    await social.friend(p, id(req), 'accept');
+    notifySite(req, p.id, ['social'], [], [p.id, id(req)]);
     return { ok: true };
   });
   app.delete('/api/friends/:id', async (req) => {
-    await social.friend(await profile(req), id(req), 'remove');
-    notify();
+    const p = await profile(req);
+    await social.friend(p, id(req), 'remove');
+    notifySite(req, p.id, ['social'], [], [p.id, id(req)]);
     return { ok: true };
   });
   app.post('/api/chat', async (req) => {
@@ -443,25 +481,24 @@ export async function createPlatform(
     lobbyPresets.remove((await profile(req)).id, id(req)),
   );
   app.post('/api/profile/title', async (req) => {
-    await store.setTitle((await profile(req)).id, body(req).titleId);
-    notify();
+    const p = await profile(req);
+    await store.setTitle(p.id, body(req).titleId);
+    notifySite(req, p.id, ['profile'], publicIdentity);
     return { ok: true };
   });
   app.get('/api/profile/customization', async (req) =>
     customizations.view((await profile(req)).id),
   );
   app.post('/api/profile/customization', async (req) => {
-    const result = await customizations.save((await profile(req)).id, body(req));
-    notify();
+    const p = await profile(req);
+    const result = await customizations.save(p.id, body(req));
+    notifySite(req, p.id, ['profile'], publicIdentity);
     return result;
   });
   app.post('/api/profile/frame', async (req) => {
-    const result = await customizations.equipFrame(
-      (await profile(req)).id,
-      body(req).frameId,
-      body(req).revision,
-    );
-    notify();
+    const p = await profile(req);
+    const result = await customizations.equipFrame(p.id, body(req).frameId, body(req).revision);
+    notifySite(req, p.id, ['profile'], publicIdentity);
     return result;
   });
   app.post('/api/ranked/acknowledge', async (req) => {
@@ -615,7 +652,7 @@ export async function createPlatform(
     if (cardId !== null && typeof cardId !== 'string')
       throw new GameError('Choose a card or the default emblem.');
     await store.setAvatar(p.id, cardId as string | null);
-    notify();
+    notifySite(req, p.id, ['profile'], publicIdentity);
     return store.playerProfile(p.id);
   });
   app.get('/api/lobbies', async (req) => {
@@ -630,9 +667,12 @@ export async function createPlatform(
     ),
   );
   app.get('/api/replays/:id', async (req) => replays.get((await profile(req)).id, id(req)));
-  app.post('/api/replays/:id/favorite', async (req) =>
-    replays.favorite((await profile(req)).id, id(req), body(req).favorite),
-  );
+  app.post('/api/replays/:id/favorite', async (req) => {
+    const p = await profile(req);
+    const result = await replays.favorite(p.id, id(req), body(req).favorite);
+    notifySite(req, p.id, ['replays']);
+    return result;
+  });
   app.get('/api/journey', async (req) => {
     const { actor, requested } = await sessionActor(req);
     const p = await store.identity(actor, requested);
@@ -642,7 +682,7 @@ export async function createPlatform(
     const { actor, requested } = await sessionActor(req);
     const p = await store.identity(actor, requested);
     const result = await journey.claim(p.id, actor.id, p.registered, body(req).week);
-    notify();
+    notifySite(req, p.id, ['profile']);
     return result;
   });
   app.post('/api/journey/weekly/swap', async (req) => {
@@ -669,7 +709,7 @@ export async function createPlatform(
   app.post('/api/cards/buy', async (req) => {
     const p = await profile(req);
     const result = await store.economy.purchaseCard(p.id, body(req).cardId, body(req).requestId);
-    notify();
+    notifySite(req, p.id, ['profile']);
     return result;
   });
   app.get('/api/boosters/daily', async (req) => {
@@ -679,38 +719,37 @@ export async function createPlatform(
   app.post('/api/boosters/daily', async (req) => {
     const p = await profile(req);
     const result = await store.economy.claimDaily(p.id, p.registered);
-    notify();
+    notifySite(req, p.id, ['profile', 'boosters', 'daily-booster']);
     return result;
   });
   app.post('/api/boosters/open-batch', async (req) => {
-    const result = await store.economy.openBatch((await profile(req)).id, body(req).packIds);
-    notify();
+    const p = await profile(req);
+    const result = await store.economy.openBatch(p.id, body(req).packIds);
+    notifySite(req, p.id, ['profile', 'boosters']);
     return result;
   });
   app.post('/api/collection/duplicates', async (req) => {
+    const p = await profile(req);
     const b = body(req);
-    const result = await store.economy.duplicates(
-      (await profile(req)).id,
-      b.kind,
-      b.cards,
-      b.requestId,
-    );
-    notify();
+    const result = await store.economy.duplicates(p.id, b.kind, b.cards, b.requestId);
+    notifySite(req, p.id, ['profile', 'decks']);
     return result;
   });
   app.post('/api/boosters/buy', async (req) => {
+    const p = await profile(req);
     const pack = await store.economy.purchase(
-      (await profile(req)).id,
+      p.id,
       body(req).requestId,
       body(req).quantity,
       body(req).type,
     );
-    notify();
+    notifySite(req, p.id, ['profile', 'boosters']);
     return pack;
   });
   app.post('/api/boosters/:id/open', async (req) => {
-    const pack = await store.economy.open((await profile(req)).id, id(req));
-    notify();
+    const p = await profile(req);
+    const pack = await store.economy.open(p.id, id(req));
+    notifySite(req, p.id, ['profile', 'boosters']);
     return pack;
   });
   app.get('/api/trades', async (req) => {
@@ -722,23 +761,29 @@ export async function createPlatform(
   });
   app.get('/api/wishlist', async (req) => wishlist.list((await profile(req)).id));
   app.post('/api/wishlist', async (req) => {
+    const p = await profile(req);
     const { cardId, saved } = body(req);
-    return wishlist.save((await profile(req)).id, cardId, saved);
+    const result = await wishlist.save(p.id, cardId, saved);
+    notifySite(req, p.id, ['wishlist']);
+    return result;
   });
   app.get('/api/market/requests', async (req) => trades.requests((await profile(req)).id));
   app.post('/api/market/requests', async (req) => {
-    const result = await trades.request(await profile(req), body(req).cardId);
-    notify();
+    const p = await profile(req);
+    const result = await trades.request(p, body(req).cardId);
+    notifySite(req, p.id, [], ['market']);
     return result;
   });
   app.post('/api/market/requests/:id/respond', async (req) => {
-    const result = await trades.respond(await profile(req), id(req), body(req).price);
-    notify();
+    const p = await profile(req);
+    const result = await trades.respond(p, id(req), body(req).price);
+    notifySite(req, p.id, ['profile'], ['market']);
     return result;
   });
   app.delete('/api/market/requests/:id', async (req) => {
-    await trades.cancelRequest(await profile(req), id(req));
-    notify();
+    const p = await profile(req);
+    const affected = await trades.cancelRequest(p, id(req));
+    notifySite(req, p.id, ['profile'], ['market'], affected);
     return { ok: true };
   });
   app.post('/api/trades', async (req) => {
@@ -756,49 +801,56 @@ export async function createPlatform(
       b.price === undefined ? (b.wanted as string) : null,
       b.price as number | undefined,
     );
-    notify();
+    notifySite(req, p.id, ['profile'], ['market']);
     return result;
   });
   app.post('/api/trades/:id/accept', async (req) => {
-    await trades.accept(await profile(req), id(req));
-    notify();
+    const p = await profile(req);
+    const affected = await trades.accept(p, id(req));
+    notifySite(req, p.id, deckUpdates, ['market'], affected);
     return { ok: true };
   });
   app.delete('/api/trades/:id', async (req) => {
-    await trades.cancel(await profile(req), id(req));
-    notify();
+    const p = await profile(req);
+    await trades.cancel(p, id(req));
+    notifySite(req, p.id, ['profile'], ['market']);
     return { ok: true };
   });
   app.get('/api/deck-loadouts', async (req) => loadouts.list((await profile(req)).id));
   app.post('/api/deck-loadouts', async (req) => {
-    const result = await loadouts.save((await profile(req)).id, body(req));
-    notify();
+    const p = await profile(req);
+    const result = await loadouts.save(p.id, body(req));
+    notifySite(req, p.id, deckUpdates);
     return result;
   });
   app.post('/api/deck-loadouts/:id', async (req) => {
-    const result = await loadouts.save((await profile(req)).id, body(req), id(req));
-    notify();
+    const p = await profile(req);
+    const result = await loadouts.save(p.id, body(req), id(req));
+    notifySite(req, p.id, deckUpdates);
     return result;
   });
   app.post('/api/deck-loadouts/:id/activate', async (req) => {
-    const result = await loadouts.activate((await profile(req)).id, id(req), body(req).revision);
-    notify();
+    const p = await profile(req);
+    const result = await loadouts.activate(p.id, id(req), body(req).revision);
+    notifySite(req, p.id, deckUpdates);
     return result;
   });
   app.delete('/api/deck-loadouts/:id', async (req) => {
-    const result = await loadouts.remove((await profile(req)).id, id(req), body(req).revision);
-    notify();
+    const p = await profile(req);
+    const result = await loadouts.remove(p.id, id(req), body(req).revision);
+    notifySite(req, p.id, deckUpdates);
     return result;
   });
   app.post('/api/deck', async (req) => {
     const p = await profile(req);
     await store.saveDeck(p.id, body(req).cards as string[]);
-    notify();
+    notifySite(req, p.id, deckUpdates);
     return { ok: true };
   });
   app.post('/api/deck/auto', async (req) => {
-    const result = await store.rebuildDeck((await profile(req)).id);
-    notify();
+    const p = await profile(req);
+    const result = await store.rebuildDeck(p.id);
+    notifySite(req, p.id, deckUpdates);
     return { cards: result };
   });
   app.post(
@@ -830,7 +882,8 @@ export async function createPlatform(
         tradeRule: typeof b.tradeRule === 'string' ? b.tradeRule : undefined,
         allowBots: typeof b.allowBots === 'boolean' ? b.allowBots : undefined,
       });
-      notify();
+      if (result.matchId) notify();
+      else notifySite(req, p.id, ['profile'], ['lobbies']);
       return result;
     },
   );
@@ -845,8 +898,9 @@ export async function createPlatform(
     return result;
   });
   app.delete('/api/lobbies/:id', async (req) => {
-    await store.cancelLobby((await profile(req)).id, id(req));
-    notify();
+    const p = await profile(req);
+    const invited = await store.cancelLobby(p.id, id(req));
+    notifySite(req, p.id, ['profile', 'social'], ['lobbies'], [p.id, ...invited]);
     return { ok: true };
   });
   app.get('/api/matches/:id', async (req) => store.view((await profile(req)).id, id(req)));
@@ -968,7 +1022,7 @@ export async function createPlatform(
             }
             if (Date.now() - lastBots > 1000) {
               lastBots = Date.now();
-              changed = (await db.background(() => bots.tick())) || changed;
+              changed = (await db.background(() => bots.tick(notifyMove))) || changed;
             }
             if (changed) notify();
           } catch (error) {

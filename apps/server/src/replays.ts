@@ -41,6 +41,13 @@ interface Row {
   settlement_done: boolean;
   claimed_card: string | null;
 }
+type ReplaySummary = Pick<
+  ReplayData,
+  'id' | 'mode' | 'completedAt' | 'players' | 'winner' | 'ratings' | 'endReason'
+> & {
+  score: ReplayFrame['score'];
+  turns: number;
+};
 /** Reverse recorded captures rather than replaying the current rules engine. */
 export function replayFrames(state: GameState | null, decks: [Card[], Card[]]): ReplayFrame[] {
   let board: ReplayFrame['board'] = state
@@ -169,22 +176,31 @@ export async function anonymizeReplays(sql: Sql, profiles: string[]) {
 export class MatchReplays {
   constructor(readonly db: Database) {}
   private async owned(sql: Sql, profileId: string, id: string): Promise<ReplayView> {
-    const [match] = await sql<{ revealed: GameState['revealed'] | null }>(
-      "SELECT state->'revealed' AS revealed FROM matches WHERE id=$1 AND status='complete' AND (player0=$2 OR player1=$2)",
-      [id, profileId],
-    );
+    const read = () =>
+      sql<{
+        payload: ReplayData | null;
+        revealed: GameState['revealed'] | null;
+        seat: Player | null;
+        favorite: boolean | null;
+      }>(
+        `SELECT r.payload,m.state->'revealed' AS revealed,o.seat,o.favorite
+         FROM matches m LEFT JOIN match_replays r ON r.match_id=m.id
+         LEFT JOIN replay_owners o ON o.match_id=m.id AND o.profile_id=$2
+         WHERE m.id=$1 AND m.status='complete' AND (m.player0=$2 OR m.player1=$2)`,
+        [id, profileId],
+      );
+    let [match] = await read();
     if (!match) throw new GameError('Replay not found.', 404);
-    await archiveReplay(sql, id);
-    const [row] = await sql<{ payload: ReplayData; seat: Player; favorite: boolean }>(
-      'SELECT r.payload,o.seat,o.favorite FROM match_replays r JOIN replay_owners o ON o.match_id=r.match_id WHERE r.match_id=$1 AND o.profile_id=$2',
-      [id, profileId],
-    );
-    if (!row) throw new GameError('Replay not found.', 404);
+    if (!match.payload) {
+      await archiveReplay(sql, id);
+      [match] = await read();
+    }
+    if (!match?.payload || match.seat === null) throw new GameError('Replay not found.', 404);
     return {
-      ...row.payload,
-      revealed: row.payload.revealed ?? match.revealed ?? undefined,
-      seat: row.seat,
-      favorite: row.favorite,
+      ...match.payload,
+      revealed: match.payload.revealed ?? match.revealed ?? undefined,
+      seat: match.seat,
+      favorite: match.favorite ?? false,
     };
   }
   async get(profileId: string, id: string) {
@@ -193,12 +209,18 @@ export class MatchReplays {
   async favorite(profileId: string, id: string, value: unknown) {
     if (typeof value !== 'boolean') throw new GameError('Choose a favourite setting.');
     return this.db.tx(async (sql) => {
-      await this.owned(sql, profileId, id);
-      await sql('UPDATE replay_owners SET favorite=$1 WHERE profile_id=$2 AND match_id=$3', [
-        value,
-        profileId,
-        id,
-      ]);
+      const update = () =>
+        sql(
+          `UPDATE replay_owners o SET favorite=$1 FROM matches m, match_replays r
+           WHERE o.profile_id=$2 AND o.match_id=$3 AND m.id=o.match_id AND r.match_id=m.id
+           AND m.status='complete' AND (m.player0=$2 OR m.player1=$2)
+           RETURNING o.match_id`,
+          [value, profileId, id],
+        );
+      if (!(await update()).length) {
+        await this.owned(sql, profileId, id);
+        await update();
+      }
       return { favorite: value };
     });
   }
@@ -228,33 +250,48 @@ export class MatchReplays {
       );
       const rows = await sql<{
         id: string;
-        payload: ReplayData | null;
+        summary: ReplaySummary | null;
         seat: Player | null;
         favorite: boolean | null;
       }>(
-        `SELECT m.id,r.payload,o.seat,o.favorite FROM matches m LEFT JOIN replay_owners o ON o.match_id=m.id AND o.profile_id=$1 LEFT JOIN match_replays r ON r.match_id=m.id WHERE ${where} ORDER BY m.completed_at DESC,m.id DESC LIMIT 20 OFFSET $4`,
+        `SELECT m.id, o.seat, o.favorite,
+                CASE WHEN r.payload IS NOT NULL THEN jsonb_build_object(
+                  'id', r.payload->'id', 'mode', r.payload->'mode', 'completedAt', r.payload->'completedAt',
+                  'players', r.payload->'players', 'winner', r.payload->'winner', 'ratings', r.payload->'ratings',
+                  'endReason', r.payload->'endReason', 'score', r.payload->'frames'->-1->'score',
+                  'turns', jsonb_array_length(r.payload->'frames')-1
+                ) END AS summary
+         FROM matches m LEFT JOIN replay_owners o ON o.match_id=m.id AND o.profile_id=$1
+         LEFT JOIN match_replays r ON r.match_id=m.id
+         WHERE ${where} ORDER BY m.completed_at DESC,m.id DESC LIMIT 20 OFFSET $4`,
         [...params, offset],
       );
       const result: ReplayEntry[] = [];
       for (const row of rows) {
-        const replay =
-            row.payload && row.seat !== null
-              ? { ...row.payload, seat: row.seat, favorite: row.favorite ?? false }
-              : await this.owned(sql, profileId, row.id),
-          score = replay.frames.at(-1)!.score,
-          rating = replay.ratings[replay.seat];
+        let { summary, seat, favorite } = row;
+        if (!summary || seat === null) {
+          const replay = await this.owned(sql, profileId, row.id);
+          summary = {
+            ...replay,
+            score: replay.frames.at(-1)!.score,
+            turns: replay.frames.length - 1,
+          };
+          seat = replay.seat;
+          favorite = replay.favorite;
+        }
+        const { score, winner } = summary;
+        const rating = summary.ratings[seat];
         result.push({
-          id: replay.id,
-          mode: replay.mode,
-          completedAt: replay.completedAt,
-          opponent: replay.players[1 - replay.seat],
-          result:
-            replay.winner === 'draw' ? 'draw' : replay.winner === replay.seat ? 'win' : 'loss',
-          score: [score[replay.seat], score[1 - replay.seat]],
-          turns: replay.frames.length - 1,
-          endReason: replay.endReason,
+          id: summary.id,
+          mode: summary.mode,
+          completedAt: summary.completedAt,
+          opponent: summary.players[1 - seat],
+          result: winner === 'draw' ? 'draw' : winner === seat ? 'win' : 'loss',
+          score: [score[seat], score[1 - seat]],
+          turns: summary.turns,
+          endReason: summary.endReason,
           ratingDelta: rating ? rating.after - rating.before : null,
-          favorite: replay.favorite,
+          favorite: favorite ?? false,
         });
       }
       return { rows: result, total: count.total, offset, limit: 20 };

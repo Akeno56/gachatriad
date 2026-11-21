@@ -16,22 +16,22 @@ export async function awardRankTitles(sql: Sql) {
     FROM standings WHERE p.id=standings.id AND standings.place<=10 AND standings.games>=5`);
 }
 export async function titlesFor(sql: Sql, id: string): Promise<TitleView[]> {
-  const [p] = await sql<{ rating: number; best_ranked_position: number | null }>(
-    'SELECT peak_rating AS rating,best_ranked_position FROM profiles WHERE id=$1',
+  const [p] = await sql<{
+    rating: number;
+    best_ranked_position: number | null;
+    achievements: string[];
+    enough_ranked_games: boolean;
+  }>(
+    `SELECT peak_rating AS rating,best_ranked_position,
+       ARRAY(SELECT achievement_id FROM achievement_unlocks WHERE profile_id=$1) AS achievements,
+       EXISTS(SELECT 1 FROM matches m WHERE mode='ranked' AND status='complete'
+         AND coalesce(m.end_reason,'')<>'admin test result' AND (player0=$1 OR player1=$1)
+         AND NOT EXISTS(SELECT 1 FROM profiles bot WHERE bot.is_bot AND bot.id IN(m.player0,m.player1))
+         OFFSET 4) AS enough_ranked_games
+     FROM profiles WHERE id=$1`,
     [id],
   );
-  const earned = new Set(
-    (
-      await sql<{ achievement_id: string }>(
-        'SELECT achievement_id FROM achievement_unlocks WHERE profile_id=$1',
-        [id],
-      )
-    ).map((a) => a.achievement_id),
-  );
-  const [ranked] = await sql<{ n: number }>(
-    "SELECT count(*)::int n FROM matches m WHERE mode='ranked' AND status='complete' AND coalesce(m.end_reason,'')<>'admin test result' AND (player0=$1 OR player1=$1) AND NOT EXISTS(SELECT 1 FROM profiles bot WHERE bot.is_bot AND bot.id IN(m.player0,m.player1))",
-    [id],
-  );
+  const earned = new Set(p.achievements);
   return TITLES.map((t) => ({
     id: t.id,
     name: t.name,
@@ -41,6 +41,6 @@ export async function titlesFor(sql: Sql, id: string): Promise<TitleView[]> {
         ? earned.has(t.achievement)
         : 'rank' in t
           ? p.best_ranked_position !== null && p.best_ranked_position <= t.rank
-          : p.rating >= t.rating && ranked.n >= 5,
+          : p.rating >= t.rating && p.enough_ranked_games,
   }));
 }

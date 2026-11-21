@@ -14,6 +14,7 @@ import { useSession } from '../../components/session';
 import { useGameAudio } from '../../components/game-shell';
 import { api, ApiError } from '../../lib/platform';
 import { assetPath } from '../../lib/connection';
+import { publishSiteUpdate, useSiteRevision } from '../../lib/site-updates';
 type Purchase = { id: string; quantity: number; type: BoosterType };
 function pendingPurchase(key: string): Purchase | null {
   try {
@@ -32,8 +33,10 @@ function pendingPurchase(key: string): Purchase | null {
   return null;
 }
 export default function Boosters() {
-  const { profile, revision, refresh } = useSession(),
+  const { profile, revision, refreshProfile } = useSession(),
     play = useGameAudio();
+  const packRevision = useSiteRevision('boosters');
+  const dailyRevision = useSiteRevision('daily-booster');
   const [packs, setPacks] = useState<BoosterView[]>([]),
     [daily, setDaily] = useState<DailyBooster | null>(null),
     [opening, setOpening] = useState<BoosterView[] | null>(null),
@@ -49,6 +52,7 @@ export default function Boosters() {
   const purchaseKey = `triad-booster-purchase:${profile?.id}`;
   useEffect(() => {
     setPacks([]);
+    setDaily(null);
     setOpening(null);
     setError('');
     setModal(null);
@@ -63,11 +67,10 @@ export default function Boosters() {
   useEffect(() => {
     if (!profile) return;
     let active = true;
-    void Promise.all([api<BoosterView[]>('/boosters'), api<DailyBooster>('/boosters/daily')])
-      .then(([next, daily]) => {
+    void api<BoosterView[]>('/boosters')
+      .then((next) => {
         if (!active) return;
         setPacks(next);
-        setDaily(daily);
         if (resumed.current) return;
         resumed.current = true;
         try {
@@ -92,7 +95,21 @@ export default function Boosters() {
     return () => {
       active = false;
     };
-  }, [profile?.id, revision]);
+  }, [profile?.id, revision, packRevision]);
+  useEffect(() => {
+    if (!profile) return;
+    let active = true;
+    void api<DailyBooster>('/boosters/daily')
+      .then((next) => {
+        if (active) setDaily(next);
+      })
+      .catch((e) => {
+        if (active) setError(e.message);
+      });
+    return () => {
+      active = false;
+    };
+  }, [profile?.id, revision, dailyRevision]);
   useEffect(() => {
     if (modal) dialog.current?.showModal();
   }, [modal]);
@@ -120,7 +137,8 @@ export default function Boosters() {
       purchase.current = null;
       setModal(null);
       play('menu');
-      await refresh();
+      publishSiteUpdate('boosters');
+      await refreshProfile();
     } catch (e) {
       if (e instanceof ApiError && e.status >= 400 && e.status < 500) {
         sessionStorage.removeItem(purchaseKey);
@@ -180,8 +198,10 @@ export default function Boosters() {
             onClick={async () => {
               setBusy(true);
               try {
-                await api('/boosters/daily', {});
-                await refresh();
+                const pack = await api<BoosterView>('/boosters/daily', {});
+                setDaily((current) => current && { ...current, available: false, packId: pack.id });
+                publishSiteUpdate('boosters');
+                await refreshProfile();
               } catch (e) {
                 setError((e as Error).message);
               } finally {

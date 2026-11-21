@@ -222,8 +222,8 @@ test('keeps busy battle refreshes within the API request budget', async ({ brows
       expect(response.statusCode, response.body).toBe(200);
       await a.page.waitForTimeout(100);
     }
-    expect(profiles).toBeGreaterThan(2);
-    expect(profiles).toBeLessThanOrEqual(13);
+    // Opponent avatar writes no longer invalidate the current account's profile.
+    expect(profiles).toBeLessThanOrEqual(1);
     expect(reads).toBeLessThanOrEqual(52);
     expect(failures).toEqual([]);
   } finally {

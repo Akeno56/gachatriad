@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { isRatedMode, type ProfileView } from '@gacha-triad/shared/platform';
 import { api } from '../lib/platform';
+import { publishSiteUpdate } from '../lib/site-updates';
 import { matchModeNames } from '../lib/rules';
 import { LocaleView } from './i18n';
 import { useSession } from './session';
@@ -16,7 +17,7 @@ export function MatchmakingDock() {
 }
 
 function WaitingLobby({ waiting }: { waiting: NonNullable<ProfileView['waitingLobby']> }) {
-  const { error: connectionError, refresh } = useSession();
+  const { error: connectionError, refreshProfile, refreshSocial } = useSession();
   const [now, setNow] = useState(Date.now);
   const [practice, setPractice] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -48,7 +49,9 @@ function WaitingLobby({ waiting }: { waiting: NonNullable<ProfileView['waitingLo
       setError((e as Error).message);
     } finally {
       setPractice(false);
-      await refresh();
+      publishSiteUpdate('lobbies');
+      if (waiting.invited) refreshSocial();
+      await refreshProfile();
       locked.current = false;
       setBusy(false);
     }
