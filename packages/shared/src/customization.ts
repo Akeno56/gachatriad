@@ -7,6 +7,12 @@ export const ASTRAL_REWARDS = {
     games: 5,
     requirement: 'Complete 5 full rated games in Astral.',
   },
+  staticFrame: {
+    id: 'astral-season',
+    name: 'Astral',
+    games: 5,
+    requirement: 'Complete 5 full rated games in Astral.',
+  },
   banner: {
     id: 'astral-crest',
     name: 'Astral Crest',
@@ -14,47 +20,34 @@ export const ASTRAL_REWARDS = {
     requirement: 'Complete 15 full rated games in Astral for Astral Crest.',
   },
 } as const;
+export const COSMETIC_SETS = [
+  { id: 'slate', name: 'Slate', games: 25 },
+  { id: 'ember', name: 'Ember', games: 50 },
+  { id: 'jade', name: 'Jade', games: 100 },
+  { id: 'eclipse', name: 'Eclipse', games: 200 },
+  { id: 'regalia', name: 'Regalia', games: 500 },
+] as const;
+export const COSMETIC_STYLES = [
+  { id: 'classic', name: 'Classic', games: 0 },
+  ...COSMETIC_SETS,
+  { id: 'astral', name: 'Astral', games: 0 },
+] as const;
+export type CosmeticStyle = (typeof COSMETIC_STYLES)[number]['id'];
+export function availableStyle(style: CosmeticStyle, played: number): CosmeticStyle {
+  const choice = COSMETIC_STYLES.find(({ id }) => id === style);
+  return choice && played >= choice.games ? style : 'classic';
+}
 export const PORTRAIT_FRAMES = [
-  { id: 'classic', name: 'Classic', achievementId: null, requirement: 'Available to everyone.' },
+  { id: 'classic', name: 'Classic', games: 0, requirement: 'Available to everyone.' },
+  ...COSMETIC_SETS.map((set) => ({ ...set, requirement: `${set.games} rated games` })),
+  ASTRAL_REWARDS.staticFrame,
   {
-    id: 'silver',
-    name: 'Silver',
-    achievementId: 'first-duel',
-    requirement: 'Complete your first duel.',
-  },
-  { id: 'azure', name: 'Azure', achievementId: 'first-win', requirement: 'Win your first duel.' },
-  {
-    id: 'verdant',
-    name: 'Verdant',
-    achievementId: 'collector',
-    requirement: 'Own 50 different cards.',
-  },
-  {
-    id: 'amethyst',
-    name: 'Amethyst',
-    achievementId: 'combo',
-    requirement: 'Make two Combo captures in one turn.',
-  },
-  { id: 'gold', name: 'Gold', achievementId: 'hundred-wins', requirement: 'Win 100 duels.' },
-  { id: 'ember', name: 'Ember', achievementId: null, requirement: 'Available to everyone.' },
-  {
-    id: ASTRAL_REWARDS.frame.id,
-    name: 'Astral',
-    achievementId: null,
-    requirement: ASTRAL_REWARDS.frame.requirement,
+    ...ASTRAL_REWARDS.frame,
+    name: 'Astral Premium',
   },
 ] as const;
 export type PortraitFrame = (typeof PORTRAIT_FRAMES)[number]['id'];
-export const COSMETIC_STYLES = [
-  { id: 'classic', name: 'Classic' },
-  { id: 'astral', name: 'Astral' },
-  { id: 'ember', name: 'Ember' },
-] as const;
-export type CosmeticStyle = (typeof COSMETIC_STYLES)[number]['id'];
-export const PROFILE_BANNERS = [
-  ...COSMETIC_STYLES,
-  { id: ASTRAL_REWARDS.banner.id, name: ASTRAL_REWARDS.banner.name },
-] as const;
+export const PROFILE_BANNERS = [...COSMETIC_STYLES, ASTRAL_REWARDS.banner] as const;
 export type ProfileBanner = (typeof PROFILE_BANNERS)[number]['id'];
 export type FeaturedMode = import('./platform').RatedMode;
 export interface ProfileCustomization {
@@ -73,11 +66,10 @@ export interface CustomizationView {
   frames: {
     id: PortraitFrame;
     name: string;
-    achievementId: string | null;
     requirement: string;
     unlocked: boolean;
   }[];
-  banners?: { id: ProfileBanner; name: string; unlocked: boolean }[];
+  banners?: { id: ProfileBanner; name: string; unlocked: boolean; requirement?: string }[];
   titles: TitleView[];
   achievements: { id: string; name: string; unlockedAt: string }[];
 }

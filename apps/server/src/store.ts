@@ -83,6 +83,7 @@ interface ProfileRow {
   losses: number;
   draws: number;
   played: number;
+  rated_cosmetic_games: number;
   default_deck: string[];
   [key: string]: unknown;
 }
@@ -218,6 +219,7 @@ export class GameStore {
       '028_battle_stamps.sql',
       '029_astral_cosmetics.sql',
       '030_ember_frame.sql',
+      '031_cosmetic_milestones.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -373,6 +375,7 @@ export class GameStore {
         draftRating: p.draft_rating,
         sharedDraftRating: p.shared_draft_rating,
         played: p.played,
+        ratedCosmeticGames: p.rated_cosmetic_games,
         wins: p.wins,
         losses: p.losses,
         draws: p.draws,
@@ -1524,10 +1527,16 @@ export class GameStore {
           Math.round(32 * (actual - expected)),
           id,
         ]);
-        await sql(
-          `INSERT INTO match_ratings(match_id,profile_id,before_rating,after_rating) SELECT $1,id,$2,${field} FROM profiles WHERE id=$3 ON CONFLICT DO NOTHING`,
+        const recorded = await sql(
+          `INSERT INTO match_ratings(match_id,profile_id,before_rating,after_rating) SELECT $1,id,$2,${field} FROM profiles WHERE id=$3 ON CONFLICT DO NOTHING RETURNING profile_id`,
           [m.id, self, id],
         );
+        if (!reason && recorded.length)
+          await sql(
+            `UPDATE profiles SET rated_cosmetic_games=rated_cosmetic_games+1 WHERE id=$1
+             AND NOT EXISTS(SELECT 1 FROM matches WHERE rematch_match_id=$2)`,
+            [id, m.id],
+          );
       }
       await this.unlock(sql, id);
       await sql('UPDATE profiles SET peak_rating=greatest(peak_rating,rating) WHERE id=$1', [id]);

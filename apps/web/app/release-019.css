@@ -9,52 +9,8 @@
   border-color: var(--frame-accent);
   box-shadow: 0 0 0 1px #081225;
 }
-.portrait-frame-art {
-  /* The transparent cutout matches the image bounds at every avatar size. */
-  --frame-outset: 4px;
-  position: absolute;
-  inset: calc(-1 * var(--frame-outset));
-  padding: var(--frame-outset);
-  pointer-events: none;
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask-composite: exclude;
-}
-.portrait-frame-art svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.portrait-frame-art path {
-  fill: none;
-  stroke: var(--frame-accent, #cad5e4);
-  stroke-width: 1.5px;
-  vector-effect: non-scaling-stroke;
-}
-.frame-silver {
-  --frame-accent: #e1e8f2;
-}
-.frame-azure {
-  --frame-accent: #7fd7ff;
-}
-.frame-verdant {
-  --frame-accent: #a5dd9e;
-}
-.frame-amethyst {
-  --frame-accent: #d5adff;
-}
-.frame-gold {
-  --frame-accent: #f4d889;
-}
 .frame-astral {
   --frame-accent: #c7c6ff;
-}
-.profile-portrait .portrait-frame-art,
-.profile-editor-preview > .player-avatar .portrait-frame-art,
-.frame-choice .portrait-frame-art {
-  --frame-outset: 8px;
 }
 
 .profile-page.profile-v19 {
@@ -945,37 +901,6 @@
   font-size: 13px !important;
   color: #9cb3d2 !important;
 }
-.achievement-frame-reward {
-  border-block: 1px solid #8499b54d;
-  padding: 16px 0;
-  margin: 18px 0;
-  display: flex;
-  gap: 14px;
-  align-items: center;
-}
-.achievement-frame-reward > .player-avatar {
-  width: 64px;
-  height: 64px;
-  font: 28px var(--pixel);
-}
-.achievement-frame-reward > div {
-  display: grid;
-  gap: 7px;
-  flex: 1;
-}
-.achievement-frame-reward small {
-  color: #96accd;
-  font-size: 12px;
-}
-.achievement-frame-reward strong {
-  font: 23px var(--pixel);
-  color: #dcd1b4;
-}
-.achievement-frame-reward button {
-  font-size: 19px;
-  min-height: 32px;
-  padding: 5px 10px;
-}
 .feature-achievement-button {
   width: 100%;
   font-size: 21px;
@@ -1356,18 +1281,6 @@
   }
   .achievement-detail-progress {
     margin: 12px 0 8px;
-  }
-  .achievement-frame-reward {
-    margin: 12px 0;
-    padding: 12px 0;
-  }
-  .achievement-frame-reward > .player-avatar {
-    width: 52px;
-    height: 52px;
-  }
-  .achievement-frame-reward button {
-    font-size: 18px;
-    min-height: 30px;
   }
   .achievement-list {
     max-height: calc(100svh - 285px);

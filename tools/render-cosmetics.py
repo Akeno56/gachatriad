@@ -13,6 +13,10 @@ FRAME_COUNT = 104
 TAU = 2 * np.pi
 
 PALETTES = {
+    "slate": {
+        "base": (14, 22, 34), "body": (55, 79, 104), "echo": (32, 54, 62),
+        "light": (144, 174, 193), "metal": (157, 177, 190),
+    },
     "astral": {
         "base": (12, 16, 38),
         "body": (67, 81, 178),
@@ -27,7 +31,20 @@ PALETTES = {
         "light": (255, 144, 75),
         "metal": (253, 206, 139),
     },
+    "jade": {
+        "base": (8, 28, 30), "body": (30, 102, 79), "echo": (35, 66, 83),
+        "light": (138, 215, 173), "metal": (187, 218, 166),
+    },
+    "eclipse": {
+        "base": (20, 14, 34), "body": (81, 53, 130), "echo": (55, 48, 111),
+        "light": (182, 159, 246), "metal": (229, 184, 122),
+    },
+    "regalia": {
+        "base": (19, 25, 43), "body": (39, 88, 113), "echo": (100, 66, 43),
+        "light": (250, 190, 104), "metal": (255, 221, 149),
+    },
 }
+THEME_DETAIL = {"slate": 0, "astral": 1, "ember": 1, "jade": 2, "eclipse": 3, "regalia": 4}
 
 CREST_RIBBONS = (
     ((119, 57, 207), (245, 184, 133)),
@@ -104,29 +121,29 @@ def make_frame(x, y, phase):
     rx, ry = x - 0.5, y - 0.5
     ax, ay = np.abs(rx), np.abs(ry)
     edge = np.maximum(
-        np.maximum(ax - 0.389, ay - 0.389),
-        (ax + ay - 0.713) * 0.7071,
+        np.maximum(ax - 0.395, ay - 0.395),
+        (ax + ay - 0.746) * 0.7071,
     )
     angle = np.arctan2(ry, rx)
     flow = weave(x * 1.8, y * 1.8, phase)
     current = 0.5 + 0.5 * np.cos(2 * angle + 1.35 * flow - phase)
     silk = 0.56 + 0.44 * np.sin(5 * angle + 2.7 * flow + phase) ** 2
-    inner_rail = gaussian(edge + 0.009, 0.006)
-    outer_rail = gaussian(edge - 0.015, 0.0075)
-    rim = gaussian(edge, 0.019)
-    wisp = gaussian(edge - 0.039 - 0.026 * flow, 0.027) * current**2 * silk
+    inner_rail = gaussian(edge + 0.011, 0.009)
+    outer_rail = gaussian(edge - 0.018, 0.011)
+    rim = gaussian(edge, 0.028)
+    wisp = gaussian(edge - 0.044 - 0.025 * flow, 0.028) * current**2 * silk
     mist = gaussian(edge - 0.032, 0.058) * (0.24 + 0.76 * current**2)
 
     pixels = np.full(x.shape + (3,), [27, 23, 52], dtype=np.float32) / 255
     light(pixels, mist * 0.65, (121, 82, 244))
     light(pixels, wisp * 0.74, (132, 124, 237))
-    light(pixels, rim * (0.4 + 0.42 * current), (111, 128, 226))
+    light(pixels, rim * (0.53 + 0.42 * current), (134, 145, 240))
     light(pixels, inner_rail * (0.63 + 0.32 * silk), (241, 219, 164))
     light(pixels, outer_rail * (0.42 + 0.55 * current), (203, 227, 255))
 
-    alpha = np.maximum(rim * 0.94, wisp * 0.62 + mist * 0.27)
-    # Preserve a square opening for the avatar, including its corners.
-    alpha *= smoothstep(0.368, 0.375, np.maximum(ax, ay))
+    alpha = np.maximum(rim, wisp * 0.79 + mist * 0.34)
+    # Meet the portrait at its outside edge with the same opening at every size.
+    alpha *= smoothstep(0.360, 0.369, np.maximum(ax, ay))
     alpha *= 1 - smoothstep(0.475, 0.498, np.maximum(ax, ay))
     alpha = np.where(alpha > 0.027, alpha, 0)
     return Image.fromarray(np.uint8(np.clip(np.dstack((pixels, alpha)), 0, 1) * 255))
@@ -162,13 +179,39 @@ def theme_plate(x, y, theme, palette, strength):
             rim = arc - radius
             light(pixels, gaussian(rim, 0.033) * opacity * strength, palette["body"])
             light(pixels, gaussian(rim, 0.004) * opacity * strength, palette["light"])
-    else:
+    elif theme == "ember":
         # Wavy channels pinch into bright veins through the copper enamel.
         flow = y + 0.71 * x + 0.15 * folds + 0.03 * np.sin(15 * x + 6 * y)
         for center, opacity in ((0.66, 0.17), (0.91, 0.64), (1.10, 0.44), (1.30, 0.24)):
             vein = flow - center
             light(pixels, gaussian(vein, 0.08) * opacity * strength, palette["body"])
             light(pixels, gaussian(vein, 0.008) * opacity * strength, palette["light"])
+    elif theme == "jade":
+        # Stepped facets and narrow brass seams make the stone read as carved jade.
+        px, py = x - 0.78, (y - 0.50) * 0.62
+        facet = np.abs(px) + np.abs(py)
+        for extent, opacity in ((0.16, 0.36), (0.21, 0.24), (0.29, 0.15)):
+            light(pixels, (1 - smoothstep(extent, extent + 0.025, facet)) * opacity * strength,
+                  palette["body"])
+            light(pixels, gaussian(facet - extent, 0.0024) * opacity * strength, palette["metal"])
+        seam = py + 0.60 * px + 0.026 * folds
+        light(pixels, gaussian(seam, 0.011) * gaussian(px, 0.31) * strength * 0.36, palette["light"])
+        light(pixels, gaussian(seam + 0.10, 0.004) * gaussian(px, 0.25) * strength * 0.24,
+              palette["echo"])
+    elif theme in ("eclipse", "regalia"):
+        px, py = (x - 0.73) * 1.8, y - 0.47
+        angle = np.arctan2(py, px)
+        radius = np.hypot(px, py)
+        band = gaussian(radius - 0.33, 0.14) * smoothstep(0.14, 0.84, x)
+        light(pixels, band * 0.56 * strength, palette["body"])
+        spokes = np.cos((12 if theme == "eclipse" else 18) * angle) ** 24
+        for ring, opacity in ((0.29, 0.65), (0.32, 0.28), (0.39, 0.41), (0.46, 0.19)):
+            light(pixels, gaussian(radius - ring, 0.005) * opacity * strength, palette["metal"])
+        light(pixels, gaussian(radius - 0.42, 0.043) * spokes * strength * 0.48, palette["metal"])
+        if theme == "regalia":
+            for offset in (0.18, 0.33, 0.48):
+                lattice = np.abs(px) + np.abs(py) - offset
+                light(pixels, gaussian(lattice, 0.005) * strength * 0.38, palette["light"])
     return pixels
 
 
@@ -183,7 +226,7 @@ def bevel_distance(x, y, half_width, half_height, chamfer):
 def theme_banner(x, y, theme, palette):
     if theme == "astral":
         return aurora(x, y, 4.3, ASTRAL_RIBBONS)
-    field = theme_plate(x, y, theme, palette, 1.0)
+    field = theme_plate(x, y, theme, palette, 0.64 if theme == "slate" else 1.0)
     # Leave the profile name and bio on the dark end of the painting.
     field *= (0.61 + 0.39 * smoothstep(0.15, 0.78, x))[..., None]
     return field
@@ -193,7 +236,11 @@ def theme_board(x, y, theme, palette):
     field = theme_plate(x, y, theme, palette, 0.59)
     edge = bevel_distance(x, y, 0.48, 0.465, 0.038)
     light(field, gaussian(edge, 0.002) * 0.38, palette["metal"])
-    light(field, gaussian(edge + 0.012, 0.002) * 0.20, palette["metal"])
+    if THEME_DETAIL[theme] > 0:
+        light(field, gaussian(edge + 0.012, 0.002) * 0.20, palette["metal"])
+    if THEME_DETAIL[theme] > 2:
+        corner = gaussian(np.abs(x - 0.5) - 0.414, 0.034)
+        light(field, gaussian(edge + 0.012, 0.008) * corner * 0.45, palette["light"])
     # Keep the table a dark surround for cards and board cells.
     field *= (0.78 + 0.22 * gaussian(x - 0.5, 0.42))[..., None]
     return field
@@ -208,7 +255,10 @@ def theme_back(x, y, theme, palette):
     field = base + (end_field - base) * smoothstep(0.028, 0.15, np.abs(y - 0.5))[..., None]
     edge = bevel_distance(x, y, 0.455, 0.464, 0.072)
     light(field, gaussian(edge, 0.006) * 0.7, palette["metal"])
-    light(field, gaussian(edge + 0.025, 0.004) * 0.43, palette["metal"])
+    if THEME_DETAIL[theme] > 0:
+        light(field, gaussian(edge + 0.025, 0.004) * 0.43, palette["metal"])
+    if THEME_DETAIL[theme] > 2:
+        light(field, gaussian(edge + 0.043, 0.004) * 0.34, palette["light"])
     rails = np.abs(y - 0.5) - 0.11
     light(
         field,
@@ -218,17 +268,36 @@ def theme_back(x, y, theme, palette):
     return field
 
 
-def ember_frame(x, y, palette):
-    edge = bevel_distance(x, y, 0.409, 0.409, 0.076)
+def static_frame(x, y, theme, palette):
+    detail = THEME_DETAIL[theme]
+    edge = bevel_distance(x, y, 0.394 + 0.004 * detail, 0.394 + 0.004 * detail, 0.046)
     angle = np.arctan2(y - 0.5, x - 0.5)
     highlight = 0.64 + 0.36 * np.cos(2 * angle + 0.95)
     field = np.full(x.shape + (3,), palette["base"], dtype=np.float32) / 255
-    light(field, gaussian(edge, 0.043) * 0.86, palette["body"])
-    light(field, gaussian(edge - 0.012, 0.009) * highlight, palette["metal"])
-    light(field, gaussian(edge + 0.015, 0.008) * 0.83, palette["light"])
+    light(field, gaussian(edge, 0.021 + 0.006 * detail) * 0.86, palette["body"])
+    light(field, gaussian(edge - 0.012, 0.008) * highlight, palette["metal"])
+    if detail:
+        light(field, gaussian(edge + 0.015, 0.008) * 0.83, palette["light"])
     corner = np.maximum(np.abs(x - 0.5), np.abs(y - 0.5))
     opening = smoothstep(0.369, 0.382, corner)
-    alpha = gaussian(edge, 0.040) * opening * (1 - smoothstep(0.469, 0.495, corner))
+    alpha = gaussian(edge, 0.020 + 0.006 * detail)
+    if detail > 1:
+        gem = np.maximum(np.abs(x - 0.5), np.abs(y - 0.07))
+        gem = np.minimum(gem, np.maximum(np.abs(x - 0.5), np.abs(y - 0.93)))
+        light(field, gaussian(gem, 0.016 + 0.004 * detail) * 0.76, palette["metal"])
+        alpha = np.maximum(alpha, gaussian(gem, 0.023 + 0.003 * detail))
+    if detail > 2:
+        ax, ay = np.abs(x - 0.5), np.abs(y - 0.5)
+        corner_inlay = gaussian(np.abs(ax - ay), 0.028) * gaussian(edge - 0.019, 0.018)
+        light(field, corner_inlay * (0.43 + 0.10 * detail), palette["metal"])
+        alpha = np.maximum(alpha, corner_inlay)
+        if detail == 4:
+            corner_setting = np.abs(ax - 0.399) + np.abs(ay - 0.399)
+            setting = 1 - smoothstep(0.025, 0.044, corner_setting)
+            light(field, setting * 0.86, palette["metal"])
+            light(field, gaussian(corner_setting, 0.024) * 0.66, palette["light"])
+            alpha = np.maximum(alpha, setting)
+    alpha *= opening * (1 - smoothstep(0.469, 0.495, corner))
     return np.dstack((field, alpha))
 
 
@@ -250,15 +319,19 @@ def save_themes():
         for theme, palette in PALETTES.items():
             save_static(f"{theme}-{kind}", render(x, y, theme, palette), size)
     x, y = grid(288, 288)
-    save_static("ember-frame", ember_frame(x, y, PALETTES["ember"]), (144, 144))
+    for theme, palette in PALETTES.items():
+        name = "astral-season" if theme == "astral" else theme
+        save_static(f"{name}-frame", static_frame(x, y, theme, palette), (144, 144))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seasonal", action="store_true", help="Also rebuild the animated rewards.")
+    parser.add_argument("--frame", action="store_true", help="Also rebuild the animated frame.")
     args = parser.parse_args()
     save_themes()
-    if args.seasonal:
+    if args.seasonal or args.frame:
         save_cosmetic("astral-frame", 144, 144, make_frame, quality=76)
+    if args.seasonal:
         # Independently encode each crest frame to keep gradients consistent at the loop seam.
         save_cosmetic("astral-crest", 856, 264, make_crest, quality=90, keyframe_interval=1)

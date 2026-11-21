@@ -5,9 +5,9 @@
 }
 
 .astral-frame-art {
-  /* The transparent opening in the source matches the avatar at this inset. */
+  /* The inner rail meets the square portrait edge at this inset. */
   inset: -18%;
-  z-index: 1;
+  z-index: 2;
   background-size: 100% 100%;
 }
 

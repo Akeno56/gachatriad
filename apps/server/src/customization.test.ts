@@ -3,9 +3,9 @@ import { resolve } from 'node:path';
 import { createPlatform } from './app';
 import { ProfileCustomizations } from './customization';
 import { ALL_CARDS } from '@gacha-triad/shared';
-import type { CustomizationView } from '@gacha-triad/shared/customization';
+import { COSMETIC_SETS, type CustomizationView } from '@gacha-triad/shared/customization';
 import type { PlayerProfileView } from '@gacha-triad/shared/platform';
-import { STANDARD } from '@gacha-triad/engine';
+import { legalMoves, STANDARD, type GameState } from '@gacha-triad/engine';
 let p: Awaited<ReturnType<typeof createPlatform>>,
   custom: ProfileCustomizations,
   serial = 0;
@@ -80,7 +80,7 @@ it('preserves existing avatars and titles, supplies safe defaults and authorizes
     avatarCardId: card,
     titleId: null,
   });
-  expect(initial.frames.filter((f) => f.unlocked).map((f) => f.id)).toEqual(['classic', 'ember']);
+  expect(initial.frames.filter((f) => f.unlocked).map((f) => f.id)).toEqual(['classic']);
   expect((await settings(b)).settings.frameId).toBe('classic');
   for (const path of ['/profile/customization', '/profile/frame'])
     expect(
@@ -141,18 +141,68 @@ it('validates all fields before changing any part of a profile', async () => {
     expect(await settings(a)).toEqual(initial);
   }
 });
-it('unlocks frames through real recorded achievements and saves showcase order atomically', async () => {
+it('unlocks milestone cosmetics through recorded games and saves showcase order atomically', async () => {
   const a = await user(),
+    b = await user(),
     id = await p.store.solo(a.profile.id, 'easy', STANDARD);
+  await p.db.read((sql) =>
+    sql('UPDATE profiles SET rated_cosmetic_games=24 WHERE id=$1', [a.profile.id]),
+  );
+  const locked = await settings(a);
+  expect(locked.frames.find((f) => f.id === 'slate')?.unlocked).toBe(false);
+  expect(
+    (await request(a, '/profile/customization', { ...locked.settings, bannerId: 'slate' }))
+      .statusCode,
+  ).toBe(400);
+  expect(
+    (await request(a, '/profile/frame', { frameId: 'slate', revision: locked.settings.revision }))
+      .statusCode,
+  ).toBe(400);
   await p.store.resign(a.profile.id, id);
+  expect((await settings(a)).frames.find((f) => f.id === 'slate')?.unlocked).toBe(false);
+  await p.store.acknowledgeRanked(a.profile.id);
+  await p.store.acknowledgeRanked(b.profile.id);
+  await p.store.createLobby(a.profile, { mode: 'ranked' });
+  const { matchId } = await p.store.createLobby(b.profile, { mode: 'ranked' });
+  async function finishDuel(match: string) {
+    for (let turn = 0; turn < 9; turn++) {
+      const [m] = await p.db.read((sql) =>
+        sql<{ state: GameState; version: number; player0: string; player1: string }>(
+          'SELECT state,version,player0,player1 FROM matches WHERE id=$1',
+          [match],
+        ),
+      );
+      const move = legalMoves(m.state)[0];
+      await p.store.move(
+        m.state.turn === 0 ? m.player0 : m.player1,
+        match,
+        move.cardId,
+        move.cell,
+        m.version,
+      );
+    }
+  }
+  await finishDuel(matchId!);
+  expect((await p.store.profile(a.actor)).ratedCosmeticGames).toBe(25);
+  await expect(p.store.rematch(a.profile.id, matchId!)).rejects.toThrow(
+    'Rated matches use matchmaking',
+  );
+  await p.store.createLobby(a.profile, { mode: 'ranked' });
+  const { matchId: rematchId } = await p.store.createLobby(b.profile, { mode: 'ranked' });
+  // Older rated matches can retain a rematch link in their history.
+  await p.db.read((sql) =>
+    sql('UPDATE matches SET rematch_match_id=$1 WHERE id=$2', [rematchId, matchId]),
+  );
+  await finishDuel(rematchId!);
+  expect((await p.store.profile(a.actor)).ratedCosmeticGames).toBe(25);
   const initial = await settings(a);
-  expect(initial.frames.find((f) => f.id === 'silver')?.unlocked).toBe(true);
+  expect(initial.frames.find((f) => f.id === 'slate')?.unlocked).toBe(true);
   const cards = a.profile.deck.slice(0, 3).reverse(),
     bio = '<img src=x onerror=alert(1)> Bonjour !';
   const before = await p.store.profile(a.actor);
   const r = await request(a, '/profile/customization', {
     ...initial.settings,
-    frameId: 'silver',
+    frameId: 'slate',
     bannerId: 'astral',
     featuredMode: 'shared-draft',
     bio,
@@ -166,7 +216,7 @@ it('unlocks frames through real recorded achievements and saves showcase order a
   expect(after.settings.revision).toBe(initial.settings.revision + 1);
   const publicView = (await request(a, `/players/${a.profile.id}`)).json<PlayerProfileView>();
   expect(publicView.bio).toBe(bio);
-  expect(publicView.frameId).toBe('silver');
+  expect(publicView.frameId).toBe('slate');
   expect(publicView.bannerId).toBe('astral');
   expect(publicView.featuredMode).toBe('shared-draft');
   expect(publicView.featuredCards.map((c) => c.id)).toEqual(cards);
@@ -187,6 +237,18 @@ it('unlocks frames through real recorded achievements and saves showcase order a
   });
   expect(legacySave.statusCode, legacySave.body).toBe(200);
   expect(legacySave.json<CustomizationView>().settings.bannerId).toBe('astral');
+  for (const { id: setId, games } of COSMETIC_SETS) {
+    for (const played of [games - 1, games]) {
+      await p.db.read((sql) =>
+        sql('UPDATE profiles SET rated_cosmetic_games=$1 WHERE id=$2', [played, a.profile.id]),
+      );
+      const current = await settings(a);
+      expect(current.frames.find((frame) => frame.id === setId)?.unlocked).toBe(played === games);
+      expect(current.banners?.find((banner) => banner.id === setId)?.unlocked).toBe(
+        played === games,
+      );
+    }
+  }
 });
 it('rejects stale and simultaneous edits, including legacy avatar/title endpoints', async () => {
   const a = await user(),
@@ -249,13 +311,16 @@ it('removes unavailable showcase cards without revealing the rest of the invento
     )[0].showcase_cards,
   ).toEqual([]);
 });
-it('retains earned collection frames and completed bars after the collection shrinks', async () => {
+it('retains milestone frames and earned achievement bars after the collection shrinks', async () => {
   const a = await user();
   await earned(a, 'collector');
+  await p.db.read((sql) =>
+    sql('UPDATE profiles SET rated_cosmetic_games=100 WHERE id=$1', [a.profile.id]),
+  );
   const initial = await settings(a);
-  await custom.equipFrame(a.profile.id, 'verdant', initial.settings.revision);
+  await custom.equipFrame(a.profile.id, 'jade', initial.settings.revision);
   await p.db.read((sql) => sql('DELETE FROM inventory WHERE profile_id=$1', [a.profile.id]));
-  expect((await settings(a)).frames.find((f) => f.id === 'verdant')?.unlocked).toBe(true);
+  expect((await settings(a)).frames.find((f) => f.id === 'jade')?.unlocked).toBe(true);
   expect(
     (await p.store.achievements(a.profile.id)).find((a) => a.id === 'collector'),
   ).toMatchObject({ progress: 50, target: 50 });
@@ -270,13 +335,16 @@ it('propagates equipped frames to social and battle identities and retains achie
   const a = await user(),
     b = await user();
   await earned(a, 'first-win');
+  await p.db.read((sql) =>
+    sql('UPDATE profiles SET rated_cosmetic_games=50 WHERE id=$1', [a.profile.id]),
+  );
   const initial = await settings(a);
-  await custom.equipFrame(a.profile.id, 'azure', initial.settings.revision);
+  await custom.equipFrame(a.profile.id, 'ember', initial.settings.revision);
   const social = await p.social.view(a.profile, new Set([a.profile.id, b.profile.id]));
-  expect(social.onlinePlayers.find((p) => p.id === a.profile.id)?.frameId).toBe('azure');
+  expect(social.onlinePlayers.find((p) => p.id === a.profile.id)?.frameId).toBe('ember');
   const lobby = await p.store.createLobby(a.profile, { mode: 'custom', allowBots: false }),
     joined = await p.store.joinLobby(b.profile, lobby.lobbyId!);
-  expect((await p.store.view(b.profile.id, joined.matchId!)).players[0].frameId).toBe('azure');
+  expect((await p.store.view(b.profile.id, joined.matchId!)).players[0].frameId).toBe('ember');
   await p.store.resign(b.profile.id, joined.matchId!);
-  expect((await settings(a)).settings.frameId).toBe('azure');
+  expect((await settings(a)).settings.frameId).toBe('ember');
 });

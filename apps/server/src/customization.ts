@@ -18,6 +18,7 @@ import { astralRewardGames } from './season-rewards';
 const cards = new Set(ALL_CARDS.map((c) => c.id));
 interface Row {
   id: string;
+  rated_cosmetic_games: number;
   profile_revision: number;
   profile_bio: string;
   portrait_frame: PortraitFrame;
@@ -69,17 +70,25 @@ export class ProfileCustomizations {
         avatarCardId: p.avatar_card && owned.has(p.avatar_card) ? p.avatar_card : null,
         titleId: p.selected_title,
       },
-      frames: PORTRAIT_FRAMES.map((f) => ({
-        ...f,
+      frames: PORTRAIT_FRAMES.map(({ id, name, requirement, games }) => ({
+        id,
+        name,
+        requirement,
         unlocked:
-          f.id === ASTRAL_REWARDS.frame.id
-            ? astralGames >= ASTRAL_REWARDS.frame.games
-            : !f.achievementId || unlocked.has(f.achievementId),
+          (id === ASTRAL_REWARDS.frame.id || id === ASTRAL_REWARDS.staticFrame.id
+            ? astralGames
+            : p.rated_cosmetic_games) >= games,
       })),
-      banners: PROFILE_BANNERS.map((banner) => ({
-        ...banner,
-        unlocked:
-          banner.id !== ASTRAL_REWARDS.banner.id || astralGames >= ASTRAL_REWARDS.banner.games,
+      banners: PROFILE_BANNERS.map(({ id, name, games }) => ({
+        id,
+        name,
+        requirement:
+          id === ASTRAL_REWARDS.banner.id
+            ? ASTRAL_REWARDS.banner.requirement
+            : games
+              ? `${games} rated games`
+              : undefined,
+        unlocked: (id === ASTRAL_REWARDS.banner.id ? astralGames : p.rated_cosmetic_games) >= games,
       })),
       titles: await titlesFor(sql, id),
       achievements: earned.flatMap((a) => {
@@ -170,10 +179,11 @@ export class ProfileCustomizations {
         throw new GameError('Your profile changed. Reload before saving.', 409);
       if (!current.frames.some((f) => f.id === frameId && f.unlocked))
         throw new GameError('Earn this frame before equipping it.');
-      await sql(
-        'UPDATE profiles SET portrait_frame=$1,profile_revision=profile_revision+1 WHERE id=$2',
-        [frameId, id],
+      const rows = await sql(
+        'UPDATE profiles SET portrait_frame=$1,profile_revision=profile_revision+1 WHERE id=$2 AND profile_revision=$3 RETURNING id',
+        [frameId, id, revision],
       );
+      if (!rows.length) throw new GameError('Your profile changed. Reload before saving.', 409);
       return this.viewIn(sql, id);
     });
   }

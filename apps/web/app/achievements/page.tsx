@@ -2,12 +2,10 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ALL_CARDS } from '@gacha-triad/shared';
 import type { AchievementView } from '@gacha-triad/shared/platform';
 import {
   ACHIEVEMENT_CATEGORIES,
   achievementCategory,
-  PORTRAIT_FRAMES,
   type CustomizationView,
 } from '@gacha-triad/shared/customization';
 import { api } from '../../lib/platform';
@@ -15,7 +13,6 @@ import { useSession } from '../../components/session';
 import { usePageRefresh } from '../../components/use-page-refresh';
 import { LocaleView, LocalizedDate, NoTranslate } from '../../components/i18n';
 import { AchievementIcon } from '../../components/achievement-icon';
-import { Avatar } from '../../components/avatar';
 import { Button, GameDialog } from '../../components/ui';
 export default function Achievements() {
   return (
@@ -103,15 +100,8 @@ function AchievementScreen() {
     (narrow
       ? items.find((a) => a.id === selected)
       : (visible.find((a) => a.id === selected) ?? visible[0])) ?? null;
-  const reward = current ? PORTRAIT_FRAMES.find((f) => f.achievementId === current.id) : null;
-  const avatar = ALL_CARDS.find((c) => c.id === profile?.avatarCardId) ?? null;
   const featured = !!current && !!cosmetics?.settings.featuredAchievements.includes(current.id);
-  const ownedFrames =
-    cosmetics?.frames.filter((frame) => frame.unlocked).length ??
-    PORTRAIT_FRAMES.filter(
-      (f) => f.id === 'classic' || items.some((a) => a.id === f.achievementId && a.unlockedAt),
-    ).length;
-  async function action(kind: 'frame' | 'feature') {
+  async function featureAchievement() {
     if (!current?.unlockedAt || lock.current) return;
     lock.current = true;
     setBusy(true);
@@ -119,25 +109,17 @@ function AchievementScreen() {
     setNotice('');
     try {
       const latest = await api<CustomizationView>('/profile/customization');
-      let next: CustomizationView;
-      if (kind === 'frame')
-        next = await api<CustomizationView>('/profile/frame', {
-          frameId: reward!.id,
-          revision: latest.settings.revision,
-        });
-      else {
-        const ids = latest.settings.featuredAchievements,
-          has = ids.includes(current.id);
-        if (!has && ids.length >= 3)
-          throw Error('Your achievement showcase is full. Edit it in your profile.');
-        next = await api<CustomizationView>('/profile/customization', {
-          ...latest.settings,
-          featuredAchievements: has ? ids.filter((id) => id !== current.id) : [...ids, current.id],
-        });
-      }
+      const ids = latest.settings.featuredAchievements,
+        has = ids.includes(current.id);
+      if (!has && ids.length >= 3)
+        throw Error('Your achievement showcase is full. Edit it in your profile.');
+      const next = await api<CustomizationView>('/profile/customization', {
+        ...latest.settings,
+        featuredAchievements: has ? ids.filter((id) => id !== current.id) : [...ids, current.id],
+      });
       setCosmetics(next);
       await refreshProfile();
-      setNotice(kind === 'frame' ? 'Frame equipped.' : 'Achievement showcase saved.');
+      setNotice('Achievement showcase saved.');
     } catch (e) {
       setActionError((e as Error).message);
     } finally {
@@ -166,30 +148,12 @@ function AchievementScreen() {
           Earned <LocalizedDate value={current.unlockedAt} />
         </p>
       )}
-      {reward && (
-        <div className="achievement-frame-reward">
-          <Avatar card={avatar} name={profile?.name ?? ''} frameId={reward.id} />
-          <div>
-            <small>Portrait frame</small>
-            <strong>{reward.name}</strong>
-            {current.unlockedAt && (
-              <Button
-                busy={busy}
-                disabled={profile?.frameId === reward.id}
-                onClick={() => void action('frame')}
-              >
-                {profile?.frameId === reward.id ? 'Equipped' : 'Equip frame'}
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
       {current.unlockedAt && (
         <Button
           className="feature-achievement-button"
           busy={busy}
           aria-pressed={featured}
-          onClick={() => void action('feature')}
+          onClick={() => void featureAchievement()}
         >
           {featured ? 'Remove from showcase' : 'Feature on profile'}
         </Button>
@@ -234,13 +198,6 @@ function AchievementScreen() {
             <span>Achievements earned</span>
           </div>
           <progress max={items.length || 1} value={earned} aria-label="Earned achievements" />
-          <div>
-            <strong>
-              {ownedFrames}
-              <span> / {PORTRAIT_FRAMES.length}</span>
-            </strong>
-            <span>Portrait frames</span>
-          </div>
         </section>
         {(error || connectionError) && (
           <div className="achievement-load-error" role="alert">

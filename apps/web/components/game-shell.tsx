@@ -18,7 +18,12 @@ import { ActiveBattleReminder } from './active-battle-reminder';
 import { MatchmakingDock } from './matchmaking-dock';
 import { ActionNoticeProvider } from './action-notice';
 import { ReleaseNotes } from './release-notes';
-import { AppearanceSettings, OpenAppearance, useAppearancePreference } from './appearance-settings';
+import {
+  AppearanceSettings,
+  AppearanceSurface,
+  OpenAppearance,
+  useAppearancePreference,
+} from './appearance-settings';
 const AudioContext = createContext<(sound: Sound) => void>(() => {});
 const MusicSceneContext = createContext<(scene: MusicScene) => void>(() => {});
 export const useGameAudio = () => useContext(AudioContext);
@@ -196,10 +201,10 @@ export function GameShell({ children }: { children: React.ReactNode }) {
           <AudioContext.Provider value={play}>
             <MusicSceneContext.Provider value={changeMusicScene}>
               <SocialProvider>
-                <div
+                <AppearanceSurface
                   className={`game-shell ${crt ? 'crt-enabled' : ''} ${effects ? 'effects-animated' : ''} ${captureFlips ? 'capture-flips-enabled' : ''} ${seasonalMotion ? '' : 'seasonal-motion-off'}`}
-                  data-board-theme={boardTheme[0]}
-                  data-card-back={cardBack[0]}
+                  board={boardTheme[0]}
+                  cardBack={cardBack[0]}
                 >
                   <a className="skip-link" href="#main">
                     Skip to content
@@ -492,7 +497,7 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                     {notice}
                   </div>
                   <div className="crt-overlay" aria-hidden="true" />
-                </div>
+                </AppearanceSurface>
               </SocialProvider>
             </MusicSceneContext.Provider>
           </AudioContext.Provider>

@@ -155,6 +155,7 @@ export interface ProfileView {
   draftRating: number;
   sharedDraftRating: number;
   played: number;
+  ratedCosmeticGames?: number;
   wins: number;
   losses: number;
   draws: number;

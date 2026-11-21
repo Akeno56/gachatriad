@@ -1,12 +1,41 @@
 'use client';
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { COSMETIC_STYLES, type CosmeticStyle } from '@gacha-triad/shared/customization';
+import {
+  COSMETIC_STYLES,
+  availableStyle,
+  type CosmeticStyle,
+} from '@gacha-triad/shared/customization';
 import { LocaleView } from './i18n';
 import { Button, GameDialog } from './ui';
+import { useSession } from './session';
 
 export const OpenAppearance = createContext<() => void>(() => {});
 export const useOpenAppearance = () => useContext(OpenAppearance);
+
+export function AppearanceSurface({
+  board,
+  cardBack,
+  className,
+  children,
+}: {
+  board: CosmeticStyle;
+  cardBack: CosmeticStyle;
+  className: string;
+  children: ReactNode;
+}) {
+  const { profile } = useSession();
+  const played = profile?.ratedCosmeticGames ?? 0;
+  return (
+    <div
+      className={className}
+      data-board-theme={availableStyle(board, played)}
+      data-card-back={availableStyle(cardBack, played)}
+    >
+      {children}
+    </div>
+  );
+}
 
 export function useAppearancePreference(key: 'triad-board-theme' | 'triad-card-back') {
   const [value, setValue] = useState<CosmeticStyle>('classic');
@@ -39,7 +68,7 @@ export function AppearanceChoices<Style extends string>({
 }: {
   label: string;
   name: string;
-  choices: readonly { id: Style; name: string; unlocked?: boolean }[];
+  choices: readonly { id: Style; name: string; unlocked?: boolean; requirement?: string }[];
   value: Style;
   onChange: (value: Style) => void;
   preview: (value: Style) => ReactNode;
@@ -50,7 +79,7 @@ export function AppearanceChoices<Style extends string>({
       <fieldset className="appearance-choices" disabled={disabled}>
         <legend>{label}</legend>
         <div>
-          {choices.map(({ id, name: style, unlocked }) => (
+          {choices.map(({ id, name: style, unlocked, requirement }) => (
             <label
               key={id}
               className={`appearance-option${unlocked === false ? ' is-locked' : ''}`}
@@ -67,7 +96,7 @@ export function AppearanceChoices<Style extends string>({
               <span className="appearance-tile">
                 {preview(id)}
                 <span>{style}</span>
-                {unlocked === false && <small>Locked</small>}
+                {unlocked === false && <small>{requirement ?? 'Locked'}</small>}
               </span>
             </label>
           ))}
@@ -89,6 +118,14 @@ export function AppearanceSettings({
   cardBack: ReturnType<typeof useAppearancePreference>;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
+  const { profile } = useSession();
+  const played = profile?.ratedCosmeticGames ?? 0;
+  const choices = COSMETIC_STYLES.map(({ id, name, games }) => ({
+    id,
+    name,
+    unlocked: played >= games,
+    requirement: `${games} rated games`,
+  }));
   return (
     <GameDialog
       open={open}
@@ -101,12 +138,14 @@ export function AppearanceSettings({
       <h2 id="appearance-title" ref={heading} tabIndex={-1}>
         Appearance
       </h2>
-      <p id="appearance-storage">Saved on this device.</p>
+      <p id="appearance-storage">
+        <span>{`${played} rated games`}</span> · <span>Saved on this device.</span>
+      </p>
       <AppearanceChoices
         label="Board theme"
         name="board-theme"
-        choices={COSMETIC_STYLES}
-        value={board[0]}
+        choices={choices}
+        value={availableStyle(board[0], played)}
         onChange={board[1]}
         preview={(id) => (
           <span className="appearance-board-preview" data-board-theme={id} aria-hidden="true">
@@ -119,8 +158,8 @@ export function AppearanceSettings({
       <AppearanceChoices
         label="Card back"
         name="card-back"
-        choices={COSMETIC_STYLES}
-        value={cardBack[0]}
+        choices={choices}
+        value={availableStyle(cardBack[0], played)}
         onChange={cardBack[1]}
         preview={(id) => (
           <span

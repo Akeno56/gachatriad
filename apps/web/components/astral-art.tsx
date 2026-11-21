@@ -4,13 +4,14 @@ import { assetPath } from '../lib/connection';
 
 export function AstralArt({ kind }: { kind: 'frame' | 'crest' }) {
   const path = assetPath(`/assets/ui/astral-${kind}`);
+  const version = kind === 'frame' ? '?v=2' : '';
   return (
     <span
       className={`astral-art astral-${kind}-art`}
       style={
         {
-          '--astral-poster': `url("${path}.webp")`,
-          '--astral-loop': `url("${path}-loop.webp")`,
+          '--astral-poster': `url("${path}.webp${version}")`,
+          '--astral-loop': `url("${path}-loop.webp${version}")`,
         } as CSSProperties
       }
       aria-hidden="true"

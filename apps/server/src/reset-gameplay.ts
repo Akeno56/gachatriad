@@ -8,12 +8,12 @@ export async function resetGameplay(store: GameStore, version = 'v0.12-holo-star
       card_wishlist,market_requests,weekly_swaps,trade_offers,inventory_ledger,achievement_unlocks,lobbies,replay_owners,match_replays,match_ratings,matches,inventory,
       prism_ledger,booster_purchases,booster_packs,duplicate_actions,card_purchases,admin_grants,moderation_log`);
     await sql(`UPDATE profiles SET rating=1000,ranked_random_rating=1000,draft_rating=1000,shared_draft_rating=1000,peak_rating=1000,
-      wins=0,losses=0,draws=0,played=0,captures=0,same_captures=0,plus_captures=0,
+      wins=0,losses=0,draws=0,played=0,rated_cosmetic_games=0,captures=0,same_captures=0,plus_captures=0,
       combo_captures=0,best_combo=0,perfect_wins=0,trade_wins=0,prisms=0,
       default_deck='[]',active_loadout_id=NULL,avatar_card=NULL,selected_title=NULL,best_ranked_position=NULL,
       tutorial_completed=false,ranked_acknowledged=false,starter_granted=true,last_seen_at=now()`);
     await sql(
-      "UPDATE profiles SET portrait_frame='classic',showcase_cards='[]',showcase_achievements='[]',profile_revision=profile_revision+1",
+      "UPDATE profiles SET portrait_frame='classic',profile_banner='classic',showcase_cards='[]',showcase_achievements='[]',profile_revision=profile_revision+1",
     );
     await sql('UPDATE local_population SET enabled=false WHERE id=1');
     const players = await sql<{ id: string }>(

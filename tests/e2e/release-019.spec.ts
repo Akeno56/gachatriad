@@ -221,6 +221,9 @@ test('saves a themed profile and shows only its public showcase to another playe
   visitor.page.on('pageerror', (e) => errors.push(e.message));
   try {
     await unlock(c);
+    await platform.db.read((sql) =>
+      sql('UPDATE profiles SET rated_cosmetic_games=100 WHERE id=$1', [c.profile.id]),
+    );
     const holo = ALL_CARDS.find((card) => card.baseCardId === c.cards[0].id)!;
     await platform.db.read((sql) =>
       sql(
@@ -290,25 +293,25 @@ test('saves a themed profile and shows only its public showcase to another playe
       .selectOption('combo');
     await editor.getByRole('tab', { name: 'Portrait frames', exact: true }).click();
     await expect(
-      editor.getByRole('button', { name: 'Gold portrait frame', exact: true }),
+      editor.getByRole('button', { name: 'Regalia portrait frame', exact: true }),
     ).toHaveAttribute('aria-disabled', 'true');
     await expect(
       editor.getByRole('button', { name: 'Classic portrait frame', exact: true }),
     ).toHaveAttribute('aria-pressed', 'true');
-    await editor.getByRole('button', { name: 'Amethyst portrait frame', exact: true }).click();
+    await editor.getByRole('button', { name: 'Jade portrait frame', exact: true }).click();
     await c.page.screenshot({
       path: `.cache/release019-frames-${info.project.name}.png`,
       fullPage: true,
     });
     await editor.getByRole('button', { name: 'Save profile', exact: true }).click();
     await expect(editor).not.toBeVisible();
-    await expect(c.page.locator('.profile-portrait .player-avatar')).toHaveClass(/frame-amethyst/);
+    await expect(c.page.locator('.profile-portrait .player-avatar')).toHaveClass(/frame-jade/);
     await expect(c.page.locator('.profile-bio')).toHaveText('Bonjour <b>Triad</b> ♢');
     await expect(c.page.locator('.profile-bio b')).toHaveCount(0);
     await expect(c.page.locator('.profile-showcase-cards .playing-card')).toHaveCount(3);
     await expect(c.page.locator('.profile-showcase-cards .holo-card')).toHaveCount(1);
     await c.page.reload();
-    await expect(c.page.locator('.profile-portrait .player-avatar')).toHaveClass(/frame-amethyst/);
+    await expect(c.page.locator('.profile-portrait .player-avatar')).toHaveClass(/frame-jade/);
     await c.page.screenshot({
       path: `.cache/release019-profile-${info.project.name}.png`,
       fullPage: true,
@@ -341,7 +344,7 @@ test('saves a themed profile and shows only its public showcase to another playe
     await visitor.context.close();
   }
 });
-test('browses achievement categories, equips rewards and features an earned achievement', async ({
+test('browses achievement categories and features an earned achievement', async ({
   browser,
 }, info) => {
   const c = await player(browser),
@@ -360,7 +363,8 @@ test('browses achievement categories, equips rewards and features an earned achi
     await expect(c.page.locator('.achievement-row')).toHaveCount(1);
     await c.page.locator('.achievement-row').click();
     let failed = false;
-    await c.page.route('**/api/profile/frame', (route) => {
+    await c.page.route('**/api/profile/customization', (route) => {
+      if (route.request().method() !== 'POST') return route.continue();
       if (!failed) {
         failed = true;
         return route.fulfill({
@@ -371,12 +375,10 @@ test('browses achievement categories, equips rewards and features an earned achi
       }
       return route.continue();
     });
-    await c.page.getByRole('button', { name: 'Equip frame', exact: true }).click();
+    await c.page.getByRole('button', { name: 'Feature on profile', exact: true }).click();
     await expect(c.page.locator('.achievement-detail-content [role="alert"]')).toHaveText(
       'That action could not be completed.',
     );
-    await c.page.getByRole('button', { name: 'Equip frame', exact: true }).click();
-    await expect(c.page.getByRole('button', { name: 'Equipped', exact: true })).toBeDisabled();
     if (info.project.name === 'desktop')
       await expect(
         c.page.getByRole('button', { name: 'Feature on profile', exact: true }),
@@ -400,7 +402,7 @@ test('browses achievement categories, equips rewards and features an earned achi
       fullPage: true,
     });
     const saved = await new ProfileCustomizations(platform.db).view(c.profile.id);
-    expect(saved.settings.frameId).toBe('amethyst');
+    expect(saved.settings.frameId).toBe('classic');
     expect(saved.settings.featuredAchievements).toEqual([]);
     expect(errors).toEqual([]);
   } finally {

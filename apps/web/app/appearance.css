@@ -25,14 +25,105 @@
   --theme-inlay: #ffd8af33;
 }
 
-:is([data-board-theme='astral'], [data-board-theme='ember']) {
+[data-board-theme='slate'] {
+  --theme-board: #131d2a;
+  --theme-board-art: url('../public/assets/ui/slate-board.webp');
+  --theme-trim: #9aaebd;
+  --theme-cell: #1a2838;
+  --theme-cell-border: #657d90;
+  --theme-light: #6e9ab036;
+  --theme-inlay: #a9c5d428;
+}
+[data-card-back='slate'] {
+  --back-field: #131d2a;
+  --back-trim: #d0e1f0;
+  --back-art: url('../public/assets/ui/slate-back.webp');
+}
+[data-profile-banner='slate'] {
+  --banner-edge: #9aaebd;
+  --banner-image: #131d2a url('../public/assets/ui/slate-banner.webp') right center / cover
+    no-repeat;
+}
+.frame-slate {
+  --frame-accent: #9aaebd;
+}
+
+[data-board-theme='jade'] {
+  --theme-board: #102528;
+  --theme-board-art: url('../public/assets/ui/jade-board.webp');
+  --theme-trim: #81b89b;
+  --theme-cell: #152f30;
+  --theme-cell-border: #638b7d;
+  --theme-light: #4aa8874a;
+  --theme-inlay: #81dcb127;
+}
+[data-card-back='jade'] {
+  --back-field: #102528;
+  --back-trim: #c8edc8;
+  --back-art: url('../public/assets/ui/jade-back.webp');
+}
+[data-profile-banner='jade'] {
+  --banner-edge: #81b89b;
+  --banner-image: #102528 url('../public/assets/ui/jade-banner.webp') right center / cover no-repeat;
+}
+.frame-jade {
+  --frame-accent: #81b89b;
+}
+
+[data-board-theme='eclipse'] {
+  --theme-board: #211930;
+  --theme-board-art: url('../public/assets/ui/eclipse-board.webp');
+  --theme-trim: #b7a1d4;
+  --theme-cell: #271c3d;
+  --theme-cell-border: #836b9b;
+  --theme-light: #8268b94a;
+  --theme-inlay: #d9b7f92c;
+}
+[data-card-back='eclipse'] {
+  --back-field: #211930;
+  --back-trim: #e6caf7;
+  --back-art: url('../public/assets/ui/eclipse-back.webp');
+}
+[data-profile-banner='eclipse'] {
+  --banner-edge: #b7a1d4;
+  --banner-image: #211930 url('../public/assets/ui/eclipse-banner.webp') right center / cover
+    no-repeat;
+}
+.frame-eclipse {
+  --frame-accent: #b7a1d4;
+}
+
+[data-board-theme='regalia'] {
+  --theme-board: #1b2535;
+  --theme-board-art: url('../public/assets/ui/regalia-board.webp');
+  --theme-trim: #d7b578;
+  --theme-cell: #232f42;
+  --theme-cell-border: #8b826f;
+  --theme-light: #91847946;
+  --theme-inlay: #ffda982e;
+}
+[data-card-back='regalia'] {
+  --back-field: #1b2535;
+  --back-trim: #f8dba0;
+  --back-art: url('../public/assets/ui/regalia-back.webp');
+}
+[data-profile-banner='regalia'] {
+  --banner-edge: #d7b578;
+  --banner-image: #1b2535 url('../public/assets/ui/regalia-banner.webp') right center / cover
+    no-repeat;
+}
+.frame-regalia {
+  --frame-accent: #d7b578;
+}
+
+[data-board-theme]:not([data-board-theme='classic']) {
   --theme-tile:
     linear-gradient(145deg, var(--theme-inlay) 0 1px, transparent 1px) 4px 4px / calc(100% - 8px)
       calc(100% - 8px) no-repeat,
     radial-gradient(ellipse at 65% 85%, var(--theme-light), transparent 75%), var(--theme-cell);
 }
 
-.game-shell:is([data-board-theme='astral'], [data-board-theme='ember']) {
+.game-shell[data-board-theme]:not([data-board-theme='classic']) {
   .arena-screen .battle-layout {
     border-color: var(--theme-trim);
     box-shadow:
@@ -77,9 +168,8 @@
 }
 
 :is(
-  .game-shell:is([data-card-back='astral'], [data-card-back='ember'])
-    .card-back:not([data-card-back]),
-  .appearance-card-preview:is([data-card-back='astral'], [data-card-back='ember'])
+  .game-shell[data-card-back]:not([data-card-back='classic']) .card-back:not([data-card-back]),
+  .appearance-card-preview[data-card-back]:not([data-card-back='classic'])
 ) {
   background: var(--back-field) var(--back-art) center / 100% 100% no-repeat;
   border-color: var(--back-trim);
@@ -103,12 +193,16 @@
   --frame-accent: #eab582;
 }
 
-.ember-frame-art {
+.frame-astral-season {
+  --frame-accent: #b8c7f4;
+}
+
+.cosmetic-frame-art {
   position: absolute;
   inset: -18%;
   z-index: 1;
   pointer-events: none;
-  background: url('../public/assets/ui/ember-frame.webp') center / 100% 100% no-repeat;
+  background: var(--frame-art) center / 100% 100% no-repeat;
 }
 
 [data-profile-banner='astral-crest'] {
@@ -116,11 +210,9 @@
   --banner-image: linear-gradient(112deg, #0c1123, #222045);
 }
 
-:is(.profile-header, .profile-editor-preview, .appearance-banner-preview):is(
-  [data-profile-banner='astral'],
-  [data-profile-banner='ember'],
-  [data-profile-banner='astral-crest']
-) {
+:is(.profile-header, .profile-editor-preview, .appearance-banner-preview)[data-profile-banner]:not(
+    [data-profile-banner='classic']
+  ) {
   border-color: var(--banner-edge);
   background: var(--banner-image);
 }
@@ -135,7 +227,11 @@
 }
 
 .appearance-dialog {
-  max-width: 480px;
+  max-width: 540px;
+}
+
+.appearance-dialog .appearance-choices > div {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .appearance-dialog h2 {
