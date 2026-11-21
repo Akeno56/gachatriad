@@ -5,6 +5,7 @@ import sharp from 'sharp';
 import { createPlatform } from '../../apps/server/src/app';
 import { RANKED_RULES, STANDARD, type GameState } from '../../packages/engine/src/index';
 import { COSMETIC_SETS } from '../../packages/shared/src/customization';
+import { CARDS } from '../../packages/shared/src/index';
 import { navigateTo, openNavigation } from './helpers';
 
 let platform: Awaited<ReturnType<typeof createPlatform>>;
@@ -169,6 +170,70 @@ test('syncs boosters and Market listings only where they are needed', async ({ b
   } finally {
     await owner.context.close();
     await viewer.context.close();
+  }
+});
+
+test('fills the desktop Market with portrait offers and keeps chat optional', async ({
+  browser,
+}, info) => {
+  test.skip(info.project.name !== 'desktop');
+  const { page, context } = await player(browser);
+  try {
+    const cards = CARDS.filter((card) => card.enabled).slice(0, 16);
+    await page.route('**/api/trades?includeSales=true', (route) =>
+      route.fulfill({
+        json: cards.slice(0, 8).map((offered, i) => ({
+          id: `offer-${i}`,
+          ownerId: `market-player-${i}`,
+          owner: `Market player ${i}`,
+          offered,
+          wanted: i % 2 === 0 ? cards[i + 8] : null,
+          price: i % 2 === 0 ? null : 150,
+          createdAt: new Date().toISOString(),
+        })),
+      }),
+    );
+
+    for (const language of ['en', 'fr']) {
+      await page.goto('/market/');
+      await page.evaluate((lang) => localStorage.setItem('triad-language', lang), language);
+      await page.reload();
+      await expect(page.locator('html')).toHaveAttribute('lang', language);
+      const grid = page.locator('.trade-grid');
+      await expect(grid.locator('.trade-offer')).toHaveCount(8);
+      const chat = page.locator('.public-chat-disclosure');
+      await expect(chat.locator('.main-chat')).toBeHidden();
+      await chat.locator('summary').click();
+      await expect(
+        chat.getByRole('tab', { name: language === 'fr' ? 'Échanges' : 'Trade' }),
+      ).toHaveAttribute('aria-selected', 'true');
+      await chat.locator('summary').click();
+      await expect(chat.locator('.main-chat')).toBeHidden();
+
+      for (const [width, height, columns] of [
+        [1280, 720, 3],
+        [1366, 768, 3],
+        [1920, 1080, 4],
+      ]) {
+        await page.setViewportSize({ width, height });
+        const layout = await grid.evaluate((el) => ({
+          width: el.clientWidth,
+          panelWidth: el.closest('.market-offers-panel')!.clientWidth,
+          columns: getComputedStyle(el).gridTemplateColumns.split(' ').length,
+          ratios: [...el.querySelectorAll('.playing-card, .market-payment')].map((card) => {
+            const { width, height } = card.getBoundingClientRect();
+            return width / height;
+          }),
+        }));
+        expect(layout.width).toBe(layout.panelWidth);
+        expect(layout.columns).toBe(columns);
+        expect(layout.ratios).toHaveLength(16);
+        for (const ratio of layout.ratios) expect(ratio).toBeCloseTo(3 / 4, 2);
+        await page.screenshot({ path: info.outputPath(`market-${language}-${width}.png`) });
+      }
+    }
+  } finally {
+    await context.close();
   }
 });
 

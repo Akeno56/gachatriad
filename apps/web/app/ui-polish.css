@@ -645,8 +645,8 @@ textarea:hover {
   }
 }
 .market-page .trade-create {
-  margin: 18px 0;
-  padding: 14px 16px;
+  margin: 10px 0;
+  padding: 8px 12px;
 }
 .market-page .trade-create summary {
   font: 23px/1.2 var(--pixel);
@@ -732,6 +732,8 @@ textarea:hover {
 }
 .market-page .market-primary-filters {
   grid-template-columns: minmax(180px, 1.4fr) repeat(3, minmax(130px, 1fr));
+  margin: 10px 0;
+  padding: 10px 12px;
 }
 .market-filter-tools {
   display: grid;
@@ -799,7 +801,8 @@ textarea:hover {
   margin: 0;
   color: var(--muted);
 }
-.content-page > .error-message:empty {
+.content-page > .error-message:empty,
+.market-offers-panel > .error-message:empty {
   display: none;
 }
 /* Inspection gives the illustration and card information their own space. */

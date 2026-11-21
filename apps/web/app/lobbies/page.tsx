@@ -169,7 +169,10 @@ export default function Lobbies() {
             </span>
           </div>
         )}
-        <details className="lobby-chat" onToggle={(event) => setChatOpen(event.currentTarget.open)}>
+        <details
+          className="public-chat-disclosure"
+          onToggle={(event) => setChatOpen(event.currentTarget.open)}
+        >
           <summary>Lobby chat</summary>
           <MainChat compact visible={chatOpen} />
         </details>

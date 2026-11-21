@@ -79,80 +79,9 @@
   box-shadow: inset 0 1px #97b1d026;
 }
 
-.market-workspace > * {
-  min-width: 0;
-}
-
-.market-workspace .market-primary-filters {
-  margin-top: 0;
-}
-
-.market-chat .main-chat {
-  margin-top: 12px;
-}
-
 .lobby-row.menu-window,
 .booster-type-tile.menu-window {
   --window: linear-gradient(150deg, #203b65, #152641 64%);
-}
-
-@media (min-width: 1201px) {
-  .market-workspace {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) clamp(310px, 26vw, 390px);
-    gap: 20px;
-    align-items: start;
-  }
-
-  .market-chat .main-chat {
-    margin-top: 9px;
-    padding-inline: 10px;
-  }
-
-  .market-chat .public-chat-body {
-    grid-template-columns: minmax(0, 1fr) 96px;
-  }
-
-  .market-chat .main-chat :is(.chat-messages, .chat-user-list) {
-    height: 310px;
-    min-height: 310px;
-    max-height: 310px;
-  }
-
-  .market-chat .main-chat .chat-message {
-    gap: 6px;
-    padding: 5px 6px;
-  }
-
-  .market-chat .main-chat .chat-message .player-avatar {
-    width: 24px;
-    height: 24px;
-    flex-basis: 24px;
-  }
-
-  .market-chat .chat-message .message-content {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 3px 6px;
-  }
-
-  .market-chat .chat-message .message-heading > .chat-player-name {
-    white-space: normal;
-    overflow-wrap: anywhere;
-    overflow: visible;
-  }
-
-  .market-chat .message-content > p {
-    grid-column: 1 / -1;
-  }
-
-  .market-chat .message-content > time {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .market-chat .chat-channel-tabs button {
-    padding-inline: 7px;
-  }
 }
 
 /* The masthead shares a row across the command menu and the deck. */
@@ -172,13 +101,11 @@
   grid-area: masthead;
   display: flex;
   align-items: center;
-  gap: clamp(22px, 4vw, 64px);
-  min-height: 92px;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 76px;
   padding: 10px 22px;
-  background:
-    linear-gradient(90deg, #0b1630 16%, #0b1630a6 50%, transparent 84%),
-    url('../public/assets/ui/tavern-masthead.webp') right 66% / min(880px, 100%) auto no-repeat,
-    #0b1630;
+  background: linear-gradient(110deg, #20385d, #101e38 74%);
   border-color: #8e9cbd;
   box-shadow:
     inset 0 0 0 1px #0a1228,
@@ -366,9 +293,6 @@
     gap: 10px;
     min-height: 70px;
     padding: 6px 10px;
-    background-size:
-      auto,
-      470px auto;
   }
 
   .title-screen .tavern-sign h1 {
@@ -479,9 +403,6 @@
     align-items: center;
     gap: 13px;
     padding-inline: 12px;
-    background-size:
-      auto,
-      560px auto;
   }
 
   .title-screen .tavern-sign h1 {

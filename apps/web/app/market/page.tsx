@@ -79,12 +79,7 @@ export default function Market() {
           aria-label={tabs.find((item) => item.value === tab)!.label}
         >
           {tab === 'offers' ? (
-            <div className="market-workspace">
-              <MarketOffers cardId={cardId} clearCard={() => select('offers')} />
-              <div className="market-chat">
-                <MainChat compact />
-              </div>
-            </div>
+            <MarketOffers cardId={cardId} clearCard={() => select('offers')} />
           ) : (
             <MarketCollections tab={tab} onViewListings={(card) => select('offers', card)} />
           )}
@@ -96,6 +91,7 @@ export default function Market() {
 
 function MarketOffers({ cardId, clearCard }: { cardId: string; clearCard: () => void }) {
   const { profile, revision, refreshProfile, error: connectionError } = useSession();
+  const [chatOpen, setChatOpen] = useState(false);
   const marketRevision = useSiteRevision('market');
   const notify = useActionNotice(),
     actionLock = useRef(false);
@@ -250,6 +246,13 @@ function MarketOffers({ cardId, clearCard }: { cardId: string; clearCard: () => 
   return (
     <LocaleView>
       <div className="market-offers-panel" data-exact-card={!!cardId}>
+        <details
+          className="public-chat-disclosure"
+          onToggle={(event) => setChatOpen(event.currentTarget.open)}
+        >
+          <summary>Market chat</summary>
+          <MainChat compact visible={chatOpen} />
+        </details>
         {cardId && (
           <div className="collection-market-tools">
             <p>

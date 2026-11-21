@@ -318,10 +318,10 @@
   height: 18px;
   accent-color: #d8bf7f;
 }
-.lobby-chat {
+.public-chat-disclosure {
   margin: 12px 0;
 }
-.lobby-chat > summary {
+.public-chat-disclosure > summary {
   width: fit-content;
   padding: 4px 8px;
   border: 1px solid #556987;
@@ -330,7 +330,7 @@
   cursor: pointer;
   font: 20px/1.25 var(--pixel);
 }
-.lobby-chat > summary:hover {
+.public-chat-disclosure > summary:hover {
   border-color: var(--gold);
 }
 .lobby-list {

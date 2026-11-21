@@ -29,7 +29,7 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>New pixel-art tavern and game menus.</li>
+          <li>Updated Play and Market layouts.</li>
           <li>Updated controls, dialogs, and battle HUD.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
