@@ -2,19 +2,40 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import type { AchievementView } from '@gacha-triad/shared/platform';
 import {
   ACHIEVEMENT_CATEGORIES,
-  COSMETIC_SETS,
   achievementCategory,
-  type CustomizationView,
-} from '@gacha-triad/shared/customization';
+  type AchievementReward,
+  type AchievementView,
+} from '@gacha-triad/shared/platform';
+import type { CustomizationView } from '@gacha-triad/shared/customization';
 import { api } from '../../lib/platform';
 import { useSession } from '../../components/session';
 import { usePageRefresh } from '../../components/use-page-refresh';
 import { LocaleView, LocalizedDate, NoTranslate } from '../../components/i18n';
 import { AchievementIcon } from '../../components/achievement-icon';
 import { Button, GameDialog } from '../../components/ui';
+
+function unclaimedReward(item: AchievementView) {
+  return (
+    !!item.unlockedAt &&
+    !item.rewardClaimed &&
+    (item.reward?.kind === 'prisms' || item.reward?.kind === 'booster')
+  );
+}
+
+function rewardLabel(reward: AchievementReward) {
+  switch (reward.kind) {
+    case 'prisms':
+      return `${reward.amount} Stellar Prisms`;
+    case 'booster':
+      return 'Standard booster';
+    case 'title':
+    case 'cosmetic-set':
+      return reward.name;
+  }
+}
+
 export default function Achievements() {
   return (
     <Suspense
@@ -93,7 +114,10 @@ function AchievementScreen() {
     .filter(
       (a) =>
         (category === 'all' || achievementCategory(a.id) === category) &&
-        (status === 'all' || (status === 'earned' ? !!a.unlockedAt : !a.unlockedAt)),
+        (status === 'all' ||
+          (status === 'earned' && !!a.unlockedAt) ||
+          (status === 'progress' && !a.unlockedAt) ||
+          (status === 'reward' && unclaimedReward(a))),
     )
     .sort((a, b) =>
       sort === 'recent'
@@ -108,7 +132,35 @@ function AchievementScreen() {
       ? items.find((a) => a.id === selected)
       : (visible.find((a) => a.id === selected) ?? visible[0])) ?? null;
   const featured = !!current && !!cosmetics?.settings.featuredAchievements.includes(current.id);
-  const cosmeticSet = COSMETIC_SETS.find(({ achievementId }) => achievementId === current?.id);
+  async function claimReward() {
+    if (!profile || !current || !unclaimedReward(current) || lock.current) return;
+    lock.current = true;
+    setBusy(true);
+    setActionError('');
+    setNotice('');
+    try {
+      await api(`/achievements/${encodeURIComponent(current.id)}/claim`, {});
+      setSnapshot((previous) =>
+        previous?.owner === profile.id
+          ? {
+              ...previous,
+              items: previous.items.map((item) =>
+                item.id === current.id ? { ...item, rewardClaimed: true } : item,
+              ),
+            }
+          : previous,
+      );
+      setNotice('Reward claimed');
+      refreshPage();
+      await refreshProfile();
+    } catch (e) {
+      setActionError((e as Error).message);
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  }
+
   async function featureAchievement() {
     if (!current?.unlockedAt || lock.current) return;
     lock.current = true;
@@ -143,7 +195,6 @@ function AchievementScreen() {
         {current.name}
       </h2>
       <p>{current.description}</p>
-      {cosmeticSet && <p>{`Unlocks the ${cosmeticSet.name} cosmetic set.`}</p>}
       <div className="achievement-detail-progress">
         <progress
           max={current.target}
@@ -152,6 +203,29 @@ function AchievementScreen() {
         />
         <span>{`${current.progress} / ${current.target}`}</span>
       </div>
+      {current.reward && (
+        <div className="achievement-reward">
+          <div>
+            <span>
+              {current.reward.kind === 'title'
+                ? 'Title reward'
+                : current.reward.kind === 'cosmetic-set'
+                  ? 'Cosmetic set reward'
+                  : 'Reward'}
+            </span>
+            <strong>{rewardLabel(current.reward)}</strong>
+            {current.reward.kind === 'cosmetic-set' && (
+              <small>Board · Banner · Frame · Card back</small>
+            )}
+          </div>
+          {unclaimedReward(current) && (
+            <Button variant="primary" disabled={busy} onClick={() => void claimReward()}>
+              Claim reward
+            </Button>
+          )}
+          {current.rewardClaimed && <small>Claimed</small>}
+        </div>
+      )}
       {current.unlockedAt && (
         <p className="achievement-earned-date">
           Earned <LocalizedDate value={current.unlockedAt} />
@@ -208,6 +282,11 @@ function AchievementScreen() {
           </div>
           <progress max={items.length || 1} value={earned} aria-label="Earned achievements" />
         </section>
+        {!current && notice && (
+          <p className="achievement-action-notice" role="status">
+            {notice}
+          </p>
+        )}
         {(error || connectionError) && (
           <div className="achievement-load-error" role="alert">
             {error || connectionError}
@@ -259,6 +338,7 @@ function AchievementScreen() {
                     <option value="all">All</option>
                     <option value="progress">In progress</option>
                     <option value="earned">Earned only</option>
+                    <option value="reward">Unclaimed rewards</option>
                   </select>
                 </label>
                 <label>

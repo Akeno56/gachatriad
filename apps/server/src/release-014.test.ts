@@ -245,6 +245,29 @@ it('draws Ranked Random decks from available owned cards on match start, rematch
   expect(
     Object.values(final.inventory).every(({ available, quantity }) => available === quantity),
   ).toBe(true);
+  const randomDebut = async () =>
+    (await p.store.achievements(a.profile.id)).find((item) => item.id === 'random-debut');
+  expect(await randomDebut()).toMatchObject({ progress: 0, unlockedAt: null });
+  const matchId = await queue();
+  for (let turn = 0; turn < 9; turn++) {
+    const [match] = await p.db.read((sql) =>
+      sql<{
+        state: Parameters<typeof legalMoves>[0];
+        version: number;
+        player0: string;
+        player1: string;
+      }>('SELECT state,version,player0,player1 FROM matches WHERE id=$1', [matchId]),
+    );
+    const move = legalMoves(match.state)[0];
+    await p.store.move(
+      move.player === 0 ? match.player0 : match.player1,
+      matchId,
+      move.cardId,
+      move.cell,
+      match.version,
+    );
+  }
+  expect(await randomDebut()).toMatchObject({ progress: 1, unlockedAt: expect.any(String) });
 });
 it('migrates active Ranked stakes while preserving already pending legacy settlements', async () => {
   const a = await account(),
@@ -608,6 +631,15 @@ it('persists the daily board and prevents duplicate rewards across profiles of o
   }
   expect((await p.store.profile(a.actor)).prisms).toBe(100);
   expect((await p.store.profile(b.actor)).prisms).toBe(0);
+  const achievements = await p.store.achievements(a.profile.id);
+  expect(achievements.find(({ id }) => id === 'puzzle-first')).toMatchObject({
+    unlockedAt: expect.any(String),
+    rewardClaimed: false,
+  });
+  expect(achievements.find(({ id }) => id === 'puzzle-10')).toMatchObject({
+    progress: 1,
+    unlockedAt: null,
+  });
   const ranked = await p.puzzles.view(b.profile.id, true, a.actor.id);
   expect(ranked.rewarded).toBe(true);
   expect(ranked.leaderboard.some((e) => e.playerId === b.profile.id)).toBe(false);

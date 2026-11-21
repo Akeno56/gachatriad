@@ -5,6 +5,7 @@ import type { ProfileIdentity } from './store';
 import { Database, type Sql } from './database';
 import { GameError } from './errors';
 import { pruneDeck } from './inventory';
+import { syncAchievements } from './achievements';
 interface Offer {
   id: string;
   owner_id: string;
@@ -330,10 +331,7 @@ export class Trades {
         : [];
       for (const who of [p.id, o.owner_id]) await pruneDeck(sql, who);
       for (const who of [p.id, o.owner_id])
-        await sql(
-          "INSERT INTO achievement_unlocks(profile_id,achievement_id) SELECT $1,'collector' WHERE (SELECT count(DISTINCT coalesce(d.definition->>'baseCardId',i.card_id)) FROM inventory i JOIN card_definitions d ON d.id=i.card_id WHERE i.profile_id=$1 AND i.quantity>0)>=50 ON CONFLICT DO NOTHING",
-          [who],
-        );
+        await syncAchievements(sql, who, ['collection', 'holos', 'card_swaps']);
       return [p.id, o.owner_id, ...released];
     });
   }

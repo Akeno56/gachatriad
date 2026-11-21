@@ -1,4 +1,4 @@
-import { achievementCategory } from '@gacha-triad/shared/customization';
+import { achievementCategory } from '@gacha-triad/shared/platform';
 export function AchievementIcon({ id, earned = false }: { id: string; earned?: boolean }) {
   const category = achievementCategory(id);
   const paths = {
@@ -7,6 +7,7 @@ export function AchievementIcon({ id, earned = false }: { id: string; earned?: b
     techniques: 'M12 3v18M3 12h18M6 6l12 12M18 6 6 18',
     collection: 'M5 6h13v15H5ZM8 3h13v15M8 10h7M8 14h7',
     exchanges: 'M3 7h16l-4-4M21 17H5l4 4M19 7l-4 4M5 17l4-4',
+    puzzles: 'M3 3h7v4h4V3h7v7h-4v4h4v7h-7v-4h-4v4H3v-7h4v-4H3Z',
   };
   return (
     <span
@@ -20,7 +21,7 @@ export function AchievementIcon({ id, earned = false }: { id: string; earned?: b
         strokeWidth="1.5"
         strokeLinejoin="miter"
       >
-        <path d={paths[category as keyof typeof paths]} />
+        <path d={paths[category]} />
       </svg>
     </span>
   );

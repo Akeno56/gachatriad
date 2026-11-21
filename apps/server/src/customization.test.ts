@@ -5,7 +5,7 @@ import { createPlatform } from './app';
 import { ProfileCustomizations } from './customization';
 import { ALL_CARDS } from '@gacha-triad/shared';
 import { COSMETIC_SETS, type CustomizationView } from '@gacha-triad/shared/customization';
-import type { PlayerProfileView } from '@gacha-triad/shared/platform';
+import type { AchievementView, PlayerProfileView } from '@gacha-triad/shared/platform';
 import { legalMoves, STANDARD, type GameState } from '@gacha-triad/engine';
 let p: Awaited<ReturnType<typeof createPlatform>>,
   custom: ProfileCustomizations,
@@ -65,6 +65,55 @@ async function earned(u: User, id: string) {
     ),
   );
 }
+it('catches up achievement progress and claims boosters and Prisms exactly once', async () => {
+  const a = await user(),
+    b = await user();
+  const claim = (u: User, id: string) => request(u, `/achievements/${id}/claim`, {});
+  expect((await claim(a, 'first-draw')).statusCode).toBe(409);
+  expect((await claim(a, 'first-duel')).statusCode).toBe(404);
+  expect(
+    (await p.app.inject({ method: 'POST', url: '/api/achievements/first-draw/claim', payload: {} }))
+      .statusCode,
+  ).toBe(401);
+  await p.db.tx(async (sql) => {
+    await sql('UPDATE profiles SET draws=1,played=1,perfect_wins=1 WHERE id=$1', [a.profile.id]);
+    await sql(
+      "INSERT INTO achievement_unlocks(profile_id,achievement_id,unlocked_at) VALUES($1,'first-draw','2026-01-02T00:00:00Z')",
+      [a.profile.id],
+    );
+  });
+  const response = await request(a, '/achievements');
+  expect(response.statusCode, response.body).toBe(200);
+  const items = response.json<AchievementView[]>();
+  expect(items).toHaveLength(30);
+  expect(items.find((item) => item.id === 'first-draw')).toMatchObject({
+    progress: 1,
+    unlockedAt: '2026-01-02T00:00:00.000Z',
+    reward: { kind: 'prisms', amount: 50 },
+    rewardClaimed: false,
+  });
+  expect((await settings(a)).titles.find((title) => title.id === 'card-player')?.unlocked).toBe(
+    true,
+  );
+  expect((await claim(b, 'perfect')).statusCode).toBe(409);
+  for (const id of ['first-draw', 'perfect']) {
+    const claims = await Promise.all([claim(a, id), claim(a, id)]);
+    expect(claims.map((r) => r.statusCode)).toEqual([200, 200]);
+    expect(claims.filter((r) => r.json().claimed)).toHaveLength(1);
+  }
+  expect((await p.store.profile(a.actor)).prisms).toBe(a.profile.prisms + 50);
+  const boosters = (await p.store.economy.list(a.profile.id)).filter(
+    (pack) => pack.source === 'achievement',
+  );
+  expect(boosters).toHaveLength(1);
+  await p.store.migrate(resolve('.'));
+  expect((await p.store.economy.open(a.profile.id, boosters[0].id)).cards).toHaveLength(5);
+  const after = (await request(a, '/achievements')).json<AchievementView[]>();
+  expect(after.filter((item) => item.rewardClaimed).map(({ id }) => id)).toEqual([
+    'first-draw',
+    'perfect',
+  ]);
+});
 it('preserves existing avatars and titles, supplies safe defaults and authorizes all customization routes', async () => {
   const a = await user(),
     b = await user(true),

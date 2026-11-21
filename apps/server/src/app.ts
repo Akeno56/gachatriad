@@ -676,6 +676,12 @@ export async function createPlatform(
     return store.lobbies();
   });
   app.get('/api/achievements', async (req) => store.achievements((await profile(req)).id));
+  app.post('/api/achievements/:id/claim', async (req) => {
+    const p = await profile(req);
+    const result = await store.claimAchievementReward(p.id, id(req));
+    if (result.claimed) notifySite(req, p.id, ['profile', 'boosters']);
+    return result;
+  });
   app.get('/api/replays', async (req) =>
     replays.list(
       (await profile(req)).id,

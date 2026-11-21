@@ -90,6 +90,46 @@ async function player(browser: Browser, name?: string) {
   };
 }
 
+test('shows bilingual achievement rewards and claims them from the desktop browser', async ({
+  browser,
+}, info) => {
+  test.skip(info.project.name !== 'desktop');
+  const { page, profile, context } = await player(browser);
+  try {
+    await platform.db.read((sql) =>
+      sql('UPDATE profiles SET played=2,draws=1,perfect_wins=1 WHERE id=$1', [profile.id]),
+    );
+    await page.goto('/achievements/?achievement=first-draw');
+    const detail = page.getByRole('complementary', { name: 'Achievement details' });
+    await expect(page.locator('.achievement-list .achievement-row')).toHaveCount(30);
+    await expect(detail.getByText('50 Stellar Prisms', { exact: true })).toBeVisible();
+    await page.locator('select[name="achievement-status"]').selectOption('reward');
+    await expect(page.locator('.achievement-list .achievement-row')).toHaveCount(2);
+    await detail.getByRole('button', { name: 'Claim reward' }).click();
+    await expect(page.locator('.achievement-list .achievement-row')).toHaveCount(1);
+    await page.evaluate(() => localStorage.setItem('triad-language', 'fr'));
+    await page.goto('/achievements/?achievement=perfect');
+    const claim = page.locator('.achievement-reward button');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+    await expect(page.locator('.achievement-reward strong')).toHaveText('Booster standard');
+    await expect(claim).toHaveText('Récupérer la récompense');
+    for (const [width, height] of [
+      [1280, 720],
+      [1366, 768],
+      [1920, 1080],
+    ]) {
+      await page.setViewportSize({ width, height });
+      await expect(claim).toBeInViewport({ ratio: 1 });
+    }
+    await claim.click();
+    await expect(page.locator('.achievement-reward small')).toHaveText('Récupérée');
+    await page.reload();
+    await expect(page.locator('.achievement-reward small')).toHaveText('Récupérée');
+  } finally {
+    await context.close();
+  }
+});
+
 test('syncs boosters and Market listings only where they are needed', async ({ browser }) => {
   const owner = await player(browser);
   const viewer = await player(browser);
@@ -607,7 +647,8 @@ test('an admin can grant one cosmetic achievement to a player on the test server
 
     await recipient.page.goto('/achievements/?achievement=rated-500');
     const achievement = recipient.page.getByRole('complementary', { name: 'Achievement details' });
-    await expect(achievement.getByText('Regalia set', { exact: true })).toBeVisible();
+    await expect(achievement.getByRole('heading', { name: 'Seat of Honor' })).toBeVisible();
+    await expect(achievement.getByText('Regalia', { exact: true })).toBeVisible();
     await expect(achievement.getByText('Unlocked', { exact: true })).toBeVisible();
     await recipient.page.goto('/profile/');
     await recipient.page.getByRole('button', { name: 'Customize profile' }).click();

@@ -57,6 +57,12 @@ import { pruneDeck } from './inventory';
 import { titleName, titlesFor, awardRankTitles } from './titles';
 import { archiveReplay } from './replays';
 import {
+  achievementViews,
+  claimAchievementReward,
+  syncAchievements,
+  syncDuelAchievements,
+} from './achievements';
+import {
   COSMETIC_SETS,
   type PortraitFrame,
   type FeaturedMode,
@@ -243,6 +249,7 @@ export class GameStore {
       '031_cosmetic_milestones.sql',
       '032_cosmetic_achievements.sql',
       '033_invitation_rules.sql',
+      '034_achievement_rewards.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -1494,23 +1501,9 @@ export class GameStore {
     ]);
     if (next.status === 'complete') await this.finish(sql, m, winner(next)!, null);
   }
-  private async unlock(sql: Sql, id: string) {
-    const [p] = await sql<ProfileRow>('SELECT * FROM profiles WHERE id=$1', [id]);
-    const [count] = await sql<{ n: number }>(
-      "SELECT count(DISTINCT coalesce(d.definition->>'baseCardId',i.card_id))::int n FROM inventory i JOIN card_definitions d ON d.id=i.card_id WHERE i.profile_id=$1 AND i.quantity>0",
-      [id],
-    );
-    for (const a of ACHIEVEMENTS) {
-      const progress = a.stat === 'collection' ? count.n : Number(p[a.stat] ?? 0);
-      if (progress >= a.target)
-        await sql(
-          'INSERT INTO achievement_unlocks(profile_id,achievement_id) VALUES($1,$2) ON CONFLICT DO NOTHING',
-          [id, a.id],
-        );
-    }
-  }
   private async finish(sql: Sql, m: MatchRow, result: Player | 'draw', reason: string | null) {
     const draw = result === 'draw';
+    const full = !reason && m.state?.history.length === 9;
     const stake = m.trade_rule === 'one' && !draw && !!m.player1;
     await sql(
       "UPDATE matches SET status='complete',winner=$1,is_draw=$2,completed_at=now(),deadline=NULL,end_reason=$3,settlement_done=$4,claim_deadline=$5 WHERE id=$6",
@@ -1533,7 +1526,7 @@ export class GameStore {
       const captures = turns.flatMap((t) => t.captures);
       const total = m.state ? scores(m.state)[seat] : 0;
       // Only full duels pay out. Forfeits/abandoned drafts cannot farm instant rewards.
-      if (!reason && m.state?.history.length === 9 && !profileRows.find((p) => p.id === id)?.is_bot)
+      if (full && !profileRows.find((p) => p.id === id)?.is_bot)
         await this.economy.reward(
           sql,
           id,
@@ -1582,7 +1575,8 @@ export class GameStore {
             [id, m.id],
           );
       }
-      await this.unlock(sql, id);
+      if (!profileRows.find((p) => p.id === id)?.is_bot)
+        await syncDuelAchievements(sql, id, m.mode, full);
       await sql('UPDATE profiles SET peak_rating=greatest(peak_rating,rating) WHERE id=$1', [id]);
     }
     if (reason !== 'admin test result' && m.mode === 'ranked' && !profileRows.some((p) => p.is_bot))
@@ -1658,7 +1652,7 @@ export class GameStore {
       [cardId, m.id],
     );
     await pruneDeck(sql, loser);
-    await this.unlock(sql, recipient);
+    await syncAchievements(sql, recipient, ['trade_wins', 'collection', 'holos']);
   }
   async claimCard(profileId: string, id: string, cardId: string) {
     await this.db.tx(async (sql) => {
@@ -1669,28 +1663,10 @@ export class GameStore {
     });
   }
   async achievements(id: string): Promise<AchievementView[]> {
-    return this.db.read(async (sql) => {
-      const [p] = await sql<ProfileRow>('SELECT * FROM profiles WHERE id=$1', [id]);
-      const [n] = await sql<{ n: number }>(
-        "SELECT count(DISTINCT coalesce(d.definition->>'baseCardId',i.card_id))::int n FROM inventory i JOIN card_definitions d ON d.id=i.card_id WHERE i.profile_id=$1 AND i.quantity>0",
-        [id],
-      );
-      const unlocked = await sql<{ achievement_id: string; unlocked_at: Date }>(
-        'SELECT * FROM achievement_unlocks WHERE profile_id=$1',
-        [id],
-      );
-      return ACHIEVEMENTS.map((a) => ({
-        id: a.id,
-        name: a.name,
-        description: a.description,
-        target: a.target,
-        progress: unlocked.some((u) => u.achievement_id === a.id)
-          ? a.target
-          : Math.min(a.target, a.stat === 'collection' ? n.n : Number(p[a.stat] ?? 0)),
-        unlockedAt:
-          unlocked.find((u) => u.achievement_id === a.id)?.unlocked_at.toISOString() ?? null,
-      }));
-    });
+    return this.db.tx((sql) => achievementViews(sql, id));
+  }
+  async claimAchievementReward(profileId: string, id: string) {
+    return this.db.tx((sql) => claimAchievementReward(sql, profileId, id));
   }
   async grantAchievement(actorId: string, profileId: unknown, achievementId: unknown) {
     if (typeof profileId !== 'string' || !profileId) throw new GameError('Choose a player.');

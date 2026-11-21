@@ -897,6 +897,32 @@
   font: 21px var(--pixel);
   color: #d0d9e7;
 }
+.achievement-reward {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid #52688a;
+  background: #101b32;
+}
+.achievement-reward > div {
+  display: grid;
+  gap: 2px;
+}
+.achievement-reward strong {
+  color: #ebd4a1;
+  font: 22px/1.1 var(--pixel);
+  overflow-wrap: anywhere;
+}
+.achievement-reward :is(span, small) {
+  color: #b5c7df;
+  font-size: 13px;
+}
+.achievement-reward button {
+  width: 100%;
+  min-height: 34px;
+  padding: 3px 8px;
+}
 .achievement-earned-date {
   font-size: 13px !important;
   color: #9cb3d2 !important;

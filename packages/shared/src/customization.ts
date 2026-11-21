@@ -21,11 +21,41 @@ export const ASTRAL_REWARDS = {
   },
 } as const;
 export const COSMETIC_SETS = [
-  { id: 'slate', name: 'Slate', games: 25, achievementId: 'rated-25' },
-  { id: 'ember', name: 'Ember', games: 50, achievementId: 'rated-50' },
-  { id: 'jade', name: 'Jade', games: 100, achievementId: 'rated-100' },
-  { id: 'eclipse', name: 'Eclipse', games: 200, achievementId: 'rated-200' },
-  { id: 'regalia', name: 'Regalia', games: 500, achievementId: 'rated-500' },
+  {
+    id: 'slate',
+    name: 'Slate',
+    games: 25,
+    achievementId: 'rated-25',
+    achievementName: 'Proving Ground',
+  },
+  {
+    id: 'ember',
+    name: 'Ember',
+    games: 50,
+    achievementId: 'rated-50',
+    achievementName: 'Trial by Fire',
+  },
+  {
+    id: 'jade',
+    name: 'Jade',
+    games: 100,
+    achievementId: 'rated-100',
+    achievementName: 'Jade Veteran',
+  },
+  {
+    id: 'eclipse',
+    name: 'Eclipse',
+    games: 200,
+    achievementId: 'rated-200',
+    achievementName: 'Eclipse Vanguard',
+  },
+  {
+    id: 'regalia',
+    name: 'Regalia',
+    games: 500,
+    achievementId: 'rated-500',
+    achievementName: 'Seat of Honor',
+  },
 ] as const;
 export type CosmeticSetId = (typeof COSMETIC_SETS)[number]['id'];
 export const COSMETIC_STYLES = [
@@ -77,23 +107,4 @@ export interface CustomizationView {
   banners?: { id: ProfileBanner; name: string; unlocked: boolean; requirement?: string }[];
   titles: TitleView[];
   achievements: { id: string; name: string; unlockedAt: string }[];
-}
-export const ACHIEVEMENT_CATEGORIES = [
-  { id: 'all', name: 'All achievements', sigil: '✦' },
-  { id: 'duels', name: 'Duels', sigil: '⚔' },
-  { id: 'milestones', name: 'Rated milestones', sigil: '◇' },
-  { id: 'techniques', name: 'Techniques', sigil: '＋' },
-  { id: 'collection', name: 'Collection', sigil: '▥' },
-  { id: 'exchanges', name: 'Exchanges', sigil: '⇄' },
-] as const;
-export type AchievementCategory = (typeof ACHIEVEMENT_CATEGORIES)[number]['id'];
-export function achievementCategory(id: string): AchievementCategory {
-  if (COSMETIC_SETS.some(({ achievementId }) => achievementId === id)) return 'milestones';
-  return id === 'collector'
-    ? 'collection'
-    : id === 'trade-one'
-      ? 'exchanges'
-      : ['same', 'plus', 'combo'].includes(id)
-        ? 'techniques'
-        : 'duels';
 }

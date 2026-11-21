@@ -20,6 +20,7 @@ import {
 } from '@gacha-triad/shared/puzzle';
 import type { Database, Sql } from './database';
 import { GameError } from './errors';
+import { syncAchievements } from './achievements';
 
 export const PUZZLE_REWARD = 100;
 export function puzzleDay(now = Date.now()) {
@@ -266,6 +267,7 @@ export class DailyPuzzles {
         WHERE day=$3 AND profile_id=$4`,
         [JSON.stringify(state), solved, day, profileId],
       );
+      if (solved && !run.solved_at) await syncAchievements(sql, profileId, ['puzzle_solves']);
       await this.reward(sql, day, profileId, registered, accountId);
     });
     return this.view(profileId, registered, accountId);

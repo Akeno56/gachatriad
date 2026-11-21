@@ -13,12 +13,14 @@ import {
 import { Database, type Sql } from './database';
 import { GameError } from './errors';
 import { rollRarity as rarity, rollFinish } from './draft-packs';
+import { syncAchievements } from './achievements';
 
 interface PackRow {
   pack_type: BoosterType;
   new_cards: string[];
   id: string;
   source: 'starter' | 'purchase' | 'admin' | 'daily';
+  request_id: string | null;
   cost: number;
   cards: string[] | null;
   created_at: Date;
@@ -30,7 +32,7 @@ function view(pack: PackRow): BoosterView {
     type: pack.pack_type,
     newCardIds: pack.opened_at ? (pack.new_cards ?? []) : [],
     id: pack.id,
-    source: pack.source,
+    source: pack.request_id?.startsWith('achievement:') ? 'achievement' : pack.source,
     cost: pack.cost,
     createdAt: new Date(pack.created_at).toISOString(),
     openedAt: pack.opened_at ? new Date(pack.opened_at).toISOString() : null,
@@ -85,6 +87,7 @@ export class Economy {
         "INSERT INTO prism_ledger(id,profile_id,delta,kind,reference) VALUES($1,$2,$3,'card-purchase',$4)",
         [randomUUID(), profileId, -cost, `card:${requestId}`],
       );
+      await syncAchievements(sql, profileId, ['collection']);
       return { card, cost };
     });
   }
@@ -243,6 +246,8 @@ export class Economy {
         'INSERT INTO duplicate_actions(profile_id,request_id,kind,inputs,result) VALUES($1,$2,$3,$4::jsonb,$5::jsonb)',
         [profileId, requestId, kind, JSON.stringify(selected), JSON.stringify(result)],
       );
+      if (kind === 'trade-up')
+        await syncAchievements(sql, profileId, ['collection', 'holos', 'trade_ups']);
       return result;
     });
   }
@@ -342,7 +347,11 @@ export class Economy {
     });
   }
   async open(profileId: string, packId: string) {
-    return this.db.tx((sql) => this.openPack(sql, profileId, packId));
+    return this.db.tx(async (sql) => {
+      const pack = await this.openPack(sql, profileId, packId);
+      await syncAchievements(sql, profileId, ['collection', 'holos', 'boosters']);
+      return pack;
+    });
   }
   async openBatch(profileId: string, packIds: unknown) {
     if (
@@ -356,6 +365,7 @@ export class Economy {
     return this.db.tx(async (sql) => {
       const opened: BoosterView[] = [];
       for (const id of packIds) opened.push(await this.openPack(sql, profileId, id));
+      await syncAchievements(sql, profileId, ['collection', 'holos', 'boosters']);
       return opened;
     });
   }

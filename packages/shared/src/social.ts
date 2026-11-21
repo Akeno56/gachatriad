@@ -1,5 +1,5 @@
 import type { Card, Rules } from '@gacha-triad/engine';
-import type { CorrespondenceHours } from './platform';
+import { ACHIEVEMENTS, type CorrespondenceHours } from './platform';
 export interface TitleView {
   id: string;
   name: string;
@@ -25,42 +25,11 @@ export const TITLES = [
     rank: 1,
     requirement: 'Reach first place on the human Ranked ladder after at least 5 ranked duels.',
   },
-  {
-    id: 'card-player',
-    name: 'Card Player',
-    achievement: 'first-duel',
-    requirement: 'Complete your first duel.',
-  },
-  {
-    id: 'challenger',
-    name: 'Challenger',
-    achievement: 'first-win',
-    requirement: 'Win your first duel.',
-  },
-  {
-    id: 'rising-challenger',
-    name: 'Rising Challenger',
-    achievement: 'ten-wins',
-    requirement: 'Win 10 duels.',
-  },
-  {
-    id: 'professional',
-    name: 'Professional Player',
-    achievement: 'hundred-wins',
-    requirement: 'Win 100 duels.',
-  },
-  {
-    id: 'chain-reaction',
-    name: 'Chain Reaction',
-    achievement: 'combo',
-    requirement: 'Make two Combo captures in one turn.',
-  },
-  {
-    id: 'collector',
-    name: 'Card Collector',
-    achievement: 'collector',
-    requirement: 'Collect 50 characters.',
-  },
+  ...ACHIEVEMENTS.flatMap(({ id, description, reward }) =>
+    reward.kind === 'title'
+      ? [{ id: reward.id, name: reward.name, achievement: id, requirement: description }]
+      : [],
+  ),
   {
     id: 'silver-tactician',
     name: 'Silver Tactician',
