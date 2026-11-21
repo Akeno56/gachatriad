@@ -222,7 +222,9 @@ def ember_frame(x, y, palette):
 
 def save_static(name, pixels, size):
     image = Image.fromarray(np.uint8(np.clip(pixels, 0, 1) * 255))
-    image.resize(size, Image.Resampling.LANCZOS).save(OUTPUT / f"{name}.webp", quality=91, method=6)
+    # Box sampling keeps the transparent portrait opening free of ringing.
+    resample = Image.Resampling.BOX if image.mode == "RGBA" else Image.Resampling.LANCZOS
+    image.resize(size, resample).save(OUTPUT / f"{name}.webp", quality=91, method=6)
 
 
 def save_themes():
