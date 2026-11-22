@@ -556,7 +556,7 @@ test('schedules custom lobby events and follows a public table link at desktop s
     const events = host.page.getByRole('dialog', { name: 'Manage lobby events' });
     await events.getByLabel('Event name').fill('Elemental Open Table');
     const times = await host.page.evaluate(() =>
-      [24, 27].map((hours) => {
+      [-1, 3].map((hours) => {
         const now = new Date();
         return new Date(now.getTime() + (hours * 60 - now.getTimezoneOffset()) * 60_000)
           .toISOString()
@@ -568,6 +568,11 @@ test('schedules custom lobby events and follows a public table link at desktop s
     await events.getByRole('combobox', { name: 'Rules', exact: true }).selectOption('custom');
     await events.getByRole('combobox', { name: 'Visibility' }).selectOption('allOpen');
     await events.getByRole('checkbox', { name: 'Elemental' }).check();
+    await events.getByRole('button', { name: 'Add reward' }).click();
+    await events.getByRole('button', { name: 'Add reward' }).click();
+    await events.getByLabel('Reward type').last().selectOption('title');
+    await events.getByLabel('Title text').fill('Master of the Open Table');
+    await events.getByLabel('Objective').last().selectOption('most-wins');
     await events.getByRole('button', { name: 'Schedule event' }).click();
     await expect(events.getByRole('status')).toHaveText('Lobby event scheduled.');
     await expect(opponent.page.getByRole('region', { name: 'Elemental Open Table' })).toBeVisible();
@@ -579,11 +584,10 @@ test('schedules custom lobby events and follows a public table link at desktop s
     const featured = host.page.getByRole('region', { name: 'Elemental Community Table' });
     await expect(featured).toContainText('Elemental');
     await expect(featured).toContainText('Combo');
-    await featured.getByRole('button', { name: 'Set up featured table' }).click();
-    await expect(host.page.getByRole('combobox', { name: 'Visibility' })).toHaveValue('allOpen');
-    await host.page.getByRole('textbox', { name: 'Lobby name' }).fill('All Open practice table');
-    await host.page.getByRole('button', { name: 'Open lobby · 1/2' }).click();
-    const row = host.page.getByRole('article').filter({ hasText: 'All Open practice table' });
+    await expect(featured).toContainText('Master of the Open Table');
+    await featured.getByRole('button', { name: 'Open event table' }).click();
+    const row = host.page.getByRole('article').filter({ hasText: 'Elemental Community Table' });
+    await expect(row).toContainText('All Open');
     await expect(row).toContainText('No trade');
     await host.context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await row.getByRole('button', { name: 'Share table' }).click();
@@ -653,7 +657,7 @@ test('schedules custom lobby events and follows a public table link at desktop s
     await expect(
       look.getByRole('heading', { name: 'Cette table n’est plus disponible.' }),
     ).toBeVisible();
-    await expect(look.getByText('All Open practice table', { exact: true })).toHaveCount(0);
+    await expect(look.getByText('Elemental Community Table', { exact: true })).toHaveCount(0);
     await expect(look.getByRole('link', { name: 'Observer' })).toHaveCount(0);
     await look.getByRole('link', { name: 'Voir toutes les tables' }).click();
     await expect(look.getByRole('region', { name: 'Elemental Community Table' })).toBeVisible();

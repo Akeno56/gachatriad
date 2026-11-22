@@ -432,6 +432,27 @@
   padding-block: 8px;
   border-bottom: 1px solid #52688b;
 }
+.lobby-event-prizes,
+.lobby-event-prize {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px 12px;
+  min-width: 0;
+}
+.lobby-event-prize {
+  flex-basis: 100%;
+  padding-block: 7px;
+  border-bottom: 1px solid #52688b;
+}
+.lobby-event-prize label {
+  flex: 1 1 135px;
+  min-width: 0;
+}
+.lobby-event-rewards {
+  margin: 8px 0 4px;
+  padding-inline-start: 18px;
+}
 .lobby-share-dialog {
   display: grid;
   gap: 12px;

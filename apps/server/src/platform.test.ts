@@ -1485,6 +1485,105 @@ it('pays 25 to the winner and 5 to the loser once for a full duel, including gue
   expect(resigned.prismReward).toBe(0);
   expect((await ok<ProfileView>(a, '/profile')).prisms).toBe(prior);
 });
+it('settles several event rewards once using completed event matches and equips a custom title', async () => {
+  const a = await user(true),
+    b = await user(true),
+    outsider = await user(true);
+  await platform.db.read((sql) =>
+    sql(
+      'INSERT INTO server_admins(auth_user_id) SELECT auth_user_id FROM profile_accounts WHERE profile_id=$1 AND is_primary',
+      [a.profile.id],
+    ),
+  );
+  const id = crypto.randomUUID();
+  const event = {
+    id,
+    name: 'Event rewards test',
+    startsAt: Date.now() - 1000,
+    endsAt: Date.now() + 120_000,
+    prizes: [
+      { goal: 'play-one', reward: { kind: 'boosters', amount: 1 } },
+      { goal: 'win-one', reward: { kind: 'prisms', amount: 40 } },
+      { goal: 'most-wins', reward: { kind: 'title', name: 'Keeper of the Astral Table!' } },
+      { goal: 'most-losses', reward: { kind: 'prisms', amount: 10 } },
+      { goal: 'most-played', reward: { kind: 'prisms', amount: 5 } },
+    ],
+  };
+  expect((await request(b, '/admin/lobby-events', event)).statusCode).toBe(403);
+  await ok(a, '/admin/lobby-events', event);
+  const { lobbyId } = await ok<{ lobbyId: string }>(a, '/lobbies', {
+    mode: 'ranked',
+    eventId: id,
+    rules: { allOpen: true },
+  });
+  const { matchId } = await ok<{ matchId: string }>(b, `/lobbies/${lobbyId}/join`, {});
+  const [initial] = await platform.db.read((sql) =>
+    sql<{ state: GameState; mode: string; lobby_event_id: string }>(
+      'SELECT state,mode,lobby_event_id FROM matches WHERE id=$1',
+      [matchId],
+    ),
+  );
+  expect(initial).toMatchObject({
+    mode: 'custom',
+    lobby_event_id: id,
+    state: { rules: { threeOpen: true, allOpen: false } },
+  });
+  expect((await request(a, `/admin/lobby-events/${id}`, event)).statusCode).toBe(409);
+  let plan: Move[] | undefined;
+  for (let seed = 0; seed < 100 && !plan; seed++) {
+    let state = initial.state;
+    const random = seededRandom(seed),
+      moves = [];
+    while (state.status === 'playing') {
+      const options = legalMoves(state);
+      const move = options[Math.floor(random() * options.length)];
+      moves.push(move);
+      state = applyMove(state, move);
+    }
+    if (state.board.filter((cell) => cell?.owner === 0).length + state.hands[0].length !== 5)
+      plan = moves;
+  }
+  expect(plan).toHaveLength(9);
+  for (const [version, move] of plan!.entries())
+    await ok(move.player === 0 ? a : b, `/matches/${matchId}/move`, { ...move, version });
+  const result = await ok<MatchView>(a, `/matches/${matchId}`);
+  const winner = result.winner === result.seat ? a : b;
+  const loser = winner === a ? b : a;
+  const forfeit = await ok<{ lobbyId: string }>(outsider, '/lobbies', {
+    mode: 'custom',
+    eventId: id,
+  });
+  const abandoned = await ok<{ matchId: string }>(a, `/lobbies/${forfeit.lobbyId}/join`, {});
+  await ok(a, `/matches/${abandoned.matchId}/resign`, {});
+  const wallets = await Promise.all(
+    [winner, loser].map(async (p) => (await ok<ProfileView>(p, '/profile')).prisms),
+  );
+  const packs = await Promise.all(
+    [winner, loser, outsider].map(async (p) => (await ok<unknown[]>(p, '/boosters')).length),
+  );
+  await platform.db.read((sql) =>
+    sql('UPDATE lobby_events SET ends_at=$2 WHERE id=$1', [id, Date.now() - 1]),
+  );
+  expect(await platform.lobbyEvents.settle()).toBe(true);
+  expect(await platform.lobbyEvents.settle()).toBe(false);
+  expect((await ok<ProfileView>(winner, '/profile')).prisms).toBe(wallets[0] + 45);
+  expect((await ok<ProfileView>(loser, '/profile')).prisms).toBe(wallets[1] + 15);
+  for (const [index, p] of [winner, loser, outsider].entries())
+    expect(await ok<unknown[]>(p, '/boosters')).toHaveLength(
+      packs[index] + (p === outsider ? 0 : 1),
+    );
+  const title = (await platform.store.playerProfile(winner.profile.id)).titles.find(
+    (t) => t.name === 'Keeper of the Astral Table!',
+  );
+  expect(title?.unlocked).toBe(true);
+  await ok(winner, '/profile/title', { titleId: title!.id });
+  expect((await platform.store.playerProfile(winner.profile.id)).title).toBe(
+    'Keeper of the Astral Table!',
+  );
+  expect(
+    (await request(loser, '/profile/title', { titleId: title!.id })).statusCode,
+  ).toBeGreaterThanOrEqual(400);
+});
 it('restricts bot status and mutations to explicit registered administrators and isolates host moderation', async () => {
   const guest = await user(),
     account = await user(true);

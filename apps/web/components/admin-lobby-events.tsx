@@ -2,12 +2,19 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { supportsTradeOne } from '@gacha-triad/engine';
-import type { LobbyEvent } from '@gacha-triad/shared/platform';
+import {
+  LOBBY_EVENT_GOALS,
+  type LobbyEvent,
+  type LobbyEventGoal,
+  type LobbyEventPrize,
+  type LobbyEventReward,
+} from '@gacha-triad/shared/platform';
 import { api } from '../lib/platform';
 import { publishSiteUpdate } from '../lib/site-updates';
 import { LocaleView, LocalizedDate, NoTranslate } from './i18n';
 import { MATCH_RULE_PRESETS, MatchRules, type MatchRulesPreset } from './rule-options';
 import { Button, GameDialog } from './ui';
+import { useSession } from './session';
 
 function localTime(value: number) {
   const date = new Date(value);
@@ -30,6 +37,43 @@ const dateOptions = {
   minute: '2-digit',
 } as const;
 
+const goalNames: Record<LobbyEventGoal, string> = {
+  'play-one': 'Play one match',
+  'win-one': 'Win one match',
+  'most-played': 'Play the most matches',
+  'most-wins': 'Win the most matches',
+  'most-losses': 'Lose the most matches',
+};
+
+export function LobbyEventRewards({ prizes }: { prizes: LobbyEventPrize[] }) {
+  if (!prizes.length) return null;
+  return (
+    <LocaleView>
+      <ul className="lobby-event-rewards">
+        {prizes.map(({ goal, reward }, index) => (
+          <li key={index}>
+            <strong>{goalNames[goal]}</strong>
+            {' · '}
+            {reward.kind === 'title' ? (
+              <NoTranslate>{reward.name}</NoTranslate>
+            ) : reward.kind === 'prisms' ? (
+              `${reward.amount} Stellar Prisms`
+            ) : reward.amount === 1 ? (
+              '1 Universe I booster'
+            ) : (
+              `${reward.amount} Universe I boosters`
+            )}
+          </li>
+        ))}
+      </ul>
+      <small>
+        Complete matches against players before the event ends. Rewards are granted after the event.
+        Tied leaders share the reward.
+      </small>
+    </LocaleView>
+  );
+}
+
 export function LobbyEventDates({ event }: { event: LobbyEvent }) {
   return (
     <span>
@@ -41,12 +85,14 @@ export function LobbyEventDates({ event }: { event: LobbyEvent }) {
 }
 
 export function AdminLobbyEvents({ events }: { events: LobbyEvent[] }) {
+  const { refreshProfile } = useSession();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<LobbyEvent>();
   const [cancelling, setCancelling] = useState<LobbyEvent>();
   const [preset, setPreset] = useState<MatchRulesPreset>('standard');
   const [rules, setRules] = useState(MATCH_RULE_PRESETS.standard.rules);
   const [trade, setTrade] = useState(false);
+  const [prizes, setPrizes] = useState<LobbyEventPrize[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
@@ -63,6 +109,7 @@ export function AdminLobbyEvents({ events }: { events: LobbyEvent[] }) {
     setPreset(event ? 'custom' : 'standard');
     setRules(event?.rules ?? MATCH_RULE_PRESETS.standard.rules);
     setTrade(event?.tradeRule === 'one');
+    setPrizes(event?.prizes ?? []);
     setError('');
     setStatus('');
   }
@@ -80,6 +127,7 @@ export function AdminLobbyEvents({ events }: { events: LobbyEvent[] }) {
         startsAt: eventTime(String(fields.get('event-start')), editing?.startsAt),
         endsAt: eventTime(String(fields.get('event-end')), editing?.endsAt),
         rules,
+        prizes,
         tradeRule: trade && tradeEligible ? 'one' : 'none',
         allowBots: fields.has('event-bots'),
       });
@@ -102,13 +150,18 @@ export function AdminLobbyEvents({ events }: { events: LobbyEvent[] }) {
       await api(`/admin/lobby-events/${event.id}`, undefined, 'DELETE');
       if (editing?.id === event.id) select();
       setCancelling(undefined);
-      publishSiteUpdate('lobby-events');
+      publishSiteUpdate('lobby-events', 'lobbies');
+      void refreshProfile();
       setStatus('Lobby event cancelled.');
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setBusy(false);
     }
+  }
+
+  function changePrize(index: number, change: Partial<LobbyEventPrize>) {
+    setPrizes((list) => list.map((entry, i) => (i === index ? { ...entry, ...change } : entry)));
   }
 
   return (
@@ -141,7 +194,15 @@ export function AdminLobbyEvents({ events }: { events: LobbyEvent[] }) {
                   <LobbyEventDates event={event} />
                 </div>
                 <div className="lobby-event-actions">
-                  <Button disabled={busy} onClick={() => select(event)}>
+                  <Button
+                    disabled={busy || event.locked}
+                    title={
+                      event.locked
+                        ? 'An event cannot be edited after its first table opens.'
+                        : undefined
+                    }
+                    onClick={() => select(event)}
+                  >
                     Edit event
                   </Button>
                   <Button variant="ghost" disabled={busy} onClick={() => setCancelling(event)}>
@@ -154,7 +215,7 @@ export function AdminLobbyEvents({ events }: { events: LobbyEvent[] }) {
         )}
         {cancelling && (
           <div className="lobby-event-actions">
-            <span>Cancel this lobby event?</span>
+            <span>Cancel this event and its pending rewards?</span>
             <Button disabled={busy} onClick={() => void cancelEvent(cancelling)}>
               Confirm cancellation
             </Button>
@@ -216,6 +277,90 @@ export function AdminLobbyEvents({ events }: { events: LobbyEvent[] }) {
                 Trade One
               </label>
             </div>
+            <fieldset className="lobby-event-prizes">
+              <legend>Event rewards</legend>
+              {prizes.map(({ goal, reward }, index) => (
+                <div className="lobby-event-prize" key={index}>
+                  <label>
+                    Objective
+                    <select
+                      value={goal}
+                      onChange={(e) =>
+                        changePrize(index, { goal: e.target.value as LobbyEventGoal })
+                      }
+                    >
+                      {LOBBY_EVENT_GOALS.map((key) => (
+                        <option key={key} value={key}>
+                          {goalNames[key]}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Reward type
+                    <select
+                      value={reward.kind}
+                      onChange={(e) => {
+                        const kind = e.target.value as LobbyEventReward['kind'];
+                        changePrize(index, {
+                          reward: kind === 'title' ? { kind, name: '' } : { kind, amount: 1 },
+                        });
+                      }}
+                    >
+                      <option value="boosters">Universe I boosters</option>
+                      <option value="prisms">Stellar Prisms</option>
+                      <option value="title">Custom title</option>
+                    </select>
+                  </label>
+                  {reward.kind === 'title' ? (
+                    <label>
+                      Title text
+                      <input
+                        required
+                        maxLength={60}
+                        value={reward.name}
+                        onChange={(e) =>
+                          changePrize(index, { reward: { kind: 'title', name: e.target.value } })
+                        }
+                      />
+                    </label>
+                  ) : (
+                    <label>
+                      Amount
+                      <input
+                        required
+                        type="number"
+                        min={1}
+                        max={reward.kind === 'prisms' ? 1_000_000 : 100}
+                        value={reward.amount || ''}
+                        onChange={(e) =>
+                          changePrize(index, {
+                            reward: { kind: reward.kind, amount: Number(e.target.value) },
+                          })
+                        }
+                      />
+                    </label>
+                  )}
+                  <Button
+                    variant="ghost"
+                    onClick={() => setPrizes((list) => list.filter((_, i) => i !== index))}
+                  >
+                    Remove reward
+                  </Button>
+                </div>
+              ))}
+              <Button
+                disabled={prizes.length >= 10}
+                onClick={() =>
+                  setPrizes((list) => [
+                    ...list,
+                    { goal: 'play-one', reward: { kind: 'boosters', amount: 1 } },
+                  ])
+                }
+              >
+                Add reward
+              </Button>
+            </fieldset>
             <div className="lobby-event-actions">
               <Button type="submit" variant="primary" busy={busy}>
                 {editing ? 'Save event' : 'Schedule event'}

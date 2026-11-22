@@ -26,9 +26,25 @@ export interface LobbyPreset {
   tradeRule: 'one' | 'none';
   allowBots: boolean;
 }
+export const LOBBY_EVENT_GOALS = [
+  'play-one',
+  'win-one',
+  'most-played',
+  'most-wins',
+  'most-losses',
+] as const;
+export type LobbyEventGoal = (typeof LOBBY_EVENT_GOALS)[number];
+export type LobbyEventReward =
+  { kind: 'prisms' | 'boosters'; amount: number } | { kind: 'title'; name: string };
+export interface LobbyEventPrize {
+  goal: LobbyEventGoal;
+  reward: LobbyEventReward;
+}
 export interface LobbyEvent extends LobbyPreset {
   startsAt: number;
   endsAt: number;
+  prizes: LobbyEventPrize[];
+  locked: boolean;
 }
 export const isDraftMode = (mode: string) => mode === 'draft' || mode === 'shared-draft';
 export const isRatedMode = (mode: string): mode is RatedMode =>
@@ -131,6 +147,7 @@ export interface MatchView {
   };
 }
 export interface LobbyView {
+  lobbyEventId?: string | null;
   botStyle?: CpuStyle | null;
   allowBots: boolean;
   inviteOnly: boolean;

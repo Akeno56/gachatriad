@@ -55,6 +55,7 @@ import { draftPool } from './draft-packs';
 import { draftTurn, legalDraftCards, type SharedDraft } from './shared-draft';
 import { pruneDeck } from './inventory';
 import { titleName, titlesFor, awardRankTitles } from './titles';
+import { activeLobbyEvent } from './lobby-events';
 import { archiveReplay } from './replays';
 import {
   achievementViews,
@@ -100,6 +101,7 @@ interface ProfileRow {
   [key: string]: unknown;
 }
 type LobbyInput = {
+  eventId?: string;
   mode: Mode;
   name?: string;
   rules?: unknown;
@@ -108,6 +110,7 @@ type LobbyInput = {
   invitedProfile?: string;
 };
 interface MatchRow {
+  lobby_event_id: string | null;
   cpu_style: CpuStyle;
   shared_draft: SharedDraft | null;
   season: number;
@@ -142,6 +145,7 @@ interface MatchRow {
   departed: string[];
 }
 interface LobbyRow {
+  lobby_event_id: string | null;
   allow_bots: boolean;
   invited_profile: string | null;
   spectatable: boolean;
@@ -259,6 +263,7 @@ export class GameStore {
       '033_invitation_rules.sql',
       '034_achievement_rewards.sql',
       '035_lobby_events.sql',
+      '036_lobby_event_rewards.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>
@@ -770,6 +775,7 @@ export class GameStore {
       );
       return rows.map((r) => ({
         id: r.id,
+        lobbyEventId: r.lobby_event_id,
         name: r.name,
         host: r.host,
         botStyle: r.bot_style,
@@ -800,6 +806,15 @@ export class GameStore {
     return this.db.tx((sql) => this.createLobbyIn(sql, profile, input));
   }
   private async createLobbyIn(sql: Sql, profile: ProfileIdentity, input: LobbyInput) {
+    const event = input.eventId ? await activeLobbyEvent(sql, input.eventId) : null;
+    if (event)
+      input = {
+        mode: 'custom',
+        name: event.name,
+        rules: event.rules,
+        tradeRule: event.tradeRule,
+        allowBots: event.allowBots,
+      };
     const { id } = profile;
     const mode = input.mode;
     if (!isRatedMode(mode) && !['casual', 'custom', 'roulette'].includes(mode))
@@ -852,7 +867,7 @@ export class GameStore {
     }
     const lobbyId = randomUUID();
     await sql(
-      "INSERT INTO lobbies(id,host_id,name,mode,rules,trade_rule,status,allow_bots,invited_profile,spectatable) VALUES($1,$2,$3,$4,$5::jsonb,$6,'waiting',$7,$8,$9)",
+      "INSERT INTO lobbies(id,host_id,name,mode,rules,trade_rule,status,allow_bots,invited_profile,spectatable,lobby_event_id) VALUES($1,$2,$3,$4,$5::jsonb,$6,'waiting',$7,$8,$9,$10)",
       [
         lobbyId,
         id,
@@ -863,11 +878,15 @@ export class GameStore {
         allowBots,
         input.invitedProfile ?? null,
         !input.invitedProfile,
+        event?.id ?? null,
       ],
     );
+    if (event && !event.locked)
+      await sql('UPDATE lobby_events SET locked=true WHERE id=$1', [event.id]);
     return { lobbyId, matchId: null };
   }
   private async joinRow(sql: Sql, p: ProfileIdentity, lobby: LobbyRow) {
+    if (lobby.lobby_event_id) await activeLobbyEvent(sql, lobby.lobby_event_id);
     if (isRankedMode(lobby.mode)) {
       await this.rankedEligible(sql, p.id);
       await this.rankedEligible(sql, lobby.host_id);
@@ -918,6 +937,8 @@ export class GameStore {
       isRankedMode(lobby.mode) ? 'none' : lobby.trade_rule,
       decks,
     );
+    if (lobby.lobby_event_id)
+      await sql('UPDATE matches SET lobby_event_id=$1 WHERE id=$2', [lobby.lobby_event_id, mid]);
     await sql(
       "UPDATE lobbies SET guest_id=$1,status='playing',match_id=$2,rules=$3::jsonb WHERE id=$4",
       [p.id, mid, JSON.stringify(rules), lobby.id],
@@ -1371,8 +1392,10 @@ export class GameStore {
       const [host] = await sql<{ name: string }>('SELECT name FROM profiles WHERE id=$1', [
         m.player0,
       ]);
+      if (m.lobby_event_id)
+        await sql('UPDATE matches SET lobby_event_id=$1 WHERE id=$2', [m.lobby_event_id, next]);
       await sql(
-        "INSERT INTO lobbies(id,host_id,guest_id,name,mode,rules,trade_rule,status,match_id,allow_bots,spectatable) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7,'playing',$8,$9,COALESCE((SELECT spectatable AND invited_profile IS NULL FROM lobbies WHERE match_id=$10 LIMIT 1),false))",
+        "INSERT INTO lobbies(id,host_id,guest_id,name,mode,rules,trade_rule,status,match_id,allow_bots,spectatable,lobby_event_id) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7,'playing',$8,$9,COALESCE((SELECT spectatable AND invited_profile IS NULL FROM lobbies WHERE match_id=$10 LIMIT 1),false),$11)",
         [
           randomUUID(),
           m.player0,
@@ -1384,6 +1407,7 @@ export class GameStore {
           next,
           other.is_bot,
           id,
+          m.lobby_event_id,
         ],
       );
       await sql('UPDATE matches SET rematch_match_id=$1,version=version+1 WHERE id=$2', [next, id]);
@@ -1396,6 +1420,16 @@ export class GameStore {
   ): Promise<string | null> {
     if (match.mode === 'correspondence')
       return 'Send a new correspondence invitation to play again.';
+    if (
+      match.lobby_event_id &&
+      !(
+        await sql(
+          'SELECT 1 FROM lobby_events WHERE id=$1 AND NOT cancelled AND starts_at<=$2 AND ends_at>$2',
+          [match.lobby_event_id, Date.now()],
+        )
+      ).length
+    )
+      return 'This lobby event has ended.';
     if (isRatedMode(match.mode) && match.mode !== 'ranked-random')
       return 'Rated matches use matchmaking. Join the queue for your next game.';
     if (match.departed?.length)

@@ -23,7 +23,11 @@ import { BotStyle } from '../../components/bot-style';
 import { MATCH_RULE_PRESETS, RuleToggles, RuleVisibility } from '../../components/rule-options';
 import { Button, GameDialog } from '../../components/ui';
 import { appPath, serverURL } from '../../lib/connection';
-import { AdminLobbyEvents, LobbyEventDates } from '../../components/admin-lobby-events';
+import {
+  AdminLobbyEvents,
+  LobbyEventDates,
+  LobbyEventRewards,
+} from '../../components/admin-lobby-events';
 
 function Lobbies() {
   const { profile, revision, refreshProfile, error: connectionError } = useSession(),
@@ -45,12 +49,12 @@ function Lobbies() {
   const [allowBots, setAllowBots] = useAllowBots();
   const [presets, setPresets] = useState<LobbyPreset[]>([]);
   const [events, setEvents] = useState<LobbyEvent[]>([]);
+  const [eventClock, setEventClock] = useState(Date.now);
   const [presetName, setPresetName] = useState('');
   const [presetBusy, setPresetBusy] = useState(false);
   const [shareURL, setShareURL] = useState('');
   const [copyStatus, setCopyStatus] = useState('');
   const shareInput = useRef<HTMLInputElement>(null);
-  const setupHeading = useRef<HTMLHeadingElement>(null);
   const presetRevision = useRef(0);
   const tableReady = list?.table === sharedTable;
   const rows = tableReady ? list.rows : [];
@@ -90,7 +94,10 @@ function Lobbies() {
     let active = true;
     void api<LobbyEvent[]>('/lobby-events').then(
       (next) => {
-        if (active) setEvents(next);
+        if (active) {
+          setEvents(next);
+          setEventClock(Date.now());
+        }
       },
       () => {},
     );
@@ -99,16 +106,23 @@ function Lobbies() {
     };
   }, [profile?.id, sharedTable, eventRevision, revision]);
   useEffect(() => {
-    if (!events.length) return;
-    const expiresAt = Math.min(...events.map(({ endsAt }) => endsAt));
+    const next = events.reduce(
+      (time, event) =>
+        Math.min(
+          time,
+          event.startsAt > eventClock ? event.startsAt : Infinity,
+          event.endsAt > eventClock ? event.endsAt : Infinity,
+        ),
+      Infinity,
+    );
+    if (!Number.isFinite(next)) return;
     const timer = setTimeout(
-      () => {
-        setEvents((current) => current.filter(({ endsAt }) => endsAt > Date.now()));
-      },
-      Math.min(2_147_483_647, Math.max(0, expiresAt - Date.now())),
+      () => setEventClock(Date.now()),
+      Math.min(2_147_483_647, Math.max(0, next - Date.now())),
     );
     return () => clearTimeout(timer);
-  }, [events]);
+  }, [events, eventClock]);
+  const upcomingEvents = events.filter(({ endsAt }) => endsAt > eventClock);
   useEffect(() => {
     if (profile?.activeMatchId) router.push(`/?match=${profile.activeMatchId}`);
   }, [profile?.activeMatchId, router]);
@@ -172,7 +186,10 @@ function Lobbies() {
     setError('');
     try {
       const result = await api<{ matchId: string | null }>(path, body);
-      if (!result.matchId) publishSiteUpdate('lobbies');
+      if (!result.matchId) {
+        publishSiteUpdate('lobbies');
+        if ((body as { eventId?: string }).eventId) publishSiteUpdate('lobby-events');
+      }
       await refreshProfile();
       setCreate(false);
       if (result.matchId) router.push(`/?match=${result.matchId}`);
@@ -231,11 +248,11 @@ function Lobbies() {
         )}
         {sharedTable === null && profile?.isAdmin && (
           <div className="lobby-admin-tools">
-            <AdminLobbyEvents events={events} />
+            <AdminLobbyEvents events={upcomingEvents} />
           </div>
         )}
         {sharedTable === null &&
-          events.map((event) => (
+          upcomingEvents.map((event) => (
             <section
               className="menu-window featured-lobby"
               key={event.id}
@@ -255,17 +272,18 @@ function Lobbies() {
                   <span>{event.tradeRule === 'one' ? 'Trade One' : 'No trade'}</span>
                   <span>{event.allowBots ? 'Bots allowed' : 'Humans only'}</span>
                 </div>
+                <LobbyEventRewards prizes={event.prizes} />
               </div>
               <Button
-                disabled={createBlocked || (event.tradeRule === 'one' && !profile?.registered)}
-                onClick={() => {
-                  applyPreset(event);
-                  setName(event.name);
-                  setCreate(true);
-                  requestAnimationFrame(() => setupHeading.current?.focus());
-                }}
+                disabled={
+                  busy ||
+                  createBlocked ||
+                  event.startsAt > eventClock ||
+                  (event.tradeRule === 'one' && !profile?.registered)
+                }
+                onClick={() => void enter('/lobbies', { mode: 'custom', eventId: event.id })}
               >
-                Set up featured table
+                {event.startsAt > eventClock ? 'Scheduled' : 'Open event table'}
               </Button>
             </section>
           ))}
@@ -391,9 +409,7 @@ function Lobbies() {
                   });
                 }}
               >
-                <h2 tabIndex={-1} ref={setupHeading}>
-                  Custom table setup
-                </h2>
+                <h2>Custom table setup</h2>
                 <div className="queue-options">
                   {(
                     [
@@ -616,6 +632,7 @@ function Lobbies() {
                     <span key={r}>{r}</span>
                   ))}
                   <span>{row.tradeRule === 'one' ? 'Trade One' : 'No trade'}</span>
+                  {row.lobbyEventId && <span>Event table</span>}
                   <span>
                     {row.inviteOnly
                       ? 'Friend invitation'

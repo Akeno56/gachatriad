@@ -708,7 +708,7 @@ export async function createPlatform(
     const p = await profile(req);
     if (!p.isAdmin) throw new GameError('Administrator access required.', 403);
     await lobbyEvents.cancel(id(req));
-    notifySite(req, p.id, [], ['lobby-events']);
+    notifySite(req, p.id, ['profile'], ['lobby-events', 'lobbies']);
     return { ok: true };
   });
   app.get('/api/achievements', async (req) => store.achievements((await profile(req)).id));
@@ -935,13 +935,20 @@ export async function createPlatform(
       const b = body(req);
       const result = await store.createLobby(p, {
         mode: b.mode as Mode,
+        eventId: typeof b.eventId === 'string' ? b.eventId : undefined,
         name: typeof b.name === 'string' ? b.name : undefined,
         rules: b.rules,
         tradeRule: typeof b.tradeRule === 'string' ? b.tradeRule : undefined,
         allowBots: typeof b.allowBots === 'boolean' ? b.allowBots : undefined,
       });
       if (result.matchId) notify();
-      else notifySite(req, p.id, ['profile'], ['lobbies']);
+      else
+        notifySite(
+          req,
+          p.id,
+          ['profile'],
+          typeof b.eventId === 'string' ? ['lobbies', 'lobby-events'] : ['lobbies'],
+        );
       return result;
     },
   );
@@ -1074,6 +1081,7 @@ export async function createPlatform(
   });
   let ticking = false,
     lastBots = 0,
+    lastLobbyEvents = 0,
     lastGuestCleanup = Date.now();
   const timer =
     options.timers === false
@@ -1083,6 +1091,10 @@ export async function createPlatform(
           ticking = true;
           try {
             let changed = (await store.tick()).length > 0;
+            if (Date.now() - lastLobbyEvents > 5000) {
+              lastLobbyEvents = Date.now();
+              changed = (await db.background(() => lobbyEvents.settle())) || changed;
+            }
             if (Date.now() - lastGuestCleanup > 300000) {
               lastGuestCleanup = Date.now();
               changed = (await guests.cleanup()) > 0 || changed;
@@ -1133,5 +1145,6 @@ export async function createPlatform(
     security,
     review,
     puzzles,
+    lobbyEvents,
   };
 }
