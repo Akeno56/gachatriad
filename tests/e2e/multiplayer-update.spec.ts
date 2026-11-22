@@ -514,13 +514,25 @@ test('fits French correspondence invitations and follows turn reminders in Socia
     await expect(other.page.locator('.social-indicator')).toBeVisible();
     await resume(other).click();
     await expect(other.page).toHaveURL(new RegExp(`correspondence=${matchId}$`));
+    await mover.page.goto(`/?correspondence=${matchId}`);
+    const board = mover.page.locator('section.match');
+    await expect(board).toBeVisible();
+    const brand = mover.page.locator('.system-brand > a');
+    await expect(brand).toHaveAttribute('href', '/play/');
+    await brand.click();
+    await expect(mover.page).toHaveURL(/\/play\/$/);
+    await expect(board).toHaveCount(0);
+    expect(await platform.store.view(other.profile.id, matchId)).toMatchObject({
+      status: 'playing',
+      version: match.version + 1,
+    });
   } finally {
     await a.context.close();
     await b.context.close();
   }
 });
 
-test('sets up a featured table and follows its public link at desktop sizes', async ({
+test('schedules custom lobby events and follows a public table link at desktop sizes', async ({
   browser,
 }, info) => {
   test.skip(info.project.name !== 'desktop');
@@ -528,9 +540,44 @@ test('sets up a featured table and follows its public link at desktop sizes', as
   const opponent = await player(browser);
   const spectator = await browser.newContext({ baseURL: 'http://127.0.0.1:3000' });
   try {
-    await host.page.goto('/lobbies/');
-    const featured = host.page.getByRole('region', { name: 'All Open Night' });
-    await expect(featured).toContainText('20:00–23:00 Paris time');
+    await platform.db.read((sql) =>
+      sql(
+        'INSERT INTO server_admins(auth_user_id) SELECT auth_user_id FROM profile_accounts WHERE profile_id=$1 AND is_primary',
+        [host.profile.id],
+      ),
+    );
+    await opponent.request('/admin/lobby-events', {}, 403);
+    await Promise.all([host.page.goto('/lobbies/'), opponent.page.goto('/lobbies/')]);
+    const admin = host.page.getByRole('button', { name: 'Manage lobby events' });
+    await expect(admin).toBeVisible();
+    await expect(opponent.page.getByRole('button', { name: 'Manage lobby events' })).toHaveCount(0);
+    await expect(host.page.locator('.featured-lobby')).toHaveCount(0);
+    await admin.click();
+    const events = host.page.getByRole('dialog', { name: 'Manage lobby events' });
+    await events.getByLabel('Event name').fill('Elemental Open Table');
+    const times = await host.page.evaluate(() =>
+      [24, 27].map((hours) => {
+        const now = new Date();
+        return new Date(now.getTime() + (hours * 60 - now.getTimezoneOffset()) * 60_000)
+          .toISOString()
+          .slice(0, 16);
+      }),
+    );
+    await events.getByLabel('Starts', { exact: true }).fill(times[0]);
+    await events.getByLabel('Ends', { exact: true }).fill(times[1]);
+    await events.getByRole('combobox', { name: 'Rules', exact: true }).selectOption('custom');
+    await events.getByRole('combobox', { name: 'Visibility' }).selectOption('allOpen');
+    await events.getByRole('checkbox', { name: 'Elemental' }).check();
+    await events.getByRole('button', { name: 'Schedule event' }).click();
+    await expect(events.getByRole('status')).toHaveText('Lobby event scheduled.');
+    await expect(opponent.page.getByRole('region', { name: 'Elemental Open Table' })).toBeVisible();
+    await events.getByRole('button', { name: 'Edit event' }).click();
+    await events.getByLabel('Event name').fill('Elemental Community Table');
+    await events.getByRole('button', { name: 'Save event' }).click();
+    await expect(events.getByRole('status')).toHaveText('Lobby event updated.');
+    await events.getByRole('button', { name: 'Close dialog' }).click();
+    const featured = host.page.getByRole('region', { name: 'Elemental Community Table' });
+    await expect(featured).toContainText('Elemental');
     await expect(featured).toContainText('Combo');
     await featured.getByRole('button', { name: 'Set up featured table' }).click();
     await expect(host.page.getByRole('combobox', { name: 'Visibility' })).toHaveValue('allOpen');
@@ -567,6 +614,9 @@ test('sets up a featured table and follows its public link at desktop sizes', as
     await expect(join).toBeEnabled();
     await join.click();
     await expect(look.getByRole('link', { name: 'Spectate' })).toBeVisible();
+    const liveMatch = (await look
+      .getByRole('link', { name: 'Spectate' })
+      .getAttribute('href'))!.split('spectate=')[1];
 
     await look.getByRole('link', { name: 'Browse all tables' }).click();
     await look.getByRole('link', { name: 'Read the rulebook instead' }).click();
@@ -578,9 +628,7 @@ test('sets up a featured table and follows its public link at desktop sizes', as
         await look.getByRole('button', { name: 'Language: English', exact: true }).click();
         await look.getByRole('menuitemradio', { name: 'Français' }).click();
       }
-      const card = look.getByRole('region', {
-        name: language === 'fr' ? 'Soirée Mains ouvertes' : 'All Open Night',
-      });
+      const card = look.getByRole('region', { name: 'Elemental Community Table' });
       for (const [width, height] of [
         [1280, 720],
         [1366, 768],
@@ -607,6 +655,15 @@ test('sets up a featured table and follows its public link at desktop sizes', as
     ).toBeVisible();
     await expect(look.getByText('All Open practice table', { exact: true })).toHaveCount(0);
     await expect(look.getByRole('link', { name: 'Observer' })).toHaveCount(0);
+    await look.getByRole('link', { name: 'Voir toutes les tables' }).click();
+    await expect(look.getByRole('region', { name: 'Elemental Community Table' })).toBeVisible();
+    await host.request(`/matches/${liveMatch}/resign`, {});
+    await host.page.goto('/lobbies/');
+    await admin.click();
+    await events.getByRole('button', { name: 'Cancel event' }).click();
+    await events.getByRole('button', { name: 'Confirm cancellation' }).click();
+    await expect(events.getByRole('status')).toHaveText('Lobby event cancelled.');
+    await expect(look.getByRole('region', { name: 'Elemental Community Table' })).toHaveCount(0);
   } finally {
     await host.context.close();
     await opponent.context.close();

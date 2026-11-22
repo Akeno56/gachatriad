@@ -258,6 +258,7 @@ export class GameStore {
       '032_cosmetic_achievements.sql',
       '033_invitation_rules.sql',
       '034_achievement_rewards.sql',
+      '035_lobby_events.sql',
     ])
       await this.db.exec(await readFile(resolve(root, 'apps/server/migrations', file), 'utf8'));
     await this.db.read((sql) =>

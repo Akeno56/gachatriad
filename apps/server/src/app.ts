@@ -29,6 +29,7 @@ import { Feedback } from './feedback';
 import { DailyPuzzles } from './daily-puzzle';
 import { DeckLoadouts } from './deck-loadouts';
 import { LobbyPresets } from './lobby-presets';
+import { LobbyEvents } from './lobby-events';
 import { PlayerJourney } from './journey';
 import { MatchReplays } from './replays';
 import { ProfileCustomizations } from './customization';
@@ -54,6 +55,7 @@ export async function createPlatform(
   const puzzles = new DailyPuzzles(db, (await auth.$context).secret);
   const loadouts = new DeckLoadouts(db);
   const lobbyPresets = new LobbyPresets(db);
+  const lobbyEvents = new LobbyEvents(db);
   const journey = new PlayerJourney(db);
   const replays = new MatchReplays(db);
   const customizations = new ProfileCustomizations(db);
@@ -677,6 +679,37 @@ export async function createPlatform(
     if (table !== undefined && (typeof table !== 'string' || !table || table.length > 100))
       return [];
     return store.lobbies(false, table);
+  });
+  app.get('/api/lobby-events', async (req) => {
+    await profile(req);
+    return lobbyEvents.list();
+  });
+  app.post('/api/admin/lobby-events', async (req) => {
+    const p = await profile(req);
+    if (!p.isAdmin) throw new GameError('Administrator access required.', 403);
+    const input = body(req);
+    if (
+      typeof input.id !== 'string' ||
+      !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(input.id)
+    )
+      throw new GameError('Invalid lobby event ID.');
+    const event = await lobbyEvents.save(input.id, input, true);
+    notifySite(req, p.id, [], ['lobby-events']);
+    return event;
+  });
+  app.post('/api/admin/lobby-events/:id', async (req) => {
+    const p = await profile(req);
+    if (!p.isAdmin) throw new GameError('Administrator access required.', 403);
+    const event = await lobbyEvents.save(id(req), body(req), false);
+    notifySite(req, p.id, [], ['lobby-events']);
+    return event;
+  });
+  app.delete('/api/admin/lobby-events/:id', async (req) => {
+    const p = await profile(req);
+    if (!p.isAdmin) throw new GameError('Administrator access required.', 403);
+    await lobbyEvents.cancel(id(req));
+    notifySite(req, p.id, [], ['lobby-events']);
+    return { ok: true };
   });
   app.get('/api/achievements', async (req) => store.achievements((await profile(req)).id));
   app.post('/api/achievements/:id/claim', async (req) => {

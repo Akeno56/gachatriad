@@ -26,6 +26,10 @@ export interface LobbyPreset {
   tradeRule: 'one' | 'none';
   allowBots: boolean;
 }
+export interface LobbyEvent extends LobbyPreset {
+  startsAt: number;
+  endsAt: number;
+}
 export const isDraftMode = (mode: string) => mode === 'draft' || mode === 'shared-draft';
 export const isRatedMode = (mode: string): mode is RatedMode =>
   (RATED_MODES as readonly string[]).includes(mode);
@@ -57,6 +61,7 @@ export type SiteArea =
   | 'replays'
   | 'decks'
   | 'lobbies'
+  | 'lobby-events'
   | 'ladder';
 export interface MatchView {
   cpuStyle?: CpuStyle;

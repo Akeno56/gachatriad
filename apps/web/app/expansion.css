@@ -371,6 +371,67 @@
 .featured-lobby .rule-badges {
   flex-wrap: wrap;
 }
+.featured-lobby > div,
+.lobby-event-list li > div:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.lobby-admin-tools {
+  display: flex;
+  justify-content: end;
+  margin-block: 6px 12px;
+}
+.lobby-events-dialog {
+  width: min(42rem, calc(100vw - 24px));
+}
+.lobby-events-dialog h2 {
+  padding-inline-end: 36px;
+}
+.lobby-events-dialog :is(h3, p) {
+  margin-block: 8px;
+}
+.lobby-event-form,
+.lobby-event-form label:not(.check-label),
+.lobby-event-list li > div:first-child {
+  display: grid;
+  gap: 5px;
+}
+.lobby-event-form {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+  gap: 12px;
+}
+.lobby-event-form .rule-toggles {
+  gap: 8px 16px;
+  margin: 8px 0 0;
+}
+.lobby-event-times {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 8px;
+}
+.lobby-event-times input {
+  width: 100%;
+  min-width: 0;
+}
+.lobby-event-list {
+  padding: 0;
+  list-style: none;
+}
+.lobby-event-list li,
+.lobby-event-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+.lobby-event-list li {
+  justify-content: space-between;
+  padding-block: 8px;
+  border-bottom: 1px solid #52688b;
+}
 .lobby-share-dialog {
   display: grid;
   gap: 12px;

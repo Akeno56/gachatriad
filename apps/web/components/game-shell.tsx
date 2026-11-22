@@ -2,9 +2,17 @@
 import { LocaleView, LanguageSelector } from './i18n';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { FeedbackPanel } from './feedback-panel';
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import {
+  createContext,
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { RetroAudio, type Sound, type MusicScene } from '../lib/audio';
 import { SessionProvider, AccountMenu } from './session';
 import { ServerConnection } from './server-connection';
@@ -29,6 +37,18 @@ const AudioContext = createContext<(sound: Sound) => void>(() => {});
 const MusicSceneContext = createContext<(scene: MusicScene) => void>(() => {});
 export const useGameAudio = () => useContext(AudioContext);
 export const useMusicScene = () => useContext(MusicSceneContext);
+function BrandLink({ href }: { href: '/' | '/play' }) {
+  return (
+    <LocaleView>
+      <Link href={href} aria-label="Gacha Triad home">
+        <strong>Gacha Triad</strong>
+      </Link>
+    </LocaleView>
+  );
+}
+function MatchAwareBrandLink() {
+  return <BrandLink href={useSearchParams().has('correspondence') ? '/play' : '/'} />;
+}
 export function GameShell({ children }: { children: React.ReactNode }) {
   // Static exports use trailing slashes; navigation targets omit them.
   const pathname = usePathname().replace(/\/+$/, '') || '/';
@@ -212,9 +232,9 @@ export function GameShell({ children }: { children: React.ReactNode }) {
                   </a>
                   <header ref={headerRoot} className="system-bar">
                     <div className="system-brand">
-                      <Link href="/" aria-label="Gacha Triad home">
-                        <strong>Gacha Triad</strong>
-                      </Link>
+                      <Suspense fallback={<BrandLink href="/" />}>
+                        <MatchAwareBrandLink />
+                      </Suspense>
                       <ReleaseNotes />
                     </div>
                     <button

@@ -4,7 +4,12 @@ import { LocaleView, NoTranslate } from '../../components/i18n';
 import Link from 'next/link';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { isRatedMode, type LobbyPreset, type LobbyView } from '@gacha-triad/shared/platform';
+import {
+  isRatedMode,
+  type LobbyEvent,
+  type LobbyPreset,
+  type LobbyView,
+} from '@gacha-triad/shared/platform';
 import { STANDARD, UNRANKED_RULES, supportsTradeOne, type Rules } from '@gacha-triad/engine';
 import { api } from '../../lib/platform';
 import { useSession } from '../../components/session';
@@ -18,14 +23,14 @@ import { BotStyle } from '../../components/bot-style';
 import { MATCH_RULE_PRESETS, RuleToggles, RuleVisibility } from '../../components/rule-options';
 import { Button, GameDialog } from '../../components/ui';
 import { appPath, serverURL } from '../../lib/connection';
-
-const featuredRules: Rules = { ...UNRANKED_RULES, threeOpen: false, allOpen: true };
+import { AdminLobbyEvents, LobbyEventDates } from '../../components/admin-lobby-events';
 
 function Lobbies() {
   const { profile, revision, refreshProfile, error: connectionError } = useSession(),
     router = useRouter();
   const sharedTable = useSearchParams().get('table');
   const lobbyRevision = useSiteRevision('lobbies');
+  const eventRevision = useSiteRevision('lobby-events');
   const [list, setList] = useState<{ table: string | null; rows: LobbyView[] }>(),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
@@ -39,6 +44,7 @@ function Lobbies() {
     [trade, setTrade] = useState(false);
   const [allowBots, setAllowBots] = useAllowBots();
   const [presets, setPresets] = useState<LobbyPreset[]>([]);
+  const [events, setEvents] = useState<LobbyEvent[]>([]);
   const [presetName, setPresetName] = useState('');
   const [presetBusy, setPresetBusy] = useState(false);
   const [shareURL, setShareURL] = useState('');
@@ -79,6 +85,30 @@ function Lobbies() {
       active = false;
     };
   }, [revision, profile?.id, lobbyRevision, sharedTable]);
+  useEffect(() => {
+    if (!profile || sharedTable !== null) return;
+    let active = true;
+    void api<LobbyEvent[]>('/lobby-events').then(
+      (next) => {
+        if (active) setEvents(next);
+      },
+      () => {},
+    );
+    return () => {
+      active = false;
+    };
+  }, [profile?.id, sharedTable, eventRevision, revision]);
+  useEffect(() => {
+    if (!events.length) return;
+    const expiresAt = Math.min(...events.map(({ endsAt }) => endsAt));
+    const timer = setTimeout(
+      () => {
+        setEvents((current) => current.filter(({ endsAt }) => endsAt > Date.now()));
+      },
+      Math.min(2_147_483_647, Math.max(0, expiresAt - Date.now())),
+    );
+    return () => clearTimeout(timer);
+  }, [events]);
   useEffect(() => {
     if (profile?.activeMatchId) router.push(`/?match=${profile.activeMatchId}`);
   }, [profile?.activeMatchId, router]);
@@ -199,32 +229,46 @@ function Lobbies() {
             </Link>
           </header>
         )}
-        {sharedTable === null && (
-          <section className="menu-window featured-lobby" aria-labelledby="featured-lobby-title">
-            <div>
-              <h2 id="featured-lobby-title">All Open Night</h2>
-              <p>Saturdays · 20:00–23:00 Paris time</p>
-              <div className="rule-badges">
-                {ruleNames(featuredRules).map((rule) => (
-                  <span key={rule}>{rule}</span>
-                ))}
-                <span>No trade</span>
-              </div>
-            </div>
-            <Button
-              disabled={createBlocked}
-              onClick={() => {
-                setRules(featuredRules);
-                setTrade(false);
-                setError('');
-                setCreate(true);
-                requestAnimationFrame(() => setupHeading.current?.focus());
-              }}
-            >
-              Set up featured table
-            </Button>
-          </section>
+        {sharedTable === null && profile?.isAdmin && (
+          <div className="lobby-admin-tools">
+            <AdminLobbyEvents events={events} />
+          </div>
         )}
+        {sharedTable === null &&
+          events.map((event) => (
+            <section
+              className="menu-window featured-lobby"
+              key={event.id}
+              aria-labelledby={`event-${event.id}`}
+            >
+              <div>
+                <h2 id={`event-${event.id}`}>
+                  <NoTranslate>{event.name}</NoTranslate>
+                </h2>
+                <p>
+                  <LobbyEventDates event={event} />
+                </p>
+                <div className="rule-badges">
+                  {ruleNames(event.rules).map((rule) => (
+                    <span key={rule}>{rule}</span>
+                  ))}
+                  <span>{event.tradeRule === 'one' ? 'Trade One' : 'No trade'}</span>
+                  <span>{event.allowBots ? 'Bots allowed' : 'Humans only'}</span>
+                </div>
+              </div>
+              <Button
+                disabled={createBlocked || (event.tradeRule === 'one' && !profile?.registered)}
+                onClick={() => {
+                  applyPreset(event);
+                  setName(event.name);
+                  setCreate(true);
+                  requestAnimationFrame(() => setupHeading.current?.focus());
+                }}
+              >
+                Set up featured table
+              </Button>
+            </section>
+          ))}
         {sharedTable === null && <LocalBots />}
         {waiting && sharedTable === null && (
           <div className="menu-window waiting-lobby" role="status">

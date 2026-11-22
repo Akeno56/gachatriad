@@ -29,7 +29,7 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>All Open Night in Lobbies.</li>
+          <li>Admins can schedule featured lobby events.</li>
           <li>Share links to public tables.</li>
           <li>Correspondence invitations and turn reminders in Social.</li>
           <li>Completed duels award 25 Prisms for a win, 13 for a draw, and 5 for a loss.</li>
