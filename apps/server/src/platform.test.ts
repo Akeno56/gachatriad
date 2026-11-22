@@ -1179,8 +1179,8 @@ it('a completed ranked draw releases all stakes and transfers no cards', async (
   }
   const result = await ok<MatchView>(a, `/matches/${matchId}`);
   expect(result.winner).toBe('draw');
-  expect(result.prismReward).toBe(25);
-  expect((await ok<MatchView>(b, `/matches/${matchId}`)).prismReward).toBe(25);
+  expect(result.prismReward).toBe(13);
+  expect((await ok<MatchView>(b, `/matches/${matchId}`)).prismReward).toBe(13);
   expect(result.trade.pending).toBe(false);
   expect((await ok<ProfileView>(a, '/profile')).inventory).toEqual(a.profile.inventory);
   expect((await ok<ProfileView>(b, '/profile')).inventory).toEqual(b.profile.inventory);
@@ -1440,7 +1440,7 @@ it('charges purchases atomically, rejects insufficient funds and replays a purch
     ),
   ).toHaveLength(2);
 });
-it('pays 50/25/10 once for a full duel, including guest players, and pays nothing for forfeits', async () => {
+it('pays 25 to the winner and 5 to the loser once for a full duel, including guests, and pays nothing for forfeits', async () => {
   const a = await user(),
     b = await user();
   const { lobbyId } = await ok<{ lobbyId: string }>(a, '/lobbies', { mode: 'casual' });
@@ -1473,7 +1473,7 @@ it('pays 50/25/10 once for a full duel, including guest players, and pays nothin
   }
   for (const c of [a, b]) {
     const m = await ok<MatchView>(c, `/matches/${matchId}`);
-    const expected = m.winner === 'draw' ? 25 : m.winner === m.seat ? 50 : 10;
+    const expected = m.winner === m.seat ? 25 : 5;
     expect(m.prismReward).toBe(expected);
     expect((await ok<ProfileView>(c, '/profile')).prisms).toBe(expected);
     await ok(c, `/matches/${matchId}/resign`, {});

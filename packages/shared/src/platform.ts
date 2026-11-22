@@ -196,9 +196,9 @@ export interface DeckLoadoutsView {
 export const ECONOMY = {
   currency: 'Stellar Prisms',
   packCost: 150,
-  winReward: 50,
-  drawReward: 25,
-  lossReward: 10,
+  winReward: 25,
+  drawReward: 13,
+  lossReward: 5,
   standardWeights: [50, 27, 17, 5, 1],
   starterWeights: [50, 35, 10, 5, 0],
   starterGuaranteedWeights: [0, 0, 2, 1, 0],

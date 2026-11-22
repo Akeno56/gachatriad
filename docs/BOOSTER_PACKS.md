@@ -26,7 +26,7 @@ Registered accounts can claim **one free Universe I booster per UTC calendar day
 
 ## Currency and direct purchases
 
-A completed nine-placement duel awards **50 Prisms for a win, 25 for a draw, 10 for a loss**. Guests participate. Forfeits, missed-turn forfeits and abandoned drafts pay nothing; bots receive no currency. Unique ledger references prevent repeat payouts. Real-money purchases and currency market listings are not implemented.
+A completed nine-placement duel awards **25 Prisms for a win, 13 for a draw, and 5 for a loss**. Guests participate. Forfeits, missed-turn forfeits and abandoned drafts pay nothing; bots receive no currency. Unique ledger references prevent repeat payouts. Real-money purchases and currency market listings are not implemented.
 
 The Cards album sells **Standard copies only**, for **50 / 125 / 200 / 300 / 500 Prisms** at rarities 1★–5★. Holo cannot be bought directly. The compact Buy button stays beside metadata. Confirmation displays cost and remaining balance. Server validation, atomic charging, ownership grants and durable request IDs prevent duplicate charges. A purchase does not replace the active deck.
 

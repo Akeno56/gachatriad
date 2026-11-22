@@ -32,6 +32,7 @@ export function ReleaseNotes() {
           <li>All Open Night in Lobbies.</li>
           <li>Share links to public tables.</li>
           <li>Correspondence invitations and turn reminders in Social.</li>
+          <li>Completed duels award 25 Prisms for a win, 13 for a draw, and 5 for a loss.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

@@ -8,6 +8,7 @@ import {
   type Stats,
 } from '@gacha-triad/engine';
 import { STARTER_DECK, CPU_DECK } from './index';
+import { ECONOMY } from './platform';
 const blueStats: Stats[] = [
   [2, 2, 2, 2],
   [2, 2, 2, 6],
@@ -170,6 +171,6 @@ export const TRAINING_STEPS: TrainingStep[] = [
     title: 'Random, Draft and your next duel',
     kind: 'random',
     before: states[9],
-    text: 'Random draws a legal hand from your available owned collection. Try a random training hand below. Draft lets you choose five cards from three private boosters. Shared Draft opens four shared boosters: players alternate picking five cards each from the same 20-card pool, then battle with All Open. Both modes have separate Elo ratings and leaderboards. Temporary cards never enter your collection. Roulette draws compatible rules; custom lobbies show their rules before joining. Normal completed duels pay 50/25/10 Stellar Prisms for a win/draw/loss; this lesson awards nothing. Your next step is Unranked matchmaking.',
+    text: `Random draws a legal hand from your collection. Draft uses private boosters. Shared Draft uses a shared pool. Roulette changes the rules each match. A completed duel pays ${ECONOMY.winReward} Stellar Prisms for a win, ${ECONOMY.drawReward} for a draw, or ${ECONOMY.lossReward} for a loss.`,
   },
 ];

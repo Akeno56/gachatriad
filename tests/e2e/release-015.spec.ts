@@ -400,7 +400,7 @@ test('shows saved win and draw rewards and returns to the main menu without awar
       });
       await finishWith(matchId!, target);
       const actual = await platform.store.view(a.profile.id, matchId!);
-      expect(actual.prismReward).toBe(target === 'draw' ? 25 : 50);
+      expect(actual.prismReward).toBe(target === 'draw' ? 13 : 25);
       await a.page.goto(`/?match=${matchId}`);
       const result = a.page.locator('.result-v15[open]');
       await expect(result.locator('h2')).toHaveText(target === 'draw' ? 'Draw' : 'Victory');

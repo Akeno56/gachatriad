@@ -219,7 +219,7 @@ try {
     /shuffle-or-boogie-ambient/,
   );
   const result = await api(clients[0], `/matches/${joined.matchId}`);
-  assert.ok([10, 25, 50].includes(result.prismReward));
+  assert.ok([5, 13, 25].includes(result.prismReward));
   await expect(pages[0].locator('.prism-reward')).toContainText(
     `${result.prismReward} Stellar Prisms`,
   );
