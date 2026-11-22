@@ -52,11 +52,13 @@ export async function api<T>(
           : {}),
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-      ...(method === 'GET' ? { signal: AbortSignal.timeout(15000) } : {}),
+      ...(method === 'GET' || path.endsWith('/requeue')
+        ? { signal: AbortSignal.timeout(15000) }
+        : {}),
     });
   } catch (error) {
     recordRequest(path, 0, started);
-    if (method === 'GET') throw new ApiError(unavailable, 503);
+    if (method === 'GET' || path.endsWith('/requeue')) throw new ApiError(unavailable, 503);
     throw error;
   }
   let result;

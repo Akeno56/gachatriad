@@ -215,8 +215,13 @@ test('shows the exact human Elo outcome and queues again without changing the de
     await b.page.goto(`/?match=${matchId}`);
     await expect(b.page.locator('.result-v15 h2')).toHaveText(/Defeat|Défaite/);
     await b.page.screenshot({ path: info.outputPath('ranked-defeat.png') });
+    const writes: string[] = [];
+    a.page.on('request', (request) => {
+      if (request.method() === 'POST') writes.push(new URL(request.url()).pathname);
+    });
     await result.getByRole('button', { name: 'Queue again', exact: true }).click();
     await expect(a.page.locator('.queue-status')).toBeVisible();
+    expect(writes).toEqual([`/api/matches/${matchId}/requeue`]);
     const after = await platform.store.profile(a.actor);
     expect(after.waitingLobby?.mode).toBe('ranked');
     expect(after.deck).toEqual(a.profile.deck);

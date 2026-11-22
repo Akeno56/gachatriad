@@ -16,13 +16,15 @@ import {
   clearToken,
   STATIC_BUILD,
 } from '../lib/connection';
+type ConnectionState = 'ready' | 'offline' | 'unavailable' | 'polling';
 const Context = createContext<{
   profile: ProfileView | null;
   error: string;
+  connection: ConnectionState;
   revision: number;
   socialRevision: number;
   battleChatRevision: number;
-  refresh: () => Promise<void>;
+  refresh: () => Promise<ProfileView | undefined>;
   refreshProfile: () => Promise<void>;
   refreshSocial: () => void;
   refreshBattleChat: () => void;
@@ -33,10 +35,11 @@ const Context = createContext<{
 }>({
   profile: null,
   error: '',
+  connection: 'ready',
   revision: 0,
   socialRevision: 0,
   battleChatRevision: 0,
-  refresh: async () => {},
+  refresh: async () => undefined,
   refreshProfile: async () => {},
   refreshSocial: () => {},
   refreshBattleChat: () => {},
@@ -51,6 +54,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<ProfileView | null>(null),
     [error, setError] = useState(''),
     [revision, setRevision] = useState(0);
+  const [offline, setOffline] = useState(false);
+  const [polling, setPolling] = useState(false);
   const [socialRevision, setSocialRevision] = useState(0);
   const [battleChatRevision, setBattleChatRevision] = useState(0);
   const refreshSocial = useCallback(() => setSocialRevision((value) => value + 1), []);
@@ -58,7 +63,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [accountOpen, setAccountOpen] = useState(false);
   const openAccount = useCallback(() => setAccountOpen(true), []),
     closeAccount = useCallback(() => setAccountOpen(false), []);
-  const pending = useRef<Promise<boolean> | null>(null);
+  const pending = useRef<Promise<ProfileView | undefined> | null>(null);
   const changingAccount = useRef(false);
   const readProfile = useCallback(async () => {
     if (!serverConfigured() || changingAccount.current) return;
@@ -83,10 +88,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         }
         setProfile(next);
         setError('');
-        return true;
+        return next;
       } catch (e) {
         setError((e as Error).message);
-        return false;
+        return undefined;
       } finally {
         pending.current = null;
       }
@@ -102,7 +107,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     await readFreshProfile();
   }, [readFreshProfile]);
   const refresh = useCallback(async () => {
-    if (await readFreshProfile()) setRevision((v) => v + 1);
+    const next = await readFreshProfile();
+    if (next) setRevision((v) => v + 1);
+    return next;
   }, [readFreshProfile]);
   const changeAccount = useCallback(
     async (work: () => Promise<unknown>) => {
@@ -153,8 +160,14 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     const visible = () => {
       if (!document.hidden) requestFullRefresh();
     };
+    const networkChanged = () => {
+      setOffline(!navigator.onLine);
+      if (navigator.onLine) visible();
+    };
+    setOffline(!navigator.onLine);
     document.addEventListener('visibilitychange', visible);
-    window.addEventListener('online', visible);
+    window.addEventListener('online', networkChanged);
+    window.addEventListener('offline', networkChanged);
     let idleTicks = 0;
     const timer = setInterval(() => {
       idleTicks = (idleTicks + 1) % 3;
@@ -169,7 +182,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       clearInterval(timer);
       clearInterval(duelFallback);
       document.removeEventListener('visibilitychange', visible);
-      window.removeEventListener('online', visible);
+      window.removeEventListener('online', networkChanged);
+      window.removeEventListener('offline', networkChanged);
     };
   }, [readFreshProfile, requestFullRefresh]);
   useEffect(() => {
@@ -205,16 +219,21 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     );
     socket.on('connect', () => {
       socketConnected.current = true;
+      setPolling(false);
       setRequestSocket(socket.id);
       requestFullRefresh();
     });
-    socket.on('disconnect', () => {
+    const usePolling = () => {
       socketConnected.current = false;
+      setPolling(true);
       setRequestSocket();
-    });
+    };
+    socket.on('connect_error', usePolling);
+    socket.on('disconnect', usePolling);
     return () => {
       socketConnected.current = false;
       setRequestSocket();
+      socket.off('disconnect', usePolling);
       socket.disconnect();
     };
   }, [profile?.id, profile?.registered, refreshSocial, refreshBattleChat, requestFullRefresh]);
@@ -224,6 +243,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         value={{
           profile,
           error,
+          connection: offline ? 'offline' : error ? 'unavailable' : polling ? 'polling' : 'ready',
           revision,
           socialRevision,
           battleChatRevision,

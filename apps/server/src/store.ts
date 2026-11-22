@@ -99,6 +99,14 @@ interface ProfileRow {
   default_deck: string[];
   [key: string]: unknown;
 }
+type LobbyInput = {
+  mode: Mode;
+  name?: string;
+  rules?: unknown;
+  tradeRule?: string;
+  allowBots?: boolean;
+  invitedProfile?: string;
+};
 interface MatchRow {
   cpu_style: CpuStyle;
   shared_draft: SharedDraft | null;
@@ -777,17 +785,10 @@ export class GameStore {
       ).length > 0
     );
   }
-  async createLobby(
-    profile: ProfileIdentity,
-    input: {
-      mode: Mode;
-      name?: string;
-      rules?: unknown;
-      tradeRule?: string;
-      allowBots?: boolean;
-      invitedProfile?: string;
-    },
-  ) {
+  async createLobby(profile: ProfileIdentity, input: LobbyInput) {
+    return this.db.tx((sql) => this.createLobbyIn(sql, profile, input));
+  }
+  private async createLobbyIn(sql: Sql, profile: ProfileIdentity, input: LobbyInput) {
     const { id } = profile;
     const mode = input.mode;
     if (!isRatedMode(mode) && !['casual', 'custom', 'roulette'].includes(mode))
@@ -809,55 +810,51 @@ export class GameStore {
       throw new GameError(
         'Trade One requires Closed visibility with Same, Plus and Combo enabled.',
       );
-    return this.db.tx(async (sql) => {
-      await this.busy(sql, id);
-      const [actor] = await sql<{ is_bot: boolean }>('SELECT is_bot FROM profiles WHERE id=$1', [
-        id,
-      ]);
-      if (isRankedMode(mode)) await this.rankedEligible(sql, id);
-      const allowBots =
-        input.invitedProfile || isRatedMode(mode) ? false : (input.allowBots ?? actor.is_bot);
-      if (!isDraftMode(mode)) await this.deck(sql, id, !!rules.random, mode);
-      if (mode !== 'custom') {
-        const ratingField = modeRatingField(mode);
-        const candidates = await sql<LobbyRow>(
-          `SELECT l.* FROM lobbies l JOIN profiles p ON p.id=l.host_id WHERE l.mode=$1 AND l.status='waiting' AND l.host_id<>$2 AND l.invited_profile IS NULL AND (l.allow_bots OR NOT $4) AND ($5 OR NOT p.is_bot) ORDER BY abs(p.${ratingField}-$3),l.created_at LIMIT 20`,
-          [
-            mode,
-            id,
-            {
-              ranked: profile.rating,
-              'ranked-random': profile.rankedRandomRating,
-              draft: profile.draftRating,
-              'shared-draft': profile.sharedDraftRating,
-            }[isRatedMode(mode) ? mode : 'ranked'],
-            actor.is_bot,
-            allowBots,
-          ],
-        );
-        for (const row of candidates) {
-          if (await this.related(sql, row.host_id, id)) continue;
-          if (isRatedMode(mode) && (await this.sharedNetwork(sql, row.host_id, id))) continue;
-          return this.joinRow(sql, profile, row);
-        }
-      }
-      const lobbyId = randomUUID();
-      await sql(
-        "INSERT INTO lobbies(id,host_id,name,mode,rules,trade_rule,status,allow_bots,invited_profile,spectatable) VALUES($1,$2,$3,$4,$5::jsonb,$6,'waiting',$7,$8,$9)",
+    await this.busy(sql, id);
+    const [actor] = await sql<{ is_bot: boolean }>('SELECT is_bot FROM profiles WHERE id=$1', [id]);
+    if (isRankedMode(mode)) await this.rankedEligible(sql, id);
+    const allowBots =
+      input.invitedProfile || isRatedMode(mode) ? false : (input.allowBots ?? actor.is_bot);
+    if (!isDraftMode(mode)) await this.deck(sql, id, !!rules.random, mode);
+    if (mode !== 'custom') {
+      const ratingField = modeRatingField(mode);
+      const candidates = await sql<LobbyRow>(
+        `SELECT l.* FROM lobbies l JOIN profiles p ON p.id=l.host_id WHERE l.mode=$1 AND l.status='waiting' AND l.host_id<>$2 AND l.invited_profile IS NULL AND (l.allow_bots OR NOT $4) AND ($5 OR NOT p.is_bot) ORDER BY abs(p.${ratingField}-$3),l.created_at LIMIT 20`,
         [
-          lobbyId,
-          id,
-          (input.name || `${profile.name}'s table`).trim().slice(0, 60),
           mode,
-          JSON.stringify(rules),
-          trade,
+          id,
+          {
+            ranked: profile.rating,
+            'ranked-random': profile.rankedRandomRating,
+            draft: profile.draftRating,
+            'shared-draft': profile.sharedDraftRating,
+          }[isRatedMode(mode) ? mode : 'ranked'],
+          actor.is_bot,
           allowBots,
-          input.invitedProfile ?? null,
-          !input.invitedProfile,
         ],
       );
-      return { lobbyId, matchId: null };
-    });
+      for (const row of candidates) {
+        if (await this.related(sql, row.host_id, id)) continue;
+        if (isRatedMode(mode) && (await this.sharedNetwork(sql, row.host_id, id))) continue;
+        return this.joinRow(sql, profile, row);
+      }
+    }
+    const lobbyId = randomUUID();
+    await sql(
+      "INSERT INTO lobbies(id,host_id,name,mode,rules,trade_rule,status,allow_bots,invited_profile,spectatable) VALUES($1,$2,$3,$4,$5::jsonb,$6,'waiting',$7,$8,$9)",
+      [
+        lobbyId,
+        id,
+        (input.name || `${profile.name}'s table`).trim().slice(0, 60),
+        mode,
+        JSON.stringify(rules),
+        trade,
+        allowBots,
+        input.invitedProfile ?? null,
+        !input.invitedProfile,
+      ],
+    );
+    return { lobbyId, matchId: null };
   }
   private async joinRow(sql: Sql, p: ProfileIdentity, lobby: LobbyRow) {
     if (isRankedMode(lobby.mode)) {
@@ -1433,17 +1430,42 @@ export class GameStore {
   async leaveResult(profileId: string, id: string) {
     await this.db.tx(async (sql) => {
       const match = await this.load(sql, id, profileId);
-      if (
-        match.status !== 'complete' ||
-        !match.settlement_done ||
-        match.rematch_match_id ||
-        match.departed?.includes(profileId)
-      )
-        return;
-      await sql(
-        'UPDATE matches SET departed=departed || $1::jsonb,rematch_requested_by=NULL,rematch_requested_at=NULL,version=version+1 WHERE id=$2',
-        [JSON.stringify([profileId]), id],
-      );
+      if (match.status === 'complete' && match.settlement_done && !match.rematch_match_id)
+        await this.markResultLeft(sql, match, profileId);
+    });
+  }
+  private async markResultLeft(sql: Sql, match: MatchRow, profileId: string) {
+    if (match.departed?.includes(profileId)) return;
+    await sql(
+      'UPDATE matches SET departed=departed || $1::jsonb,rematch_requested_by=NULL,rematch_requested_at=NULL,version=version+1 WHERE id=$2',
+      [JSON.stringify([profileId]), match.id],
+    );
+  }
+  async requeue(profile: ProfileIdentity, id: string) {
+    return this.db.tx(async (sql) => {
+      const match = await this.load(sql, id, profile.id);
+      const { mode } = match;
+      if (!isRatedMode(mode) && mode !== 'casual' && mode !== 'roulette')
+        throw new GameError('This match cannot be queued again.', 409);
+      if (match.status !== 'complete' || !match.settlement_done || match.rematch_match_id)
+        throw new GameError('Finish this match before joining the queue.', 409);
+      if (match.departed?.includes(profile.id)) {
+        // Recover a waiting lobby or new match when the first response was lost.
+        const [existing] = await sql<{ lobbyId: string; matchId: string | null }>(
+          `SELECT id AS "lobbyId",match_id AS "matchId" FROM lobbies
+           WHERE (host_id=$1 OR guest_id=$1) AND mode=$2 AND status IN('waiting','playing')
+           AND (created_at >= (SELECT completed_at FROM matches WHERE id=$3) OR status='playing')
+           ORDER BY created_at DESC LIMIT 1`,
+          [profile.id, mode, id],
+        );
+        if (existing) return existing;
+      }
+      const next = await this.createLobbyIn(sql, profile, {
+        mode,
+        allowBots: mode === 'casual' || mode === 'roulette',
+      });
+      await this.markResultLeft(sql, match, profile.id);
+      return next;
     });
   }
   async move(profileId: string, id: string, cardId: string, cell: number, version: number) {

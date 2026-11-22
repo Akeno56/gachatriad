@@ -58,6 +58,43 @@ async function readyDraft(
     for (let step = 0; step < 20; step++) await p.store.revealDraft(person.profile.id, id, step);
   return id;
 }
+it('requeues a settled result atomically and recovers repeated submissions', async () => {
+  const a = await account();
+  const b = await account();
+  const other = await account(false);
+  const { lobbyId } = await p.store.createLobby(a.profile, { mode: 'casual' });
+  const { matchId } = await p.store.joinLobby(b.profile, lobbyId);
+  const requeue = (player: typeof a) =>
+    p.app.inject({
+      method: 'POST',
+      url: `/api/matches/${matchId}/requeue`,
+      remoteAddress: player.ip,
+      headers: { authorization: `Bearer ${player.token}` },
+      payload: {},
+    });
+  expect((await requeue(other)).statusCode).toBe(403);
+  expect((await requeue(a)).statusCode).toBe(409);
+  await p.store.resign(b.profile.id, matchId);
+  await p.db.read((sql) =>
+    sql("UPDATE profiles SET default_deck='[]' WHERE id=$1", [a.profile.id]),
+  );
+  expect((await requeue(a)).statusCode).toBe(428);
+  expect((await p.store.view(b.profile.id, matchId)).rematch?.unavailableReason).toBeNull();
+  await p.store.saveDeck(a.profile.id, a.profile.deck);
+  const retries = await Promise.all([requeue(a), requeue(a)]);
+  for (const retry of retries) expect(retry.statusCode, retry.body).toBe(200);
+  const waiting = retries[0].json();
+  expect(waiting).toMatchObject({ lobbyId: expect.any(String), matchId: null });
+  expect(retries[1].json()).toEqual(waiting);
+  const joined = await requeue(b);
+  expect(joined.statusCode, joined.body).toBe(200);
+  const next = joined.json();
+  expect(next.lobbyId).toBe(waiting.lobbyId);
+  expect(next.matchId).not.toBe(matchId);
+  expect((await requeue(a)).json()).toEqual(next);
+  await p.store.resign(b.profile.id, next.matchId);
+});
+
 it('makes deterministic uniquely winning endgames with valid real cards', () => {
   for (const seed of [1, 42, 20261116]) {
     const a = makePuzzle(seed),

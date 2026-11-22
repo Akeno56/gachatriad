@@ -2157,5 +2157,18 @@
   "Unlock this achievement before claiming its reward.": "Débloquez ce succès avant de récupérer sa récompense.",
   "Updated Play and Market layouts.": "Mise en page de Jouer et du marché remaniée.",
   "Market chat": "Chat du marché",
-  "Updated controls, dialogs, and battle HUD.": "Commandes, fenêtres et interface de combat remaniées."
+  "Updated controls, dialogs, and battle HUD.": "Commandes, fenêtres et interface de combat remaniées.",
+  "You’re offline.": "Vous êtes hors ligne.",
+  "The game server is reconnecting…": "Reconnexion au serveur de jeu…",
+  "Live updates are delayed.": "Les mises à jour en direct sont retardées.",
+  "Checking the queue…": "Vérification de la file…",
+  "Retry connection": "Réessayer la connexion",
+  "Loading spectator view": "Chargement du mode spectateur",
+  "Opening your match": "Ouverture de votre partie",
+  "Joining queue…": "Entrée dans la file…",
+  "This match cannot be queued again.": "Ce mode ne permet pas de retourner en file depuis le résultat.",
+  "Finish this match before joining the queue.": "Terminez cette partie avant de rejoindre la file.",
+  "Connection status and retry controls on Play.": "État de la connexion et bouton de reconnexion dans Jouer.",
+  "Rejoin the same match after a disconnect.": "Reprenez votre partie après une déconnexion.",
+  "Queue again directly from results.": "Rejoignez la file depuis l’écran de résultat."
 }

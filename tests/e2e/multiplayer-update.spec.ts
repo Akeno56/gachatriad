@@ -3,7 +3,12 @@ import { mkdtemp } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import sharp from 'sharp';
 import { createPlatform } from '../../apps/server/src/app';
-import { RANKED_RULES, STANDARD, type GameState } from '../../packages/engine/src/index';
+import {
+  legalMoves,
+  RANKED_RULES,
+  STANDARD,
+  type GameState,
+} from '../../packages/engine/src/index';
 import { COSMETIC_SETS } from '../../packages/shared/src/customization';
 import { CARDS } from '../../packages/shared/src/index';
 import { navigateTo, openNavigation } from './helpers';
@@ -90,6 +95,77 @@ async function player(browser: Browser, name?: string) {
     },
   };
 }
+
+test('restores a duel after going offline and during a slow refresh', async ({ browser }, info) => {
+  test.skip(info.project.name !== 'desktop');
+  const a = await player(browser);
+  const b = await player(browser);
+  try {
+    await platform.store.createLobby(a.profile, { mode: 'casual' });
+    const { matchId } = await platform.store.createLobby(b.profile, { mode: 'casual' });
+    const [initial] = await platform.db.read((sql) =>
+      sql<{ state: GameState; player0: string; player1: string; version: number }>(
+        'SELECT state,player0,player1,version FROM matches WHERE id=$1',
+        [matchId],
+      ),
+    );
+    const moverId = initial.state.turn === 0 ? initial.player0 : initial.player1;
+    const viewer = moverId === a.profile.id ? b : a;
+    const { page } = viewer;
+    await viewer.context.addInitScript(() => localStorage.setItem('triad-language', 'fr'));
+    await page.goto('/');
+    await expect(page.getByTestId('cell-0')).toBeVisible();
+    await viewer.context.setOffline(true);
+    const status = page.locator('.play-connection');
+    await expect(status).toContainText('Vous êtes hors ligne.');
+    for (const [width, height] of [
+      [1280, 720],
+      [1366, 768],
+      [1920, 1080],
+    ]) {
+      await page.setViewportSize({ width, height });
+      await expect(status).toBeInViewport({ ratio: 1 });
+      await expect(page.getByTestId('cell-0')).toBeVisible();
+    }
+    const move = legalMoves(initial.state)[0];
+    await platform.store.move(moverId, matchId!, move.cardId, move.cell, initial.version);
+    await viewer.context.setOffline(false);
+    await expect(page.getByTestId(`cell-${move.cell}`).locator('.playing-card')).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`match=${matchId}$`));
+
+    const path = `**/api/matches/${matchId}`;
+    await page.route(path, (route) =>
+      route.fulfill({ status: 503, contentType: 'text/html', body: '' }),
+    );
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    const retry = page.getByRole('button', { name: 'Réessayer la connexion' });
+    await expect(retry).toBeVisible();
+    await page.unroute(path);
+    await retry.click();
+    await expect(page.getByTestId(`cell-${move.cell}`).locator('.playing-card')).toBeVisible();
+
+    let resume!: () => void;
+    const blocked = new Promise<void>((resolve) => {
+      resume = resolve;
+    });
+    await page.route(path, async (route) => {
+      await blocked;
+      await route.continue();
+    });
+    try {
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { name: 'Ouverture de votre partie' })).toBeVisible();
+      await expect(page.locator('.matchmaking-panel')).toHaveCount(0);
+      await page.screenshot({ path: info.outputPath('match-recovery-fr.png') });
+    } finally {
+      resume();
+    }
+    await expect(page.getByTestId(`cell-${move.cell}`).locator('.playing-card')).toBeVisible();
+    await expect(page.getByTestId('player-card').first()).toBeEnabled();
+  } finally {
+    await Promise.all([a.context.close(), b.context.close()]);
+  }
+});
 
 test('shows bilingual achievement rewards and claims them from the desktop browser', async ({
   browser,
@@ -220,7 +296,7 @@ test('fills the desktop Market with portrait offers and keeps chat optional', as
           width: el.clientWidth,
           panelWidth: el.closest('.market-offers-panel')!.clientWidth,
           columns: getComputedStyle(el).gridTemplateColumns.split(' ').length,
-          ratios: [...el.querySelectorAll('.playing-card, .market-payment')].map((card) => {
+          ratios: Array.from(el.querySelectorAll('.playing-card, .market-payment'), (card) => {
             const { width, height } = card.getBoundingClientRect();
             return width / height;
           }),
@@ -1275,12 +1351,13 @@ test('finds a matched duel from the shared queue when its socket is unavailable'
     await a.page.evaluate(() => window.dispatchEvent(new Event('online')));
     await expect(dock).toContainText('Reconnecting…');
     await a.page.unroute('**/api/profile');
-    await a.page.evaluate(() => window.dispatchEvent(new Event('online')));
-    await expect(dock).toContainText('Searching for an opponent…');
+    await dock.getByRole('button', { name: 'Retry connection' }).click();
+    await expect(dock).toContainText('Checking the queue…');
     await expect(a.page.getByRole('button', { name: 'Logout' })).toBeVisible();
     await a.page.getByRole('button', { name: 'Language: English' }).click();
     await a.page.getByRole('menuitemradio', { name: 'Français' }).click();
     await expect(dock).toContainText('Annuler');
+    await expect(dock).toContainText('Vérification de la file…');
     await a.page.getByRole('button', { name: 'Langue : Français' }).click();
     await a.page.getByRole('menuitemradio', { name: 'English' }).click();
     const match = await b.request('/lobbies', { mode: 'casual', allowBots: false });

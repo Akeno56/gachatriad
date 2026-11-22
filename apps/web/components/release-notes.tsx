@@ -29,8 +29,9 @@ export function ReleaseNotes() {
           What’s new
         </h2>
         <ul>
-          <li>Updated Play and Market layouts.</li>
-          <li>Updated controls, dialogs, and battle HUD.</li>
+          <li>Connection status and retry controls on Play.</li>
+          <li>Rejoin the same match after a disconnect.</li>
+          <li>Queue again directly from results.</li>
         </ul>
         <Button onClick={() => setOpen(false)}>Back to the game</Button>
       </GameDialog>

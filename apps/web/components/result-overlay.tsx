@@ -12,6 +12,8 @@ import { matchModeNames } from '../lib/rules';
 export function ResultOverlay({
   match,
   busy,
+  requeueing,
+  offline,
   onClose,
   onClaim,
   onPlayAgain,
@@ -23,6 +25,8 @@ export function ResultOverlay({
 }: {
   match: MatchView;
   busy: boolean;
+  requeueing: boolean;
+  offline: boolean;
   onClose: () => void;
   onClaim: (id: string) => void;
   onPlayAgain: () => void;
@@ -45,7 +49,13 @@ export function ResultOverlay({
   const rematchButton = match.mode !== 'solo' && match.mode !== 'correspondence' && (
     <Button
       variant={queueable ? 'ghost' : 'primary'}
-      disabled={busy || match.trade.pending || !!match.rematch?.unavailableReason || rematchPending}
+      disabled={
+        busy ||
+        offline ||
+        match.trade.pending ||
+        !!match.rematch?.unavailableReason ||
+        rematchPending
+      }
       onClick={onRematch}
       title={match.rematch?.unavailableReason ?? undefined}
     >
@@ -225,7 +235,7 @@ export function ResultOverlay({
               {rematchPending ? (
                 <>
                   Waiting for your opponent · expires after five minutes.{' '}
-                  <Button variant="ghost" onClick={onCancelRematch} disabled={busy}>
+                  <Button variant="ghost" onClick={onCancelRematch} disabled={busy || offline}>
                     Cancel rematch
                   </Button>
                 </>
@@ -241,11 +251,16 @@ export function ResultOverlay({
               {error}
             </p>
           )}
+          {offline && (
+            <p className="rematch-status" role="status">
+              You’re offline.
+            </p>
+          )}
         </div>
         <footer className="duel-result-footer">
           <div className="result-actions">
             {match.mode === 'solo' && (
-              <Button variant="primary" busy={busy} onClick={onPlayAgain}>
+              <Button variant="primary" busy={busy} disabled={offline} onClick={onPlayAgain}>
                 Play again ▶
               </Button>
             )}
@@ -253,17 +268,20 @@ export function ResultOverlay({
               <Button
                 variant="primary"
                 busy={busy}
-                disabled={match.trade.pending}
+                disabled={match.trade.pending || offline}
                 onClick={onQueueAgain}
               >
-                Queue again
+                {requeueing ? 'Joining queue…' : 'Queue again'}
               </Button>
             )}
             {!queueable && rematchButton}
             <Link className="outline-button" href={`/replays?match=${match.id}`}>
               Watch replay
             </Link>
-            <Button disabled={busy || match.trade.pending} onClick={onReturn}>
+            <Button
+              disabled={busy || match.trade.pending || (offline && match.mode !== 'correspondence')}
+              onClick={onReturn}
+            >
               Back to main menu
             </Button>
           </div>

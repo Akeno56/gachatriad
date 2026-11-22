@@ -1014,6 +1014,15 @@ export async function createPlatform(
     notify();
     return { ok: true };
   });
+  app.post(
+    '/api/matches/:id/requeue',
+    { config: { rateLimit: { max: 20, timeWindow: '1 minute' } } },
+    async (req) => {
+      const result = await store.requeue(await profile(req), id(req));
+      notify();
+      return result;
+    },
+  );
   app.post('/api/matches/:id/resign', async (req) => {
     const p = await profile(req);
     await store.resign(p.id, id(req));

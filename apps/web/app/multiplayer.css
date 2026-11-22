@@ -1,3 +1,44 @@
+.play-connection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding: 4px 9px;
+  border: 1px solid #806c45;
+  background: #22223a;
+  color: #f1dca7;
+  font-size: 14px;
+}
+
+.title-screen > .play-connection {
+  margin-bottom: 12px;
+}
+
+.play-connection .text-button {
+  padding-block: 0;
+  font-size: 17px;
+}
+
+.match-recovery {
+  width: min(100%, 470px);
+  margin: clamp(30px, 12vh, 130px) auto;
+  padding: 18px;
+}
+
+.match-recovery h1 {
+  color: var(--gold);
+  font: 32px/1 var(--pixel);
+}
+
+.match-recovery p {
+  margin: 8px 0 12px;
+}
+
+.match-recovery .outline-button {
+  margin: 0 8px 4px 0;
+}
+
 .matchmaking-dock.queue-status {
   position: fixed;
   inset-inline-start: 50%;

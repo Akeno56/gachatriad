@@ -17,7 +17,7 @@ export function MatchmakingDock() {
 }
 
 function WaitingLobby({ waiting }: { waiting: NonNullable<ProfileView['waitingLobby']> }) {
-  const { error: connectionError, refreshProfile, refreshSocial } = useSession();
+  const { connection, refresh, refreshProfile, refreshSocial } = useSession();
   const [now, setNow] = useState(Date.now);
   const [practice, setPractice] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -66,31 +66,40 @@ function WaitingLobby({ waiting }: { waiting: NonNullable<ProfileView['waitingLo
         <div className="matchmaking-dock-copy">
           <strong>{waiting.invited ? 'Friend invitation' : mode}</strong>
           <small role="status">
-            {connectionError
-              ? 'Reconnecting…'
-              : waiting.invited
-                ? 'Waiting for your invited opponent.'
-                : custom
-                  ? 'Waiting for a player…'
-                  : 'Searching for an opponent…'}
+            {connection === 'offline'
+              ? 'You’re offline.'
+              : connection === 'unavailable'
+                ? 'Reconnecting…'
+                : connection === 'polling'
+                  ? 'Checking the queue…'
+                  : waiting.invited
+                    ? 'Waiting for your invited opponent.'
+                    : custom
+                      ? 'Waiting for a player…'
+                      : 'Searching for an opponent…'}
           </small>
         </div>
         <span className="queue-elapsed" role="timer" aria-live="off">
           <span className="sr-only">In queue for : </span>
           {elapsed}
         </span>
+        {connection === 'unavailable' && (
+          <Button variant="ghost" disabled={busy} onClick={() => void refresh()}>
+            Retry connection
+          </Button>
+        )}
         {rated && (
           <Button
             variant="ghost"
             className="matchmaking-practice"
-            disabled={busy || waiting.allowBots}
+            disabled={busy || connection === 'offline' || waiting.allowBots}
             onClick={() => setPractice(true)}
           >
             {waiting.allowBots ? 'Finding a practice bot…' : 'Play a practice bot — no Elo'}
           </Button>
         )}
         <Button
-          disabled={busy}
+          disabled={busy || connection === 'offline'}
           aria-label={
             waiting.invited ? 'Close waiting lobby' : custom ? 'Close lobby' : `Leave ${mode} queue`
           }

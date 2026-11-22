@@ -10,7 +10,7 @@ import {
   type Card as CardData,
 } from '@gacha-triad/engine';
 import type { BoardMoveUpdate, MatchView } from '@gacha-triad/shared/platform';
-import { api } from '../lib/platform';
+import { api, ApiError } from '../lib/platform';
 import { refreshScheduler } from '../lib/refresh-scheduler';
 import { useCapturePresentation } from './use-capture-presentation';
 import { appPath, assetPath } from '../lib/connection';
@@ -35,12 +35,17 @@ export { ruleNames } from '../lib/rules';
 const describe = (c: CardData, modifier = 0) =>
   `${c.name}. Top ${displayValue(c.stats[0] + modifier)}, right ${displayValue(c.stats[1] + modifier)}, bottom ${displayValue(c.stats[2] + modifier)}, left ${displayValue(c.stats[3] + modifier)}. ${c.rarity} stars`;
 export function Game() {
-  const { profile, error: connectionError, revision, refresh } = useSession();
+  const { profile, connection, error: connectionError, revision, refresh } = useSession();
   const [receivedMatch, setMatch] = useState<MatchView | null>(null),
     [watchingId, setWatchingId] = useState<string | null>(null),
     [matchId, setMatchId] = useState<string | null>(null),
     [selected, setSelected] = useState<string | null>(null),
     [error, setError] = useState(''),
+    [loadFailure, setLoadFailure] = useState<{ id: string; message: string; gone: boolean } | null>(
+      null,
+    ),
+    [retrying, setRetrying] = useState(false),
+    [requeueing, setRequeueing] = useState(false),
     [busy, setBusy] = useState(false),
     [detail, setDetail] = useState<CardData | null>(null),
     [detailModifier, setDetailModifier] = useState(0),
@@ -49,12 +54,23 @@ export function Game() {
     [clock, setClock] = useState(Date.now());
   const sound = useGameAudio();
   const {
-    match,
+    match: displayedMatch,
     resolving,
     callout,
     revealed: revealedCaptures,
     flipping,
-  } = useCapturePresentation(receivedMatch, sound);
+  } = useCapturePresentation(receivedMatch?.id === matchId ? receivedMatch : null, sound);
+  const match = displayedMatch?.id === matchId ? displayedMatch : null;
+  const matchFailure = loadFailure?.id === matchId ? loadFailure : null;
+  const unavailable = connection === 'offline' || connection === 'unavailable';
+  const connectionStatus =
+    connection === 'offline'
+      ? 'You’re offline.'
+      : connection === 'unavailable'
+        ? 'The game server is reconnecting…'
+        : connection === 'polling'
+          ? 'Live updates are delayed.'
+          : null;
   const receivedRef = useRef(receivedMatch);
   receivedRef.current = receivedMatch;
   const currentMatchId = useRef(matchId);
@@ -108,9 +124,14 @@ export function Game() {
         setMatch((current) =>
           current?.id === id && current.version > next.version ? current : next,
         );
-        setError('');
+        setLoadFailure(null);
       } catch (e) {
-        if (currentMatchId.current === id) setError((e as Error).message);
+        if (currentMatchId.current === id)
+          setLoadFailure({
+            id,
+            message: (e as Error).message,
+            gone: e instanceof ApiError && (e.status === 403 || e.status === 404),
+          });
       }
     },
     [watchingId],
@@ -128,8 +149,8 @@ export function Game() {
       }
       return;
     }
-    const active = profile.activeMatchId === leftResultId.current ? null : profile.activeMatchId;
-    const target = profile.pendingTrade?.matchId ?? active;
+    const resume = profile.pendingTrade?.matchId ?? profile.activeMatchId;
+    const target = resume === leftResultId.current ? null : resume;
     if (target && target !== matchId) {
       setWatchingId(null);
       setMatchId(target);
@@ -147,6 +168,15 @@ export function Game() {
   useEffect(() => {
     if (matchId) void load(matchId);
   }, [matchId, revision, load]);
+  async function retryConnection() {
+    if (retrying || connection === 'offline') return;
+    setRetrying(true);
+    try {
+      await refresh();
+    } finally {
+      setRetrying(false);
+    }
+  }
   useEffect(() => {
     if (!matchId) return;
     let active = true;
@@ -238,6 +268,7 @@ export function Game() {
     sound(match.winner === seat ? 'victory' : match.winner === 'draw' ? 'draw' : 'defeat');
   }, [match?.status, match?.id, match?.winner, resolving, seat, sound]);
   async function action(path: string, body: unknown) {
+    if (connection === 'offline') return;
     setBusy(true);
     setError('');
     const move = path.endsWith('/move');
@@ -285,38 +316,79 @@ export function Game() {
     setMatchId(null);
     setSelected(null);
     setDraft([]);
+    setError('');
+    setLoadFailure(null);
     history.replaceState(null, '', appPath('/play/'));
     window.scrollTo(0, 0);
   }
   const resultAction = useRef(false);
+  function showQueue(next: { matchId: string | null }) {
+    returnToMainMenu();
+    if (next.matchId) setMatchId(next.matchId);
+  }
   async function leaveResult(destination: 'menu' | 'queue') {
-    if (!match || match.trade.pending || resultAction.current) return;
+    if (!match || match.trade.pending || resultAction.current || connection === 'offline') return;
     resultAction.current = true;
     setBusy(true);
+    setRequeueing(destination === 'queue');
     setError('');
     try {
-      await api(`/matches/${match.id}/leave`, {});
+      if (destination === 'queue') {
+        let next: { matchId: string | null };
+        try {
+          next = await api(`/matches/${match.id}/requeue`, {});
+        } catch (e) {
+          // A Pages build can still be pointed at a server from the previous release.
+          if (!(
+            e instanceof ApiError &&
+            e.status === 404 &&
+            /^Route POST:.*\/requeue not found$/.test(e.message)
+          ))
+            throw e;
+          await api(`/matches/${match.id}/leave`, {});
+          next = await api('/lobbies', {
+            mode: match.mode,
+            allowBots: match.mode === 'casual' || match.mode === 'roulette',
+          });
+        }
+        showQueue(next);
+      } else {
+        await api(`/matches/${match.id}/leave`, {});
+        returnToMainMenu();
+      }
       leftResultId.current = match.id;
-      const next =
-        destination === 'queue'
-          ? await api<{ matchId: string | null }>('/lobbies', {
-              mode: match.mode,
-              allowBots: match.mode === 'casual' || match.mode === 'roulette',
-            })
-          : null;
-      returnToMainMenu();
-      if (next?.matchId) setMatchId(next.matchId);
       await refresh();
     } catch (e) {
+      const latest = await refresh();
+      if (
+        destination === 'queue' &&
+        latest &&
+        ((latest.activeMatchId && latest.activeMatchId !== match.id) ||
+          latest.waitingLobby?.mode === match.mode)
+      ) {
+        leftResultId.current = match.id;
+        showQueue({ matchId: latest.activeMatchId });
+        return;
+      }
       setError((e as Error).message);
-      await refresh();
     } finally {
       resultAction.current = false;
       setBusy(false);
+      setRequeueing(false);
     }
   }
   function place(cell: number) {
-    if (!match || match.spectator || !game || game.turn !== seat || busy || resolving) return;
+    if (
+      !match ||
+      match.spectator ||
+      !game ||
+      game.turn !== seat ||
+      busy ||
+      resolving ||
+      unavailable ||
+      matchFailure
+    )
+      return;
     if (!selected) {
       setError('Select a card from your hand first.');
       return;
@@ -324,7 +396,13 @@ export function Game() {
     void action(`/matches/${match.id}/move`, { cardId: selected, cell, version: match.version });
   }
   const canPlay =
-    !match?.spectator && match?.status === 'playing' && game?.turn === seat && !busy && !resolving;
+    !match?.spectator &&
+    match?.status === 'playing' &&
+    game?.turn === seat &&
+    !busy &&
+    !resolving &&
+    !unavailable &&
+    !matchFailure;
   const turnSeconds = match?.deadline
     ? Math.max(0, Math.ceil((match.deadline - clock) / 1000))
     : null;
@@ -358,15 +436,26 @@ export function Game() {
   const draftErrors = validateDeck(match?.draftPool.filter((c) => draft.includes(c.id)) ?? []);
   if (
     !profile ||
-    (!matchId && !profile.activeMatchId && !profile.deck.length && profile.starterBoosters > 0)
+    (!matchId &&
+      !profile.activeMatchId &&
+      !profile.pendingTrade &&
+      !profile.deck.length &&
+      profile.starterBoosters > 0)
   )
     return (
       <LocaleView>
         <section className="first-visit-screen">
           <img src={assetPath('/assets/ui/triad-logo.webp')} alt="Gacha Triad" />
           <h1>Gacha Triad</h1>
-          <p>{profile ? 'Your first cards are waiting.' : 'Connecting to the card hall…'}</p>
-          {connectionError && <p role="alert">{connectionError}</p>}
+          <p role="status">
+            {connectionStatus ??
+              (profile ? 'Your first cards are waiting.' : 'Connecting to the card hall…')}
+          </p>
+          {connectionError && connection !== 'offline' && (
+            <Button busy={retrying} onClick={() => void retryConnection()}>
+              Retry connection
+            </Button>
+          )}
         </section>
       </LocaleView>
     );
@@ -376,23 +465,57 @@ export function Game() {
         className={`play-page ${match ? 'battle-screen' : 'title-screen'} ${match?.spectator ? 'spectator-screen' : ''} ${match?.game ? 'arena-screen' : ''} ${match?.mode === 'shared-draft' && match.status === 'drafting' ? 'shared-draft-screen' : ''}`}
       >
         {!match &&
-        matchId &&
-        !watchingId &&
-        new URLSearchParams(location.search).has('correspondence') ? (
-          <section className="menu-window correspondence-loading">
-            <button className="outline-button" onClick={returnToCorrespondence}>
-              Back to correspondence
-            </button>
-            {!error && <p>Loading…</p>}
+        (matchId ||
+          [profile.pendingTrade?.matchId, profile.activeMatchId].some(
+            (id) => id && id !== leftResultId.current,
+          )) ? (
+          <section className="menu-window match-recovery">
+            <h1>{watchingId ? 'Loading spectator view' : 'Opening your match'}</h1>
+            <p role="status">{matchFailure?.message ?? connectionStatus ?? 'Loading…'}</p>
+            {(matchFailure || unavailable) && connection !== 'offline' && (
+              <Button busy={retrying} onClick={() => void retryConnection()}>
+                Retry connection
+              </Button>
+            )}
+            {new URLSearchParams(location.search).has('correspondence') && (
+              <Button onClick={returnToCorrespondence}>Back to correspondence</Button>
+            )}
+            {matchFailure?.gone &&
+              matchId !== profile.activeMatchId &&
+              matchId !== profile.pendingTrade?.matchId && (
+                <Button onClick={returnToMainMenu}>Back to main menu</Button>
+              )}
           </section>
         ) : !match ? (
-          <TavernHome
-            onMatch={setMatchId}
-            onTutorial={() => window.dispatchEvent(new Event('triad:show-tutorial'))}
-            onInspect={inspect}
-          />
+          <>
+            {connectionStatus && !profile.waitingLobby && (
+              <div className="play-connection" role="status">
+                {connectionStatus}
+                {connection === 'unavailable' && (
+                  <Button variant="ghost" busy={retrying} onClick={() => void retryConnection()}>
+                    Retry connection
+                  </Button>
+                )}
+              </div>
+            )}
+            <TavernHome
+              onMatch={setMatchId}
+              onTutorial={() => window.dispatchEvent(new Event('triad:show-tutorial'))}
+              onInspect={inspect}
+            />
+          </>
         ) : (
           <section className="match" aria-label="Triple Triad match">
+            {(connectionStatus || matchFailure) && (
+              <div className="play-connection" role="status">
+                {matchFailure?.message ?? connectionStatus}
+                {connection !== 'offline' && (matchFailure || unavailable) && (
+                  <Button variant="ghost" busy={retrying} onClick={() => void retryConnection()}>
+                    Retry connection
+                  </Button>
+                )}
+              </div>
+            )}
             <div className="match-toolbar">
               <div className="battle-mode">
                 {match.status === 'drafting' && <span>{matchModeNames[match.mode]}</span>}
@@ -930,6 +1053,8 @@ export function Game() {
           <ResultOverlay
             match={match}
             busy={busy}
+            requeueing={requeueing}
+            offline={connection === 'offline'}
             onClose={() => setResultOpen(false)}
             onPlayAgain={start}
             onQueueAgain={() => void leaveResult('queue')}

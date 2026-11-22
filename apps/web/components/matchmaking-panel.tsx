@@ -17,13 +17,13 @@ export function MatchmakingPanel({
   onMatch: (id: string) => void;
   onTutorial: () => void;
 }) {
-  const { profile, refreshProfile } = useSession();
+  const { profile, connection, refreshProfile } = useSession();
   const openAppearance = useOpenAppearance();
   const [busy, setBusy] = useState(false),
     [error, setError] = useState('');
   const lock = useRef(false);
   async function queue(mode: QueueMode) {
-    if (lock.current) return;
+    if (lock.current || connection === 'offline') return;
     lock.current = true;
     setError('');
     try {
@@ -33,8 +33,8 @@ export function MatchmakingPanel({
         mode,
         allowBots: mode === 'casual',
       });
-      await refreshProfile();
       if (result.matchId) onMatch(result.matchId);
+      await refreshProfile();
     } catch (e) {
       setError((e as Error).message);
       await refreshProfile();
@@ -61,6 +61,7 @@ export function MatchmakingPanel({
                 className={ranked ? 'ranked-play-button' : 'start-button'}
                 disabled={
                   busy ||
+                  connection === 'offline' ||
                   !profile ||
                   !!profile.pendingTrade ||
                   !!profile.activeMatchId ||
