@@ -676,33 +676,39 @@ export class GameStore {
     return id;
   }
   async correspondence(profileId: string): Promise<CorrespondenceMatch[]> {
-    return this.db.read(async (sql) => {
-      const rows = await sql<{
-        id: string;
-        opponent: string;
-        your_turn: boolean;
-        deadline: string | null;
-        outcome: CorrespondenceMatch['outcome'];
-      }>(
-        `SELECT m.id,p.name AS opponent,
+    return this.db.read((sql) => this.correspondenceRows(sql, profileId));
+  }
+  async correspondenceRows(
+    sql: Sql,
+    profileId: string,
+    turnsOnly = false,
+  ): Promise<CorrespondenceMatch[]> {
+    const rows = await sql<{
+      id: string;
+      opponent: string;
+      your_turn: boolean;
+      deadline: string | null;
+      outcome: CorrespondenceMatch['outcome'];
+    }>(
+      `SELECT m.id,p.name AS opponent,
            m.status='playing' AND (m.state->>'turn')::int=seat AS your_turn,m.deadline,
            CASE WHEN m.status='complete' THEN CASE WHEN m.is_draw THEN 'draw' WHEN m.winner=seat THEN 'win' ELSE 'loss' END END AS outcome
          FROM (
            SELECT *,CASE WHEN player0=$1 THEN 0 ELSE 1 END AS seat
            FROM matches WHERE mode='correspondence' AND (player0=$1 OR player1=$1)
-           AND (status='playing' OR completed_at>now()-interval '7 days')
+           AND (status='playing' OR (NOT $2 AND completed_at>now()-interval '7 days'))
          ) m JOIN profiles p ON p.id=CASE WHEN m.seat=0 THEN m.player1 ELSE m.player0 END
+         WHERE NOT $2 OR (m.state->>'turn')::int=m.seat
          ORDER BY (m.status='playing') DESC,your_turn DESC,m.deadline,m.completed_at DESC LIMIT 24`,
-        [profileId],
-      );
-      return rows.map((row) => ({
-        id: row.id,
-        opponent: row.opponent,
-        yourTurn: row.your_turn,
-        deadline: row.deadline === null ? null : Number(row.deadline),
-        outcome: row.outcome,
-      }));
-    });
+      [profileId, turnsOnly],
+    );
+    return rows.map((row) => ({
+      id: row.id,
+      opponent: row.opponent,
+      yourTurn: row.your_turn,
+      deadline: row.deadline === null ? null : Number(row.deadline),
+      outcome: row.outcome,
+    }));
   }
   async startCorrespondence(
     sql: Sql,
@@ -751,11 +757,15 @@ export class GameStore {
       hours,
     );
   }
-  async lobbies(includeRated = false): Promise<LobbyView[]> {
+  async lobbies(includeRated = false, sharedTable?: string): Promise<LobbyView[]> {
     return this.db.read(async (sql) => {
       const rows = await sql<LobbyRow & { host: string; bot_style: CpuStyle | null }>(
-        "SELECT l.*,p.name host,CASE WHEN p.is_bot THEN p.bot_style ELSE NULL END bot_style FROM lobbies l JOIN profiles p ON p.id=l.host_id WHERE l.status IN('waiting','playing') AND ($1 OR l.mode<>ALL($2::text[])) ORDER BY l.created_at DESC LIMIT 200",
-        [includeRated, RATED_MODES],
+        `SELECT l.*,p.name host,CASE WHEN p.is_bot THEN p.bot_style ELSE NULL END bot_style
+         FROM lobbies l JOIN profiles p ON p.id=l.host_id
+         WHERE l.status IN('waiting','playing') AND ($1 OR l.mode<>ALL($2::text[]))
+         AND ($3::text IS NULL OR (l.id=$3 AND l.invited_profile IS NULL AND l.spectatable))
+         ORDER BY l.created_at DESC LIMIT 200`,
+        [includeRated, RATED_MODES, sharedTable ?? null],
       );
       return rows.map((r) => ({
         id: r.id,

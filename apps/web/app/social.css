@@ -145,6 +145,21 @@
   margin: 6px 0 10px;
   color: var(--muted);
 }
+.social-turns-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-bottom: 8px;
+}
+.social-turns-heading h2 {
+  margin: 0;
+}
+.social-card > h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
 
 .social-grid {
   display: grid;

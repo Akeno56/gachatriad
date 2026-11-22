@@ -2,21 +2,30 @@
 import { LocaleView } from './i18n';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { Suspense, useEffect, useRef } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useSession } from './session';
 import { assetPath } from '../lib/connection';
 export function StarterBoosters() {
+  return (
+    <Suspense fallback={null}>
+      <StarterWelcome />
+    </Suspense>
+  );
+}
+
+function StarterWelcome() {
   const { profile, openAccount } = useSession(),
-    pathname = usePathname();
+    pathname = usePathname().replace(/\/$/, '') || '/';
+  const params = useSearchParams();
   const dialog = useRef<HTMLDialogElement>(null);
-  const [watching, setWatching] = useState(false);
-  useEffect(() => setWatching(new URLSearchParams(location.search).has('spectate')), [pathname]);
+  const shared = pathname === '/lobbies' && params.has('table');
   const needed =
-    !watching &&
+    !shared &&
+    !params.has('spectate') &&
     !!profile?.starterBoosters &&
     !profile.activeMatchId &&
-    ['/', '/lobbies'].includes(pathname.replace(/\/$/, '') || '/');
+    ['/', '/lobbies'].includes(pathname);
   useEffect(() => {
     if (needed) dialog.current?.showModal();
     else dialog.current?.close();

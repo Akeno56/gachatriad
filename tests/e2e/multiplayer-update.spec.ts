@@ -399,7 +399,7 @@ test('keeps a duel invitation in the top-bar inbox and skips profile and board r
   }
 });
 
-test('fits French correspondence invitations and opens them through the new social page', async ({
+test('fits French correspondence invitations and follows turn reminders in Social', async ({
   browser,
 }, info) => {
   const a = await player(browser, 'Akeno Correspondence Challenger');
@@ -439,7 +439,8 @@ test('fits French correspondence invitations and opens them through the new soci
     );
     await dialog.getByRole('combobox', { name: 'Hours per turn' }).selectOption('72');
     await dialog.getByRole('button', { name: 'Send invitation' }).click();
-    await expect(a.page.getByText('Correspondence · 72h per turn')).toBeVisible();
+    await expect(a.page.getByText('Correspondence invitation sent', { exact: true })).toBeVisible();
+    await expect(a.page.getByText('72h per turn', { exact: true })).toBeVisible();
     await b.page.goto('/cards/');
     await b.page.getByRole('button', { name: 'Language: English', exact: true }).click();
     await b.page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
@@ -448,7 +449,8 @@ test('fits French correspondence invitations and opens them through the new soci
     await shortcut.click();
     const invitation = b.page.locator('.social-card[data-incoming=true]').first();
     await expect(invitation).toContainText(a.profile.name);
-    await expect(invitation).toContainText('Correspondance · 72 h par tour');
+    await expect(invitation).toContainText('Invitation par correspondance');
+    await expect(invitation).toContainText('72 h par tour');
     await expect(b.page.locator('.live-invite-popup')).toHaveCount(0);
     const check = async () => {
       await expect(invitation.getByRole('button', { name: 'Accepter la partie' })).toBeInViewport();
@@ -475,11 +477,140 @@ test('fits French correspondence invitations and opens them through the new soci
       }
     } else await check();
     await invitation.getByRole('button', { name: 'Accepter la partie' }).click();
-    await b.page.getByRole('link', { name: 'Ouvrir la correspondance' }).click();
-    await expect(b.page.getByRole('link', { name: 'Reprendre la partie' })).toBeVisible();
+    const accepted = b.page.getByRole('link', { name: 'Ouvrir la partie' });
+    await expect(accepted).toBeVisible();
+    const matchId = (await accepted.getAttribute('href'))!.split('correspondence=')[1];
+    await a.page.goto('/social/?tab=inbox');
+    const [match] = await platform.store.db.read((sql) =>
+      sql<{ state: GameState; player0: string; version: number }>(
+        'SELECT state,player0,version FROM matches WHERE id=$1',
+        [matchId],
+      ),
+    );
+    const hostStarts = match.state.turn === (match.player0 === a.profile.id ? 0 : 1);
+    const mover = hostStarts ? a : b;
+    const other = hostStarts ? b : a;
+    const turnRegion = (current: typeof a) =>
+      current.page.getByRole('region', {
+        name: current === a ? 'Correspondence · Your turn' : 'Correspondance · À votre tour',
+      });
+    const resume = (current: typeof a) =>
+      turnRegion(current).getByRole('link', {
+        name: current === a ? 'Resume match' : 'Reprendre la partie',
+      });
+    await expect(turnRegion(mover)).toContainText(other.profile.name);
+    await expect(resume(mover)).toHaveAttribute('href', `/?correspondence=${matchId}`);
+    await expect(mover.page.locator('.social-indicator')).toBeVisible();
+    await expect(turnRegion(other)).toHaveCount(0);
+    await expect(other.page.locator('.social-indicator')).toHaveCount(0);
+    const move = legalMoves(match.state)[0];
+    await mover.request(`/matches/${matchId}/move`, {
+      cardId: move.cardId,
+      cell: move.cell,
+      version: match.version,
+    });
+    await expect(turnRegion(mover)).toHaveCount(0);
+    await expect(mover.page.locator('.social-indicator')).toHaveCount(0);
+    await expect(other.page.locator('.social-indicator')).toBeVisible();
+    await resume(other).click();
+    await expect(other.page).toHaveURL(new RegExp(`correspondence=${matchId}$`));
   } finally {
     await a.context.close();
     await b.context.close();
+  }
+});
+
+test('sets up a featured table and follows its public link at desktop sizes', async ({
+  browser,
+}, info) => {
+  test.skip(info.project.name !== 'desktop');
+  const host = await player(browser);
+  const opponent = await player(browser);
+  const spectator = await browser.newContext({ baseURL: 'http://127.0.0.1:3000' });
+  try {
+    await host.page.goto('/lobbies/');
+    const featured = host.page.getByRole('region', { name: 'All Open Night' });
+    await expect(featured).toContainText('20:00–23:00 Paris time');
+    await expect(featured).toContainText('Combo');
+    await featured.getByRole('button', { name: 'Set up featured table' }).click();
+    await expect(host.page.getByRole('combobox', { name: 'Visibility' })).toHaveValue('allOpen');
+    await host.page.getByRole('textbox', { name: 'Lobby name' }).fill('All Open practice table');
+    await host.page.getByRole('button', { name: 'Open lobby · 1/2' }).click();
+    const row = host.page.getByRole('article').filter({ hasText: 'All Open practice table' });
+    await expect(row).toContainText('No trade');
+    await host.context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await row.getByRole('button', { name: 'Share table' }).click();
+    const dialog = host.page.getByRole('dialog', { name: 'Share table' });
+    await dialog.getByRole('button', { name: 'Copy link' }).click();
+    await expect(dialog.getByRole('status')).toHaveText('Link copied.');
+    const link = await host.page.evaluate(() => navigator.clipboard.readText());
+    expect(link).toBe(await dialog.getByRole('textbox', { name: 'Table link' }).inputValue());
+    const url = new URL(link);
+    expect(url.pathname).toBe('/lobbies/');
+    expect(url.searchParams.get('server')).toBe(origin);
+    const tableId = url.searchParams.get('table');
+    expect(tableId).toBeTruthy();
+    const look = await spectator.newPage();
+    await look.goto(link);
+    await look.getByRole('button', { name: 'Connect to server' }).click();
+    await expect(look.getByRole('heading', { name: 'Shared table', exact: true })).toBeVisible();
+    expect(new URL(look.url()).searchParams.get('table')).toBe(tableId);
+    await look.getByRole('link', { name: 'Open starter boosters' }).click();
+    await look.getByRole('button', { name: 'Skip opening animation' }).click();
+    await look.getByRole('button', { name: 'Continue', exact: true }).click();
+    await look.getByRole('link', { name: 'Back to shared table' }).click();
+    await look.getByRole('button', { name: 'Learn how to play' }).click();
+    await look.getByRole('button', { name: 'Close tutorial' }).click();
+
+    await opponent.page.goto(link);
+    const join = opponent.page.getByRole('button', { name: 'Join table' });
+    await expect(join).toBeEnabled();
+    await join.click();
+    await expect(look.getByRole('link', { name: 'Spectate' })).toBeVisible();
+
+    await look.getByRole('link', { name: 'Browse all tables' }).click();
+    await look.getByRole('link', { name: 'Read the rulebook instead' }).click();
+    await look.getByRole('button', { name: 'I’ve read the rules · Unlock duels' }).click();
+    await expect(look.locator('.rulebook-onboarding')).toHaveCount(0);
+    await look.goto('/lobbies/');
+    for (const language of ['en', 'fr']) {
+      if (language === 'fr') {
+        await look.getByRole('button', { name: 'Language: English', exact: true }).click();
+        await look.getByRole('menuitemradio', { name: 'Français' }).click();
+      }
+      const card = look.getByRole('region', {
+        name: language === 'fr' ? 'Soirée Mains ouvertes' : 'All Open Night',
+      });
+      for (const [width, height] of [
+        [1280, 720],
+        [1366, 768],
+        [1920, 1080],
+      ]) {
+        await look.setViewportSize({ width, height });
+        await expect(card).toBeInViewport();
+        const hasOverflow = await look.evaluate(() =>
+          [
+            document.documentElement,
+            ...Array.from(document.querySelectorAll('.featured-lobby, .lobby-row, .lobby-join')),
+          ].some((el) => el.scrollWidth > el.clientWidth + 1),
+        );
+        expect(hasOverflow).toBe(false);
+        await look.screenshot({ path: info.outputPath(`community-${language}-${width}.png`) });
+      }
+    }
+    await platform.store.db.tx((sql) =>
+      sql('UPDATE lobbies SET spectatable=false WHERE id=$1', [tableId]),
+    );
+    await look.goto(link);
+    await expect(
+      look.getByRole('heading', { name: 'Cette table n’est plus disponible.' }),
+    ).toBeVisible();
+    await expect(look.getByText('All Open practice table', { exact: true })).toHaveCount(0);
+    await expect(look.getByRole('link', { name: 'Observer' })).toHaveCount(0);
+  } finally {
+    await host.context.close();
+    await opponent.context.close();
+    await spectator.close();
   }
 });
 

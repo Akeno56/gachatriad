@@ -2,8 +2,8 @@
 import { LocaleView } from './i18n';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { elementalModifier, randomDeck, scores, seededRandom } from '@gacha-triad/engine';
 import { TRAINING_HANDS, TRAINING_STEPS } from '@gacha-triad/shared/training-duel';
 import { Card } from './card';
@@ -13,9 +13,18 @@ import { useSession } from './session';
 import { useGameAudio } from './game-shell';
 import { api } from '../lib/platform';
 export function FirstDuelTutorial() {
+  return (
+    <Suspense fallback={null}>
+      <Tutorial />
+    </Suspense>
+  );
+}
+
+function Tutorial() {
   const { profile, refresh } = useSession(),
-    pathname = usePathname(),
+    pathname = usePathname().replace(/\/$/, '') || '/',
     play = useGameAudio();
+  const params = useSearchParams();
   const [step, setStep] = useState(0),
     [manual, setManual] = useState(false),
     [done, setDone] = useState(false),
@@ -28,17 +37,16 @@ export function FirstDuelTutorial() {
     [error, setError] = useState('');
   const ref = useRef<HTMLDialogElement>(null),
     heading = useRef<HTMLHeadingElement>(null);
-  const [watching, setWatching] = useState(false);
-  useEffect(() => setWatching(new URLSearchParams(location.search).has('spectate')), [pathname]);
   const required =
-    !watching &&
+    !(pathname === '/lobbies' && params.has('table')) &&
+    !params.has('spectate') &&
     !!profile &&
     profile.played === 0 &&
     profile.deck.length === 5 &&
     !profile.starterBoosters &&
     !profile.tutorialCompleted &&
     !profile.activeMatchId &&
-    ['/', '/lobbies'].includes(pathname.replace(/\/$/, '') || '/');
+    ['/', '/lobbies'].includes(pathname);
   const visible = required || manual,
     lesson = TRAINING_STEPS[step],
     game = done && lesson.after ? lesson.after : lesson.before;

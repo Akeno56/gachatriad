@@ -2,8 +2,8 @@
 import { LocaleView, NoTranslate } from '../../components/i18n';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { isRatedMode, type LobbyPreset, type LobbyView } from '@gacha-triad/shared/platform';
 import { STANDARD, UNRANKED_RULES, supportsTradeOne, type Rules } from '@gacha-triad/engine';
 import { api } from '../../lib/platform';
@@ -16,11 +16,17 @@ import { useAllowBots } from '../../lib/lobby-preferences';
 import { MainChat } from '../../components/main-chat';
 import { BotStyle } from '../../components/bot-style';
 import { MATCH_RULE_PRESETS, RuleToggles, RuleVisibility } from '../../components/rule-options';
-export default function Lobbies() {
+import { Button, GameDialog } from '../../components/ui';
+import { appPath, serverURL } from '../../lib/connection';
+
+const featuredRules: Rules = { ...UNRANKED_RULES, threeOpen: false, allOpen: true };
+
+function Lobbies() {
   const { profile, revision, refreshProfile, error: connectionError } = useSession(),
     router = useRouter();
+  const sharedTable = useSearchParams().get('table');
   const lobbyRevision = useSiteRevision('lobbies');
-  const [rows, setRows] = useState<LobbyView[]>([]),
+  const [list, setList] = useState<{ table: string | null; rows: LobbyView[] }>(),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
     [mode, setMode] = useState('all'),
@@ -35,7 +41,15 @@ export default function Lobbies() {
   const [presets, setPresets] = useState<LobbyPreset[]>([]);
   const [presetName, setPresetName] = useState('');
   const [presetBusy, setPresetBusy] = useState(false);
+  const [shareURL, setShareURL] = useState('');
+  const [copyStatus, setCopyStatus] = useState('');
+  const shareInput = useRef<HTMLInputElement>(null);
+  const setupHeading = useRef<HTMLHeadingElement>(null);
   const presetRevision = useRef(0);
+  const tableReady = list?.table === sharedTable;
+  const rows = tableReady ? list.rows : [];
+  const createBlocked = !profile || !!profile.waitingLobbyId || !!profile.pendingTrade;
+  const needsTutorial = !!sharedTable && profile?.played === 0 && !profile.tutorialCompleted;
   const tradeEligible = supportsTradeOne(rules);
   useEffect(() => {
     if (!tradeEligible) setTrade(false);
@@ -43,9 +57,20 @@ export default function Lobbies() {
   useEffect(() => {
     if (!profile) return;
     let active = true;
-    void api<LobbyView[]>('/lobbies')
+    const path =
+      sharedTable === null ? '/lobbies' : `/lobbies?table=${encodeURIComponent(sharedTable)}`;
+    void api<LobbyView[]>(path)
       .then((next) => {
-        if (active) setRows(next);
+        if (active)
+          setList({
+            table: sharedTable,
+            rows:
+              sharedTable === null
+                ? next
+                : next.filter(
+                    (row) => row.id === sharedTable && !row.inviteOnly && !isRatedMode(row.mode),
+                  ),
+          });
       })
       .catch((e) => {
         if (active) setError(e.message);
@@ -53,7 +78,7 @@ export default function Lobbies() {
     return () => {
       active = false;
     };
-  }, [revision, profile?.id, lobbyRevision]);
+  }, [revision, profile?.id, lobbyRevision, sharedTable]);
   useEffect(() => {
     if (profile?.activeMatchId) router.push(`/?match=${profile.activeMatchId}`);
   }, [profile?.activeMatchId, router]);
@@ -153,12 +178,55 @@ export default function Lobbies() {
     setTrade(kind === 'trade');
     setError('');
   }
+  function shareTable(id: string) {
+    const url = new URL(appPath('/lobbies/'), location.origin);
+    url.searchParams.set('table', id);
+    const server = serverURL();
+    if (server && server !== location.origin) url.searchParams.set('server', server);
+    setShareURL(url.href);
+    setCopyStatus('');
+  }
   return (
     <LocaleView>
       <div className="content-page lobby-page">
-        <h1>Find a table</h1>
-        <LocalBots />
-        {waiting && (
+        {sharedTable === null ? (
+          <h1>Find a table</h1>
+        ) : (
+          <header className="shared-table-heading">
+            <h1>Shared table</h1>
+            <Link href="/lobbies" className="outline-button" onClick={() => setError('')}>
+              Browse all tables
+            </Link>
+          </header>
+        )}
+        {sharedTable === null && (
+          <section className="menu-window featured-lobby" aria-labelledby="featured-lobby-title">
+            <div>
+              <h2 id="featured-lobby-title">All Open Night</h2>
+              <p>Saturdays · 20:00–23:00 Paris time</p>
+              <div className="rule-badges">
+                {ruleNames(featuredRules).map((rule) => (
+                  <span key={rule}>{rule}</span>
+                ))}
+                <span>No trade</span>
+              </div>
+            </div>
+            <Button
+              disabled={createBlocked}
+              onClick={() => {
+                setRules(featuredRules);
+                setTrade(false);
+                setError('');
+                setCreate(true);
+                requestAnimationFrame(() => setupHeading.current?.focus());
+              }}
+            >
+              Set up featured table
+            </Button>
+          </section>
+        )}
+        {sharedTable === null && <LocalBots />}
+        {waiting && sharedTable === null && (
           <div className="menu-window waiting-lobby" role="status">
             <strong>
               Waiting at <NoTranslate>{waiting.name}</NoTranslate> · 1/2 players
@@ -169,262 +237,275 @@ export default function Lobbies() {
             </span>
           </div>
         )}
-        <details
-          className="public-chat-disclosure"
-          onToggle={(event) => setChatOpen(event.currentTarget.open)}
-        >
-          <summary>Lobby chat</summary>
-          <MainChat compact visible={chatOpen} />
-        </details>
-        <div className="lobby-tools">
-          <div className="lobby-filters">
-            <label>
-              Mode
-              <select
-                name="page-select-2"
-                aria-label="Mode"
-                value={mode}
-                onChange={(e) => setMode(e.target.value)}
-              >
-                <option value="all">All modes</option>
-                {['casual', 'custom', 'roulette'].map((m) => (
-                  <option key={m} value={m}>
-                    {m === 'casual' ? 'Unranked' : m}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Status
-              <select
-                name="page-select-3"
-                aria-label="Status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="all">All tables</option>
-                <option value="waiting">1/2 · Waiting</option>
-                <option value="playing">2/2 · Playing</option>
-              </select>
-            </label>
-            <fieldset className="lobby-rule-filters">
-              <legend>Rules · click to require, again to exclude</legend>
-              <div>
-                {Object.entries({
-                  closed: 'Closed',
-                  allOpen: 'All Open',
-                  threeOpen: 'Three Open',
-                  same: 'Same',
-                  plus: 'Plus',
-                  combo: 'Combo',
-                  random: 'Random',
-                  elemental: 'Elemental',
-                  one: 'Trade One',
-                }).map(([key, label]) => {
-                  const state = ruleFilters[key] ?? 0;
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      data-state={state}
-                      aria-label={
-                        label +
-                        ': ' +
-                        (state === 1 ? 'Required' : state === -1 ? 'Excluded' : 'Any')
-                      }
-                      aria-pressed={state === -1 ? 'mixed' : state === 1}
-                      onClick={() =>
-                        setRuleFilters((current) => ({
-                          ...current,
-                          [key]: state === 0 ? 1 : state === 1 ? -1 : 0,
-                        }))
-                      }
-                    >
-                      {state === 1 ? '+ ' : state === -1 ? '− ' : ''}
-                      {label}
-                    </button>
-                  );
-                })}
-                <button type="button" className="text-button" onClick={() => setRuleFilters({})}>
-                  Clear rules
-                </button>
-              </div>
-            </fieldset>
-          </div>
-          <button
-            className="primary-button"
-            disabled={!profile || !!profile.waitingLobbyId || !!profile.pendingTrade}
-            onClick={() => setCreate((v) => !v)}
-          >
-            {create ? 'Close setup' : 'Create custom lobby'}
-          </button>
-        </div>
-        {create && (
-          <form
-            className="menu-window lobby-create"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void enter('/lobbies', {
-                mode: 'custom',
-                name: name || undefined,
-                rules,
-                tradeRule: trade ? 'one' : 'none',
-                allowBots,
-              });
-            }}
-          >
-            <h2>Your table, your rules</h2>
-            <div className="queue-options">
-              {(
-                [
-                  {
-                    kind: 'standard',
-                    name: MATCH_RULE_PRESETS.standard.label,
-                    text: 'Three Open · Same · Plus · Combo · No trade',
-                  },
-                  {
-                    kind: 'trade',
-                    name: 'Trade One rules',
-                    text: 'Closed · Same · Plus · Combo · Trade One',
-                  },
-                  {
-                    kind: 'open',
-                    name: 'All Open rules',
-                    text: 'Both hands visible · No trade',
-                  },
-                  {
-                    kind: 'random',
-                    name: MATCH_RULE_PRESETS.random.label,
-                    text: 'Random deck · Same · Plus · Combo · No trade',
-                  },
-                ] as const
-              ).map((q) => (
-                <button
-                  key={q.kind}
-                  type="button"
-                  className="menu-window queue-option"
-                  disabled={
-                    busy ||
-                    !profile ||
-                    !!profile.waitingLobbyId ||
-                    !!profile.pendingTrade ||
-                    (q.kind === 'trade' && !profile.registered)
-                  }
-                  onClick={() => preset(q.kind)}
-                >
-                  <strong>{q.name}</strong>
-                  <span>{q.text}</span>
-                </button>
-              ))}
-            </div>
-            <fieldset className="saved-lobby-presets">
-              <legend>Saved presets</legend>
-              {presets.length > 0 && (
-                <ul>
-                  {presets.map((preset) => (
-                    <li key={preset.id}>
-                      <button
-                        type="button"
-                        className="outline-button"
-                        disabled={presetBusy}
-                        onClick={() => applyPreset(preset)}
-                      >
-                        <NoTranslate>{preset.name}</NoTranslate>
-                      </button>
-                      <button
-                        type="button"
-                        className="text-button"
-                        disabled={presetBusy}
-                        aria-label={`Delete preset ${preset.name}`}
-                        onClick={() => void changePreset(preset.id)}
-                      >
-                        ×
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <div className="save-lobby-preset">
+        {sharedTable === null && (
+          <>
+            <details
+              className="public-chat-disclosure"
+              onToggle={(event) => setChatOpen(event.currentTarget.open)}
+            >
+              <summary>Lobby chat</summary>
+              <MainChat compact visible={chatOpen} />
+            </details>
+            <div className="lobby-tools">
+              <div className="lobby-filters">
                 <label>
-                  Preset name
-                  <input
-                    name="presetName"
-                    maxLength={40}
-                    value={presetName}
-                    onChange={(e) => setPresetName(e.target.value)}
-                  />
+                  Mode
+                  <select
+                    name="page-select-2"
+                    aria-label="Mode"
+                    value={mode}
+                    onChange={(e) => setMode(e.target.value)}
+                  >
+                    <option value="all">All modes</option>
+                    {['casual', 'custom', 'roulette'].map((m) => (
+                      <option key={m} value={m}>
+                        {m === 'casual' ? 'Unranked' : m}
+                      </option>
+                    ))}
+                  </select>
                 </label>
-                <button
-                  type="button"
-                  className="outline-button"
-                  disabled={presetBusy || !presetName.trim()}
-                  onClick={() => void changePreset()}
-                >
-                  {presets.some((preset) => preset.name === presetName.trim())
-                    ? 'Update preset'
-                    : 'Save preset'}
-                </button>
+                <label>
+                  Status
+                  <select
+                    name="page-select-3"
+                    aria-label="Status"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                  >
+                    <option value="all">All tables</option>
+                    <option value="waiting">1/2 · Waiting</option>
+                    <option value="playing">2/2 · Playing</option>
+                  </select>
+                </label>
+                <fieldset className="lobby-rule-filters">
+                  <legend>Rules · click to require, again to exclude</legend>
+                  <div>
+                    {Object.entries({
+                      closed: 'Closed',
+                      allOpen: 'All Open',
+                      threeOpen: 'Three Open',
+                      same: 'Same',
+                      plus: 'Plus',
+                      combo: 'Combo',
+                      random: 'Random',
+                      elemental: 'Elemental',
+                      one: 'Trade One',
+                    }).map(([key, label]) => {
+                      const state = ruleFilters[key] ?? 0;
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          data-state={state}
+                          aria-label={
+                            label +
+                            ': ' +
+                            (state === 1 ? 'Required' : state === -1 ? 'Excluded' : 'Any')
+                          }
+                          aria-pressed={state === -1 ? 'mixed' : state === 1}
+                          onClick={() =>
+                            setRuleFilters((current) => ({
+                              ...current,
+                              [key]: state === 0 ? 1 : state === 1 ? -1 : 0,
+                            }))
+                          }
+                        >
+                          {state === 1 ? '+ ' : state === -1 ? '− ' : ''}
+                          {label}
+                        </button>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      className="text-button"
+                      onClick={() => setRuleFilters({})}
+                    >
+                      Clear rules
+                    </button>
+                  </div>
+                </fieldset>
               </div>
-            </fieldset>
-            <label className="check-label">
-              <input
-                name="page-input-1"
-                type="checkbox"
-                checked={allowBots}
-                onChange={(e) => setAllowBots(e.target.checked)}
-              />
-              Allow bots to join my lobby
-            </label>
-            <div className="lobby-filters">
-              <label>
-                Lobby name
-                <input
-                  name="page-input-4"
-                  value={name}
-                  maxLength={60}
-                  placeholder={`${profile?.name}'s table`}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </label>
-              <RuleVisibility rules={rules} onChange={setRules} />
+              <button
+                className="primary-button"
+                disabled={createBlocked}
+                onClick={() => setCreate((v) => !v)}
+              >
+                {create ? 'Close setup' : 'Create custom lobby'}
+              </button>
             </div>
-            <RuleToggles rules={rules} onChange={setRules}>
-              <label>
-                <input
-                  name="tradeOne"
-                  type="checkbox"
-                  checked={trade}
-                  disabled={!profile?.registered || !tradeEligible}
-                  onChange={(e) => setTrade(e.target.checked)}
-                />
-                Trade One
-              </label>
-            </RuleToggles>
-            <p className="eligibility-note">
-              Trade One requires Closed visibility, Same, Plus and Combo. Extra rules may be added.{' '}
-              {profile && !profile.registered ? 'Register an account to enable card stakes.' : ''}
-            </p>
-            <p>
-              {rules.combo ? 'Combo chains follow Same and Plus captures. ' : ''}
-              {rules.elemental ? 'Matching elemental cells grant +1; mismatches give −1. ' : ''}
-              {rules.random
-                ? 'Random draws a legal hand from each player’s available collection. '
-                : ''}
-              {trade
-                ? 'Winner selects one permanently transferred card from the losing deck.'
-                : 'No cards are traded.'}
-            </p>
-            <button className="primary-button" disabled={busy}>
-              Open lobby · 1/2
-            </button>
-          </form>
+            {create && (
+              <form
+                className="menu-window lobby-create"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void enter('/lobbies', {
+                    mode: 'custom',
+                    name: name || undefined,
+                    rules,
+                    tradeRule: trade ? 'one' : 'none',
+                    allowBots,
+                  });
+                }}
+              >
+                <h2 tabIndex={-1} ref={setupHeading}>
+                  Custom table setup
+                </h2>
+                <div className="queue-options">
+                  {(
+                    [
+                      {
+                        kind: 'standard',
+                        name: MATCH_RULE_PRESETS.standard.label,
+                        text: 'Three Open · Same · Plus · Combo · No trade',
+                      },
+                      {
+                        kind: 'trade',
+                        name: 'Trade One rules',
+                        text: 'Closed · Same · Plus · Combo · Trade One',
+                      },
+                      {
+                        kind: 'open',
+                        name: 'All Open rules',
+                        text: 'Both hands visible · No trade',
+                      },
+                      {
+                        kind: 'random',
+                        name: MATCH_RULE_PRESETS.random.label,
+                        text: 'Random deck · Same · Plus · Combo · No trade',
+                      },
+                    ] as const
+                  ).map((q) => (
+                    <button
+                      key={q.kind}
+                      type="button"
+                      className="menu-window queue-option"
+                      disabled={
+                        busy ||
+                        !profile ||
+                        !!profile.waitingLobbyId ||
+                        !!profile.pendingTrade ||
+                        (q.kind === 'trade' && !profile.registered)
+                      }
+                      onClick={() => preset(q.kind)}
+                    >
+                      <strong>{q.name}</strong>
+                      <span>{q.text}</span>
+                    </button>
+                  ))}
+                </div>
+                <fieldset className="saved-lobby-presets">
+                  <legend>Saved presets</legend>
+                  {presets.length > 0 && (
+                    <ul>
+                      {presets.map((preset) => (
+                        <li key={preset.id}>
+                          <button
+                            type="button"
+                            className="outline-button"
+                            disabled={presetBusy}
+                            onClick={() => applyPreset(preset)}
+                          >
+                            <NoTranslate>{preset.name}</NoTranslate>
+                          </button>
+                          <button
+                            type="button"
+                            className="text-button"
+                            disabled={presetBusy}
+                            aria-label={`Delete preset ${preset.name}`}
+                            onClick={() => void changePreset(preset.id)}
+                          >
+                            ×
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <div className="save-lobby-preset">
+                    <label>
+                      Preset name
+                      <input
+                        name="presetName"
+                        maxLength={40}
+                        value={presetName}
+                        onChange={(e) => setPresetName(e.target.value)}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="outline-button"
+                      disabled={presetBusy || !presetName.trim()}
+                      onClick={() => void changePreset()}
+                    >
+                      {presets.some((preset) => preset.name === presetName.trim())
+                        ? 'Update preset'
+                        : 'Save preset'}
+                    </button>
+                  </div>
+                </fieldset>
+                <label className="check-label">
+                  <input
+                    name="page-input-1"
+                    type="checkbox"
+                    checked={allowBots}
+                    onChange={(e) => setAllowBots(e.target.checked)}
+                  />
+                  Allow bots to join my lobby
+                </label>
+                <div className="lobby-filters">
+                  <label>
+                    Lobby name
+                    <input
+                      name="page-input-4"
+                      value={name}
+                      maxLength={60}
+                      placeholder={`${profile?.name}'s table`}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </label>
+                  <RuleVisibility rules={rules} onChange={setRules} />
+                </div>
+                <RuleToggles rules={rules} onChange={setRules}>
+                  <label>
+                    <input
+                      name="tradeOne"
+                      type="checkbox"
+                      checked={trade}
+                      disabled={!profile?.registered || !tradeEligible}
+                      onChange={(e) => setTrade(e.target.checked)}
+                    />
+                    Trade One
+                  </label>
+                </RuleToggles>
+                <p className="eligibility-note">
+                  Trade One requires Closed visibility, Same, Plus and Combo. Extra rules may be
+                  added.{' '}
+                  {profile && !profile.registered
+                    ? 'Register an account to enable card stakes.'
+                    : ''}
+                </p>
+                <p>
+                  {rules.combo ? 'Combo chains follow Same and Plus captures. ' : ''}
+                  {rules.elemental ? 'Matching elemental cells grant +1; mismatches give −1. ' : ''}
+                  {rules.random
+                    ? 'Random draws a legal hand from each player’s available collection. '
+                    : ''}
+                  {trade
+                    ? 'Winner selects one permanently transferred card from the losing deck.'
+                    : 'No cards are traded.'}
+                </p>
+                <button className="primary-button" disabled={busy}>
+                  Open lobby · 1/2
+                </button>
+              </form>
+            )}
+          </>
         )}
         <p className="error-message" role="alert">
           {error || connectionError}
         </p>
         <div className="lobby-list" aria-label="Public lobbies">
-          {visible.length ? (
-            visible.map((row) => (
+          {(sharedTable === null ? visible : rows).length ? (
+            (sharedTable === null ? visible : rows).map((row) => (
               <article className="menu-window lobby-row" key={row.id}>
                 <div className="lobby-details">
                   <h2>
@@ -449,23 +530,39 @@ export default function Lobbies() {
                       Spectate
                     </Link>
                   )}
-                  {row.status === 'waiting' && row.hostId !== profile?.id && (
-                    <button
-                      className="outline-button"
-                      disabled={
-                        busy ||
-                        row.status !== 'waiting' ||
-                        row.inviteOnly ||
-                        !!profile?.waitingLobbyId ||
-                        !!profile?.pendingTrade ||
-                        row.id === profile?.waitingLobbyId ||
-                        ((isRatedMode(row.mode) || row.tradeRule === 'one') && !profile?.registered)
-                      }
-                      onClick={() => enter(`/lobbies/${row.id}/join`, {})}
-                    >
-                      Join table
-                    </button>
-                  )}
+                  {row.status === 'waiting' &&
+                    row.hostId !== profile?.id &&
+                    (sharedTable && profile?.starterBoosters && row.tradeRule !== 'one' ? (
+                      <Link
+                        className="outline-button"
+                        href={`/boosters?starter=1&table=${encodeURIComponent(row.id)}`}
+                      >
+                        Open starter boosters
+                      </Link>
+                    ) : needsTutorial && (row.tradeRule !== 'one' || profile?.registered) ? (
+                      <Button
+                        onClick={() => window.dispatchEvent(new Event('triad:show-tutorial'))}
+                      >
+                        Learn how to play
+                      </Button>
+                    ) : (
+                      <button
+                        className="outline-button"
+                        disabled={
+                          busy ||
+                          row.status !== 'waiting' ||
+                          row.inviteOnly ||
+                          !!profile?.waitingLobbyId ||
+                          !!profile?.pendingTrade ||
+                          row.id === profile?.waitingLobbyId ||
+                          ((isRatedMode(row.mode) || row.tradeRule === 'one') &&
+                            !profile?.registered)
+                        }
+                        onClick={() => enter(`/lobbies/${row.id}/join`, {})}
+                      >
+                        Join table
+                      </button>
+                    ))}
                 </div>
                 <div className="rule-badges">
                   {(row.mode === 'roulette' && row.status === 'waiting'
@@ -482,9 +579,26 @@ export default function Lobbies() {
                         ? 'Bots allowed'
                         : 'Humans only'}
                   </span>
+                  {!row.inviteOnly && (
+                    <Button
+                      variant="ghost"
+                      className="lobby-share"
+                      onClick={() => shareTable(row.id)}
+                    >
+                      Share table
+                    </Button>
+                  )}
                 </div>
               </article>
             ))
+          ) : sharedTable !== null ? (
+            <div className="menu-window empty-lobbies">
+              {tableReady ? (
+                <h2>This table is no longer available.</h2>
+              ) : (
+                !error && !connectionError && <p role="status">Loading table…</p>
+              )}
+            </div>
           ) : (
             <div className="menu-window empty-lobbies">
               <h2>No tables match</h2>
@@ -492,10 +606,49 @@ export default function Lobbies() {
             </div>
           )}
         </div>
-        <p className="library-note">
-          Waiting lobbies expire after 15 minutes. <Link href="/rules">Read the rules</Link>
-        </p>
+        {sharedTable === null && (
+          <p className="library-note">
+            Waiting lobbies expire after 15 minutes. <Link href="/rules">Read the rules</Link>
+          </p>
+        )}
+        <GameDialog
+          open={!!shareURL}
+          onClose={() => setShareURL('')}
+          labelledBy="share-table-title"
+          className="lobby-share-dialog"
+          initialFocus={shareInput}
+        >
+          <h2 id="share-table-title">Share table</h2>
+          <label>
+            Table link
+            <input ref={shareInput} readOnly value={shareURL} onFocus={(e) => e.target.select()} />
+          </label>
+          <Button
+            variant="primary"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(shareURL);
+                setCopyStatus('Link copied.');
+              } catch {
+                shareInput.current?.focus();
+                shareInput.current?.select();
+                setCopyStatus('Copy the selected link.');
+              }
+            }}
+          >
+            Copy link
+          </Button>
+          <p role="status">{copyStatus}</p>
+        </GameDialog>
       </div>
     </LocaleView>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <Lobbies />
+    </Suspense>
   );
 }

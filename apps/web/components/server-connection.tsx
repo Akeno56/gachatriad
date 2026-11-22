@@ -42,7 +42,13 @@ export function ServerConnection({ children }: { children: React.ReactNode }) {
       if (!response.ok || (await response.json()).ok !== true)
         throw new Error('The game server is unavailable. Ask the host to start it.');
       localStorage.setItem('triad-server', url);
-      location.assign(appPath('/'));
+      if (blocked) {
+        const destination = new URL(location.href);
+        destination.searchParams.delete('server');
+        location.replace(destination);
+      } else {
+        location.assign(appPath('/'));
+      }
     } catch (e) {
       setError(
         (e as Error).name === 'TypeError'

@@ -50,7 +50,7 @@ function SocialPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [inviteFriend, setInviteFriend] = useState<FriendView | null>(null);
-  const [acceptedCorrespondence, setAcceptedCorrespondence] = useState(false);
+  const [acceptedCorrespondence, setAcceptedCorrespondence] = useState<string>();
   const lock = useRef(false);
 
   const section = params.get('tab');
@@ -60,6 +60,7 @@ function SocialPage() {
   const requests = data.friends.filter(({ status }) => status !== 'friend');
   const incoming = data.invitations.filter(({ recipient }) => recipient.id === profile?.id);
   const sent = data.invitations.filter(({ sender }) => sender.id === profile?.id);
+  const turns = data.correspondenceTurns ?? [];
   const unread = data.conversations.filter(
     (conversation) =>
       conversation.unread > 0 && friends.some(({ id }) => id === conversation.playerId),
@@ -97,7 +98,7 @@ function SocialPage() {
       );
       refreshSocial();
       if (path.startsWith('/invites')) await refresh();
-      if (result.matchId && result.correspondence) setAcceptedCorrespondence(true);
+      if (result.matchId && result.correspondence) setAcceptedCorrespondence(result.matchId);
       else if (result.matchId) router.push(`/?match=${encodeURIComponent(result.matchId)}`);
       if (message) notice(message);
       return true;
@@ -278,8 +279,57 @@ function SocialPage() {
                 <>
                   {acceptedCorrespondence && (
                     <p className="social-accepted" role="status">
-                      Match accepted. <Link href="/correspondence">Open correspondence</Link>
+                      Match accepted.{' '}
+                      <Link href={`/?correspondence=${encodeURIComponent(acceptedCorrespondence)}`}>
+                        Open match
+                      </Link>
                     </p>
+                  )}
+                  {turns.length > 0 && (
+                    <section className="social-section" aria-labelledby="social-turns">
+                      <div className="social-turns-heading">
+                        <h2 id="social-turns">Correspondence · Your turn</h2>
+                        <Link className="text-button" href="/correspondence">
+                          All correspondence matches
+                        </Link>
+                      </div>
+                      <div className="social-grid">
+                        {turns.map(({ id, opponent, deadline }) => (
+                          <article
+                            className="menu-window social-card"
+                            data-incoming="true"
+                            key={id}
+                          >
+                            <h3>
+                              <NoTranslate>{opponent}</NoTranslate>
+                            </h3>
+                            {deadline !== null && (
+                              <small>
+                                Turn due{' '}
+                                <LocalizedDate
+                                  value={deadline}
+                                  format="datetime"
+                                  options={{
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  }}
+                                />
+                              </small>
+                            )}
+                            <div className="social-card-actions">
+                              <Link
+                                className="primary-button"
+                                href={`/?correspondence=${encodeURIComponent(id)}`}
+                              >
+                                Resume match
+                              </Link>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    </section>
                   )}
                   <section className="social-section" aria-labelledby="social-invites">
                     <h2 id="social-invites">Duel invitations</h2>
@@ -299,14 +349,20 @@ function SocialPage() {
                           >
                             <SocialIdentity
                               player={received ? invitation.sender : invitation.recipient}
-                              status={received ? 'Received invitation' : 'Sent invitation'}
                             />
                             <div className="social-invite-meta">
                               <strong>
                                 {invitation.turnHours
-                                  ? `Correspondence · ${invitation.turnHours}h per turn`
-                                  : 'Live duel'}
+                                  ? received
+                                    ? 'Correspondence invitation'
+                                    : 'Correspondence invitation sent'
+                                  : received
+                                    ? 'Live duel invitation'
+                                    : 'Live duel invitation sent'}
                               </strong>
+                              {invitation.turnHours && (
+                                <small>{`${invitation.turnHours}h per turn`}</small>
+                              )}
                               {invitation.rules && (
                                 <div className="rule-badges">
                                   {ruleNames(invitation.rules).map((rule) => (

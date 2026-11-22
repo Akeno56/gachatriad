@@ -425,7 +425,17 @@ export class Social {
           expiresAt: invitation.expires_at.toISOString(),
         });
       }
+      const correspondenceTurns = p.registered
+        ? (await this.store.correspondenceRows(sql, p.id, true)).map(
+            ({ id, opponent, deadline }) => ({
+              id,
+              opponent,
+              deadline,
+            }),
+          )
+        : [];
       return {
+        correspondenceTurns,
         onlinePlayers,
         conversations: conversations.map((c) => ({
           playerId: c.player_id,

@@ -1,6 +1,7 @@
 'use client';
 import { LocaleView, LocalizedDate } from '../../components/i18n';
 
+import Link from 'next/link';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   BOOSTER_TYPES,
@@ -38,6 +39,7 @@ export default function Boosters() {
   const packRevision = useSiteRevision('boosters');
   const dailyRevision = useSiteRevision('daily-booster');
   const [packs, setPacks] = useState<BoosterView[]>([]),
+    [returnTable, setReturnTable] = useState<string | null>(null),
     [daily, setDaily] = useState<DailyBooster | null>(null),
     [opening, setOpening] = useState<BoosterView[] | null>(null),
     [busy, setBusy] = useState(false),
@@ -50,6 +52,7 @@ export default function Boosters() {
     purchase = useRef<Purchase | null>(null),
     resumed = useRef(false);
   const purchaseKey = `triad-booster-purchase:${profile?.id}`;
+  useEffect(() => setReturnTable(new URLSearchParams(location.search).get('table')), []);
   useEffect(() => {
     setPacks([]);
     setDaily(null);
@@ -83,10 +86,12 @@ export default function Boosters() {
             }
           }
         } catch {}
-        if (new URLSearchParams(location.search).get('starter') === '1') {
+        const url = new URL(location.href);
+        if (url.searchParams.get('starter') === '1') {
           const starters = next.filter((p) => p.type === 'starter' && !p.openedAt);
           if (starters.length) setOpening(starters.slice(0, 10));
-          history.replaceState(history.state, '', location.pathname);
+          url.searchParams.delete('starter');
+          history.replaceState(history.state, '', url);
         }
       })
       .catch((e) => {
@@ -156,6 +161,14 @@ export default function Boosters() {
           <div>
             <div className="eyebrow">THE CARD SHOP</div>
             <h1>Boosters</h1>
+            {returnTable && (
+              <Link
+                className="outline-button"
+                href={`/lobbies?table=${encodeURIComponent(returnTable)}`}
+              >
+                Back to shared table
+              </Link>
+            )}
           </div>
           <strong className="prism-balance" aria-label="Stellar Prisms balance">
             ◇ {profile?.prisms ?? 0} <span>Stellar Prisms</span>

@@ -1,5 +1,5 @@
 import type { Card, Rules } from '@gacha-triad/engine';
-import { ACHIEVEMENTS, type CorrespondenceHours } from './platform';
+import { ACHIEVEMENTS, type CorrespondenceHours, type CorrespondenceMatch } from './platform';
 export interface TitleView {
   id: string;
   name: string;
@@ -98,6 +98,7 @@ export interface SocialView {
   invitations: DuelInvitation[];
   chat: ChatMessage[];
   conversations: FriendConversation[];
+  correspondenceTurns?: Pick<CorrespondenceMatch, 'id' | 'opponent' | 'deadline'>[];
 }
 export const CHAT_CHANNELS = ['general', 'trade', 'lobbies'] as const;
 export type ChatChannel = (typeof CHAT_CHANNELS)[number];

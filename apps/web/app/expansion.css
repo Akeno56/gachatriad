@@ -338,6 +338,60 @@
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
   gap: 10px;
 }
+.featured-lobby,
+.shared-table-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-block: 0 14px;
+}
+.featured-lobby {
+  padding: 12px 16px;
+  border-color: #867347;
+}
+.featured-lobby h2,
+.shared-table-heading h1,
+.lobby-share-dialog h2 {
+  margin: 0;
+}
+.featured-lobby h2 {
+  color: var(--gold);
+  font: 27px/1.05 var(--pixel);
+}
+.shared-table-heading h1 {
+  font: 44px/1 var(--pixel);
+  text-shadow: 2px 3px #000;
+}
+.featured-lobby p {
+  margin: 3px 0 6px;
+  color: var(--muted);
+}
+.featured-lobby .rule-badges {
+  flex-wrap: wrap;
+}
+.lobby-share-dialog {
+  display: grid;
+  gap: 12px;
+  max-width: min(36rem, calc(100vw - 24px));
+}
+.lobby-share-dialog h2 {
+  padding-inline-end: 36px;
+}
+.lobby-share-dialog label {
+  display: grid;
+  gap: 4px;
+}
+.lobby-share-dialog input {
+  width: 100%;
+  min-width: 0;
+}
+.lobby-share-dialog p {
+  min-height: 1.2em;
+  margin: 0;
+  color: var(--muted);
+}
 .lobby-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -363,6 +417,10 @@
 .lobby-row .rule-badges {
   grid-column: 1/-1;
   flex-wrap: wrap;
+  align-items: center;
+}
+.lobby-row .lobby-share {
+  margin-inline-start: auto;
 }
 .lobby-join {
   display: grid;

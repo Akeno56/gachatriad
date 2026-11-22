@@ -39,6 +39,7 @@ export function SocialNavigation() {
     ({ id, recipient }) => id === noticeId && recipient.id === profileId,
   );
   const unread =
+    (data.correspondenceTurns?.length ?? 0) +
     data.friends.filter(({ status }) => status === 'incoming').length +
     data.invitations.filter(({ recipient }) => recipient.id === profile?.id).length +
     data.conversations.reduce((sum, conversation) => sum + conversation.unread, 0);

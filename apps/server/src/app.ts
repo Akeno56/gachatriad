@@ -673,7 +673,10 @@ export async function createPlatform(
   });
   app.get('/api/lobbies', async (req) => {
     await profile(req);
-    return store.lobbies();
+    const { table } = req.query as { table?: unknown };
+    if (table !== undefined && (typeof table !== 'string' || !table || table.length > 100))
+      return [];
+    return store.lobbies(false, table);
   });
   app.get('/api/achievements', async (req) => store.achievements((await profile(req)).id));
   app.post('/api/achievements/:id/claim', async (req) => {
